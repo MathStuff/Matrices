@@ -426,7 +426,12 @@ class Matrix(object):
             self.__inRange=self.__declareRange(self.__matrix)   
             print("\nNew grid:\n",self.__matrix)
             
-            
+    def delRC(self,r,c):
+        pass
+
+    def determinant(self):
+        pass
+    
     def get(self,r,c):
         """
         Returns the desired element
