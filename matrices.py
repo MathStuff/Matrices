@@ -548,7 +548,7 @@ class Matrix(object):
             for ele in row:
                 total+=ele
                 
-        return total//d[0]*d[1]
+        return total//(d[0]*d[1])
 # =============================================================================
     """Properties available for public"""               
 # =============================================================================
