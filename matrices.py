@@ -494,27 +494,41 @@ class Matrix(object):
                 print("\nNew grid:\n",self.__stringfy(self.__dim))
                 self.__string=self.__stringfy(self.__dim) 
             
-    def delRC(self,r=0,c=0):
+    def delRC(self,r=None,c=None):
         """
         Deletes rows and columns from the right and bottom side
         Removes r amount of rows and c amount of columns
-        If only 1 argument is given, deletes given amount of dimensions from left and bottom
-        
+        If only 1 argument "n" is given:
+            ->IF n==rows XOR n==columns:
+                ~Subtracts a nxn dimension matrix from the left(if n==rows) or bottom(if n==columns)
+            ->IF n<rows and n<colums:
+                ~Deletes n amount of rows and columns from right and bottom
+            ->IF n==rows==cols:
+                ~Deleted all the elements
+        Applies changes on the current matrix also returns the new matrix created 
         Use sub method if you want to get a new matrix
         """
         try:
-            d=self.__dim[:]
-            temp=[a[:] for a in self.__matrix]
-            assert r>=0 and c>=0 and r<=d[0] and c<=d[1] and self.__valid==1
             ###############
-            if r==0 and c!=0:
+            if r==None and c!=0:
                 r=c
-            elif c==0 and r!=0:
+            elif c==None and r!=0:
                 c=r
-            elif (r,c)==(0,0):
+            elif (r,c)==(0,0) or (r,c)==(None,None):
                 print("Nothing to delete!")
                 return None
-            goal=[d[0] - r,d[1] - c]
+            dim=self.__dim[:]
+            temp=[a[:] for a in self.__matrix]
+            assert (r>=0 or r==None) and (c>=0 or c==None) and r<=dim[0] and c<=dim[1] and self.__valid==1
+            goal=[dim[0] - r,dim[1] - c]
+            if goal[0]==0 and goal[1]!=0:
+                goal[0]=r
+                r*=-1
+            elif goal[1]==0 and goal[0]!=0:
+                goal[1]=c
+                c*=-1
+            print("Current dimension: ",dim)
+            print("Goal dimension: ",goal)
             ############### 
         except Exception as err:
             self.__matrix=temp
@@ -529,10 +543,10 @@ class Matrix(object):
                 tempMat=[]
                 for rows in self.__matrix[:-r]:
                     tempMat.append(rows[:-c])
-                print("Old grid:\n",self.__stringfy(d))    
-                self.__matrix=tempMat
+                print("Old grid:\n",self.__stringfy(dim))    
+                self.__matrix=[a[:] for a in tempMat]
                 self.__inRange=self.__declareRange(self.__matrix)
-                self.__dim=goal
+                self.__dim=goal[:]
                 print("\nNew grid:")
                 self.__string=self.__stringfy(self.__dim) 
             return self
