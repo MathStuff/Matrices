@@ -508,17 +508,17 @@ class Matrix(object):
             
     def delRC(self,r=None,c=None):
         """
-        Deletes rows and columns from the right and bottom side
-        Removes r amount of rows and c amount of columns
-        If only 1 argument "n" is given:
-            ->IF n==rows XOR n==columns:
-                ~Subtracts a nxn dimension matrix from the left(if n==rows) or bottom(if n==columns)
-            ->IF n<rows and n<colums:
-                ~Deletes n amount of rows and columns from right and bottom
-            ->IF n==rows==cols:
-                ~Deleted all the elements
-        Applies changes on the current matrix also returns the new matrix created 
-        Use sub method if you want to get a new matrix
+Deletes rows and columns from the right and bottom side
+Removes r amount of rows and c amount of columns
+If only 1 argument "n" is given:
+    ->IF n==rows XOR n==columns:
+        ~Subtracts a nxn dimension matrix from the left(if n==rows) or bottom(if n==columns)
+    ->IF n<rows and n<colums:
+        ~Deletes n amount of rows and columns from right and bottom
+    ->IF n==rows==cols:
+        ~Deleted all the elements
+Applies changes on the current matrix also returns the new matrix created 
+Use sub method if you want to get a new matrix
         """
         
         try:
@@ -674,8 +674,7 @@ EXAMPLES:
                 colS=1
             #IF MORE THAN 2 ARGUMENTS ARE GIVEN MAKE SURE IT IS 4 OF THEM AND THEY ARE VALID
             else:
-                assert (rowS,rowE,colS,colE)!=(None,None,None,None)\
-                (rowS,rowE,colS,colE)>(0,0,0,0)
+                assert (rowS,rowE,colS,colE)!=(None,None,None,None) and (rowS,rowE,colS,colE)>(0,0,0,0)
             assert rowS<=self._dim[0] and rowE<=self._dim[0] and colS<=self._dim[1] and colE<=self._dim[1]
             
         except AssertionError:
