@@ -31,6 +31,7 @@ class Matrix(object):
     def __init__(self,dim=[0,0],listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
         self.__dim=[0,0]
         self.__valid=1
+        self.__inrange=inRange
         try:
                 
             if isinstance(dim,list):
@@ -81,12 +82,14 @@ class Matrix(object):
                             self.__matrix=self.__zeroFiller(self.__temp1)
                             self.__inRange=self.__declareRange(self.__matrix)
                             
-                        elif randomFill:
+                        elif randomFill and not rangeLock:
                             self.__matrix=self.__randomFiller(self.__temp1)
                             self.__inRange=self.__declareRange(self.__matrix)
                             self.__dim=self.__declareDim() 
                             self.__string=self.__stringfy(self.__dim) 
-                                      
+                        else:
+                            self.__valid=0
+                            return None
                     self.__avg=self.__avg()
 
 # =============================================================================
@@ -409,6 +412,7 @@ class Matrix(object):
                                         gettingInput=0
                                 except:
                                     print("Bad input")
+                                    
                     elif row<self.__dim[0]:
                         gettingInput=self.__dim[1]
                        
@@ -529,9 +533,9 @@ class Matrix(object):
                 self.__matrix=tempMat
                 self.__inRange=self.__declareRange(self.__matrix)
                 self.__dim=goal
-                print("New grid:\n",self.__stringfy(self.__dim))
+                print("\nNew grid:")
                 self.__string=self.__stringfy(self.__dim) 
-                
+            return self
         
     def determinant(self):
         pass
@@ -782,7 +786,7 @@ rangeLock={3},
 randomFill={4}
 )""".format(self.__dim,self.__matrix,self.__inRange,self.__rangeLock,self.__randomFill)
         else:
-            return "Invalid matrix"
+            return None
         
     def __str__(self): 
         """ 
@@ -796,6 +800,4 @@ randomFill={4}
             return "Invalid matrix\n"
     
 # =============================================================================
-
-
-
+h=Matrix(inRange=[0,0],rangeLock=1)
