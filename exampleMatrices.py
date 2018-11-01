@@ -4,7 +4,7 @@ Created on Wed Oct 31 17:38:28 2018
 
 @author: Semih
 """
-from matrices import Matrix
+from matrices import Matrix,Identity
 
 # =============================================================================
 """Example Inputs"""      
@@ -29,7 +29,8 @@ projectGrid="""08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
 20 69 36 41 72 30 23 88 34 62 99 69 82 67 59 85 74 04 36 16
 20 73 35 29 78 31 90 01 74 31 49 71 48 86 81 16 23 57 05 54
 01 70 54 71 83 51 54 69 16 92 33 48 61 43 52 01 89 19 67 48"""
- 
+
+
 proj=Matrix(listed=projectGrid)
 v=Matrix()
 o=Matrix(dim=8,randomFill=0)
@@ -40,17 +41,23 @@ d=Matrix(10)
 e=Matrix(8,randomFill=0)
 f=Matrix(dim=6,inRange=[-1250,1250])
 sub=f.sub(1,4,2,3)
-#INVALID MATRICES
-g=Matrix(dim=-1)
-j=Matrix(inRange=[0])
-h=Matrix(inRange=[0,0],rangeLock=1)
-#
-k=Matrix(dim=[3,6])
-l=proj.sub(12,18,5,11)
-m=k.sub(2,3,1,4)
+g=Matrix(dim=[3,6])
+h=proj.sub(12,18,5,11)
+j=g.sub(2,3,1,4)
+#InvalidMatrices
+k=Matrix(dim=-1)
+l=Matrix(inRange=[0])
+m=Matrix(inRange=[0,0],rangeLock=1)
+#Identity Matrices
+id1=Identity()
+id2=Identity(5)
+id3=id2.sub(3,3)
 # =============================================================================
-for matrix in [proj,v,o,a,b,c,d,e,f,sub,k,l,m,g,j,h]:
+for matrix in [proj,v,o,a,b,c,d,e,f,sub,g,h,j,k,l,m]:
     print(matrix)
+    
+for identity in [id1,id2,id3]:
+    print(identity)
 print('#######################')
 print("Attribute call outputs\n")
 print("d.matix:\n",d.matrix,"\n")
@@ -73,9 +80,17 @@ print('################')
 print("l=proj.sub(12,18,5,11):\n",l,"\n")
 print('################')
 print("m=k.sub(2,3,1,4):\n",m,"\n")
+print('################')
 print("proj.delRC(5,15):\n")
 print(proj.delRC(5,15))
 print('################')
+print("id2.matrix:\n",id2.matrix)
+print("\nid2.addDim(2):\n",id2.addDim(2))
+print(id2)
+print("id2.matrix:\n",id2.matrix)
+print('################')
+print("id3.delDim(2) is an invalid expression, because it was obtained by matrix's sub method\n")
+print("id3:\n",id3)     
 print("")
 # =============================================================================
 """ Expected Outputs """
