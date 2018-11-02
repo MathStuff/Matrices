@@ -28,7 +28,7 @@ class Matrix(object):
 -Specific elements of the matrix can be obtained by using "get" method   
 -Average of the all given elements can be seen with "avg" method 
     """
-    def __init__(self,dim=[0,0],listed=[],inRange=[-125,125],rangeLock=0,randomFill=0):
+    def __init__(self,dim=[0,0],listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
     
         self._isIdentity=0
         if not self._isIdentity:
@@ -45,7 +45,7 @@ class Matrix(object):
             self._dimSet(dim)    
             if len(inRange)!=2:
                 self._valid=0
-            self._avg=self._average()
+            
                 
         except Exception as err:
             print(err)
@@ -55,33 +55,43 @@ class Matrix(object):
             if isinstance(listed,str) and not self._isIdentity:
                 self._valid=1
                 self._matrix=self._listify(listed)
-                self._inRange=self._declareRange(self._matrix)
-#                self._avg=self._average()
+                if not self._rangeLock:
+                    self._inRange=self._declareRange(self._matrix)
+
                
             elif self._validateList(listed) and self._valid and not self._isIdentity:
                     self._temp1=[a[:] for a in listed]
                     
                     if len(self._temp1)>0:
                             self._matrix = self._temp1.copy()
-                            self._inRange=self._declareRange(self._matrix)
+                            if not self._rangeLock:
+                                self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim() 
                             self._string=self._stringfy(self._dim)     
-                    elif len(self._temp1)==0:
+                    elif len(self._temp1)==0 and dim!=[0,0]:
                         
                         if not randomFill:
                             self._matrix=self._zeroFiller(self._temp1)
-                            self._inRange=self._declareRange(self._matrix)
+                            if not self._rangeLock:
+                                self._inRange=self._declareRange(self._matrix)
                             
-                        elif randomFill and not rangeLock:
+                        elif randomFill:
                             self._matrix=self._randomFiller(self._temp1)
-                            self._inRange=self._declareRange(self._matrix)
+                            if not self._rangeLock:
+                                self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim() 
                             self._string=self._stringfy(self._dim) 
                         else:
                             self._valid=0
                             return None
-#                    self._avg=self._average()
-
+                    else:
+                        self._valid=0
+                        return None
+            else:
+                self._valid=0
+                return None
+            
+            self._avg=self._average()
 # =============================================================================
     def _dimSet(self,dim):        
         if isinstance(dim,list):
@@ -189,81 +199,84 @@ class Matrix(object):
         Tries to fit the numbers into a grid shape
         Returns a list in a form of a square matrix
         """
-#        try:
-        gridNum=""
-        numbers=["0","1","2","3","4","5","6","7","8","9"]
-        l=len(string)
-        
-        list1=list()
-        negative=0
-        
-        for c in range(0,l):
-            #print("c:{0} neg:{1} str:{2} num:{3}".format(c,negative,string[c],gridNum))
-            #print("list:",list1)
-            if string[c] in numbers:
-                gridNum+=string[c]
-                if c==l-1:
-                    if negative:
-                        list1.append(int(gridNum)*-1)
-                        negative=0
-                    else:
-                        list1.append(int(gridNum))
-
-            elif string[c]=="-":
-                
-                if len(gridNum)>0:
-                    list1.append(int(gridNum))
-                    gridNum=""
-                negative=1  
+        try:
+            gridNum=""
+            numbers=["0","1","2","3","4","5","6","7","8","9"]
+            l=len(string)
             
-            elif string[c]=="\n":
-                if negative:
-                    list1.append(int(gridNum)*-1)
-                    negative=0
-                else:
-                    list1.append(int(gridNum))
-                if not square:
-                    list1.append("\n")
-                gridNum=""
+            list1=list()
+            negative=0
+            
+            for c in range(0,l):
+                #print("c:{0} neg:{1} str:{2} num:{3}".format(c,negative,string[c],gridNum))
+                #print("list:",list1)
+                if string[c] in numbers:
+                    gridNum+=string[c]
+                    if c==l-1:
+                        if negative:
+                            list1.append(int(gridNum)*-1)
+                            gridNum=""
+                            negative=0
+                        else:
+                            list1.append(int(gridNum))
+                            gridNum=""
+                elif string[c]=="-":
                     
-            else:
-                if len(gridNum)>0:
-                    if negative:
-                        list1.append(int(gridNum)*-1)
-                        negative=0
-                    else:
+                    if len(gridNum)>0:
                         list1.append(int(gridNum))
-                    gridNum=""
-       
-        l1=len(list1)
-        l=l1**0.5
-        d=0
-        for integer in range(1,25):
-            if integer==l:
-                 d=integer
-
-        if self._dim==[0,0]:
-            self._dim=[d,d]
-        assert l1==int((d)**2)
-
-        self._temp1=list1
-        list2=list()
-        list2=self._zeroFiller(list2)
-        temp=0
- 
-        if square:
-            for rows in range(0,self._dim[0]):
+                        gridNum=""
+                    negative=1  
                 
-                for i in range(temp,self._dim[1]+temp):
-                    list2[rows].append(list1[i])
-                temp+=self._dim[1]  
+                elif string[c]=="\n":
+                    if len(gridNum)>0:
+                        if negative:
+                            list1.append(int(gridNum)*-1)
+                            gridNum=""
+                            negative=0
+                        elif not square:
+                            list1.append("\n")
+                            gridNum=""
+                        else:
+                            list1.append(int(gridNum))
+                            gridNum=""
+                else:
+                    if len(gridNum)>0:
+                        if negative:
+                            list1.append(int(gridNum)*-1)
+                            negative=0
+                            gridNum=""
+                        else:
+                            list1.append(int(gridNum))
+                            gridNum=""
+        
+        except Exception as err:
+            print("****List error****\nMake sure string:\n-Has positive integers only \n-Has a squared integer amount of numbers:(0-1-4-9...n^2)\n-Have 1 space splitting the elements")
+            print(Matrix.__doc__)
+        else:
+            l1=len(list1)
+            l=l1**0.5
+            d=0
+            for integer in range(1,25):
+                if integer==l:
+                     d=integer
+    
+            if self._dim==[0,0]:
+                self._dim=[d,d]
+            assert l1==int((d)**2)
+    
+            self._temp1=list1
+            list2=list()
+            list2=self._zeroFiller(list2)
+            temp=0
+     
+            if square:
+                for rows in range(0,self._dim[0]):
+                    
+                    for i in range(temp,self._dim[1]+temp):
+                        list2[rows].append(list1[i])
+                    temp+=self._dim[1]  
 
             assert len(list2)==self._dim[0]
-        
-#        except Exception as err:
-#            print("****List error****\nMake sure string:\n-Has positive integers only \n-Has a squared integer amount of numbers:(0-1-4-9...n^2)\n-Have 1 space splitting the elements")
-#            print(Matrix.__doc__)
-#        else:
         return list2
     
     def _stringfy(self,dm):
@@ -356,29 +369,11 @@ class Matrix(object):
         Starts from the first row's last column
         """
         try:
-            #Keep a copy of the old matrix
-            temp=[a[:] for a in self._matrix]
-            assert (row>=0 or row==None) and (col>=0 or col==None) and row<100 and col<100 and self._valid==1
-            
-            ###############
-            if row==None and col!=0:
-                row=col
-                goal=[row,col]
-            elif col==None and row!=0:
-                col=row
-                goal=[row,col]
-            elif (row,col)==(0,0):
-                print("Nothing to add!")
+            if self._isIdentity:
+                print("Can't add to identity matrix.\nUse addDim instead!")
                 return None
-            ###############  
-            
-            d=self._dim[:]
-            goal = [d[0] + row,d[1] + col]
-            dif= goal[0]*goal[1]-d[0]*d[1]
-            print("Current dim: ",self._dim,"\nGoal dim: ",goal)
-            print("\nDimension: {0}x{1}\nNumbers' range: {2}".format(self._dim[0],self._dim[1],self._inRange))
-            print("You have to enter {} integers to the matrix!".format(dif)) 
-            
+            ###############
+            #Valide the matrix and determine wheter or not it has any elements
             ###############
             loop=1
             valid=1
@@ -392,51 +387,102 @@ class Matrix(object):
             a=self._dim>[0,0]
             ###############
             
+            #Keep a copy of the old matrix
+            temp=[a[:] for a in self._matrix]
+            
+            ###############
+            #Validate and adjust given arguments
+            ###############
+            
+            if row==None and col!=0:
+                row=col
+                goal=[self.dim[0]+row,self.dim[1]+col]
+            elif col==None and row!=0:
+                col=row
+                goal=[self.dim[0]+row,self.dim[1]+col]
+            elif (row,col)==(0,0):
+                print("Nothing to add!")
+                return None
+            
+            assert row>=0 and col>=0 and row<100 and col<100 and self._valid==1
+            
+            ###############  
+            #Set hoal dimension and calculate how many integers will be needed
+            ###############
+            d=self._dim[:]
+            goal = [d[0] + row,d[1] + col]
+            dif= goal[0]*goal[1]-d[0]*d[1]
+            print("Current dim: ",self._dim,"\nGoal dim: ",goal)
+            print("\nDimension: {0}x{1}\nNumbers' range: {2}".format(self._dim[0],self._dim[1],self._inRange))
+            print("You have to enter {} integers to the matrix!".format(dif)) 
+            ###############
+            
+            ###############
+            #If matrix is not empty and valid
+            ###############
             if a and valid:
-                
+                ###############
+                #Start the loop from the first rows end
+                ###############
                 for Nrow in range(0,goal[0]):
                     column=self._dim[1]+1
+                    print(self.matrix)
+                    print(goal)
+                    print(self.dim)
+                    #If user completed adding to the existing rows
                     if Nrow>=self._dim[0]:
-                        print("You are entering a new row")
+                        #Add a new row
                         self._matrix.append(list())
-                        
+                        #Keep getting input until desired column dimension reached
                         for Ncol in range(0,goal[1]):
                             gettingInput=1
-                            
+                            gotFirstInput=0
                             while gettingInput:
-                                self._writeOver(1)
                                 
+                                #Clear the terminal/console
+                                self._writeOver(gotFirstInput)
+                                if not gotFirstInput:
+                                    print("You are entering a new row")
+                                #If the input range is given strictly
                                 if self._rangeLock:
                                     print("Enter an integer in range:[{}]".format(self._inRange))
+                                #If range is (-NaN,NaN)
                                 try:
                                     print(self._matrix)
+                                    #Get input
                                     inp=int(input("Row:{}, Column:{} = ".format(Nrow+1,Ncol+1)))
-                                    
+                                    #If range is locked check validaty of the input
                                     if self._rangeLock:
                                         if inp<=self._inRange[1] and inp>=self._inRange[0]:
                                             self._matrix[Nrow].append(inp)
+                                            gotFirstInput=1
                                             gettingInput=0
                                         else:
                                             print("Out of range!")
                                             
                                     else:
+                                        #If input is valid add it to the end of the row
                                         self._matrix[Nrow].append(inp)
                                         gettingInput=0
+                                        gotFirstInput=1
                                 except:
                                     print("Bad input")
                                     
-                    elif row<self._dim[0]:
+                    elif Nrow<self._dim[0]:
+                        #Loop to get inputs for the existed rows
                         gettingInput=self._dim[1]
                        
                         while gettingInput<goal[1]:
+                            #Clear the window
                             self._writeOver(1)
-                            
+                            #If range is locked
                             if self._rangeLock:
                                 print("Enter an integer in range:[{}]".format(self._inRange))
                             try:
                                 print(self._matrix)
+                                #Get input
                                 inp=int(input("Row:{}, Column:{} = ".format(Nrow+1,column)))
-                                
+                                #If range is locked check validaty of the input
                                 if self._rangeLock:
                                     if inp<=self._inRange[1] and inp>=self._inRange[0]:
                                         self._matrix[Nrow].append(inp)
@@ -445,6 +491,7 @@ class Matrix(object):
                                     else:
                                         print("Out of range!")
                                 else:
+                                    #If number is valid add it to the end of the row
                                     self._matrix[Nrow].append(inp)
                                     gettingInput+=1
                                     column+=1
@@ -452,23 +499,28 @@ class Matrix(object):
                                 print("Bad input")
                                 
             elif valid:
+                #If there is no elements in the matrix create rows and get input
                 for rows in range(0,goal[0]) :
 
                     column=self._dim[1]+1 
                     self._matrix.append(list())
                     
+                    #Loop desired column dimension times and get input 
                     for cols in range(0,goal[1]):
                         gettingInput=1
                                   
                         while gettingInput:
+                            #Clear the screen
                             self._writeOver(1)
                             
+                            #If range is locked
                             if self._rangeLock:
                                 print("Enter an integer in range:[{}]".format(self._inRange))
                             try:
                                 print(self._matrix)
+                                #Get input
                                 inp=int(input("Row:{}, Column:{} = ".format(rows+1,column)))
-                                
+                                #Check validaty if range is locked
                                 if self._rangeLock:
                                     if inp<=self._inRange[1] and inp>=self._inRange[0]:
                                         self._matrix[rows].append(inp)
@@ -477,15 +529,19 @@ class Matrix(object):
                                     else:
                                         print("Out of range!")
                                 else:
+                                    #Add the input to the row if it's valid
                                     self._matrix[rows].append(inp)
                                     gettingInput=0
                                     column+=1
                             except:
                                 print("Bad input")
-                                
+        ##############
+        #Handle errors
+        ##############
         except Exception as err:
             print("error")
             print(Matrix.__doc__,"\n")
+            #Return the saved matrix if something goes wrong
             if self._valid:
                 self._matrix=temp
                 print("Current grid:\n",self._matrix)
@@ -495,17 +551,21 @@ class Matrix(object):
                 
             
         else:
-            self._dim=goal[:]
-            self._valid=1
-            self._inRange=self._declareRange(self._matrix)   
+            #If nothing was added
             if row==0 and col==0:
                 print("Nothing was added!")
             else:
+            #If everything goes right change attributes to new ones
+                self._dim=goal[:]
+                self._valid=1
+                if not self._rangeLock:
+                    self._inRange=self._declareRange(self._matrix)   
                 print("Addition was successfully completed!\n")
                 print("Old grid:\n",self._stringfy(d))
                 print("\nNew grid:\n",self._stringfy(self._dim))
                 self._string=self._stringfy(self._dim) 
-            
+            return self._matrix
+        
     def delRC(self,r=None,c=None):
         """
 Deletes rows and columns from the right and bottom side
@@ -522,6 +582,9 @@ Use sub method if you want to get a new matrix
         """
         
         try:
+            if self._isIdentity:
+                print("Can't delete from the identity matrix.\nUse delDim instead!")
+                return None
             ###############
             if r==None and c!=0:
                 r=c
@@ -730,6 +793,26 @@ EXAMPLES:
     @property
     def lowest(self):
         return self._inRange[0]      
+    @property
+    def summary(self):
+        if self._valid and not self._isIdentity:
+            return """Summary:\n\nMatrix(
+dim={0},
+listed={1},
+inRange={2},
+rangeLock={3},
+randomFill={4}
+)""".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
+        elif self._valid and self._isIdentity:
+            return """\nSummary:\n\nIdentity(
+dim={0},
+listed={1},
+inRange=[0,1],
+rangeLock=1,
+randomFill=0
+)""".format(self._dim,self._matrix)
+        else:
+            return None
         
     def rangeLock(self):
         try:
@@ -818,24 +901,7 @@ EXAMPLES:
         return None
     
     def __repr__(self):
-        if self._valid and not self._isIdentity:
-            return """\nMatrix(
-dim={0},
-listed={1},
-inRange={2},
-rangeLock={3},
-randomFill={4}
-)""".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
-        elif self._valid and self._isIdentity:
-            return """\nIdentity(
-dim={0},
-listed={1},
-inRange=[0,1],
-rangeLock=1,
-randomFill=0
-)""".format(self._dim,self._matrix)
-        else:
-            return None
+        return self.matrix
     def __str__(self): 
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
