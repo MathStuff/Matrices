@@ -17,7 +17,7 @@ class Matrix(object):
 -rangeLock: wheter or not not to allow numbers out of given range
 -randomFill: 
     ->1 to fill the matrix with random integers if no list is given
-    ->0 to fill the matrix with empty lists
+    ->0 to fill the matrix with 0s
     
 -Giving ~300< elements may make grid look terrible, adjust your terminal size to display it better
 -Can contain integers only 
@@ -26,7 +26,9 @@ class Matrix(object):
 -Rows and cols from right and bottom can be deleted with delRC
 -Sub-matrices can be obtained with "sub" method
 -Specific elements of the matrix can be obtained by using "get" method   
--Average of the all given elements can be seen with "avg" method 
+-Average of the all given elements can be seen with "avg" property
+-Use "summary" property to get the representation of the matrix
+-Use "matrix" property to get the matrix in list format
     """
     def __init__(self,dim=[0,0],listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
     
