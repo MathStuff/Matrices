@@ -277,7 +277,7 @@ class Matrix(object):
                             list1.append(int(gridNum))
                             rowadded=0
                             gridNum=""
-        
+                            
         except Exception as err:
             print("****List error****\nMake sure string:\n-Has positive integers only \n-Has a squared integer amount of numbers:(0-1-4-9...n^2)\n-Have 1 space splitting the elements")
             print(Matrix.__doc__)
@@ -356,8 +356,12 @@ class Matrix(object):
             return dig
     
         string=""
-        l=_digits(self._inRange[0])
-        h=_digits(self._inRange[1])
+        if self._isIdentity:
+            l=1
+            h=1
+        else:
+            l=_digits(self._inRange[0])
+            h=_digits(self._inRange[1])
         s=max([h,l])
         d=dm[:]
         if d[0]>0 and d[1]>0:
@@ -374,7 +378,18 @@ class Matrix(object):
         """
         Fills the matrix with zeros
         """
-  
+        if self._isIdentity:
+            
+            for rows in range(0,self._dim[0]):
+                lis.append(list())
+                for cols in range(0,self._dim[1]):
+                    lis[rows].append(0)
+                    
+            for row in range(0,self._dim[0]):
+                lis[row][row]=1  
+                
+            return lis
+        
         if self._dim[0]>0 and not self._isIdentity:
             for rowfill in range(0,self._dim[0]):
                 lis.append(list())
@@ -385,9 +400,8 @@ class Matrix(object):
                 for cols in range(0,self._dim[1]):
                     lis[rows].append(0)
                     
-        if self._isIdentity:
-            for row in range(0,self._dim[0]):
-                lis[row][row]=1
+                  
+        
         
         return lis
     
@@ -845,19 +859,31 @@ EXAMPLES:
         return self._dim
     @property
     def inRange(self):
-        return self._inRange
+        if not self._isIdentity:
+            return self._inRange
+        else:
+            return [0,1]
     @property
     def matrix(self):
        return self._matrix
     @property
     def avg(self):
-        return self._average()
+        if not self._isIdentity:
+            return self._average()
+        else:
+            return 0
     @property
     def highest(self):
-        return self._inRange[1]
+        if not self._isIdentity:
+            return self._inRange[1]
+        else:
+            return 1
     @property
     def lowest(self):
-        return self._inRange[0]      
+        if not self._isIdentity:
+            return self._inRange[0]   
+        else:
+            return 0
     @property
     def summary(self):
         if self._valid and not self._isIdentity:
@@ -974,15 +1000,11 @@ EXAMPLES:
 # =============================================================================
 
 class Identity(Matrix):
-    def __init__(self,dim=[1,1],listed=[],inRange=[0,1],rangeLock=1,randomFill=0):
+    def __init__(self,dim=[1,1]):
         self._dim=dim
         self._dimSet(self._dim)
         self._valid=1
         self._matrix=list()
-        self._inRange=inRange
-        self._randomFill = randomFill
-        self._rangeLock = rangeLock
-        self._avg=self._average()
         if self.dim[0]==self.dim[1]:
             if self.dim[0]>0:
                 self._isIdentity=1
@@ -1005,12 +1027,14 @@ class Identity(Matrix):
             self._dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy(self.dim)
-            return ""
+            return self
     def delDim(self,num):
         """
         Delete dimensions to identity matrix
         """
         try:
+            if self.matrix==[]:
+                return "Empty matrix"
             assert isinstance(num,int) and num>0 and self.dim[0]-num>=0
         except AssertionError:
             print("Enter a valid input")
@@ -1023,5 +1047,5 @@ class Identity(Matrix):
             self._dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy(self.dim)
-            return ""
+            return self
             
