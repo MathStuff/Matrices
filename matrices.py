@@ -55,6 +55,7 @@ class Matrix(object):
             if isinstance(listed,str) and not self._isIdentity:
                 self._valid=1
                 self._matrix=self._listify(listed)
+                self._dim=self._declareDim()
                 if not self._rangeLock:
                     self._inRange=self._declareRange(self._matrix)
 
@@ -114,16 +115,21 @@ class Matrix(object):
         Checks if the given number is a perfect square
         Returns the integer found, if none found returns 0
         """
-        rows=0
-        cols=0
-        for row in self._matrix:
-            rows+=1
+        try:
+            rows=0
             cols=0
-            for ele in row:
-                cols+=1
-        if rows!=cols:
-            return [rows,cols]
-        return [cols,cols]
+            for row in self._matrix:
+                rows+=1
+                cols=0
+                for ele in row:
+                    cols+=1
+        except Exception as err:
+            print("Error getting matrix")
+            return None
+        else:
+            if rows!=cols:
+                return [rows,cols]
+            return [cols,cols]
     
     def _validateList(self,alist):
         """
@@ -141,9 +147,8 @@ class Matrix(object):
                     for col in row:
                         c+=1
                     l.append(c)
-
-                if max(l)!=min(l):
-                    return False
+                    if max(l)!=min(l):
+                        return False
                 
                 self._dim=l[0]
                 return True
@@ -160,15 +165,25 @@ class Matrix(object):
             high=0
             looped=0
             for row in self._matrix:
-                for element in row:
+                if isinstance(row,list):
+                    for element in row:
+                        if not looped:
+                            low=element
+                            high=element
+                            looped=1
+                        elif element<low:
+                            low=element
+                        elif element>high:
+                            high=element
+                else:
                     if not looped:
-                        low=element
-                        high=element
+                        low=row
+                        high=row
                         looped=1
-                    elif element<low:
-                        low=element
-                    elif element>high:
-                        high=element
+                    elif row<low:
+                        low=row
+                    elif row>high:
+                        high=row
                         
         except Exception as err:
             print("range error")
@@ -193,7 +208,7 @@ class Matrix(object):
         print("\n")
 
         
-    def _listify(self,string,square=1):
+    def _listify(self,string,square=0):
         """
         Finds all the positive and negative numbers in the given string
         Tries to fit the numbers into a grid shape
@@ -206,8 +221,15 @@ class Matrix(object):
             
             list1=list()
             negative=0
+            newRow=0
+            rowadded=0
             
-            for c in range(0,l):
+            if self._dim==[0,0]:
+                square=0
+            else:
+                square=1
+            
+            for c in range(0,l):    
                 #print("c:{0} neg:{1} str:{2} num:{3}".format(c,negative,string[c],gridNum))
                 #print("list:",list1)
                 if string[c] in numbers:
@@ -215,38 +237,45 @@ class Matrix(object):
                     if c==l-1:
                         if negative:
                             list1.append(int(gridNum)*-1)
+                            rowadded=0
                             gridNum=""
                             negative=0
                         else:
                             list1.append(int(gridNum))
+                            rowadded=0
                             gridNum=""
                 elif string[c]=="-":
                     
                     if len(gridNum)>0:
                         list1.append(int(gridNum))
+                        rowadded=0
                         gridNum=""
                     negative=1  
                 
                 elif string[c]=="\n":
+                    if not square and not rowadded:
+                            newRow+=1
+                            rowadded=1
                     if len(gridNum)>0:
                         if negative:
                             list1.append(int(gridNum)*-1)
+                            rowadded=0
                             gridNum=""
                             negative=0
-                        elif not square:
-                            list1.append("\n")
-                            gridNum=""
                         else:
                             list1.append(int(gridNum))
+                            rowadded=0
                             gridNum=""
                 else:
                     if len(gridNum)>0:
                         if negative:
                             list1.append(int(gridNum)*-1)
+                            rowadded=0
                             negative=0
                             gridNum=""
                         else:
                             list1.append(int(gridNum))
+                            rowadded=0
                             gridNum=""
         
         except Exception as err:
@@ -256,28 +285,56 @@ class Matrix(object):
             l1=len(list1)
             l=l1**0.5
             d=0
-            for integer in range(1,25):
+            for integer in range(1,30):
                 if integer==l:
                      d=integer
-    
-            if self._dim==[0,0]:
-                self._dim=[d,d]
-            assert l1==int((d)**2)
-    
+            if l1>0 and d==0 and square:
+                print("Can't create a square matrix with given input ")   
+                square=0
+            elif l1>0 and d>0 and newRow==0:
+                square=1
+                if self.dim==[0,0]:
+                    self._dim=[d,d]
+                
+            if l1==0:
+                self._dim=[0,0]
+                self._valid=0
+                return []
+            
+            if newRow==0 and not square:
+                self._dim=[1,l1]
+                list2=[list1]
+                return list2
+            
             self._temp1=list1
             list2=list()
             list2=self._zeroFiller(list2)
             temp=0
-     
-            if square:
-                for rows in range(0,self._dim[0]):
+            
+            try:
+                if square:
+                    for rows in range(0,self.dim[0]):
+                        for i in range(temp,self.dim[1]+temp):
+                            list2[rows].append(list1[i])
+                        temp+=self._dim[1]
+                
+                elif newRow>0 and l1%(newRow+1)==0:
                     
-                    for i in range(temp,self._dim[1]+temp):
-                        list2[rows].append(list1[i])
-                    temp+=self._dim[1]  
-
-            assert len(list2)==self._dim[0]
-        return list2
+                    for rows in range(0,newRow+1):
+                        list2.append(list())
+                        for i in range(temp,(l1//(newRow+1))+temp):
+                            list2[rows].append(list1[i])
+                        temp+=(l1//(newRow+1))
+                else:
+                    print("Invalid string")
+                    self._valid=0
+                    return None
+                
+            except Exception as err:
+                print(err)
+                self._valid=0
+            else:
+                return list2
     
     def _stringfy(self,dm):
         """
@@ -760,15 +817,23 @@ EXAMPLES:
         """
         Sets the avg attribute of the matrix as the average of it's elements
         """
-        d=self._dim
-        if d==0 or d==[0,0]:
-            return "None"
-        total=0
-        for row in self._matrix:
-            for ele in row:
-                total+=ele
-                
-        return total//(d[0]*d[1])
+        try:
+            d=self._dim
+            if d==0 or d==[0,0]:
+                return "None"
+            total=0
+            for row in self._matrix:
+                if isinstance(row,list):
+                    for ele in row:
+                        total+=ele
+                else:
+                    total+=row
+        except Exception as err:
+            print("Bad matrix and/or dimension")
+            print(err)
+            return None
+        else:
+            return total//(d[0]*d[1])
 # =============================================================================
     """Properties available for public"""               
 # =============================================================================
@@ -901,7 +966,7 @@ randomFill=0
         return None
     
     def __repr__(self):
-        return self.matrix
+        return str(self.matrix)
     def __str__(self): 
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
