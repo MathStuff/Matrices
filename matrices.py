@@ -861,21 +861,9 @@ EXAMPLES:
     @property
     def summary(self):
         if self._valid and not self._isIdentity:
-            return """Summary:\n\nMatrix(
-dim={0},
-listed={1},
-inRange={2},
-rangeLock={3},
-randomFill={4}
-)""".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
+            return "Matrix(dim={0},listed={1},inRange={2},rangeLock={3},randomFill={4})".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
         elif self._valid and self._isIdentity:
-            return """\nSummary:\n\nIdentity(
-dim={0},
-listed={1},
-inRange=[0,1],
-rangeLock=1,
-randomFill=0
-)""".format(self._dim,self._matrix)
+            return "Identity(dim={0},listed={1},inRange=[0,1],rangeLock=1,randomFill=0)".format(self._dim,self._matrix)
         else:
             return None
         
