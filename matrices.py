@@ -11,6 +11,7 @@ from time import sleep
 class Matrix(object):
     """Matrix object:
 ***Create matrices and print them as grids***
+***Use this if and only if you are going to work with integers. Use Fmatrix to use float values***
 -dim:dimension of the matrix;natural number as [rows,cols],if and integer given, matrix will be a square matrix 
 -listed:(a list of integers | a string) with & dim**2 amount of integers
 -inRange:list of 2 numbers
@@ -30,18 +31,20 @@ class Matrix(object):
 -Use "summary" property to get the representation of the matrix
 -Use "matrix" property to get the matrix in list format
     """
-    def __init__(self,dim=[0,0],listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
-    
-        self._isIdentity=0
-        if not self._isIdentity:
-            randomFill=1 
-            
-        self._dim = [0,0]
-        self._matrix = []
+    def __init__(self,dim=-1,listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
+        
         self._valid = 1
-        self._inRange = inRange
-        self._randomFill = randomFill
-        self._rangeLock = rangeLock
+        self._isIdentity=0
+        
+        if not self._isIdentity:
+            if dim==-1:
+                self._dim = [0,0]
+            else:
+                self._dim = dim
+            self._matrix = []     
+            self._inRange = inRange
+            self._randomFill = randomFill
+            self._rangeLock = rangeLock
             
         try:
             self._dimSet(dim)    
@@ -63,23 +66,23 @@ class Matrix(object):
 
                
             elif self._validateList(listed) and self._valid and not self._isIdentity:
-                    self._temp1=[a[:] for a in listed]
+                    self.__temp1=[a[:] for a in listed]
                     
-                    if len(self._temp1)>0:
-                            self._matrix = self._temp1.copy()
+                    if len(self.__temp1)>0:
+                            self._matrix = self.__temp1.copy()
                             if not self._rangeLock:
                                 self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim() 
                             self._string=self._stringfy(self._dim)     
-                    elif len(self._temp1)==0 and dim!=[0,0]:
+                    elif len(self.__temp1)==0 and dim!=[0,0]:
                         
-                        if not randomFill:
-                            self._matrix=self._zeroFiller(self._temp1)
+                        if not self._randomFill:
+                            self._matrix=self._zeroFiller(self.__temp1)
                             if not self._rangeLock:
                                 self._inRange=self._declareRange(self._matrix)
                             
-                        elif randomFill:
-                            self._matrix=self._randomFiller(self._temp1)
+                        elif self._randomFill:
+                            self._matrix=self._randomFiller(self.__temp1)
                             if not self._rangeLock:
                                 self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim() 
@@ -96,7 +99,11 @@ class Matrix(object):
             
             self._avg=self._average()
 # =============================================================================
+            
     def _dimSet(self,dim):        
+        """
+        Change the given dimension's format to a list if it's a valid integer.
+        """
         if isinstance(dim,list):
             self._dim=dim[:]
             rows=dim[0]
@@ -234,6 +241,12 @@ class Matrix(object):
             for c in range(0,l):    
                 #print("c:{0} neg:{1} str:{2} num:{3}".format(c,negative,string[c],gridNum))
                 #print("list:",list1)
+                if c==l-1 and len(gridNum)>0:
+                    if negative:
+                            list1.append(int(gridNum)*-1)
+                    else:
+                        list1.append(int(gridNum))
+                    break
                 if string[c] in numbers:
                     gridNum+=string[c]
                     if c==l-1:
@@ -268,6 +281,24 @@ class Matrix(object):
                             list1.append(int(gridNum))
                             rowadded=0
                             gridNum=""
+# =============================================================================
+#             elif string[c]=="," and len(gridNum)>0:
+#                 loop=1
+#                 print(c,l)
+#                 while c<l:
+#                     print(string[c],string[c+1])
+#                     if string[c+1] in numbers:
+#                         gridNum=int(gridNum)
+#                         gridNum+=int(string[c+1])*(10**(-1*loop))
+#                         c+=1
+#                         loop+=1
+#                     else:
+#                         list1.append(gridNum)
+#                         rowadded=0
+#                         gridNum=""
+#                         break
+#                 
+# =============================================================================
                 else:
                     if len(gridNum)>0:
                         if negative:
@@ -287,46 +318,58 @@ class Matrix(object):
             l1=len(list1)
             l=l1**0.5
             d=0
+            list2=list()
+            list2=self._zeroFiller(list2)
             for integer in range(1,30):
                 if integer==l:
                      d=integer
-            if l1>0 and d==0 and square:
-                print("Can't create a square matrix with given input ")   
+
+            if l1==0:
+                self._dim=[0,0]
+                self._valid=1
+                return []
+            
+            if l1>0 and d==0:
+                #print("Couldn't create a square matrix with given input ")
                 square=0
-            elif l1>0 and d>0 and newRow==0:
+                if self._dim==[0,0]:
+                    self._dim=[1,l1]
+                    list2=[list1]
+                    return list2
+                
+            elif l1>0 and d>0 and newRow>=0:
                 square=1
                 if self.dim==[0,0]:
                     self._dim=[d,d]
-                
-            if l1==0:
-                self._dim=[0,0]
-                self._valid=0
-                return []
-            
-            if newRow==0 and not square:
-                self._dim=[1,l1]
-                list2=[list1]
-                return list2
-            
-            self._temp1=list1
-            list2=list()
-            list2=self._zeroFiller(list2)
+
+            self.__temp1=list1[:]
+
             temp=0
             
             try:
-                if square:
-                    for rows in range(0,self.dim[0]):
-                        for i in range(temp,self.dim[1]+temp):
-                            list2[rows].append(list1[i])
-                        temp+=self._dim[1]
-                
-                elif newRow>0 and l1%(newRow+1)==0:
-                    
+
+                if newRow>0 and l1%(newRow+1)==0:
                     for rows in range(0,newRow+1):
                         list2.append(list())
                         for i in range(temp,(l1//(newRow+1))+temp):
                             list2[rows].append(list1[i])
                         temp+=(l1//(newRow+1))
+                        
+                elif square and self.dim==[d,d]:
+                    for rows in range(0,d):
+                        list2.append(list())
+                        for i in range(temp,d + temp):
+                            list2[rows].append(list1[i])
+                        temp+=d
+
+                        
+                elif self.dim!=[0,0]:
+                    #print("using given dimension")
+                    for rows in range(0,self.dim[0]):
+                        for i in range(temp,self.dim[1] + temp):
+                            list2[rows].append(list1[i])
+                        temp+=self.dim[1]
+
                 else:
                     print("Invalid string")
                     self._valid=0
@@ -365,7 +408,7 @@ class Matrix(object):
             l=_digits(self._inRange[0])
             h=_digits(self._inRange[1])
         s=max([h,l])
-        d=dm[:]
+        d=self._dim[:]
         if d[0]>0 and d[1]>0:
             for i in range(0,d[0]):
                 string+="\n"
@@ -380,28 +423,22 @@ class Matrix(object):
         """
         Fills the matrix with zeros
         """
-        if self._isIdentity:
-            
-            for rows in range(0,self._dim[0]):
-                lis.append(list())
+          
+        for rows in range(0,self._dim[0]):
+            lis.append(list())
+            if not self._randomFill: 
                 for cols in range(0,self._dim[1]):
                     lis[rows].append(0)
-                    
+            else:
+                pass
+                #print("Try turning on randomFill if you're having issues")
+        if self._isIdentity:            
             for row in range(0,self._dim[0]):
                 lis[row][row]=1  
                 
-            return lis
-        
-        if self._dim[0]>0 and not self._isIdentity:
-            for rowfill in range(0,self._dim[0]):
-                lis.append(list())
-                
-        elif not self._randomFill:
-            for rows in range(0,self._dim[0]):
-                lis.append(list())
-                for cols in range(0,self._dim[1]):
-                    lis[rows].append(0)
-                    
+        return lis
+
+                        
                   
         
         
@@ -483,7 +520,7 @@ class Matrix(object):
             #Set hoal dimension and calculate how many integers will be needed
             ###############
             d=self._dim[:]
-            goal = [d[0] + row,d[1] + col]
+            goal = [d[0] + row,d[1] + col] 
             dif= goal[0]*goal[1]-d[0]*d[1]
             print("Current dim: ",self._dim,"\nGoal dim: ",goal)
             print("\nDimension: {0}x{1}\nNumbers' range: {2}".format(self._dim[0],self._dim[1],self._inRange))
@@ -500,16 +537,17 @@ class Matrix(object):
                 for Nrow in range(0,goal[0]):
                     column=self._dim[1]+1
                     print(self.matrix)
-                    print(goal)
-                    print(self.dim)
+                    #print(goal)
+                    #print(self.dim)
                     #If user completed adding to the existing rows
                     if Nrow>=self._dim[0]:
                         #Add a new row
                         self._matrix.append(list())
                         #Keep getting input until desired column dimension reached
+                        gotFirstInput=0
                         for Ncol in range(0,goal[1]):
                             gettingInput=1
-                            gotFirstInput=0
+                            
                             while gettingInput:
                                 
                                 #Clear the terminal/console
@@ -834,8 +872,8 @@ EXAMPLES:
         Sets the avg attribute of the matrix as the average of it's elements
         """
         try:
-            d=self._dim
-            if d==0 or d==[0,0]:
+            d=self._dim[:]
+            if d==[0,0]:
                 return "None"
             total=0
             for row in self._matrix:
@@ -1007,6 +1045,7 @@ class Identity(Matrix):
         self._dimSet(self._dim)
         self._valid=1
         self._matrix=list()
+        self._randomFill=0
         if self.dim[0]==self.dim[1]:
             if self.dim[0]>0:
                 self._isIdentity=1
