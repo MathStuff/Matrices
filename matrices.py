@@ -876,7 +876,7 @@ EXAMPLES:
                 valid=1
                 temp2.append(temp[column][colS-1:colE])
             if valid:
-                return Matrix(listed=temp2)
+                return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
 
     
     def _average(self):
