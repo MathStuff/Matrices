@@ -11,8 +11,9 @@ from time import sleep
 class Matrix(object):
     """Matrix object:
 ***Create matrices and print them as grids***
-***Use this if and only if you are going to work with integers. Use Fmatrix to use float values***
--dim:dimension of the matrix;natural number as [rows,cols],if and integer given, matrix will be a square matrix 
+***Use this if and only if you are going to work with integers. Use fMatrix class to use float values***
+
+-dim:dimension of the matrix;natural numbers as [rows,cols],if and integer given, matrix will be a square matrix 
 -listed:(a list of integers | a string) with & dim**2 amount of integers
 -inRange:list of 2 numbers
 -rangeLock: wheter or not not to allow numbers out of given range
@@ -22,14 +23,25 @@ class Matrix(object):
     
 -Giving ~300< elements may make grid look terrible, adjust your terminal size to display it better
 -Can contain integers only 
+
 -Additional rows and columns can be added with addRC(row,col)
-    ->You can't add numbers out of the current range if rangeLock is enabled
 -Rows and cols from right and bottom can be deleted with delRC
 -Sub-matrices can be obtained with "sub" method
 -Specific elements of the matrix can be obtained by using "get" method   
+
 -Average of the all given elements can be seen with "avg" property
 -Use "summary" property to get the representation of the matrix
--Use "matrix" property to get the matrix in list format
+-Use "matrix" property to get the matrix in list format or just call the variable by itself
+-You can use +,-,*,/,//,**,%,@,<,>,== operators:
+    o Addition : +
+    o Subtraction : -
+    o Multiplication : *
+    o True division : /
+    o Floor division : //
+    o Modular : %
+    o Power : **
+    o Matrix multiplication : @
+    o Less than, greater than, equal to : <, >, ==
     """
     def __init__(self,dim=-1,listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
         
