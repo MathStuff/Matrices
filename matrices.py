@@ -949,6 +949,255 @@ EXAMPLES:
             print("Range lock is {}".format(state[self._rangeLock]))
             
 # =============================================================================
+    def __matmul__(self,other):
+        try:
+            assert self.dim[1]==other.dim[0]
+        except:
+            print("Can't multiply")
+        else:
+            temp=[]
+            
+            for r in range(self.dim[0]):
+                temp.append(list())
+                for rs in range(other.dim[1]):
+                    temp[r].append(0)
+                    total=0
+                    for cs in range(other.dim[0]):
+                        total+=(self.matrix[r][cs]*other.matrix[cs][rs])
+                    temp[r][rs]=total
+            return temp
+################################################################################        
+    def __add__(self,other):
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]+other.matrix[rows][cols])
+                return temp
+                
+            except:
+                print("Can't add")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]+other)
+                return temp
+                
+            except:
+                print("Can't add")            
+        elif isinstance(self,int) and isinstance(other,matrix):
+            try:
+                temp=[]
+                for rows in range(other.dim[0]):
+                    temp.append(list())
+                    for cols in range(other.dim[1]):
+                        temp[rows].append(other.matrix[rows][cols]+other)
+                return temp
+            except:
+                print("Can't add")
+        else:
+            print("Can't add")
+################################################################################            
+    def __sub__(self,other):
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]-other.matrix[rows][cols])
+                return temp
+                
+            except:
+                print("Can't subtract")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]-other)
+                return temp
+                
+            except:
+                print("Can't subtract")            
+        elif isinstance(self,int) and isinstance(other,matrix):
+            try:
+                temp=[]
+                for rows in range(other.dim[0]):
+                    temp.append(list())
+                    for cols in range(other.dim[1]):
+                        temp[rows].append(other.matrix[rows][cols]-other)
+                return temp
+            except:
+                print("Can't subtract")
+        else:
+            print("Can't subtract")
+            
+################################################################################     
+    def __mul__(self,other):
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]*other.matrix[rows][cols])
+                return temp
+                
+            except:
+                print("Can't multiply")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]*other)
+                return temp
+                
+            except:
+                print("Can't multiply")            
+        elif isinstance(self,int) and isinstance(other,matrix):
+            try:
+                temp=[]
+                for rows in range(other.dim[0]):
+                    temp.append(list())
+                    for cols in range(other.dim[1]):
+                        temp[rows].append(other.matrix[rows][cols]*other)
+                return temp
+            except:
+                print("Can't multiply")
+        else:
+            print("Can't multiply")
+            
+################################################################################
+    def __floordiv__(self,other):
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]//other.matrix[rows][cols])
+                return temp
+                
+            except:
+                print("Can't divide")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]//other)
+                return temp
+                
+            except:
+                print("Can't divide")            
+        elif isinstance(self,int) and isinstance(other,matrix):
+            try:
+                temp=[]
+                for rows in range(other.dim[0]):
+                    temp.append(list())
+                    for cols in range(other.dim[1]):
+                        temp[rows].append(other.matrix[rows][cols]//other)
+                return temp
+            except:
+                print("Can't divide")
+        else:
+            print("Can't divide")
+################################################################################            
+    def __truediv__(self,other):
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]/other.matrix[rows][cols])
+                return temp
+                
+            except:
+                print("Can't divide")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]/other)
+                return temp
+                
+            except:
+                print("Can't divide")            
+        elif isinstance(self,int) and isinstance(other,matrix):
+            try:
+                temp=[]
+                for rows in range(other.dim[0]):
+                    temp.append(list())
+                    for cols in range(other.dim[1]):
+                        temp[rows].append(other.matrix[rows][cols]/other)
+                return temp
+            except:
+                print("Can't divide")
+        else:
+            print("Can't divide")
+################################################################################
+    def __mod__ (self, other):
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]%other.matrix[rows][cols])
+                return temp
+                
+            except:
+                print("Can't get modular")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]%other)
+                return temp
+                
+            except:
+                print("Can't get modular")            
+        elif isinstance(self,int) and isinstance(other,matrix):
+            try:
+                temp=[]
+                for rows in range(other.dim[0]):
+                    temp.append(list())
+                    for cols in range(other.dim[1]):
+                        temp[rows].append(other.matrix[rows][cols]%other)
+                return temp
+            except:
+                print("Can't get modular")
+        else:
+            print("Can't get modular")
+################################################################################         
+    def __pow__(self,other):
+        try:
+            assert self.dim==other.dim
+        except:
+            print("Can't divide")
+        else:
+            temp=[]
+            for rows in range(self.dim[0]):
+                temp.append(list())
+                for cols in range(self.dim[1]):
+                    temp[rows].append(self.matrix[rows][cols]**other.matrix[rows][cols])
+            return temp
+################################################################################                    
     def __lt__(self,other):
         
         if self._valid:
