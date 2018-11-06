@@ -36,7 +36,8 @@ v=Matrix()
 o=Matrix(dim=8,randomFill=0)
 a=Matrix(0)
 b=Matrix(1)
-d=Matrix(10)
+c=Matrix(dim=[2,4])
+d=Matrix(dim=[4,3])
 e=Matrix(8,randomFill=0)
 f=Matrix(dim=6,inRange=[-1250,1250])
 sub=f.sub(1,4,2,3)
@@ -85,7 +86,7 @@ id3=id2.sub(3,3)
 id4=Identity(6)
 
 # =============================================================================
-for matrix in [proj,v,o,a,b,validStr1,validStr2,d,e,f,sub,g,h,j,k,l,m]:
+for matrix in [proj,v,o,a,b,validStr1,validStr2,validStr3,validStr4,c,d,e,f,sub,g,h,j,k,l,m]:
     print(matrix)
  
 for i in [id1,id2,id3,id4]:
@@ -131,6 +132,17 @@ print(id4.delDim(6))
 print('################')
 print("id4:",id4)
 print("\nid4.addDim(10)):\n",id4.addDim(10))
+print("################")
+print("Operator examples")
+print("\nc.dim=",c.dim," d.dim:",d.dim)
+print("\nc@d")
+print(c@d)
+print("\ne+50:")
+print(e+50)
+print("\nc%j")
+print(c%j)
+print("\na<b")
+print(a<b)
 for numb,strings in enumerate([validStr1,validStr2,validStr3,validStr4]):
     print('################')
     print("validStr",numb,":\n")
@@ -194,10 +206,10 @@ Average: None
 
 Square matrix
 Dimension: 1x1
-Numbers' range: [-92, -92]
-Average: -92
+Numbers' range: [17, 17]
+Average: 17
 
--92 
+17 
 
 
 Dimension: 2x3
@@ -215,21 +227,60 @@ Average: 86
 312  45  12  44 352  45  12  44   3  -5 
 
 
-Square matrix
-Dimension: 10x10
-Numbers' range: [-121, 116]
-Average: -8
+Dimension: 4x1
+Numbers' range: [5, 65]
+Average: 37
 
-  23  -94   50   21   62  -62   98  -76  -11  -78 
-  91  -86   79  -70    8  -18  -55  -57   79   -5 
-  14   96   13  -31   11 -105   41   42 -101   92 
-  29  -83 -120 -113  -68   53   15   75  -92  -56 
- -49  -57   22  104  -83  -27  -62   33  -15 -111 
-  -2  -40  -18   76  -46   19   -9  -18  -56   18 
-  17  113   79  -92  -22    5  -17  102  -70 -116 
- -49   -2  112   12   84   27  116  -30    2  107 
-  35    2  -98   60  -79    8 -121 -106  -66 -105 
--108  -52  110  112   55  -94   10    6  -23   16 
+34 
+ 5 
+44 
+65 
+
+
+Dimension: 22x3
+Numbers' range: [9, 193]
+Average: 84
+
+130  30  10 
+125  36  11 
+135  34  10 
+133  30   9 
+129  38  12 
+180  90  30 
+190  80  25 
+175  90  35 
+177  60  22 
+185 105  33 
+165  55  27 
+155  50  44 
+160  58  39 
+162  59  41 
+167  62  55 
+174  70  47 
+193  90  23 
+187  80  27 
+183  88  28 
+159  40  29 
+164  66  32 
+166  56  42 
+
+
+Dimension: 2x4
+Numbers' range: [-118, 71]
+Average: -26
+
+ -53  -98   71  -42 
+  67 -118   52  -80 
+
+
+Dimension: 4x3
+Numbers' range: [-108, 51]
+Average: -22
+
+ -86  -30  -43 
+  51  -81   51 
+-108  -57   46 
+  32   25  -57 
 
 
 Square matrix
@@ -249,30 +300,56 @@ Average: 0
 
 Square matrix
 Dimension: 6x6
-Numbers' range: [-1231, 1163]
-Average: -32
+Numbers' range: [-1213, 1016]
+Average: -269
 
-   13   252 -1167  -314  1163   818 
-  -91  1127  -702   888  1107   295 
--1012  -609   453 -1231  -666    49 
-  617  -173   347   372  -607  -561 
- -263  -525    -8  -598   666   219 
- -144 -1180   924   357  -236  -708 
+  960  -160 -1203  -881  -100  -480 
+  142 -1145 -1017 -1213  1016  -698 
+  158  -682  -719  -369   -73 -1021 
+ -403   987 -1111   222   564   688 
+  610  -932   914  -508  -831  -950 
+-1024   236  -749   629  -278  -249 
 
-Invalid matrix
+
+Dimension: 4x2
+Numbers' range: [-1203, 987]
+Average: -632
+
+ -160 -1203 
+-1145 -1017 
+ -682  -719 
+  987 -1111 
 
 
 Dimension: 3x6
-Numbers' range: [-107, 120]
-Average: 1
+Numbers' range: [-105, 123]
+Average: 11
 
-  56   31   92  119  -27  -79 
- -97 -107 -100  120   15  -42 
-  15   57  -23   15  -25    0 
+  43   59  123  -54  -50   84 
+  88   -8    5  -54 -105   91 
+ -16   -8  -29  109   20 -100 
 
-Invalid matrix
 
-Invalid matrix
+Square matrix
+Dimension: 7x7
+Numbers' range: [3, 99]
+Average: 51
+
+96 35 31 47 55 58 88 
+35 71 89  7  5 44 44 
+ 5 94 47 69 28 73 92 
+97 35 99 16  7 97 57 
+57 62 20 72  3 46 33 
+38 25 39 11 24 94 72 
+72 30 23 88 34 62 99 
+
+
+Dimension: 2x4
+Numbers' range: [-54, 109]
+Average: 10
+
+ 88  -8   5 -54 
+-16  -8 -29 109 
 
 Invalid matrix
 
@@ -296,7 +373,15 @@ Dimension: 5x5
 0 0 0 1 0 
 0 0 0 0 1 
 
-Invalid matrix
+
+Square matrix
+Dimension: 3x3
+Numbers' range: [0, 1]
+Average: 0
+
+1 0 0 
+0 1 0 
+0 0 1 
 
 
 Identity Matrix
@@ -313,11 +398,19 @@ Dimension: 6x6
 Attribute call outputs
 
 d.matix:
- [[23, -94, 50, 21, 62, -62, 98, -76, -11, -78], [91, -86, 79, -70, 8, -18, -55, -57, 79, -5], [14, 96, 13, -31, 11, -105, 41, 42, -101, 92], [29, -83, -120, -113, -68, 53, 15, 75, -92, -56], [-49, -57, 22, 104, -83, -27, -62, 33, -15, -111], [-2, -40, -18, 76, -46, 19, -9, -18, -56, 18], [17, 113, 79, -92, -22, 5, -17, 102, -70, -116], [-49, -2, 112, 12, 84, 27, 116, -30, 2, 107], [35, 2, -98, 60, -79, 8, -121, -106, -66, -105], [-108, -52, 110, 112, 55, -94, 10, 6, -23, 16]] 
+ [[-86, -30, -43], [51, -81, 51], [-108, -57, 46], [32, 25, -57]] 
 
 ################
 f.sub(1,4,2,3):
- Invalid matrix
+ 
+Dimension: 4x2
+Numbers' range: [-1203, 987]
+Average: -632
+
+ -160 -1203 
+-1145 -1017 
+ -682  -719 
+  987 -1111 
  
 
 ################
@@ -334,17 +427,17 @@ e.matrix:
 
 ################
 f.avg:
- -32 
+ -269 
 
 ################
 
 Dimension: 3x6
-Numbers' range: [-107, 120]
-Average: 1
+Numbers' range: [-105, 123]
+Average: 11
 
-  56   31   92  119  -27  -79 
- -97 -107 -100  120   15  -42 
-  15   57  -23   15  -25    0 
+  43   59  123  -54  -50   84 
+  88   -8    5  -54 -105   91 
+ -16   -8  -29  109   20 -100 
 
 g:
  None
@@ -355,33 +448,51 @@ Current dimension:  [3, 6]
 Goal dimension:  [3, 3]
 Old grid:
  
-  56   31   92  119  -27  -79 
- -97 -107 -100  120   15  -42 
-  15   57  -23   15  -25    0 
+  43   59  123  -54  -50   84 
+  88   -8    5  -54 -105   91 
+ -16   -8  -29  109   20 -100 
 
 New grid:
 
 Square matrix
 Dimension: 3x3
-Numbers' range: [-107, 92]
-Average: -9
+Numbers' range: [-29, 123]
+Average: 28
 
-  56   31   92 
- -97 -107 -100 
-  15   57  -23 
+ 43  59 123 
+ 88  -8   5 
+-16  -8 -29 
 
 ################
 h=proj.sub(12,18,5,11):
- Invalid matrix
+ 
+Square matrix
+Dimension: 7x7
+Numbers' range: [3, 99]
+Average: 51
+
+96 35 31 47 55 58 88 
+35 71 89  7  5 44 44 
+ 5 94 47 69 28 73 92 
+97 35 99 16  7 97 57 
+57 62 20 72  3 46 33 
+38 25 39 11 24 94 72 
+72 30 23 88 34 62 99 
  
 
 ################
 j=g.sub(2,3,1,4):
- Invalid matrix
+ 
+Dimension: 2x4
+Numbers' range: [-54, 109]
+Average: 10
+
+ 88  -8   5 -54 
+-16  -8 -29 109 
  
 
 j.summary
- None
+ Matrix(dim=[2, 4],listed=[[88, -8, 5, -54], [-16, -8, -29, 109]],inRange=[-54, 109],rangeLock=0,randomFill=1)
 ################
 proj.delRC(5,15):
 
@@ -465,7 +576,15 @@ id2.matrix:
 ################
 id3.delDim(2) is an invalid expression, because it was obtained by matrix's sub method
 
-Invalid matrix
+
+Square matrix
+Dimension: 3x3
+Numbers' range: [0, 1]
+Average: 0
+
+1 0 0 
+0 1 0 
+0 0 1 
 
 id3:
  None
@@ -515,6 +634,23 @@ Dimension: 10x10
 0 0 0 0 0 0 0 0 1 0 
 0 0 0 0 0 0 0 0 0 1 
 
+################
+Operator examples
+
+c.dim= [2, 4]  d.dim: [4, 3]
+
+c@d
+[[-9452, 4431, 2941], [-19956, 2584, -1947]]
+
+e+50:
+[[50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50], [50, 50, 50, 50, 50, 50, 50, 50]]
+
+c%j
+[[35, -2, 1, -42], [-13, -6, -6, 29]]
+
+a<b
+Lower dimension!
+True
 ################
 validStr 0 :
 
