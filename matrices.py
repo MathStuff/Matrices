@@ -961,6 +961,24 @@ EXAMPLES:
             print("Range lock is {}".format(state[self._rangeLock]))
             
 # =============================================================================
+    def __getitem__(self,pos):
+        try:
+            row,col=pos
+        except:
+            print("Bad indeces")
+        else:
+            return self.matrix[row][col]
+
+    def __setitem__(self,pos,item):
+        try:
+            row,col=pos
+            self._matrix[row][col]=item
+        except:
+            print("Bad indeces,don't use slices!")
+        else:
+            return self.matrix
+# =============================================================================
+   
     def __matmul__(self,other):
         try:
             assert self.dim[1]==other.dim[0]
