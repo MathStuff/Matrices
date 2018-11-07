@@ -977,17 +977,18 @@ EXAMPLES:
                     for cs in range(other.dim[0]):
                         total+=(self.matrix[r][cs]*other.matrix[cs][rs])
                     temp[r][rs]=total
-            return temp
+            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp)
 ################################################################################        
     def __add__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
+                assert self.dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]+other.matrix[rows][cols])
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't add")
@@ -998,18 +999,18 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]+other)
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't add")            
-        elif isinstance(self,int) and isinstance(other,matrix):
+        elif isinstance(self,int) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]+other)
-                return temp
+                return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't add")
         else:
@@ -1018,12 +1019,13 @@ EXAMPLES:
     def __sub__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
+                assert self.dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]-other.matrix[rows][cols])
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't subtract")
@@ -1034,18 +1036,18 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]-other)
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't subtract")            
-        elif isinstance(self,int) and isinstance(other,matrix):
+        elif isinstance(self,int) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]-other)
-                return temp
+                return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't subtract")
         else:
@@ -1055,12 +1057,13 @@ EXAMPLES:
     def __mul__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
+                assert self.dim==other.dim
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]*other.matrix[rows][cols])
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't multiply")
@@ -1071,18 +1074,18 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]*other)
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't multiply")            
-        elif isinstance(self,int) and isinstance(other,matrix):
+        elif isinstance(self,int) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]*other)
-                return temp
+                return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't multiply")
         else:
@@ -1092,12 +1095,13 @@ EXAMPLES:
     def __floordiv__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
+                assert self.dim==other.dim
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]//other.matrix[rows][cols])
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't divide")
@@ -1108,18 +1112,18 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]//other)
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't divide")            
-        elif isinstance(self,int) and isinstance(other,matrix):
+        elif isinstance(self,int) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]//other)
-                return temp
+                return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't divide")
         else:
@@ -1128,12 +1132,13 @@ EXAMPLES:
     def __truediv__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
+                assert self.dim==other.dim
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]/other.matrix[rows][cols])
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't divide")
@@ -1144,18 +1149,18 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]/other)
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't divide")            
-        elif isinstance(self,int) and isinstance(other,matrix):
+        elif isinstance(self,int) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]/other)
-                return temp
+                return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't divide")
         else:
@@ -1164,12 +1169,13 @@ EXAMPLES:
     def __mod__ (self, other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
+                assert self.dim==other.dim
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]%other.matrix[rows][cols])
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't get modular")
@@ -1180,35 +1186,50 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]%other)
-                return temp
+                return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't get modular")            
-        elif isinstance(self,int) and isinstance(other,matrix):
+        elif isinstance(self,int) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]%other)
-                return temp
+                return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't get modular")
         else:
             print("Can't get modular")
 ################################################################################         
     def __pow__(self,other):
-        try:
-            assert self.dim==other.dim
-        except:
-            print("Can't divide")
+        if isinstance(self,Matrix) and isinstance(other,Matrix):
+            try:
+                assert self.dim==other.dim
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]**other.matrix[rows][cols])
+                return Matrix(dim=self.dim,listed=temp)
+                
+            except:
+                print("Can't raise to the power given")
+        elif isinstance(self,Matrix) and isinstance(other,int):
+            try:
+                assert other>0
+                temp=[]
+                for rows in range(self.dim[0]):
+                    temp.append(list())
+                    for cols in range(self.dim[1]):
+                        temp[rows].append(self.matrix[rows][cols]**other)
+                return Matrix(dim=self.dim,listed=temp)
+                
+            except:
+                print("Can't raise to the power given")
         else:
-            temp=[]
-            for rows in range(self.dim[0]):
-                temp.append(list())
-                for cols in range(self.dim[1]):
-                    temp[rows].append(self.matrix[rows][cols]**other.matrix[rows][cols])
-            return temp
+            print("Can't raise to the power given")
 ################################################################################                    
     def __lt__(self,other):
         
