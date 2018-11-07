@@ -1,6 +1,6 @@
 # Matrices
-Python code to create matrices:
+Python code to create and operate on matrices:
 
-  -matrices.py contains Matrix class
+  -matrices.py contains Matrix and Identity classes
   
   -exampleMatrices.py contains example matrices
