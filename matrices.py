@@ -754,7 +754,7 @@ Use sub method if you want to get a new matrix
         """
         Leibniz formula for determinants
         
-        ***DETERMINANT EVALUATES WRONG DUE TO SIGNATURE ISSUES ON nxn MATRICES WHERE N>4***
+        ***DETERMINANT EVALUATES WRONG DUE TO SIGNATURE ISSUES ON nxn MATRICES WHERE N>2***
         
         """
         def __factorial(num1,dict1={0:1,1:1}):
