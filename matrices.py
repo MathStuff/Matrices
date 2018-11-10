@@ -750,12 +750,10 @@ Use sub method if you want to get a new matrix
                 self._string=self._stringfy(self._dim) 
             return self
         
-    def determinant(self):
+    def __determinant(self):
         """
         Leibniz formula for determinants
-        
-        ***DETERMINANT EVALUATES WRONG DUE TO SIGNATURE ISSUES ON nxn MATRICES WHERE N>2***
-        
+             
         """
         def __factorial(num1,dict1={0:1,1:1}):
             if num1 not in dict1.keys():
@@ -786,26 +784,29 @@ Use sub method if you want to get a new matrix
                 yield permutation  
         
         def __signature(perm1,perm2):
+            """
+            Determine the signature of the product
+            """
             def __orderChangeSteps(p1,p2):
                 mirrorDict={}
-                l=0
                 looping=True
+                l=0
                 for items in p1:
                     mirrorDict[items]=p2[l]
                     l+=1
+
                 while looping:
-                    try:
-                        print(mirrorDict)
+                    try:                        
                         d=0
                         for k,v in mirrorDict.items():
                             if k!=v: 
                                 d+=1
-                                if (v,k) in mirrorDict.items():
-                                    del mirrorDict[v]
-                            else:
-                                d-=1
+                                for keys,values in mirrorDict.items():
+                                    if  values==k:
+                                        mirrorDict[k]=values
+                                        mirrorDict[keys]=v
+                                    
                     except RuntimeError:
-                        print(mirrorDict)
                         continue
                     except Exception as err:
                         print(err)
@@ -813,10 +814,10 @@ Use sub method if you want to get a new matrix
                         looping=False
                         if d==len(perm1):
                             return d-1
-                        return abs(d)
+                        return d
             
             dif=__orderChangeSteps(perm1,perm2)
-            print(dif)
+
             if dif%2==1:
                 return -1
             else:
@@ -843,10 +844,8 @@ Use sub method if you want to get a new matrix
                     s*=self.matrix[p][perms[p]-1]                    
                 
                 sign=__signature(allNums,perms)
-                print(s,sign)
                 det+=s*sign
-                
-                    
+                                    
             self._det=det
             return det
             
@@ -1018,7 +1017,7 @@ EXAMPLES:
        return self._matrix
     @property
     def det(self):
-        return self.determinant()
+        return self.__determinant()
     @property
     def avg(self):
         if not self._isIdentity:
