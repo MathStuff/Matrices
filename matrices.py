@@ -1143,12 +1143,9 @@ EXAMPLES:
             print(err)
             return None
         else:
-            if not  self._fMat:
-                new="{0:.4f}".format(total//(d[0]*d[1]))
-                return new
-            else:
-                new="{0:.4f}".format(total/(d[0]*d[1]))
-                return new
+            new="{0:.4f}".format(total/(d[0]*d[1]))
+            return new
+
 # =============================================================================
     """Properties available for public"""               
 # =============================================================================
