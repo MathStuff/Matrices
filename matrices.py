@@ -11,7 +11,7 @@ from time import sleep
 class Matrix(object):
     """Matrix object:
 ***Create matrices and print them as grids***
-***Use this if and only if you are going to work with integers. Use fMatrix class to use float values***
+***Use this if and only if you are going to work with integers. Use FMatrix class to use float values***
 
 -dim:dimension of the matrix;natural numbers as [rows,cols],if and integer given, matrix will be a square matrix 
 -listed:(a list of integers | a string) with & dim**2 amount of integers
@@ -22,7 +22,7 @@ class Matrix(object):
     ->0 to fill the matrix with 0s
     
 -Giving ~300< elements may make grid look terrible, adjust your terminal size to display it better
--Can contain integers only 
+-Can contain integers only (Unless it's a FMatrix class) 
 
 -Additional rows and columns can be added with addRC(row,col)
 -Rows and cols from right and bottom can be deleted with delRC
