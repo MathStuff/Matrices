@@ -445,17 +445,24 @@ Check exampleMatrices.py for further explanation and examples
                         a="{0:.4f}".format(self._matrix[i][j])
                         string += " "+a+" " 
                         
-                    elif self._fMat: 
-                        a="{:.4f}".format(self._matrix[i][j])
-                        f=_digits(self._matrix[i][j])
-                        string += " "*(s-f)+a+" " 
+                    elif self._fMat:
+                        n=self._matrix[i][j]
+                        a="{:.6f}".format(n)
+                        f=_digits(n)
+                        if n>-1 and n<1:
+                            string += " "+a+" "
+                            continue
+                        if n>1:
+                            string += " "*(s-f)+a+" "
+                        else:
+                            string += " "*(s-f-1)+a+" "
                             
                     else:
                         a=str(self._matrix[i][j])
                         f=_digits(a)
                         string += " "*(s-f)+a+" "      
         except:
-            print("Rethink the calculation, elements don't look right")                      
+            print("Elements may look complicated")                      
         else:   
             return string
 # =============================================================================
@@ -479,12 +486,6 @@ Check exampleMatrices.py for further explanation and examples
                 
         return lis
 
-                        
-                  
-        
-        
-        return lis
-    
     def _randomFiller(self,lis):
         """
         Fill the matrix with random integers from given range
@@ -1016,7 +1017,11 @@ EXAMPLES:
             assert self.dim[0]==self.dim[1]
             d0=self.dim[0]
             if d0<2:
-                return self.avg
+                if self._fMat:
+                    return float(self.avg)
+                else:
+                    return int(float(self.avg))
+
         except:
             print("Not a square matrix")
         else:
@@ -1036,7 +1041,7 @@ EXAMPLES:
                 det+=s*sign
             self.__detCalc=1
             if not self._fMat:                        
-                self._det=det
+                self._det=int(det)
                 return self._det
             else:
                 a="{0:.4f}".format(det)
@@ -1067,9 +1072,14 @@ EXAMPLES:
         def __minorDet(t,pos):
             def __sign(pos):
                 return (-1)**(pos[0]+pos[1])
+            
             t.delRC(r=pos[0]+1)
             t.delRC(c=pos[1]+1)
-            return t.det*__sign(pos)
+            res = t.det*__sign(pos)
+            if self._fMat:
+                return float(res)
+            else:
+                return int(float(res))
         
         try:
             assert self.dim[0]==self.dim[1]
@@ -1084,6 +1094,7 @@ EXAMPLES:
                 for cols in range(0,self.dim[1]):
                     temp=self.copy
                     adjL[rows].append(__minorDet(temp,[rows,cols]))
+
             if not self._fMat:
                 adjM=Matrix(dim=self.dim,listed=adjL)
             else:
@@ -1115,12 +1126,9 @@ EXAMPLES:
             else:
                 a=self._adjoint()
             d=self.det
-            i=a*(1/d)
-            
-            new=FMatrix(dim=self.dim,listed=i)
-    
-            self.__invCalc=1
-            self._inv=new.copy
+            i=a/d
+            new=CMatrix(listed=i.matrix)
+            self._inv=new
             return self._inv
                  
     def _average(self):
@@ -1671,7 +1679,7 @@ EXAMPLES:
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
         """
-        if self._valid:
+        if self._valid and not self._fMat and not self._cMat and not self._isIdentity:
             if self._dim[0]!=self._dim[1]:
                 print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg))
             else:
@@ -1762,13 +1770,14 @@ Matrix which contain float numbers
             
             return self._stringfy(self._dim)+"\n"
         
-class CMatrix(Matrix):
+class CMatrix(FMatrix):
     """
 Matrix which contain complex numbers
     """
     def __init__(self,*args,**a):
         super().__init__(*args,**a)
         self._valid=1
+        self._fMat=1
         self._cMat=1
 
     def __str__(self):
