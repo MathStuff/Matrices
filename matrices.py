@@ -5,7 +5,7 @@ Created on Wed Oct 31 17:26:48 2018
 @author: Semih
 """
 
-from random import randint 
+import random as rd
 from time import sleep
 
 class Matrix(object):
@@ -26,12 +26,18 @@ class Matrix(object):
 
 -Additional rows and columns can be added with addRC(row,col)
 -Rows and cols from right and bottom can be deleted with delRC
--Sub-matrices can be obtained with "sub" method
+-Sub-matrices can be obtained with "subM" method
 -Specific elements of the matrix can be obtained by using "get" method   
 
 -Average of the all given elements can be seen with "avg" property
+-Determinant of the matrix can be calculated by "det" propery
+-For the adjoint form of the matrix, use "adj" property
+-To get the transposed matrix, use "t" property
+-For the inverse of the matrix use "inv" property
+
 -Use "summary" property to get the representation of the matrix
 -Use "matrix" property to get the matrix in list format or just call the variable by itself
+
 -You can use +,-,*,/,//,**,%,@,<,>,== operators:
     o Addition : +
     o Subtraction : -
@@ -42,34 +48,41 @@ class Matrix(object):
     o Power : **
     o Matrix multiplication : @
     o Less than, greater than, equal to : <, >, ==
+    
+Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=-1,listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
-        
+    def __init__(self,dim=None,listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
+        if isinstance(self,FMatrix):
+            self._fMat=1
+        else:
+            self._fMat=0
         self._valid = 1
         self._isIdentity=0
-        
+        self.__adjCalc=0
+        self.__detCalc=0
+        self.__invCalc=0
         if not self._isIdentity:
-            if dim==-1:
+            if dim==None:
                 self._dim = [0,0]
             else:
-                self._dim = dim
+                self._dimSet(dim)
             self._matrix = []     
             self._inRange = inRange
             self._randomFill = randomFill
             self._rangeLock = rangeLock
             
         try:
-            self._dimSet(dim)    
             if len(inRange)!=2:
                 self._valid=0
+            elif inRange[0]==inRange[1]:
+                self._valid=0
             
-                
         except Exception as err:
             print(err)
             print(Matrix.__doc__)
             
         else:
-            if isinstance(listed,str) and not self._isIdentity:
+            if isinstance(listed,str) and self._valid and not self._isIdentity :
                 self._valid=1
                 self._matrix=self._listify(listed)
                 self._dim=self._declareDim()
@@ -77,14 +90,14 @@ class Matrix(object):
                     self._inRange=self._declareRange(self._matrix)
 
                
-            elif self._validateList(listed) and self._valid and not self._isIdentity:
+            elif self._validateList(listed) and self._valid and not self._isIdentity :
                     self.__temp1=[a[:] for a in listed]
                     
-                    if len(self.__temp1)>0:
-                            self._matrix = self.__temp1.copy()
+                    if len(self.__temp1)>0:                        
+                            self._matrix = self.__temp1.copy()  
                             if not self._rangeLock:
                                 self._inRange=self._declareRange(self._matrix)
-                            self._dim=self._declareDim() 
+                            self._dim=self._declareDim()
                             self._string=self._stringfy(self._dim)     
                     elif len(self.__temp1)==0 and dim!=[0,0]:
                         
@@ -109,7 +122,6 @@ class Matrix(object):
                 self._valid=0
                 return None
             
-            self._avg=self._average()
 # =============================================================================
             
     def _dimSet(self,dim):        
@@ -168,13 +180,8 @@ class Matrix(object):
                     for col in row:
                         c+=1
                     l.append(c)
-                    if max(l)!=min(l):
-                        return False
-                
-                self._dim=l[0]
-                return True
-            else:
-                return True
+                return max(l)==min(l)
+            return True
         return False
     
     def _declareRange(self,lis):
@@ -416,11 +423,23 @@ class Matrix(object):
         if self._isIdentity:
             l=1
             h=1
+        
         else:
             l=_digits(self._inRange[0])
             h=_digits(self._inRange[1])
+        
+
         s=max([h,l])
         d=self._dim[:]
+        if self._fMat:
+            for i in range(d[0]):
+                string+="\n"
+                for j in range(d[1]):
+                    a="{0:.4f}".format(self._matrix[i][j])
+                    f=_digits(self._matrix[i][j])
+                    string += " "*(s-f)+a+" " 
+            return string
+        
         if d[0]>0 and d[1]>0:
             for i in range(0,d[0]):
                 string+="\n"
@@ -477,7 +496,12 @@ class Matrix(object):
                 d=self._dim[:]
                 for row in range(0,d[0]):
                     for column in range(0,d[1]):
-                        lis[row].append(randint(n,m))
+                        if not self._fMat:
+                            lis[row].append(rd.randint(n,m))
+                        else:
+                            new=rd.randint(n,m)*rd.random()
+                            ele="{0:.4f}".format(new)
+                            lis[row].append(float(ele))
 
             return lis
         
@@ -679,6 +703,9 @@ class Matrix(object):
                 print("Nothing was added!")
             else:
             #If everything goes right change attributes to new ones
+                self.__adjCalc=0
+                self.__detCalc=0
+                self.__invCalc=0    
                 self._dim=goal[:]
                 self._valid=1
                 if not self._rangeLock:
@@ -691,66 +718,218 @@ class Matrix(object):
         
     def delRC(self,r=None,c=None):
         """
-Deletes rows and columns from the right and bottom side
-Removes r amount of rows and c amount of columns
-If only 1 argument "n" is given:
-    ->IF n==rows XOR n==columns:
-        ~Subtracts a nxn dimension matrix from the left(if n==rows) or bottom(if n==columns)
-    ->IF n<rows and n<colums:
-        ~Deletes n amount of rows and columns from right and bottom
-    ->IF n==rows==cols:
-        ~Deleted all the elements
-Applies changes on the current matrix also returns the new matrix created 
-Use sub method if you want to get a new matrix
+Deletes the given row or column
+Changes the matrix
+Give only 1 parameter, r for row, c for column. (Starts from 1)
+If no parameter name given, takes it as row
         """
-        
         try:
-            if self._isIdentity:
-                print("Can't delete from the identity matrix.\nUse delDim instead!")
-                return None
-            ###############
-            if r==None and c!=0:
-                r=c
-            elif c==None and r!=0:
-                c=r
-            elif (r,c)==(0,0) or (r,c)==(None,None):
-                print("Nothing to delete!")
-                return None
-            dim=self._dim[:]
-            temp=[a[:] for a in self._matrix]
-            assert (r>=0 or r==None) and (c>=0 or c==None) and r<=dim[0] and c<=dim[1] and self._valid==1
-            goal=[dim[0] - r,dim[1] - c]
-            if goal[0]==0 and goal[1]!=0:
-                goal[0]=r
-                r*=-1
-            elif goal[1]==0 and goal[0]!=0:
-                goal[1]=c
-                c*=-1
-            print("Current dimension: ",dim)
-            print("Goal dimension: ",goal)
-            ############### 
-        except Exception as err:
-            self._matrix=temp
-            print(err)
-            print(self.delRC.__doc__)
-        else:   
-            if goal==[0,0]:
-                print("All elements have been deleted")
-                self._matrix=[]
+            assert (r==None or c==None) and (r!=None or c!=None) 
+            
+        except:
+            print("Bad arguments")
+            
+        else:
+            newM=[]
+            if c==None:
+                    if r>1:
+                        newM+=self.matrix[:r-1]
+                        if r<self.dim[1]:
+                            newM+=self.matrix[r:]  
+                    if r==1:
+                        newM=[b[:] for b in self.matrix[r:]]
+            elif r==None:
+                for rows in range(self.dim[0]):
+                    newM.append(list())
+                    if c>1:
+                        newM[rows]=self.matrix[rows][:c-1]
+                        if c<self.dim[1]:
+                            newM[rows]+=self.matrix[rows][c:]
+                    if c==1:
+                        newM[rows]=self.matrix[rows][c:]
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0                          
+            self._matrix=[a[:] for a in newM]
+            self._dim=self._declareDim()
+            self._string=self._stringfy(self._dim)
+            
                 
-            else:
-                tempMat=[]
-                for rows in self._matrix[:-r]:
-                    tempMat.append(rows[:-c])
-                print("Old grid:\n",self._stringfy(dim))    
-                self._matrix=[a[:] for a in tempMat]
-                self._inRange=self._declareRange(self._matrix)
-                self._dim=goal[:]
-                print("\nNew grid:")
-                self._string=self._stringfy(self._dim) 
-            return self
+# =============================================================================
+#         try:
+#             if self._isIdentity:
+#                 print("Can't delete from the identity matrix.\nUse delDim instead!")
+#                 return None
+#             ###############
+#             if r==None and c!=0:
+#                 r=c
+#             elif c==None and r!=0:
+#                 c=r
+#             elif (r,c)==(0,0) or (r,c)==(None,None):
+#                 print("Nothing to delete!")
+#                 return None
+#             dim=self._dim[:]
+#             temp=[a[:] for a in self._matrix]
+#             assert (r>=0 or r==None) and (c>=0 or c==None) and r<=dim[0] and c<=dim[1] and self._valid==1
+#             goal=[dim[0] - r,dim[1] - c]
+#             if goal[0]==0 and goal[1]!=0:
+#                 goal[0]=r
+#                 r*=-1
+#             elif goal[1]==0 and goal[0]!=0:
+#                 goal[1]=c
+#                 c*=-1
+#             print("Current dimension: ",dim)
+#             print("Goal dimension: ",goal)
+#             ############### 
+#         except Exception as err:
+#             self._matrix=temp
+#             print(err)
+#             print(self.delRC.__doc__)
+#         else:   
+#             if goal==[0,0]:
+#                 print("All elements have been deleted")
+#                 self._matrix=[]
+#                 
+#             else:
+#                 tempMat=[]
+#                 for rows in self._matrix[:-r]:
+#                     tempMat.append(rows[:-c])
+#                 print("Old grid:\n",self._stringfy(dim))    
+#                 self._matrix=[a[:] for a in tempMat]
+#                 self._inRange=self._declareRange(self._matrix)
+#                 self._dim=goal[:]
+#                 print("\nNew grid:")
+#                 self._string=self._stringfy(self._dim) 
+#             return self
+#         
+# =============================================================================
+    def operateOver(self,operate="mul",result=0,row=0,column=0,direction=0,adjlen=0):
+        """
+        Do calculations over the elements without changing them
         
-    def __determinant(self):
+        operate:
+            ->add=addition
+            ->mul=multiplication
+        result:
+            (default)->0=get all the results calculated
+            ->"mn"=get the lowest of results
+            ->"mx"=get the highest of results
+            ->"avg"=get the average of results
+            ->"pos"=get the results which are negative
+            ->"neg"=get the results which are negative
+        
+        Change row,column parameters only to operate over sub matrices
+        row:list of which rows to operate on
+        
+            *Ranged in [1,dimension]    
+            (default)->0=all rows
+        column:list of which columns to operate on
+            *Ranged in [1,dimension]
+            (default)->0=all columns
+            
+        direction:lists of which direction to iterate through
+            ->"hor"=horizontally
+            ->"ver"=vertically
+            *Diagonally(Requires row|col>=2)
+                ->"ltrb"=diagonally LeftTop-RightBottom
+                ->"lbrt"=diagonally LeftBottom-RightTop
+                ->"dia"=both ways
+            (default)->0=all directions possible(diagonal,vertical,horizontal)
+            
+        adjlen:how many elements to operate together at once=
+            (default)->0=Highest possible
+            ->"a"=all possible lengths [1-dimension]
+        
+        EXAMPLE: a.operateOver(operate="add",result="mx",row[1,2])
+        
+        Returns a number or a list,depends on input
+        """
+# =============================================================================
+#         if self._valid:
+#             tempM=[a[:] for a in self._matrix]
+#             if row==0:
+#                 row=[0,self._dim]
+#             if column==0:
+#                 column=[0,self._dim]
+#             if direction==0:
+#                 dirs=[""]
+#         
+# =============================================================================
+        pass
+        
+    def operateOn(self):
+        """
+        Do changes on individual elements
+        """
+        pass
+    
+    def get(self,r,c):
+        """
+        Returns the desired element
+        r:row of the element
+        c:column of the element
+        r and c can be ranged from 1 to the matrix's dimension
+        """
+        try:
+            r=int(r)
+            c=int(c)
+            assert r<=self._dim[0] and c<=self._dim[1] and r>0 and c>0
+        except AssertionError:
+            print("\tBad arguments!\n",self.get.__doc__)
+        else:
+            return self._matrix[r-1][c-1]
+            
+    def subM(self,rowS=None,rowE=None,colS=None,colE=None):
+        """
+Get a sub matrix from the current matrix
+rowStart:Desired matrix's starting row (starts from 1)
+rowEnd:Last row(included)
+colStart:First column
+colEnd:Last column(included)
+    |col1 col2 col3
+    |---------------
+row1|1,1  1,2  1,3
+row2|2,1  2,2  2,3
+row3|3,1  3,2  3,3
+
+EXAMPLES:
+    ->a.subM(1)==gets the first element of the first row
+    ->a.subM(2,2)==2by2 square matrix from top left as starting point
+***Returns a new grid class/matrix***
+        """
+        try:
+            temp2=[]
+            valid=0
+            if (rowS,rowE,colS,colE)==(None,None,None,None):
+                return None
+            #IF 2 ARGUMENTS ARE GIVEN, SET THEM AS ENDING POINTS
+            if (rowS,rowE)!=(None,None) and (colS,colE)==(None,None):
+                colE=rowE
+                rowE=rowS
+                rowS=1
+                colS=1
+            #IF MORE THAN 2 ARGUMENTS ARE GIVEN MAKE SURE IT IS 4 OF THEM AND THEY ARE VALID
+            else:
+                assert (rowS,rowE,colS,colE)!=(None,None,None,None) and (rowS,rowE,colS,colE)>(0,0,0,0)
+            assert rowS<=self._dim[0] and rowE<=self._dim[0] and colS<=self._dim[1] and colE<=self._dim[1]
+            
+        except AssertionError:
+            print("Bad arguments")
+            print(rowS,rowE,colS,colE)
+            print(self.subM.__doc__)
+            return ""
+        except Exception as err:
+            print(err)
+            return ""
+        else:
+            temp=self._matrix[rowS-1:rowE]
+            for column in range(len(temp)):
+                valid=1
+                temp2.append(temp[column][colS-1:colE])
+            if valid:
+                return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
+
+    def _determinant(self):
         """
         Leibniz formula for determinants
              
@@ -845,144 +1024,98 @@ Use sub method if you want to get a new matrix
                 
                 sign=__signature(allNums,perms)
                 det+=s*sign
-                                    
-            self._det=det
-            return det
-            
-    
-    def get(self,r,c):
-        """
-        Returns the desired element
-        r:row of the element
-        c:column of the element
-        r and c can be ranged from 1 to the matrix's dimension
-        """
-        try:
-            r=int(r)
-            c=int(c)
-            assert r<=self._dim[0] and c<=self._dim[1] and r>0 and c>0
-        except AssertionError:
-            print("\tBad arguments!\n",self.get.__doc__)
-        else:
-            return self._matrix[r-1][c-1]
-        
-    def operateOver(self,operate="mul",result=0,row=0,column=0,direction=0,adjlen=0):
-        """
-        Do calculations over the elements without changing them
-        
-        operate:
-            ->add=addition
-            ->mul=multiplication
-        result:
-            (default)->0=get all the results calculated
-            ->"mn"=get the lowest of results
-            ->"mx"=get the highest of results
-            ->"avg"=get the average of results
-            ->"pos"=get the results which are negative
-            ->"neg"=get the results which are negative
-        
-        Change row,column parameters only to operate over sub matrices
-        row:list of which rows to operate on
-        
-            *Ranged in [1,dimension]    
-            (default)->0=all rows
-        column:list of which columns to operate on
-            *Ranged in [1,dimension]
-            (default)->0=all columns
-            
-        direction:lists of which direction to iterate through
-            ->"hor"=horizontally
-            ->"ver"=vertically
-            *Diagonally(Requires row|col>=2)
-                ->"ltrb"=diagonally LeftTop-RightBottom
-                ->"lbrt"=diagonally LeftBottom-RightTop
-                ->"dia"=both ways
-            (default)->0=all directions possible(diagonal,vertical,horizontal)
-            
-        adjlen:how many elements to operate together at once=
-            (default)->0=Highest possible
-            ->"a"=all possible lengths [1-dimension]
-        
-        EXAMPLE: a.operateOver(operate="add",result="mx",row[1,2])
-        
-        Returns a number or a list,depends on input
-        """
-# =============================================================================
-#         if self._valid:
-#             tempM=[a[:] for a in self._matrix]
-#             if row==0:
-#                 row=[0,self._dim]
-#             if column==0:
-#                 column=[0,self._dim]
-#             if direction==0:
-#                 dirs=[""]
-#         
-# =============================================================================
-        pass
-        
-    def operateOn(self):
-        """
-        Do changes on elements
-        """
-        pass
-    
-    def sub(self,rowS=None,rowE=None,colS=None,colE=None):
-        """
-Get a sub matrix from the current matrix
-rowStart:Desired matrix's starting row (starts from 1)
-rowEnd:Last row(included)
-colStart:First column
-colEnd:Last column(included)
-    |col1 col2 col3
-    |---------------
-row1|1    2    3
-row2|4    5    6
-row3|7    8    9
-
-EXAMPLES:
-    ->a.sub(1)==gets the first element of the first row
-    ->a.sub(2,2)==2by2 square matrix from top left as starting point
-***Returns a new grid class/matrix***
-        """
-        try:
-            temp2=[]
-            valid=0
-            if (rowS,rowE,colS,colE)==(None,None,None,None):
-                return None
-            #IF 2 ARGUMENTS ARE GIVEN, SET THEM AS ENDING POINTS
-            if (rowS,rowE)!=(None,None) and (colS,colE)==(None,None):
-                colE=rowE
-                rowE=rowS
-                rowS=1
-                colS=1
-            #IF MORE THAN 2 ARGUMENTS ARE GIVEN MAKE SURE IT IS 4 OF THEM AND THEY ARE VALID
+            self.__detCalc=1
+            if not self._fMat:                        
+                self._det=det
+                return self._det
             else:
-                assert (rowS,rowE,colS,colE)!=(None,None,None,None) and (rowS,rowE,colS,colE)>(0,0,0,0)
-            assert rowS<=self._dim[0] and rowE<=self._dim[0] and colS<=self._dim[1] and colE<=self._dim[1]
+                a="{0:.4f}".format(det)
+                self._det=float(a)
+                return self._det
             
-        except AssertionError:
-            print("Bad arguments")
-            print(self.sub.__doc__)
-            return ""
+    def _transpose(self):
+        try:
+            temp=[a[:] for a in self.matrix]
+            transposed=[]
+            d0,d1=self.dim[0],self.dim[1]
+            
         except Exception as err:
             print(err)
-            return ""
         else:
-            temp=self._matrix[rowS-1:rowE]
-            for column in range(len(temp)):
-                valid=1
-                temp2.append(temp[column][colS-1:colE])
-            if valid:
-                return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
-
+            for rows in range(d1):
+                transposed.append(list())
+                for cols in range(d0):
+                    transposed[rows].append(temp[cols][rows])
+            if self._fMat:
+                return FMatrix(listed=transposed)
+            if self._isIdentity:
+                return Identity(listed=transposed)
+            else:
+                return Matrix(listed=transposed)
+            
+    def _adjoint(self):
+        def __minorDet(t,pos):
+            def __sign(pos):
+                return (-1)**(pos[0]+pos[1])
+            t.delRC(r=pos[0]+1)
+            t.delRC(c=pos[1]+1)
+            return t.det*__sign(pos)
+        
+        try:
+            assert self.dim[0]==self.dim[1]
+        except AssertionError:
+            print("Not a square matrix")
+        except Exception as err:
+            print(err)
+        else:
+            adjL=[]
+            for rows in range(0,self.dim[0]):
+                adjL.append(list())
+                for cols in range(0,self.dim[1]):
+                    temp=self.copy
+                    adjL[rows].append(__minorDet(temp,[rows,cols]))
+            if not self._fMat:
+                adjM=Matrix(dim=self.dim,listed=adjL)
+            else:
+                adjM=FMatrix(dim=self.dim,listed=adjL)
+            self._adj=adjM.t
+            self.__adjCalc=1
+            return self._adj
+                
+            
+            
+    def _inverse(self):
+        """
+        Finds the inverse of the given square matrix
+        Sets the inverse form in float numbers format
+        """
+        try:
+            assert self.dim[0] == self.dim[1]
+        except ZeroDivisionError:
+            print("Determinant of the matrix is 0, can't find inverse")
+        except:
+            print("Error getting inverse of the matrix")
+        else:
+            if self.__adjCalc:
+                a=self._adj
+            else:
+                a=self._adjoint()
+            d=self.det
+            i=a*(1/d)
+            
+            new=FMatrix(dim=self.dim,listed=i)
     
+            self.__invCalc=1
+            self._inv=new.copy
+            return self._inv
+                 
     def _average(self):
         """
         Sets the avg attribute of the matrix as the average of it's elements
         """
         try:
             d=self._dim[:]
-            if d==[0,0]:
+            if d[0]==0 or d[1]==0:
                 return "None"
             total=0
             for row in self._matrix:
@@ -996,16 +1129,40 @@ EXAMPLES:
             print(err)
             return None
         else:
-            return total//(d[0]*d[1])
+            if not  self._fMat:
+                return total//(d[0]*d[1])
+            else:
+                return total/(d[0]*d[1])
 # =============================================================================
     """Properties available for public"""               
 # =============================================================================
+    @property
+    def copy(self):
+        if self._isIdentity:
+            return Identity(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
+        elif self._fMat:
+            return FMatrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
+        else:
+            return Matrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
     @property
     def string(self):
         return self._string
     @property
     def dim(self):
         return self._dim
+    @property
+    def t(self):
+        return self._transpose()
+    @property
+    def adj(self):
+        if self.__adjCalc:
+            return self._adj
+        return self._adjoint()
+    @property
+    def inv(self):
+        if self.__invCalc:
+            return self._inv
+        return self._inverse()
     @property
     def inRange(self):
         if not self._isIdentity:
@@ -1017,7 +1174,9 @@ EXAMPLES:
        return self._matrix
     @property
     def det(self):
-        return self.__determinant()
+        if self.__detCalc:
+            return self._det
+        return self._determinant()
     @property
     def avg(self):
         if not self._isIdentity:
@@ -1038,7 +1197,9 @@ EXAMPLES:
             return 0
     @property
     def summary(self):
-        if self._valid and not self._isIdentity:
+        if self._valid and self._fMat:
+            return "FMatrix(dim={0},listed={1},inRange={2},rangeLock={3},randomFill={4})".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
+        elif self._valid and not self._isIdentity:
             return "Matrix(dim={0},listed={1},inRange={2},rangeLock={3},randomFill={4})".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
         elif self._valid and self._isIdentity:
             return "Identity(dim={0},listed={1},inRange=[0,1],rangeLock=1,randomFill=0)".format(self._dim,self._matrix)
@@ -1185,25 +1346,32 @@ EXAMPLES:
                 
             except:
                 print("Can't multiply")
-        elif isinstance(self,Matrix) and isinstance(other,int):
+        elif isinstance(self,Matrix) and (isinstance(other,float) or isinstance(other,int)):
             try:
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]*other)
-                return Matrix(dim=self.dim,listed=temp)
+
+                if self._fMat:
+                    return FMatrix(dim=self.dim,listed=temp)
+                else:
+                    return Matrix(dim=self.dim,listed=temp)
                 
             except:
                 print("Can't multiply")            
-        elif isinstance(self,int) and isinstance(other,Matrix):
+        elif (isinstance(self,float) or isinstance(self,int)) and isinstance(other,Matrix):
             try:
                 temp=[]
                 for rows in range(other.dim[0]):
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]*other)
-                return Matrix(dim=other.dim,listed=temp)
+                if other._fMat:
+                    return FMatrix(dim=other.dim,listed=temp)
+                else:
+                    return Matrix(dim=other.dim,listed=temp)
             except:
                 print("Can't multiply")
         else:
@@ -1444,6 +1612,7 @@ class Identity(Matrix):
         self._dim=dim
         self._dimSet(self._dim)
         self._valid=1
+        self._fMat=0
         self._matrix=list()
         self._randomFill=0
         if self.dim[0]==self.dim[1]:
@@ -1490,3 +1659,7 @@ class Identity(Matrix):
             self._string=self._stringfy(self.dim)
             return self
             
+class FMatrix(Matrix):
+    def __init__(self,*args,**a):
+        super().__init__(*args,**a)
+        self._valid=1
