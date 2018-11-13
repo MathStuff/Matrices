@@ -24,6 +24,7 @@ class Matrix(object):
 -Giving ~300< elements may make grid look terrible, adjust your terminal size to display it better
 -Can contain integers only (Unless it's a FMatrix class) 
 
+-Elements/row can be changed in place ( Current not available on columns )
 -Additional rows and columns can be added with add(row,col,lis)
 -Rows and cols from right and bottom can be deleted with del
 -Sub-matrices can be obtained with "subM" method
