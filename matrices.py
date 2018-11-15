@@ -412,7 +412,7 @@ Check exampleMatrices.py for further explanation and examples
         """
         def _digits(num):
                 try:
-                    num=int(num)
+                    num=int(float(num))
                     dig=1
                 except TypeError:
                     print("Digits are too much of a mess to handle! Returning none")
@@ -427,45 +427,47 @@ Check exampleMatrices.py for further explanation and examples
                         num=num//10
                         
                     return dig
-        try:     
-            string=""
-            if self._isIdentity:
-                l=1
-                h=1
-            else:
-                l=_digits(self._inRange[0])
-                h=_digits(self._inRange[1])
-                
-            d=self._dim[:]
-            s=max([h,l])
-            for i in range(d[0]):
-                string+="\n"
-                for j in range(d[1]):
-                    if isinstance(self._matrix[i][j],complex):
-                        print("Elements contain complex numbers! This will not look pretty...")
-                        a="{0:.4f}".format(self._matrix[i][j])
-                        string += " "+a+" " 
-                        
-                    elif self._fMat:
-                        n=self._matrix[i][j]
-                        a="{:.6f}".format(n)
-                        f=_digits(n)
-                        if n>-1 and n<1:
-                            string += " "+a+" "
-                            continue
-                        if n>1:
-                            string += " "*(s-f)+a+" "
-                        else:
-                            string += " "*(s-f-1)+a+" "
+        while True:
+            try:     
+                string=""
+                if self._isIdentity:
+                    l=1
+                    h=1
+                else:
+                    l=_digits(self._inRange[0])
+                    h=_digits(self._inRange[1])
+                    
+                d=self._dim[:]
+                s=max([h,l])
+                for i in range(d[0]):
+                    string+="\n"
+                    for j in range(d[1]):
+                        if isinstance(self._matrix[i][j],complex) or self._cMat:
+                            a="{0:.8f}".format(self._matrix[i][j])
+                            string += " "+a+" " 
                             
-                    else:
-                        a=str(self._matrix[i][j])
-                        f=_digits(a)
-                        string += " "*(s-f)+a+" "      
-        except:
-            print("Elements may look complicated")                      
-        else:   
-            return string
+                        elif self._fMat and not self._cMat:
+                            n=self._matrix[i][j]
+                            a="{:.6f}".format(n)
+                            f=_digits(n)
+                            if n>-1 and n<1:
+                                string += " "+a+" "
+                                continue
+                            if n>1:
+                                string += " "*(s-f)+a+" "
+                            else:
+                                string += " "*(s-f-1)+a+" "
+                                
+                        else:
+                            a=str(self._matrix[i][j])
+                            f=_digits(a)
+                            string += " "*(s-f)+a+" "      
+            except Exception as err:
+                print("Elements may look complicated",end="")
+                print(err)
+                break
+            else:   
+                return string
 # =============================================================================
 
     def _zeroFiller(self,lis):
@@ -1593,12 +1595,11 @@ Matrix which contain complex numbers
 
     def __str__(self):
         if self._cMat:
-            print("\nComplex Matrix")
+            print("\nComplex matrix, ",end="")
             if self._dim[0]!=self._dim[1]:
                 print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg))            
+                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg))            
                 
             return self._stringfy(self._dim)+"\n"
-        
         
