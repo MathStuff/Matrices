@@ -1285,7 +1285,6 @@ EXAMPLES:
             print("Can't divide")
 ################################################################################            
     def __truediv__(self,other):
-        print(__name__)
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
                 assert self.dim==other.dim                
