@@ -28,7 +28,7 @@ class Matrix(object):
 -Additional rows and columns can be added with add(row,col,lis)
 -Rows and cols from right and bottom can be deleted with del
 -Sub-matrices can be obtained with "subM" method
--Specific elements of the matrix can be obtained by using "get" method   
+-Get specific items by using a[i][j] for the (i+1)th row and (j+1)th column   
 
 -Average of the all given elements can be seen with "avg" property
 -Determinant of the matrix can be calculated by "det" propery
@@ -150,8 +150,7 @@ Check exampleMatrices.py for further explanation and examples
             
     def _declareDim(self):
         """
-        Checks if the given number is a perfect square
-        Returns the integer found, if none found returns 0
+        Set new dimension 
         """
         try:
             rows=0
@@ -197,31 +196,27 @@ Check exampleMatrices.py for further explanation and examples
             low=0
             high=0
             looped=0
-            for row in self._matrix:
+            for row in lis:
                 if isinstance(row,list):
-                    for element in row:
-                        if not looped:
-                            low=element
-                            high=element
-                            looped=1
-                        elif element<low:
-                            low=element
-                        elif element>high:
-                            high=element
-                else:
+                    m=max(row)
+                    n=min(row)
                     if not looped:
-                        low=row
-                        high=row
+                        low=n
+                        high=m
                         looped=1
-                    elif row<low:
-                        low=row
-                    elif row>high:
-                        high=row
-                        
+                    else:
+                        if n<low:
+                            low=n
+                        if m>high:
+                            high=m
+                else:
+                    low=min(lis)
+                    high=max(lis)
+
         except Exception as err:
             print("Can't declare range")
             #print(Matrix.__doc__)
-            return [0,0]
+            return [low,high]
         else:
             return [low,high]
    
@@ -523,11 +518,15 @@ Check exampleMatrices.py for further explanation and examples
             
     def add(self,row=None,col=None,lis=[]):
         """
+        Add a row or a column of numbers
+        FIRST ROW | COLUMN : row | col = 1
         row: natural number
         col: natural number 
         lis: list of numbers desired to be added to the matrix
-        Add a row or a column of numbers
         row>=1 and col>=1
+        
+        To append a row, only give 1 argument to the lis parameter
+        To append a column, you need to use col = self.dim[1]
         """
         try:
             if self._isIdentity:
@@ -845,6 +844,8 @@ EXAMPLES:
             
     def _transpose(self):
         try:
+            if self._isIdentity:
+                return self
             temp=[a[:] for a in self.matrix]
             transposed=[]
             d0,d1=self.dim[0],self.dim[1]
@@ -858,24 +859,25 @@ EXAMPLES:
                     transposed[rows].append(temp[cols][rows])
             if self._fMat:
                 return FMatrix(listed=transposed)
-            if self._isIdentity:
-                return Identity(listed=transposed)
             else:
                 return Matrix(listed=transposed)
             
+    def _minor(self,row=None,col=None):
+        try:
+            assert row!=None and col!=None
+            assert row<=self.dim[0] and col<=self.dim[1]
+            assert row>0 and col>0
+        except AssertionError:
+            print("Bad arguments")
+        else:
+            temp=self.copy
+            temp.remove(r=row)
+            temp.remove(c=col)
+            return temp
+
     def _adjoint(self):
-        def __minorDet(t,pos):
-            def __sign(pos):
-                return (-1)**(pos[0]+pos[1])
-            
-            t.remove(r=pos[0]+1)
-            t.remove(c=pos[1]+1)
-            res = t.det*__sign(pos)
-            if self._fMat:
-                return float(res)
-            else:
-                return int(float(res))
-        
+        def __sign(pos):
+            return (-1)**(pos[0]+pos[1])   
         try:
             assert self.dim[0]==self.dim[1]
         except AssertionError:
@@ -887,8 +889,8 @@ EXAMPLES:
             for rows in range(0,self.dim[0]):
                 adjL.append(list())
                 for cols in range(0,self.dim[1]):
-                    temp=self.copy
-                    adjL[rows].append(__minorDet(temp,[rows,cols]))
+                    res=self._minor(rows+1,cols+1).det*__sign([rows,cols])
+                    adjL[rows].append(res)
 
             if not self._fMat:
                 adjM=Matrix(dim=self.dim,listed=adjL)
@@ -922,7 +924,7 @@ EXAMPLES:
                 a=self._adjoint()
             d=self.det
             i=a/d
-            new=CMatrix(listed=i.matrix)
+            new=FMatrix(listed=i.matrix)
             self._inv=new
             return self._inv
                  
@@ -958,7 +960,7 @@ EXAMPLES:
     @property
     def copy(self):
         if self._isIdentity:
-            return Identity(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
+            return Identity(dim=self._dim)
         elif self._fMat:
             return FMatrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
         else:
@@ -969,6 +971,8 @@ EXAMPLES:
     @property
     def dim(self):
         return self._dim
+    
+    
     @property
     def t(self):
         return self._transpose()
@@ -1025,6 +1029,9 @@ EXAMPLES:
         else:
             return None
         
+    def minor(self,r=None,c=None):
+        return self._minor(row=r,col=c)  
+    
     def rangeLock(self):
         try:
             state=["off","on"]
@@ -1048,6 +1055,8 @@ EXAMPLES:
                 return self.matrix[row][col]
             elif isinstance(pos,int):
                 return self.matrix[pos]
+            #elif isinstance(pos,slice):
+            #    return self.pos
         except:
             print("Bad indeces")
             
@@ -1071,6 +1080,8 @@ EXAMPLES:
             print(pos,item)
             print("Bad indeces")
         else:
+            print(self)
+            self._inRange=self._declareRange(self._matrix)
             return self.matrix
 # =============================================================================
    
@@ -1575,7 +1586,7 @@ Matrix which contain float numbers
         
     def __str__(self):
         if self._fMat:
-            print("\nFloat Matrix")
+            print("\nFloat Matrix",end="")
             if self._dim[0]!=self._dim[1]:
                 print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg))
             else:
