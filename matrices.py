@@ -525,7 +525,7 @@ Check exampleMatrices.py for further explanation and examples
         lis: list of numbers desired to be added to the matrix
         row>=1 and col>=1
         
-        To append a row, only give 1 argument to the lis parameter
+        To append a row, only give the list of numbers, no other arguments
         To append a column, you need to use col = self.dim[1]
         """
         try:
@@ -534,6 +534,7 @@ Check exampleMatrices.py for further explanation and examples
                 return None
             if row==None or col==None:
                 if row==None and col==None:
+                    """Append a row """
                     if self.dim[0]>0:
                         if self.dim[1]>0:
                             assert len(lis)==self.dim[1]
@@ -541,6 +542,7 @@ Check exampleMatrices.py for further explanation and examples
     
                         
                 elif col==None and row>0:
+                    """Insert a row"""
                     if row<=self.dim[0]:
                         self.matrix.insert(row-1,lis)
     
@@ -548,12 +550,16 @@ Check exampleMatrices.py for further explanation and examples
                         print("Bad arguments")
                         return None
                 elif row==None and col>0:
+                    if len(lis)!=self.dim[0] and self.dim[0]>0:
+                        raise Exception()
                     if col<=self.dim[1]:
+                        """Insert a column"""
                         i=0
                         for rows in self._matrix:
                             rows.insert(col-1,lis[i])
                             i+=1
                     elif col-1==self.dim[1]:
+                        """Append a column"""
                         i=0
                         for rows in self._matrix:
                             rows.append(lis[i])
@@ -913,8 +919,13 @@ EXAMPLES:
         """
         try:
             assert self.dim[0] == self.dim[1]
-        except ZeroDivisionError:
-            print("Determinant of the matrix is 0, can't find inverse")
+            assert self.det!=0
+        except AssertionError:    
+            if self.det==0:
+                print("Determinant of the matrix is 0, can't find inverse")
+            else:
+                print("Must be a square matrix")
+            return None
         except:
             print("Error getting inverse of the matrix")
         else:
@@ -924,6 +935,7 @@ EXAMPLES:
                 a=self._adjoint()
             d=self.det
             i=a/d
+            print(i,a,d)
             new=FMatrix(listed=i.matrix)
             self._inv=new
             return self._inv
@@ -1521,18 +1533,24 @@ Identity matrix
     def __init__(self,dim=[1,1]):
         self._dim=dim
         self._dimSet(self._dim)
+        self._matrix=list()
+        self._randomFill=0
+        
         self._valid=1
         self._fMat=0
         self._cMat=0
-        self._matrix=list()
-        self._randomFill=0
+        
+        self.__adjCalc=1
+        self.__detCalc=1
+        self.__invCalc=1
+        
         if self.dim[0]==self.dim[1]:
             if self.dim[0]>0:
                 self._isIdentity=1
         if self._isIdentity:
             self._matrix=self._zeroFiller(self._matrix)
             self._string=self._stringfy(self.dim)
-        
+                    
     def addDim(self,num):
         """
         Add dimensions to identity matrix
@@ -1549,6 +1567,7 @@ Identity matrix
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy(self.dim)
             return self
+        
     def delDim(self,num):
         """
         Delete dimensions to identity matrix
@@ -1569,7 +1588,17 @@ Identity matrix
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy(self.dim)
             return self
-
+        
+    @property
+    def inv(self):
+        return Identity(dim=self._dim)
+    @property    
+    def det(self):
+        return 1
+    @property
+    def adj(self):
+        return Identity(dim=self._dim)
+    
     def __str__(self):
         if self._isIdentity:
             print("\nIdentity Matrix\nDimension: {0}x{0}".format(self._dim[0]))
