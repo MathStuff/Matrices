@@ -935,7 +935,6 @@ EXAMPLES:
                 a=self._adjoint()
             d=self.det
             i=a/d
-            print(i,a,d)
             new=FMatrix(listed=i.matrix)
             self._inv=new
             return self._inv
@@ -1547,6 +1546,9 @@ Identity matrix
         if self.dim[0]==self.dim[1]:
             if self.dim[0]>0:
                 self._isIdentity=1
+        else:
+            self._valid=0
+            return None
         if self._isIdentity:
             self._matrix=self._zeroFiller(self._matrix)
             self._string=self._stringfy(self.dim)
