@@ -9,6 +9,7 @@ Some examples:
 --------------
 #### Create matrice filled with random integers 
 A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default range which is [-125,125]
+
 B=Matrix([3,5],inRange=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
 
 ----------------------------------------
@@ -39,12 +40,14 @@ D=Matrix(dim=[10,4],listed=data) #Creates a matrix form of the given string's *i
 #### Create matrices filled with random float numbers
 
 E=FMatrix(6) #Create a matrix filled with random float values in the default range
+
 F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
 
 ----------------------------------------
 #### Create identity matrices
 
 i=Identity(3) #3x3 identity matrix
+
 i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
 
 ----------------------------------------
