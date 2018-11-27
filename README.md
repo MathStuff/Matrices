@@ -7,7 +7,7 @@
 -------------- 
 Some examples:
 --------------
-#### Create matrice filled with random integers 
+#### Create matrices filled with random integers 
 A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default range which is [-125,125]
 
 B=Matrix([3,5],inRange=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
@@ -75,6 +75,31 @@ C.copy #Returns a copy of the matrix
 
 C.summary #Returns the string form of the object 
 
+----------------------------------------
+
+#### Add or remove rows/columns and operate on them
+
+E.add(r=3,lis=[1.0 ,2.5 ,52,242 ,-9883,212, 0.000001, -555,554]) #Make the list given the 3rd row
+
+A.remove(c=2) #Remove the second column 
+
+for a in A.matrix: a[0]%=2 #Change first column's values to the remainder of division by 2 
+
+B @ B.t #Matrix multiplication example
+
+----------------------------------------
+
+
+#### All calculations below returns True
+
+   A**2 == A * A
+   
+   A*2==A+A
+   
+   A.t.t==A
+   
+   A.adj.t[1][2]==A.minor(2,3).det*-1
+   
 ----------------------------------------
 
 ### More examples can be found in exampleMatrices.py
