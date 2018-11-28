@@ -195,24 +195,18 @@ Check exampleMatrices.py for further explanation and examples
         try:
             low=0
             high=0
-            looped=0
+            first=True
             for row in lis:
-                if isinstance(row,list):
-                    m=max(row)
-                    n=min(row)
-                    if not looped:
-                        low=n
-                        high=m
-                        looped=1
-                    else:
-                        if n<low:
-                            low=n
-                        if m>high:
-                            high=m
+                m=max(row)
+                n=min(row)
+                if first:
+                    low=n
+                    high=m
+                    first=False
                 else:
-                    low=min(lis)
-                    high=max(lis)
-
+                    temp=[low,high,n,m]
+                    low=min(temp)
+                    high=max(temp)
         except Exception as err:
             print("Can't declare range")
             #print(Matrix.__doc__)
@@ -629,61 +623,28 @@ If no parameter name given, takes it as row
             self._string=self._stringfy(self._dim)
             
     def find(self,element):
-        pass
-    
-    def operateOver(self,operate="mul",result=0,row=0,column=0,direction=0,adjlen=0):
         """
-        Do calculations over the elements without changing them
-        
-        operate:
-            ->add=addition
-            ->mul=multiplication
-        result:
-            (default)->0=get all the results calculated
-            ->"mn"=get the lowest of results
-            ->"mx"=get the highest of results
-            ->"avg"=get the average of results
-            ->"pos"=get the results which are negative
-            ->"neg"=get the results which are negative
-        
-        Change row,column parameters only to operate over sub matrices
-        row:list of which rows to operate on
-        
-            *Ranged in [1,dimension]    
-            (default)->0=all rows
-        column:list of which columns to operate on
-            *Ranged in [1,dimension]
-            (default)->0=all columns
-            
-        direction:lists of which direction to iterate through
-            ->"hor"=horizontally
-            ->"ver"=vertically
-            *Diagonally(Requires row|col>=2)
-                ->"ltrb"=diagonally LeftTop-RightBottom
-                ->"lbrt"=diagonally LeftBottom-RightTop
-                ->"dia"=both ways
-            (default)->0=all directions possible(diagonal,vertical,horizontal)
-            
-        adjlen:how many elements to operate together at once=
-            (default)->0=Highest possible
-            ->"a"=all possible lengths [1-dimension]
-        
-        EXAMPLE: a.operateOver(operate="add",result="mx",row[1,2])
-        
-        Returns a number or a list,depends on input
+        element: Real number
+        Returns the indeces of the given elements, multiple occurances are returned in a list
         """
-# =============================================================================
-#         if self._valid:
-#             tempM=[a[:] for a in self._matrix]
-#             if row==0:
-#                 row=[0,self._dim]
-#             if column==0:
-#                 column=[0,self._dim]
-#             if direction==0:
-#                 dirs=[""]
-#         
-# =============================================================================
-        pass
+        indeces=[]
+        r=0
+        for row in self._matrix:
+            try:
+                if element in row:
+                    i=row.index(element)
+                    indeces.append((r+1,i+1))
+                    while element in row[i+1:]:
+                        indeces.append((r+1,self._matrix[i+1:].index(element)+1))
+            except IndexError:
+                r+=1
+                continue
+            else:
+                r+=1
+        if len(indeces):
+            return indeces
+        print("Value not in the matrix")
+        return None
     
     def subM(self,rowS=None,rowE=None,colS=None,colE=None):
         """
@@ -745,11 +706,10 @@ EXAMPLES:
         Leibniz formula for determinants
              
         """
+
         def __zerochecker(m):
-            rowsList=[r for r in self._matrix]
-            start=0
-            
-            
+            pass
+                 
         def __factorial(num1,dict1={0:1,1:1}):
             if num1 not in dict1.keys():
                 dict1[num1]=num1*__factorial(num1-1,dict1)    
@@ -1004,10 +964,9 @@ EXAMPLES:
         return self._inverse()
     @property
     def inRange(self):
-        if not self._isIdentity:
-            return self._inRange
-        else:
-            return [0,1]
+        self._inRange=self._declareRange(self._matrix)[:]
+        return self._inRange
+
     @property
     def matrix(self):
        return self._matrix
@@ -1018,10 +977,13 @@ EXAMPLES:
         return self._determinant()
     @property
     def avg(self):
-        if not self._isIdentity:
-            return self._average()
+        if self._average()!="None":
+            if not self._isIdentity:
+                return float(self._average())
+            else:
+                return 0
         else:
-            return 0
+            return None
     @property
     def highest(self):
         if not self._isIdentity:
@@ -1073,29 +1035,31 @@ EXAMPLES:
                 return self.matrix[pos]
         except:
             print("Bad indeces")
-            
+            return None
 
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):
                 row,col=pos
+                if self._rangeLock and (item>self.inRange[1] or item<self.inRange[0]):
+                    print("Out of the range given, unlock the rangeLock first")
+                    return None
                 self._matrix[row][col]=item
-            
+                self._inRange=self._declareRange(self._matrix)
             elif isinstance(pos,int) and isinstance(item,list):
                 if  len(item)==self.dim[1]:
                     row=pos
                     self._matrix[row]=item
                     self._dim=self._declareDim()
-                    if not self._rangeLock:
-                        self._inRange=self._declareRange(self._matrix)
+                    self._inRange=self._declareRange(self._matrix)
                 else:
                     print("Check the dimension of the given list")
         except:
             print(pos,item)
             print("Bad indeces")
+            return None
         else:
             print(self)
-            self._inRange=self._declareRange(self._matrix)
             return self.matrix
 # =============================================================================
    
@@ -1610,11 +1574,11 @@ EXAMPLES:
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
         """
-        if self._valid and not self._fMat and not self._cMat and not self._isIdentity:
+        if self._valid and not self._fMat and not self._cMat and not self._isIdentity and self.avg!=None:
             if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg))
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3:.4f}".format(self._dim[0],self._dim[1],self.inRange,self.avg))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg))
+                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2:.4f}".format(self._dim[0],self.inRange,self.avg))
             return self._stringfy(self._dim)+"\n"
         else:
             return "Invalid matrix\n"
@@ -1630,7 +1594,7 @@ Identity matrix
         self._dimSet(self._dim)
         self._matrix=list()
         self._randomFill=0
-        
+        self._inRange=[0,1]
         self._valid=1
         self._fMat=0
         self._cMat=0
