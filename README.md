@@ -71,6 +71,8 @@ C.adj #Returns the adjoint matrix
 
 C.inv #Returns the inversed matrix
 
+C.rank #Returns the rank of the matrix
+
 C.copy #Returns a copy of the matrix
 
 C.summary #Returns the string form of the object 
