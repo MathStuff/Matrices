@@ -65,6 +65,7 @@ Check exampleMatrices.py for further explanation and examples
         self.__adjCalc=0
         self.__detCalc=0
         self.__invCalc=0
+        self._rankCalc=0
         
         if not self._isIdentity:
             if dim==None:
@@ -770,12 +771,9 @@ EXAMPLES:
             assert self.dim[0]==self.dim[1]
             d0=self.dim[0]
             if d0<2:
-                if self._fMat:
-                    return float(self.avg)
-                else:
-                    return int(float(self.avg))
+                return self._matrix[0][0]
 
-        except:
+        except AssertionError:
             print("Not a square matrix")
         else:
             permPossible=__factorial(d0)
@@ -890,8 +888,40 @@ EXAMPLES:
             self._inv=new
             return self._inv
 
-    def _rank(self):
-        pass
+    def _Rank(self):
+        m=min(self.dim)
+        dimsOf=[]
+        #Get square matrices from mxn dimension matrix (m!=n)
+        if self._dim[0]<2 or self._dim[1]<2:
+            return 1
+        if self._dim[0]!=self._dim[1]:
+            if m==self.dim[0]:
+                for i in range(1,m+1):    
+                    temp=self.subM(1,m,i,i+m)
+                    if temp.det!=0:
+                        return m
+                    else:
+                        dimsOf.append(temp.rank)
+            elif m==self.dim[0]:
+                for i in range(1,m+1):    
+                    temp=self.subM(i,i+m,1,m)
+                    if temp.det!=0:
+                        return m
+                    else:
+                        dimsOf.append(temp.rank)
+        else:
+            topLeft=self.minor(1,1)
+            topRight=self.minor(1,m)
+            bottomLeft=self.minor(m,1)
+            bottomRight=self.minor(m,m)
+            a=[topLeft,topRight,bottomLeft,bottomRight]
+            if 0 not in [topLeft.det,topRight.det,bottomLeft.det,bottomRight.det]:
+                return m
+            else:
+                for jj in range(len(a)):
+                    dimsOf.append(a[jj].rank)
+            self._rankCalc=1
+            return max(dimsOf)
 # =============================================================================
 
     def _average(self):
@@ -939,7 +969,9 @@ EXAMPLES:
         return self._dim
     @property
     def rank(self):
-        return self._rank()
+        if not self._rankCalc:
+            self._rank=self._Rank()
+        return self._rank
     @property
     def t(self):
         return self._transpose()
@@ -1026,7 +1058,10 @@ EXAMPLES:
         except:
             print("Bad indeces")
             return None
-
+        else:
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):
@@ -1060,6 +1095,9 @@ EXAMPLES:
             print("Bad indeces")
             return None
         else:
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0
             print(self)
             return self.matrix
 # =============================================================================
