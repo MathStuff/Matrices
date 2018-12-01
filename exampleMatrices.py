@@ -30,7 +30,9 @@ projectGrid="""08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
 20 73 35 29 78 31 90 01 74 31 49 71 48 86 81 16 23 57 05 54
 01 70 54 71 83 51 54 69 16 92 33 48 61 43 52 01 89 19 67 48"""
 
-#Valid Matrices
+# =============================================================================
+# Valid Matrices
+# =============================================================================
 proj=Matrix(listed=projectGrid)
 v=Matrix()
 o=Matrix(dim=8,randomFill=0)
@@ -44,7 +46,9 @@ g=Matrix(dim=[3,6])
 p=Matrix(5,inRange=[0,100])
 q=FMatrix(4)
 
-#String inputs Matrices
+# =============================================================================
+# String inputs Matrices
+# =============================================================================
 validStr1=Matrix(dim=[2,3],listed=" 34-52\n33a c9d88 hello\n--3-")
 validStr2=Matrix(listed="312as45\ndid12,,,44\ncc352as45\ndid12,,,44\ncc3-5")
 validStr3=Matrix(listed="\n\n\ndd34 5\n\n44\nn659")
@@ -73,12 +77,16 @@ fr,164,66,32,k
 fr,166,56,42,k
 """)
 
-#InvalidMatrices
+# =============================================================================
+# InvalidMatrices
+# =============================================================================
 k=Matrix(dim=-1)
 l=Matrix(inRange=[0])
 m=Matrix(inRange=[0,0],rangeLock=1)
 
-#Identity Matrices
+# =============================================================================
+# Identity Matrices
+# =============================================================================
 id1=Identity()
 id2=Identity(5)
 id3=id2.subM(3,3)
@@ -86,71 +94,77 @@ id4=Identity(6)
 
 # =============================================================================
 """PRINT THE MATRICES """
+# =============================================================================
+
 for matrix in [proj,v,o,a,b,validStr1,validStr2,validStr3,validStr4,c,d,e,f,g,p,q,k,l,m]:
     print(matrix)
     
+# =============================================================================
 """PRINT THE IDENTITY MATRICES """
+# =============================================================================
+
 for i in [id1,id2,id3,id4]:
     print(i)
-"""ATTRIBUTE CALL EXAMPLES"""    
-print('################################')
+    
+# =============================================================================
+"""ATTRIBUTE CALL EXAMPLES"""   
+# =============================================================================
+print('################################')  
 print("Attribute call outputs\n")
+print('################\n')
 print("d:")
 print(d)
 print("d.matrix:\n")
 print(d.matrix)
-print('################')
+print('\n################\n')
 print("f.subM(1,4,2,3):\n",f.subM(1,4,2,3),"\n")
+print(f)
+print("f.delDim(4)")
+print(f)
 print('################')
-print("proj.dim:\n",proj.dim,"\n")
+print("proj.dim:\n",proj.dim)
 print('################')
-print("validStr2.inRange:\n",validStr2.inRange,"\n")
+print("validStr2.inRange:\n",validStr2.inRange)
 print('################')
-print("for i in range(len(e.matrix)): e[i][-i-1]=99")
-for i in range(len(e.matrix)): e[i][-i-1]=99
-print(e)
+print("g:",g)
 print('################')
-print("f.avg:\n",f.avg,"\n")
-print('################')
-print("g:\n",g)
-print('################')
-print("g.remove(3):\n")
+print("g.remove(3):")
 g.remove(3)
 print(g)
 print('################')
 h=proj.subM(12,18,5,11)
-print("h=proj.subM(12,18,5,11):",h,"\n")
-print("h.det:\n")
-print(h.det)
-print("h.inv:")
+print("h=proj.subM(12,18,5,11):\n",h)
+print("h.avg:",h.avg)
+print("\nh.det:",h.det)
+print("\nh.rank:",h.rank)
+print("\nh.inv:")
 print(h.inv)
 print("h.minor(3,4):\n",h.minor(3,4),"\n")
 print('################')
 j=g.subM(1,2,1,4)
 print("j=g.sub(1,2,1,4):\n",j,"\n")
-print("j.summary\n",j.summary)
-print('################')
-print("Only give 1 argument, row/column! Or it will return an error like so")
-print("proj.remove(5,15):\n")
-print(proj.remove(5,15))
+print("j.summary:\n",j.summary)
+print('\n################')
+print("proj=proj.subM(5,15).copy:\n")
+proj=proj.subM(5,15).copy
+print(proj)
 print('################')
 print("p:",p)
 print("p.det:\n",p.det)
-print("p.adj:\n",p.adj)
+print("\np.adj:\n",p.adj)
 print("p.inv:\n")
 print(p.inv)
 print('################')
 print("p:")
 print(p)
-print("p.remove(c=1):")
+print("p.remove(c=1) and p.remove(r=2)")
 p.remove(c=1)
-print("p.remove(r=2):")
 p.remove(r=2)
 print(p)
 print("p.add(col=2,lis=[55,55,55,55,55]):")
-p.add(col=2,lis=[55,55,55,55,55])
+p.add(col=2,lis=[55,55,55,55])
 print(p)
-print('################')
+print('################\n')
 r=p.t
 print("r:",r)
 print("p==r.t:\n")
@@ -159,7 +173,7 @@ print("################")
 print("id2:\n",id2)
 print("\nid2.addDim(2):",id2.addDim(2))
 print("id2.matrix:\n",id2.matrix)
-print('################')
+print('\n################')
 print("id3:\n")
 print(id3)
 print('################')
@@ -170,31 +184,55 @@ print(id4.delDim(6))
 print('################')
 print("id4:",id4)
 print("\nid4.addDim(10)):\n",id4.addDim(10))
+# =============================================================================
+"""OPERATIONS ON ELEMENTS"""    
+# =============================================================================
 print("################################")
 print("Operator examples")
+print("################")
 print("\nc.dim=",c.dim," d.dim:",d.dim)
 print("\nmMulti=c@d:")
 mMulti=c@d
 print(mMulti)
-print("################")
 print("\n((((mMulti)+125)**3)%2):")
 print(((((mMulti)+125)**3)%2))
+print("################\n")
+print("r.remove(r=2):")
+r.remove(r=2)
+print(r)
+print("r.rank:",r.rank)
+print("\nr[0]=r[1]")
+r[0]=r[1]
+print(r)
+print("r.rank:",r.rank)    
 print("################")
-print("\ne+50:")
-print(e+50)
+print("for i in range(len(e.matrix)): e[i][-i-1]=99")
+for i in range(len(e.matrix)): e[i][-i-1]=99
+print(e)
+print("\ne+=50:")
+e+=50
+print(e)
+print("for i in range(len(e)):e[i]=[b%2 for b in e[i]]:\n")
+for i in range(len(e.matrix)):e[i]=[b%2 for b in e[i]]
+print(e)
 print("################")
 print("\nc%j")
 print(c%j)
 print("################")
 print("\na<b")
 print(a<b)
-print('################')
+# =============================================================================
+""" STRING MATRICES' OUTPUTS"""
+# =============================================================================
+print("\n################################")
 print("Strings' matrices:")
+print("################\n")
 for numb,strings in enumerate([validStr1,validStr2,validStr3,validStr4]):
     print("validStr"+str(numb+1)+":")
     print(strings)         
     print('################')
 print("")
+
 # =============================================================================
 """ Expected Outputs """
 # =============================================================================
