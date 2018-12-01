@@ -6,7 +6,6 @@ Created on Wed Oct 31 17:26:48 2018
 """
 
 import random as rd
-from time import sleep
 
 class Matrix(object):
     """Matrix object:
@@ -65,7 +64,7 @@ Check exampleMatrices.py for further explanation and examples
         self.__adjCalc=0
         self.__detCalc=0
         self.__invCalc=0
-        self._rankCalc=0
+        self.__rankCalc=0
         
         if not self._isIdentity:
             if dim==None:
@@ -565,7 +564,8 @@ Check exampleMatrices.py for further explanation and examples
             self._string=self._stringfy(self._dim) 
             self.__adjCalc=0
             self.__detCalc=0
-            self.__invCalc=0    
+            self.__invCalc=0  
+            self.__rankCalc=0     
             return self._matrix
         
     def remove(self,r=None,c=None):
@@ -577,11 +577,6 @@ If no parameter name given, takes it as row
         """
         try:
             assert (r==None or c==None) and (r!=None or c!=None) 
-            
-        except:
-            print("Bad arguments")
-            
-        else:
             newM=[]
             if c==None:
                     if r>1:
@@ -599,13 +594,47 @@ If no parameter name given, takes it as row
                             newM[rows]+=self.matrix[rows][c:]
                     if c==1:
                         newM[rows]=self.matrix[rows][c:]
+        except:
+            print("Bad arguments")
+            
+        else:
             self.__adjCalc=0
             self.__detCalc=0
-            self.__invCalc=0                          
+            self.__invCalc=0  
+            self.__rankCalc=0                        
             self._matrix=[a[:] for a in newM]
             self._dim=self._declareDim()
             self._string=self._stringfy(self._dim)
             
+    def delDim(self,num):
+        """
+Removes desired number of dimensions from bottom left corner
+        """        
+        try:
+            if self.matrix==[]:
+                return "Empty matrix"
+            assert isinstance(num,int) and num>0 and self.dim[0]-num>=0 and self.dim[1]-num>=0
+            goal1=self._dim[0]-num
+            goal2=self._dim[1]-num
+            if goal1==0 and goal2==0:
+                print("All rows have been deleted")
+            self._dim=[goal1,goal2]
+            temp=[]
+            for i in range(goal1):
+                temp.append(self._matrix[i][:goal2])
+            self._matrix=temp
+            self._string=self._stringfy(self.dim)
+        except AssertionError:
+            print("Enter a valid input")
+        except Exception as err:
+            print(err)
+        else:
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0  
+            self.__rankCalc=0  
+            return self
+        
     def find(self,element):
         """
         element: Real number
@@ -697,8 +726,15 @@ EXAMPLES:
             """
             Speed up the process by checking the linear dependencies
             """
-            pass
-                 
+            for i in range(len(m)):
+                for rows in m:
+                    n=m[i+1:]
+                    if rows in n:
+                        self._det=0
+                        self.__detCalc=1
+                        return self._det
+                    else:
+                        break
         def __factorial(num1,dict1={0:1,1:1}):
             if num1 not in dict1.keys():
                 dict1[num1]=num1*__factorial(num1-1,dict1)    
@@ -766,39 +802,46 @@ EXAMPLES:
                 return -1
             else:
                 return 1
+            
+        __zerochecker(self._matrix) 
         
-        try:
-            assert self.dim[0]==self.dim[1]
-            d0=self.dim[0]
-            if d0<2:
-                return self._matrix[0][0]
-
-        except AssertionError:
-            print("Not a square matrix")
-        else:
-            permPossible=__factorial(d0)
-            allNums=[n for n in range(1,d0+1)]
-            permGen=__findPermutations(d0)  
-            
-            det=0
-            for sums in range(permPossible):
-                s=1
-                perms=next(permGen)
-                
-                for p in range(d0):
-                    s*=self.matrix[p][perms[p]-1]                    
-                
-                sign=__signature(allNums,perms)
-                det+=s*sign
-            self.__detCalc=1
-            if not self._fMat:                        
-                self._det=int(det)
-                return self._det
+        if not self.__detCalc:  
+            try:
+                assert self.dim[0]==self.dim[1]
+                d0=self.dim[0]
+                if d0>=8:
+                    print("Press CTRL+C to quit, current runtime is too inefficient for dimensions beyond 8")
+                if d0<2:
+                    return self._matrix[0][0]
+    
+            except AssertionError:
+                print("Not a square matrix")
             else:
-                a="{0:.4f}".format(det)
-                self._det=float(a)
-                return self._det
-            
+                permPossible=__factorial(d0)
+                allNums=[n for n in range(1,d0+1)]
+                permGen=__findPermutations(d0)  
+                
+                det=0
+                for sums in range(permPossible):
+                    s=1
+                    perms=next(permGen)
+                    
+                    for p in range(d0):
+                        s*=self.matrix[p][perms[p]-1]                    
+                    
+                    sign=__signature(allNums,perms)
+                    det+=s*sign
+                self.__detCalc=1
+                if not self._fMat:                        
+                    self._det=int(det)
+                    return self._det
+                else:
+                    a="{0:.4f}".format(det)
+                    self._det=float(a)
+                    return self._det
+        else:
+            return self._det
+        
     def _transpose(self):
         try:
             if self._isIdentity:
@@ -896,31 +939,33 @@ EXAMPLES:
             return 1
         if self._dim[0]!=self._dim[1]:
             if m==self.dim[0]:
-                for i in range(1,m+1):    
-                    temp=self.subM(1,m,i,i+m)
-                    if temp.det!=0:
+                for i in range(1,m+2):    
+                    temp=self.subM(1,m,i,i+m-1)
+                    if temp.det!=0 and temp.det!=None:
                         return m
                     else:
                         dimsOf.append(temp.rank)
-            elif m==self.dim[0]:
-                for i in range(1,m+1):    
-                    temp=self.subM(i,i+m,1,m)
-                    if temp.det!=0:
+            elif m==self.dim[1]:
+                for i in range(1,m+2):    
+                    temp=self.subM(i,i+m-1,1,m)
+                    if temp.det!=0 and temp.det!=None:
                         return m
                     else:
                         dimsOf.append(temp.rank)
+            return max(dimsOf)
         else:
             topLeft=self.minor(1,1)
             topRight=self.minor(1,m)
             bottomLeft=self.minor(m,1)
             bottomRight=self.minor(m,m)
             a=[topLeft,topRight,bottomLeft,bottomRight]
-            if 0 not in [topLeft.det,topRight.det,bottomLeft.det,bottomRight.det]:
-                return m
+            for items in [self,topLeft,topRight,bottomLeft,bottomRight]:
+                if items.det!=0 and items.det!=None:
+                    return items.dim[0]
             else:
                 for jj in range(len(a)):
                     dimsOf.append(a[jj].rank)
-            self._rankCalc=1
+            self.__rankCalc=1
             return max(dimsOf)
 # =============================================================================
 
@@ -944,7 +989,7 @@ EXAMPLES:
             print(err)
             return None
         else:
-            new="{0:.4f}".format(total/(d[0]*d[1]))
+            new=total/(d[0]*d[1])
             return new
 
 # =============================================================================
@@ -969,7 +1014,7 @@ EXAMPLES:
         return self._dim
     @property
     def rank(self):
-        if not self._rankCalc:
+        if not self.__rankCalc:
             self._rank=self._Rank()
         return self._rank
     @property
@@ -1000,10 +1045,7 @@ EXAMPLES:
     @property
     def avg(self):
         if self._average()!="None":
-            if not self._isIdentity:
-                return float(self._average())
-            else:
-                return 0
+            return float(self._average())
         else:
             return None
     @property
@@ -1059,9 +1101,11 @@ EXAMPLES:
             print("Bad indeces")
             return None
         else:
+            self.__rankCalc=0
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0
+            
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):
@@ -1095,10 +1139,12 @@ EXAMPLES:
             print("Bad indeces")
             return None
         else:
+            self.__rankCalc=0
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0
-            print(self)
+            if __name__=="__main__":
+                print(self)
             return self.matrix
 # =============================================================================
    
