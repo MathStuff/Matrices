@@ -51,7 +51,7 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],inRange=[-125,125],rangeLock=0,randomFill=1):
+    def __init__(self,dim=None,listed=[],inRange=[-10,10],rangeLock=0,randomFill=1):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
@@ -75,7 +75,7 @@ Check exampleMatrices.py for further explanation and examples
             self._inRange = inRange
             self._randomFill = randomFill
             self._rangeLock = rangeLock
-            
+            self._string=""
         try:
             if len(inRange)!=2:
                 self._valid=0
@@ -93,7 +93,7 @@ Check exampleMatrices.py for further explanation and examples
                 self._dim=self._declareDim()
                 if not self._rangeLock:
                     self._inRange=self._declareRange(self._matrix)
-
+                self._string=self._stringfy()
                
             elif self._validateList(listed) and self._valid and not self._isIdentity :
                     self.__temp1=[a[:] for a in listed]
@@ -103,7 +103,7 @@ Check exampleMatrices.py for further explanation and examples
                             if not self._rangeLock:
                                 self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim()
-                            self._string=self._stringfy(self._dim)     
+                            self._string=self._stringfy()    
                     elif len(self.__temp1)==0 and dim!=[0,0]:
                         
                         if not self._randomFill:
@@ -116,7 +116,8 @@ Check exampleMatrices.py for further explanation and examples
                             if not self._rangeLock:
                                 self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim() 
-                            self._string=self._stringfy(self._dim) 
+                            self._string=self._stringfy()
+
                         else:
                             self._valid=0
                             return None
@@ -377,69 +378,45 @@ Check exampleMatrices.py for further explanation and examples
             else:
                 return list2
     
-    def _stringfy(self,dm):
+    def _stringfy(self):
         """
         Turns a square matrix shaped list into a grid-like form that is printable
         Returns a string
         """
-        def _digits(num):
-                try:
-                    num=int(float(num))
-                    dig=1
-                except TypeError:
-                    print("Digits are too much of a mess to handle! Returning none")
-                    return None
-                else:
-                    if num<=0:
-                        num=num*-1
-                        dig+=1
-                        
-                    while num>0:
-                        dig+=1
-                        num=num//10
-                        
-                    return dig
-        while True:
-            try:     
-                string=""
-                if self._isIdentity:
-                    l=1
-                    h=1
-                else:
-                    l=_digits(self._inRange[0])
-                    h=_digits(self._inRange[1])
-                    
-                d=self._dim[:]
-                s=max([h,l])
-                for i in range(d[0]):
-                    string+="\n"
-                    for j in range(d[1]):
-                        if isinstance(self._matrix[i][j],complex) or self._cMat:
-                            a="{0:.8f}".format(self._matrix[i][j])
-                            string += " "+a+" " 
-                            
-                        elif self._fMat and not self._cMat:
-                            n=self._matrix[i][j]
-                            a="{:.4f}".format(n)
-                            f=_digits(n)
-                            if n>-1 and n<1:
-                                string += " "+a+" "
-                                continue
-                            if n>1:
-                                string += " "*(s-f)+a+" "
-                            else:
-                                string += " "*(s-f-1)+a+" "
-                                
-                        else:
-                            a=str(self._matrix[i][j])
-                            f=_digits(a)
-                            string += " "*(s-f)+a+" "      
-            except Exception as err:
-                print("Elements may look complicated ",end="")
-                print(err)
-                break
-            else:   
-                return string
+        def __digits(num):
+            dig=0
+            if num==0:
+                return 1
+            if num<0:
+                dig+=1
+                num*=-1
+            while num!=0:
+                num=num//10
+                dig+=1
+            return dig
+        try:
+            assert self._valid==1
+            string=""
+            i=self._inRange[0]
+            j=self._inRange[1]
+            b1=__digits(i)
+            b2=__digits(j)
+            bound=max([b1,b2])
+        except:
+            print("Invalid")
+            return None
+        else:
+            for rows in self._matrix:
+                string+="\n"
+                for cols in rows:
+                    s=__digits(cols)
+                    if self._fMat:
+                        item="{0:.4f}".format(cols)
+                    else:
+                        item=str(cols)
+                    string += " "*(bound-s)+item+" "
+        
+            return string
 # =============================================================================
 
     def _zeroFiller(self,lis):
@@ -561,7 +538,7 @@ Check exampleMatrices.py for further explanation and examples
             self._dim=self._declareDim()
             if not self._rangeLock:
                 self._inRange=self._declareRange(self._matrix)
-            self._string=self._stringfy(self._dim) 
+            self._string=self._stringfy()
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
@@ -604,7 +581,7 @@ If no parameter name given, takes it as row
             self.__rankCalc=0                        
             self._matrix=[a[:] for a in newM]
             self._dim=self._declareDim()
-            self._string=self._stringfy(self._dim)
+            self._string=self._stringfy()
             
     def delDim(self,num):
         """
@@ -623,7 +600,7 @@ Removes desired number of dimensions from bottom left corner
             for i in range(goal1):
                 temp.append(self._matrix[i][:goal2])
             self._matrix=temp
-            self._string=self._stringfy(self.dim)
+            self._string=self._stringfy()
         except AssertionError:
             print("Enter a valid input")
         except Exception as err:
@@ -997,7 +974,7 @@ EXAMPLES:
 # =============================================================================
     @property
     def grid(self):
-        print(self._stringfy(self._dim))
+        print(self._stringfy())
     @property
     def copy(self):
         if self._isIdentity:
@@ -1008,7 +985,7 @@ EXAMPLES:
             return Matrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
     @property
     def string(self):
-        return self._string
+        return self._stringfy()
     @property
     def dim(self):
         return self._dim
@@ -1100,12 +1077,7 @@ EXAMPLES:
         except:
             print("Bad indeces")
             return None
-        else:
-            self.__rankCalc=0
-            self.__adjCalc=0
-            self.__detCalc=0
-            self.__invCalc=0
-            
+
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):
@@ -1131,7 +1103,6 @@ EXAMPLES:
                     self._matrix[row]=item[:]
                     self._dim=self._declareDim()
                     self._inRange=self._declareRange(self._matrix)
-                    
                 else:
                     print("Check the dimension of the given list")
         except:
@@ -1139,13 +1110,12 @@ EXAMPLES:
             print("Bad indeces")
             return None
         else:
+            self._string=self._stringfy()
             self.__rankCalc=0
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0
-            if __name__=="__main__":
-                print(self)
-            return self.matrix
+            return self
 # =============================================================================
    
     def __matmul__(self,other):
@@ -1368,6 +1338,8 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]//other.matrix[rows][cols])
+            except ZeroDivisionError:
+                print("Division by 0")
             except:
                 print("Can't divide")
             else:
@@ -1380,6 +1352,8 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]//other)
+            except ZeroDivisionError:
+                print("Division by 0")
             except:
                 print("Can't divide") 
             else:
@@ -1393,6 +1367,8 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]//other)
+            except ZeroDivisionError:
+                print("Division by 0")
             except:
                 print("Can't divide") 
             else:
@@ -1424,6 +1400,8 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]/other.matrix[rows][cols])
+            except ZeroDivisionError:
+                print("Division by 0")
             except:
                 print("Can't divide")
             else:
@@ -1436,6 +1414,8 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]/other)
+            except ZeroDivisionError:
+                print("Division by 0")
             except:
                 print("Can't divide") 
             else:
@@ -1448,6 +1428,8 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]/other)
+            except ZeroDivisionError:
+                print("Division by 0")
             except:
                 print("Can't divide") 
             else:
@@ -1479,8 +1461,10 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]%other.matrix[rows][cols])
-            except:
-                print("Can't modular")
+            except ZeroDivisionError:
+                print("Division by zero! Can't get modular")
+            except AssertionError:
+                print("Dimensions doesn't match")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp)
@@ -1494,8 +1478,10 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(self.dim[1]):
                         temp[rows].append(self.matrix[rows][cols]%other)
+            except ZeroDivisionError:
+                print("Division by zero! Can't get modular")
             except:
-                print("Can't modular") 
+                print("Can't get modular")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,float):                
                     return FMatrix(dim=self.dim,listed=temp)
@@ -1509,8 +1495,10 @@ EXAMPLES:
                     temp.append(list())
                     for cols in range(other.dim[1]):
                         temp[rows].append(other.matrix[rows][cols]%other)
+            except ZeroDivisionError:
+                print("Division by zero! Can't get modular")
             except:
-                print("Can't modular") 
+                print("Can't get modular")
             else:
                 if isinstance(self,float) or isinstance(other,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp)
@@ -1518,7 +1506,7 @@ EXAMPLES:
                     
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
-                print("Can't divide")
+                print("Can't get modular")
                 return None
             else:
                 temp=[]
@@ -1526,7 +1514,7 @@ EXAMPLES:
                 for rows in self._matrix:
                     temp.append(list())
                     for d in range(len(other)):
-                        temp[s].append(rows[d]/other[d])
+                        temp[s].append(rows[d]%other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp)
@@ -1567,7 +1555,7 @@ EXAMPLES:
                 
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
-                print("Can't divide")
+                print("Can't raise to the given power") 
                 return None
             else:
                 temp=[]
@@ -1575,7 +1563,7 @@ EXAMPLES:
                 for rows in self._matrix:
                     temp.append(list())
                     for d in range(len(other)):
-                        temp[s].append(rows[d]/other[d])
+                        temp[s].append(rows[d]**other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp)
@@ -1659,12 +1647,14 @@ EXAMPLES:
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
         """
-        if self._valid and not self._fMat and not self._cMat and not self._isIdentity and self.avg!=None:
+        if self._fMat:
+            print("\nFloat Matrix",end="")
+        if self._valid and not self._cMat and not self._isIdentity and self.avg!=None:
             if self._dim[0]!=self._dim[1]:
                 print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3:.4f}".format(self._dim[0],self._dim[1],self.inRange,self.avg))
             else:
                 print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2:.4f}".format(self._dim[0],self.inRange,self.avg))
-            return self._stringfy(self._dim)+"\n"
+            return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
     
@@ -1696,7 +1686,7 @@ Identity matrix
             return None
         if self._isIdentity:
             self._matrix=self._zeroFiller(self._matrix)
-            self._string=self._stringfy(self.dim)
+            self._string=self._stringfy()
                     
     def addDim(self,num):
         """
@@ -1712,7 +1702,7 @@ Identity matrix
             goal=self._dim[0]+num
             self._dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
-            self._string=self._stringfy(self.dim)
+            self._string=self._stringfy()
             return self
         
     def delDim(self,num):
@@ -1733,7 +1723,7 @@ Identity matrix
                 print("All rows have been deleted")
             self._dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
-            self._string=self._stringfy(self.dim)
+            self._string=self._stringfy()
             return self
         
     @property
@@ -1749,7 +1739,7 @@ Identity matrix
     def __str__(self):
         if self._isIdentity:
             print("\nIdentity Matrix\nDimension: {0}x{0}".format(self._dim[0]))
-            return self._stringfy(self._dim)+"\n"
+            return self._stringfy()+"\n"
         
 class FMatrix(Matrix):
     """
@@ -1759,17 +1749,7 @@ Matrix which contain float numbers
         super().__init__(*args,**a)
         self._valid=1
         self._fMat=1
-        
-    def __str__(self):
-        if self._fMat:
-            print("\nFloat Matrix",end="")
-            if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg))
-            else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg))
-            
-            return self._stringfy(self._dim)+"\n"
-        
+              
 class CMatrix(FMatrix):
     """
 Matrix which contain complex numbers
@@ -1787,4 +1767,4 @@ Matrix which contain complex numbers
             else:
                 print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg))            
                 
-            return self._stringfy(self._dim)+"\n"
+            return self._stringfy()+"\n"
