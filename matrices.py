@@ -15,7 +15,6 @@ class Matrix(object):
 -dim:dimension of the matrix;natural numbers as [rows,cols],if and integer given, matrix will be a square matrix 
 -listed:(a list of integers | a string) with & dim**2 amount of integers
 -inRange:list of 2 numbers
--rangeLock: wheter or not not to allow numbers out of given range
 -randomFill: 
     ->1 to fill the matrix with random integers if no list is given
     ->0 to fill the matrix with 0s
@@ -51,7 +50,7 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],inRange=[-10,10],rangeLock=0,randomFill=1):
+    def __init__(self,dim=None,listed=[],inRange=[-10,10],randomFill=1):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
@@ -74,7 +73,6 @@ Check exampleMatrices.py for further explanation and examples
             self._matrix = []     
             self._inRange = inRange
             self._randomFill = randomFill
-            self._rangeLock = rangeLock
             self._string=""
         try:
             if len(inRange)!=2:
@@ -91,8 +89,7 @@ Check exampleMatrices.py for further explanation and examples
                 self._valid=1
                 self._matrix=self._listify(listed)
                 self._dim=self._declareDim()
-                if not self._rangeLock:
-                    self._inRange=self._declareRange(self._matrix)
+                self._inRange=self._declareRange(self._matrix)
                 self._string=self._stringfy()
                
             elif self._validateList(listed) and self._valid and not self._isIdentity :
@@ -100,21 +97,18 @@ Check exampleMatrices.py for further explanation and examples
                     
                     if len(self.__temp1)>0:                        
                             self._matrix = self.__temp1.copy()  
-                            if not self._rangeLock:
-                                self._inRange=self._declareRange(self._matrix)
+                            self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim()
                             self._string=self._stringfy()    
                     elif len(self.__temp1)==0 and dim!=[0,0]:
                         
                         if not self._randomFill:
                             self._matrix=self._zeroFiller(self.__temp1)
-                            if not self._rangeLock:
-                                self._inRange=self._declareRange(self._matrix)
+                            self._inRange=self._declareRange(self._matrix)
                             
                         elif self._randomFill:
                             self._matrix=self._randomFiller(self.__temp1)
-                            if not self._rangeLock:
-                                self._inRange=self._declareRange(self._matrix)
+                            self._inRange=self._declareRange(self._matrix)
                             self._dim=self._declareDim() 
                             self._string=self._stringfy()
 
@@ -470,13 +464,12 @@ Check exampleMatrices.py for further explanation and examples
         
 # =============================================================================
             
-    def add(self,row=None,col=None,lis=[]):
+    def add(self,lis=[],row=None,col=None):
         """
         Add a row or a column of numbers
-        FIRST ROW | COLUMN : row | col = 1
+        lis: list of numbers desired to be added to the matrix
         row: natural number
         col: natural number 
-        lis: list of numbers desired to be added to the matrix
         row>=1 and col>=1
         
         To append a row, only give the list of numbers, no other arguments
@@ -536,8 +529,7 @@ Check exampleMatrices.py for further explanation and examples
         else:
             self._valid=1
             self._dim=self._declareDim()
-            if not self._rangeLock:
-                self._inRange=self._declareRange(self._matrix)
+            self._inRange=self._declareRange(self._matrix)
             self._string=self._stringfy()
             self.__adjCalc=0
             self.__detCalc=0
@@ -701,17 +693,42 @@ EXAMPLES:
 
         def __zerochecker(m):
             """
-            Speed up the process by checking the linear dependencies
+            Checks linear dependency on 2 vectors ( Linear dependency of all vectors individually to rest of the vectors will be added later)
+            Possibly speed up the process by checking the linear dependencies in row vectors ( Column vectors will be added later)
             """
-            for i in range(len(m)):
-                for rows in m:
-                    n=m[i+1:]
-                    if rows in n:
+            def __allsame(lis):
+                validate=0
+                prev=lis[0]
+                for item in lis:
+                    if item==prev:
+                        validate+=1
+                    prev=item
+                    
+                return validate==len(lis)
+            i=0
+            for rows in m:
+                n=m[i+1:]
+                i+=1
+                #CHECK REST OF THE VECTORS IN THE MATRIX FOR THE LINEAR DEPENDENCY
+                for items in n:
+                    res=[]
+                    j=0
+                    for a in range(len(m)):
+                        try:
+                            res.append(rows[j]/items[j])
+                        except ZeroDivisionError:
+                            res.append(0)
+                            j+=1
+                        else:
+                            j+=1
+                    if __allsame(res):
+                        #print("Row{0} and row{1} are linearly dependent: {2} * ({3}) = {4}".format(m.index(rows),m.index(items),items,res[0],rows))
                         self._det=0
                         self.__detCalc=1
                         return self._det
-                    else:
-                        break
+                
+                    
+                    
         def __factorial(num1,dict1={0:1,1:1}):
             if num1 not in dict1.keys():
                 dict1[num1]=num1*__factorial(num1-1,dict1)    
@@ -779,14 +796,14 @@ EXAMPLES:
                 return -1
             else:
                 return 1
-            
+        #Check if there are any linearly dependent row vectors, return 0 if there is any   
         __zerochecker(self._matrix) 
         
-        if not self.__detCalc:  
+        if not self.__detCalc and self._valid:  
             try:
                 assert self.dim[0]==self.dim[1]
                 d0=self.dim[0]
-                if d0>=8:
+                if d0>8:
                     print("Press CTRL+C to quit, current runtime is too inefficient for dimensions beyond 8")
                 if d0<2:
                     return self._matrix[0][0]
@@ -980,9 +997,9 @@ EXAMPLES:
         if self._isIdentity:
             return Identity(dim=self._dim)
         elif self._fMat:
-            return FMatrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
+            return FMatrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,randomFill=self._randomFill)
         else:
-            return Matrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,rangeLock=self._rangeLock,randomFill=self._randomFill)
+            return Matrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,randomFill=self._randomFill)
     @property
     def string(self):
         return self._stringfy()
@@ -1040,32 +1057,17 @@ EXAMPLES:
     @property
     def summary(self):
         if self._valid and self._fMat:
-            return "FMatrix(dim={0},listed={1},inRange={2},rangeLock={3},randomFill={4})".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
+            return "FMatrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self._dim,self._matrix,self._inRange,self._randomFill)
         elif self._valid and not self._isIdentity:
-            return "Matrix(dim={0},listed={1},inRange={2},rangeLock={3},randomFill={4})".format(self._dim,self._matrix,self._inRange,self._rangeLock,self._randomFill)
+            return "Matrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self._dim,self._matrix,self._inRange,self._randomFill)
         elif self._valid and self._isIdentity:
-            return "Identity(dim={0},listed={1},inRange=[0,1],rangeLock=1,randomFill=0)".format(self._dim,self._matrix)
+            return "Identity(dim={0},listed={1},inRange=[0,1],randomFill=0)".format(self._dim,self._matrix)
         else:
             return None
         
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)  
-    
-    def rangeLock(self):
-        try:
-            state=["off","on"]
-            print("Range lock is {}. 0=Turn off / 1=Turn on".format(state[self._rangeLock]))
-            i=input()
-            assert i=="1" or i=="0"
-        except Exception as err:
-            print(err)
-        else:
-            if int(i):
-                self._rangeLock=1
-            else:
-                self._rangeLock=0
-            print("Range lock is {}".format(state[self._rangeLock]))
-            
+
 # =============================================================================
     def __getitem__(self,pos):
         try:
@@ -1080,25 +1082,13 @@ EXAMPLES:
 
     def __setitem__(self,pos,item):
         try:
-            if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):
-               
-                if self._rangeLock and (item>self._inRange[1] or item<self._inRange[0]):
-                    print("Out of the range given, unlock the rangeLock first")
-                    return None
-                
+            if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):           
                 row,col=pos
                 self._matrix[row][col]=item
                 self._inRange=self._declareRange(self._matrix)
                 
             elif isinstance(pos,int) and isinstance(item,list):
-                if len(item)==self.dim[1]:
-                    
-                    if self._rangeLock:
-                        for items in item:
-                            if items>self._inRange[1] or items<self._inRange[0]:
-                                print("Out of the range given, unlock the rangeLock first")
-                                return None
-                    
+                if len(item)==self.dim[1]: 
                     row=pos
                     self._matrix[row]=item[:]
                     self._dim=self._declareDim()
