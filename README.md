@@ -1,9 +1,9 @@
 # Matrices (Pre-release)
 ### Python 3 code to create and operate on matrices:
    
-   ##### -matrices.py contains Matrix class and FMatrix, CMatrix and Identity sub-classes
+   ##### -<a href=https://github.com/semihM/Matrices/blob/master/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
   
-   ##### -exampleMatrices.py contains example matrices
+   ##### -<a href=https://github.com/semihM/Matrices/blob/master/exampleMatrices.py>exampleMatrices.py</a> contains example matrices
    
    ##### -Check the <a href="https://github.com/semihM/Matrices/projects">project tab</a> to see the progress
 -------------- 
@@ -106,4 +106,4 @@ B @ B.t #Matrix multiplication example
    
 ----------------------------------------
 
-### More examples can be found in exampleMatrices.py
+#### More examples can be found in <a href=https://github.com/semihM/Matrices/blob/master/exampleMatrices.py>exampleMatrices.py</a>
