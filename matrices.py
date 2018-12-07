@@ -1022,8 +1022,8 @@ EXAMPLES:
     def string(self):
         return self._stringfy()
     @property
-    def dir(self):
-        return self._directory
+    def directory(self):
+        return self._dir
     @property
     def dim(self):
         return self._dim
