@@ -50,7 +50,7 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],directory="",inRange=[-10,10],randomFill=1):
+    def __init__(self,dim=None,listed=[],directory="",header=0,inRange=[-10,10],randomFill=1):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
@@ -80,7 +80,7 @@ Check exampleMatrices.py for further explanation and examples
             self._randomFill = randomFill
             self._string=""
             self._dir=directory
-            
+            self._header=header
         try:
             if len(inRange)!=2:
                 self._valid=0
@@ -98,7 +98,7 @@ Check exampleMatrices.py for further explanation and examples
 ##########################################################################################################                
                 if isinstance(listed,str):
                     try:
-                        self._matrix=self._listify(listed)
+                        self._matrix=self._listify(listed,self._header)
                         self._dim=self._declareDim()
                         self._inRange=self._declareRange(self._matrix)
                         self._string=self._stringfy()
@@ -113,7 +113,7 @@ Check exampleMatrices.py for further explanation and examples
                     try:
                         lis=self.__fromFile(directory)
                         if not lis==None:
-                            self._matrix=self._listify(lis)
+                            self._matrix=self._listify(lis,self._header)
                             self._dim=self._declareDim()
                             self._inRange=self._declareRange(self._matrix)
                             self._string=self._stringfy()
@@ -174,13 +174,15 @@ Check exampleMatrices.py for further explanation and examples
             rows=dim[0]
             cols=dim[1]
             if rows<0 or cols<0: 
-                self._valid=0  
+                self._valid=0
+                self._dim=[0,0]
             else:                              
                 self._dim=[rows,cols]
             
         elif isinstance(dim,int):
             if dim<0:
                 self._valid=0
+                self._dim=[0,0]
             else:
                 self._dim=[dim,dim]
             
@@ -268,34 +270,23 @@ Check exampleMatrices.py for further explanation and examples
             f.close()
             return data
 # =============================================================================  
-    def _listify(self,string,square=0):
+    def _listify(self,string,header=0):
         """
         Finds all the positive and negative numbers in the given string
         Tries to fit the numbers into a grid shape
-        Returns a list in a form of a square matrix
+
         """
         try:
             gridNum=""
             numbers=[str(i) for i in range(10)]
-            l=len(string)
             
+            l=len(string)
             list1=list()
             negative=0
-            newRow=0
-            rowadded=0
-            
-            if self._dim==[0,0]:
-                square=0
-            else:
-                square=1
+            newRow=1
+            rowadded=None
             
             for c in range(0,l):    
-                if c==l-1 and len(gridNum)>0:
-                    if negative:
-                            list1.append(int(gridNum)*-1)
-                    else:
-                        list1.append(int(gridNum))
-                    break
                 if string[c] in numbers:
                     gridNum+=string[c]
                     if c==l-1:
@@ -317,9 +308,9 @@ Check exampleMatrices.py for further explanation and examples
                     negative=1  
                 
                 elif string[c]=="\n":
-                    if not square and not rowadded:
-                            newRow+=1
-                            rowadded=1
+                    if rowadded==0:
+                        newRow+=1
+                        rowadded=1
                     if len(gridNum)>0:
                         if negative:
                             list1.append(int(gridNum)*-1)
@@ -330,7 +321,7 @@ Check exampleMatrices.py for further explanation and examples
                             list1.append(int(gridNum))
                             rowadded=0
                             gridNum=""
-
+                            
                 else:
                     if len(gridNum)>0:
                         if negative:
@@ -344,7 +335,7 @@ Check exampleMatrices.py for further explanation and examples
                             gridNum=""
                             
         except Exception as err:
-            print("****List error****\nMake sure string:\n-Has positive integers only \n-Have 1 space splitting the elements")
+            print("Bad stirng")
             print(Matrix.__doc__)
         else:          
             try:
@@ -365,10 +356,12 @@ Check exampleMatrices.py for further explanation and examples
                         return list2
                 else:
                     try:
+                        if header:
+                            newRow-=1
                         l2=len(list1)/newRow
-                        if float(l2)<l2 or float(l2)>l2:
-                            print("New rows couldn't be created")
-                            return list1
+                        if int(l2)<l2 or int(l2)>l2:
+                            #print("New rows couldn't be created")
+                            return [list1]
                         list2=[]
                         ind=0
                         for i in range(newRow):
@@ -377,7 +370,7 @@ Check exampleMatrices.py for further explanation and examples
                                 list2[i].append(list1[ind])
                                 ind+=1
                     except ZeroDivisionError:
-                        return list1
+                        return [list1]
                     else:
                         return list2
             except Exception as err:
@@ -684,7 +677,6 @@ EXAMPLES:
             print(err)
             return ""
         else:
-            print(rowS,rowE,colS,colE)
             temp=self._matrix[rowS-1:rowE]
             for column in range(len(temp)):
                 valid=1
@@ -993,7 +985,7 @@ EXAMPLES:
         try:
             d=self._dim[:]
             if d[0]==0 or d[1]==0:
-                return "None"
+                return None
             total=0
             for row in self._matrix:
                 if isinstance(row,list):
@@ -1067,7 +1059,7 @@ EXAMPLES:
         return self._determinant()
     @property
     def avg(self):
-        if self._average()!="None":
+        if self._average()!=None:
             return float(self._average())
         else:
             return None
