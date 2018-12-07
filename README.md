@@ -23,8 +23,6 @@ C=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix (Integers only for now)
 
-###### This example data is from a csv file, directly copied and pasted into a string format  
-
 data="""1,K,60,69900,6325
 2,K,30,79000,5200
 3,E,52,85500,7825
@@ -37,6 +35,18 @@ data="""1,K,60,69900,6325
 10,E,37,31800,5975"""
 
 D=Matrix(dim=[10,4],listed=data) #Creates a matrix form of the given string's *integers*, dimension is *required* as [dataAmount,features]
+
+##### OR
+
+##### Read data from files
+
+##### If your file is a table of data AND has a header AND header has numbers in it, use give header parameter 1 or you will get a row of all numbers in the file
+
+##### Currently only works for INTEGER values and if the data in string format doesn't have new lines, it will return a row vector of all values
+
+dataDir="Example\Directory\DATAFILE"
+
+dataMatrix=Matrix(directory=dataDir) #Create a matrix from a table of data
 
 ----------------------------------------
 ##### Create matrices filled with random float numbers
@@ -55,9 +65,13 @@ i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
 ----------------------------------------
 ##### Get properties of your matrix
 
-C.dim #Returns the dimension of the matrix
-
 C.grid #Prints the matrix's elements as a grid
+
+C.p #Print the dimension,range,average and the grid
+
+C.directory #Returns the directory of the matrix if there is any given
+
+C.dim #Returns the dimension of the matrix
 
 C.string #Returns the string for of the matrix's elements
 
