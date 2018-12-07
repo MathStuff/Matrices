@@ -50,76 +50,117 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],inRange=[-10,10],randomFill=1):
+    def __init__(self,dim=None,listed=[],directory="",inRange=[-10,10],randomFill=1):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
+        
         if isinstance(self,FMatrix):
             self._fMat=1
         elif isinstance(self,CMatrix):
             self._cMat=1
-        
-        self._valid = 1
-        self.__adjCalc=0
-        self.__detCalc=0
-        self.__invCalc=0
-        self.__rankCalc=0
-        
+        elif isinstance(self,Identity):
+            self._isIdentity=1
+            return self
+
         if not self._isIdentity:
             if dim==None:
                 self._dim = [0,0]
             else:
                 self._dimSet(dim)
+                
+            #Attributes    
+            self._valid = 1
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0
+            self.__rankCalc=0    
             self._matrix = []     
             self._inRange = inRange
             self._randomFill = randomFill
             self._string=""
+            self._dir=directory
+            
         try:
             if len(inRange)!=2:
                 self._valid=0
+                return None
             elif inRange[0]==inRange[1]:
                 self._valid=0
+                return None
             
         except Exception as err:
             print(err)
             print(Matrix.__doc__)
-            
+            return None
         else:
-            if isinstance(listed,str) and self._valid and not self._isIdentity :
-                self._valid=1
-                self._matrix=self._listify(listed)
-                self._dim=self._declareDim()
-                self._inRange=self._declareRange(self._matrix)
-                self._string=self._stringfy()
-               
-            elif self._validateList(listed) and self._valid and not self._isIdentity :
-                    self.__temp1=[a[:] for a in listed]
-                    
-                    if len(self.__temp1)>0:                        
-                            self._matrix = self.__temp1.copy()  
-                            self._inRange=self._declareRange(self._matrix)
+            if self._valid:
+##########################################################################################################                
+                if isinstance(listed,str):
+                    try:
+                        self._matrix=self._listify(listed)
+                        self._dim=self._declareDim()
+                        self._inRange=self._declareRange(self._matrix)
+                        self._string=self._stringfy()
+                    except Exception as err:
+                        print(err)
+                        self._valid=0
+                        return None
+                    else:
+                        self._valid=1
+##########################################################################################################                        
+                elif len(directory)>0:
+                    try:
+                        lis=self.__fromFile(directory)
+                        if not lis==None:
+                            self._matrix=self._listify(lis)
                             self._dim=self._declareDim()
-                            self._string=self._stringfy()    
-                    elif len(self.__temp1)==0 and dim!=[0,0]:
-                        
-                        if not self._randomFill:
-                            self._matrix=self._zeroFiller(self.__temp1)
                             self._inRange=self._declareRange(self._matrix)
-                            
-                        elif self._randomFill:
-                            self._matrix=self._randomFiller(self.__temp1)
-                            self._inRange=self._declareRange(self._matrix)
-                            self._dim=self._declareDim() 
                             self._string=self._stringfy()
-
+                        else:
+                            raise Exception
+                    except Exception as err:
+                        print(err)
+                        self._valid=0
+                        return None
+                    else:
+                        self._valid=1
+##########################################################################################################                    
+                elif self._validateList(listed):
+                    try:
+                        self.__temp1=[a[:] for a in listed]
+                        
+                        if len(self.__temp1)>0:                        
+                                self._matrix = self.__temp1.copy()  
+                                self._inRange=self._declareRange(self._matrix)
+                                self._dim=self._declareDim()
+                                self._string=self._stringfy()   
+                                
+                        elif len(self.__temp1)==0 and dim!=[0,0]:
+                            if not self._randomFill:
+                                self._matrix=self._zeroFiller(self.__temp1)
+                                self._inRange=self._declareRange(self._matrix)
+                                
+                            elif self._randomFill:
+                                self._matrix=self._randomFiller(self.__temp1)
+                                self._inRange=self._declareRange(self._matrix)
+                                self._dim=self._declareDim() 
+                                self._string=self._stringfy()
                         else:
                             self._valid=0
                             return None
-                    else:
+                    except Exception as err:
+                        print(err)
                         self._valid=0
-                        return None
+                        
+                    else:
+                        self._valid=1
+
+##########################################################################################################
+                else:
+                    self._valid=0
+                    return None
             else:
-                self._valid=0
                 return None
             
 # =============================================================================
@@ -208,7 +249,24 @@ Check exampleMatrices.py for further explanation and examples
             return [low,high]
         else:
             return [low,high]
-   
+        
+    def __fromFile(self,d):
+        try:
+            data="" 
+            with open(d,"r") as f:
+                for lines in f:
+                    data+=lines
+        except FileNotFoundError:
+            try:
+                f.close()
+            except:
+                pass
+            print("No such file or directory")
+            self._valid=0
+            return None
+        else:
+            f.close()
+            return data
 # =============================================================================  
     def _listify(self,string,square=0):
         """
@@ -218,7 +276,7 @@ Check exampleMatrices.py for further explanation and examples
         """
         try:
             gridNum=""
-            numbers=["0","1","2","3","4","5","6","7","8","9"]
+            numbers=[str(i) for i in range(10)]
             l=len(string)
             
             list1=list()
@@ -232,8 +290,6 @@ Check exampleMatrices.py for further explanation and examples
                 square=1
             
             for c in range(0,l):    
-                #print("c:{0} neg:{1} str:{2} num:{3}".format(c,negative,string[c],gridNum))
-                #print("list:",list1)
                 if c==l-1 and len(gridNum)>0:
                     if negative:
                             list1.append(int(gridNum)*-1)
@@ -274,24 +330,7 @@ Check exampleMatrices.py for further explanation and examples
                             list1.append(int(gridNum))
                             rowadded=0
                             gridNum=""
-# =============================================================================
-#             elif string[c]=="," and len(gridNum)>0:
-#                 loop=1
-#                 print(c,l)
-#                 while c<l:
-#                     print(string[c],string[c+1])
-#                     if string[c+1] in numbers:
-#                         gridNum=int(gridNum)
-#                         gridNum+=int(string[c+1])*(10**(-1*loop))
-#                         c+=1
-#                         loop+=1
-#                     else:
-#                         list1.append(gridNum)
-#                         rowadded=0
-#                         gridNum=""
-#                         break
-#                 
-# =============================================================================
+
                 else:
                     if len(gridNum)>0:
                         if negative:
@@ -307,65 +346,40 @@ Check exampleMatrices.py for further explanation and examples
         except Exception as err:
             print("****List error****\nMake sure string:\n-Has positive integers only \n-Have 1 space splitting the elements")
             print(Matrix.__doc__)
-        else:
-            l1=len(list1)
-            l=l1**0.5
-            d=0
-            list2=list()
-            list2=self._zeroFiller(list2)
-            for integer in range(1,30):
-                if integer==l:
-                     d=integer
-
-            if l1==0:
-                self._dim=[0,0]
-                self._valid=1
-                return []
-            
-            if l1>0 and d==0:
-                square=0
-                if self._dim==[0,0]:
-                    self._dim=[1,l1]
-                    list2=[list1]
-                    return list2
-                
-            elif l1>0 and d>0 and newRow>=0:
-                square=1
-                if self.dim==[0,0]:
-                    self._dim=[d,d]
-
-            self.__temp1=list1[:]
-
-            temp=0
-            
+        else:          
             try:
-
-                if newRow>0 and l1%(newRow+1)==0:
-                    for rows in range(0,newRow+1):
-                        list2.append(list())
-                        for i in range(temp,(l1//(newRow+1))+temp):
-                            list2[rows].append(list1[i])
-                        temp+=(l1//(newRow+1))
-                        
-                elif square and self.dim==[d,d]:
-                    for rows in range(0,d):
-                        list2.append(list())
-                        for i in range(temp,d + temp):
-                            list2[rows].append(list1[i])
-                        temp+=d
-
-                        
-                elif self.dim!=[0,0]:
-                    for rows in range(0,self.dim[0]):
-                        for i in range(temp,self.dim[1] + temp):
-                            list2[rows].append(list1[i])
-                        temp+=self.dim[1]
-
+                if self._dim!=[0,0]:
+                    try:
+                        assert self._dim[0]*self._dim[1]==len(list1)
+                    except AssertionError:
+                        print("Can't create a matrix in given dimensions")
+                        return None
+                    else:
+                        list2=[]
+                        ind=0
+                        for i in range(self._dim[0]):
+                            list2.append(list())
+                            for j in range(self._dim[1]):
+                                list2[i].append(list1[ind])
+                                ind+=1
+                        return list2
                 else:
-                    print("Invalid string")
-                    self._valid=0
-                    return None
-                
+                    try:
+                        l2=len(list1)/newRow
+                        if float(l2)<l2 or float(l2)>l2:
+                            print("New rows couldn't be created")
+                            return list1
+                        list2=[]
+                        ind=0
+                        for i in range(newRow):
+                            list2.append(list())
+                            for j in range(int(l2)):
+                                list2[i].append(list1[ind])
+                                ind+=1
+                    except ZeroDivisionError:
+                        return list1
+                    else:
+                        return list2
             except Exception as err:
                 print(err)
                 self._valid=0
@@ -664,19 +678,21 @@ EXAMPLES:
             
         except AssertionError:
             print("Bad arguments")
-            print(rowS,rowE,colS,colE)
             print(self.subM.__doc__)
             return ""
         except Exception as err:
             print(err)
             return ""
         else:
+            print(rowS,rowE,colS,colE)
             temp=self._matrix[rowS-1:rowE]
             for column in range(len(temp)):
                 valid=1
                 temp2.append(temp[column][colS-1:colE])
             if valid:
-                if isinstance(self,FMatrix):
+                if isinstance(self,Identity):
+                    return Identity(dim=len(temp2))
+                elif isinstance(self,FMatrix):
                     return FMatrix(dim=[rowE-rowS,colE-colS],listed=temp2)
                 elif isinstance(self,CMatrix):
                     return CMatrix(dim=[rowE-rowS,colE-colS],listed=temp2)
@@ -705,27 +721,34 @@ EXAMPLES:
                     prev=item
                     
                 return validate==len(lis)
-            i=0
-            for rows in m:
-                n=m[i+1:]
-                i+=1
-                #CHECK REST OF THE VECTORS IN THE MATRIX FOR THE LINEAR DEPENDENCY
-                for items in n:
-                    res=[]
-                    j=0
-                    for a in range(len(m)):
-                        try:
-                            res.append(rows[j]/items[j])
-                        except ZeroDivisionError:
-                            res.append(0)
-                            j+=1
-                        else:
-                            j+=1
-                    if __allsame(res):
-                        #print("Row{0} and row{1} are linearly dependent: {2} * ({3}) = {4}".format(m.index(rows),m.index(items),items,res[0],rows))
-                        self._det=0
-                        self.__detCalc=1
-                        return self._det
+            try:
+                assert self._dim[0]==self._dim[1]
+            except AssertionError:
+                self.__detCalc=1
+                self._det=None
+                print("Not a square matrix")
+            else:    
+                i=0
+                for rows in m:
+                    n=m[i+1:]
+                    i+=1
+                    #CHECK REST OF THE VECTORS IN THE MATRIX FOR THE LINEAR DEPENDENCY
+                    for items in n:
+                        res=[]
+                        j=0
+                        for a in range(len(m)):
+                            try:
+                                res.append(rows[j]/items[j])
+                            except ZeroDivisionError:
+                                res.append(0)
+                                j+=1
+                            else:
+                                j+=1
+                        if __allsame(res):
+                            #print("Row{0} and row{1} are linearly dependent: {2} * ({3}) = {4}".format(m.index(rows),m.index(items),items,res[0],rows))
+                            self._det=0
+                            self.__detCalc=1
+                            return self._det
                 
                     
                     
@@ -796,7 +819,7 @@ EXAMPLES:
                 return -1
             else:
                 return 1
-        #Check if there are any linearly dependent row vectors, return 0 if there is any   
+        #Check if there are any two linearly dependent row vectors, return 0 if there is any   
         __zerochecker(self._matrix) 
         
         if not self.__detCalc and self._valid:  
@@ -990,6 +1013,9 @@ EXAMPLES:
     """Properties available for public"""               
 # =============================================================================
     @property
+    def p(self):
+        print(self)
+    @property
     def grid(self):
         print(self._stringfy())
     @property
@@ -1003,6 +1029,9 @@ EXAMPLES:
     @property
     def string(self):
         return self._stringfy()
+    @property
+    def dir(self):
+        return self._directory
     @property
     def dim(self):
         return self._dim
@@ -1742,6 +1771,7 @@ Matrix which contain float numbers
               
 class CMatrix(FMatrix):
     """
+****************This class requires extra work, it doesn't work as intended yet****************
 Matrix which contain complex numbers
     """
     def __init__(self,*args,**a):
