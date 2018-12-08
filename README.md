@@ -10,7 +10,7 @@
 Some examples:
 --------------
 ##### Create matrices filled with random integers 
-A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default range which is [-125,125]
+A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default range which is [-10,10]
 
 B=Matrix([3,5],inRange=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
 
