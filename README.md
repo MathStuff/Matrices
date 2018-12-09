@@ -18,7 +18,11 @@ B=Matrix([3,5],inRange=[10,25]) #Creates a 3x5 matrix with elements ranged betwe
 ##### Give list of numbers to create matrices
 filled_rows=[[1,2,3],[4,5,6],[7,8,9]]
 
-C=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
+C1=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
+
+C2=Matrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
+
+C3=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
 
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix (Integers only for now)
