@@ -1086,9 +1086,33 @@ EXAMPLES:
         else:
             return None
         
+    @property
+    def floorForm(self):
+        return Matrix(listed=self.__floor__())  
+    
+    @property
+    def ceilForm(self):
+        return Matrix(listed=self.__ceil__())   
+    
+    @property   
+    def intForm(self):
+        return Matrix(listed=self.__floor__())
+    
+    @property   
+    def floatForm(self):
+        t=[]
+        for a in self._matrix:
+            t.append([float(b) for b in a])            
+        return FMatrix(listed=t)
+    
+    def roundForm(self,decimal=1):
+        if decimal==0:
+            return Matrix(listed=self.__round__(n=decimal))
+        return FMatrix(listed=self.__round__(n=decimal))
+        
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)  
-
+    
 # =============================================================================
     def __getitem__(self,pos):
         try:
@@ -1127,6 +1151,8 @@ EXAMPLES:
             self.__detCalc=0
             self.__invCalc=0
             return self
+        
+
 # =============================================================================
    
     def __matmul__(self,other):
@@ -1651,9 +1677,31 @@ EXAMPLES:
                 return False
         print("Invalid")
         return None
+# =============================================================================
+    
+    def __round__(self,n=-1):
+        if self._fMat and n<0:
+            n=1
+        temp=[]
+        for elements in self._matrix:
+            temp.append([round(a,n) for a in elements])
+        return temp
+    
+    def __floor__(self):
+        temp=[]
+        for elements in self._matrix:
+            temp.append([int(a) for a in elements if isinstance(a,float)])
+        return temp       
+    
+    def __ceil__(self):
+        temp=[]
+        for elements in self._matrix:
+            temp.append([int(a)+1 for a in elements if isinstance(a,float)])
+        return temp     
     
     def __repr__(self):
         return str(self.matrix)
+    
     def __str__(self): 
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
