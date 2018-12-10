@@ -170,6 +170,11 @@ Check exampleMatrices.py for further explanation and examples
         Change the given dimension's format to a list if it's a valid integer.
         """
         if isinstance(dim,list):
+            if len(dim)!=2:
+                self._valid=0
+                self._dim=[0,0]
+                print("Bad dimension argument")
+                return None
             self._dim=dim[:]
             rows=dim[0]
             cols=dim[1]
@@ -412,6 +417,7 @@ Check exampleMatrices.py for further explanation and examples
                 for cols in rows:
                     s=__digits(cols)
                     if self._fMat:
+                        round(cols,4)
                         item="{0:.4f}".format(cols)
                     else:
                         item=str(cols)
@@ -469,6 +475,8 @@ Check exampleMatrices.py for further explanation and examples
 
             return lis
         
+    def __floatFix(self):    
+        pass
 # =============================================================================
             
     def add(self,lis=[],row=None,col=None):
@@ -976,6 +984,73 @@ EXAMPLES:
                     dimsOf.append(a[jj].rank)
             self.__rankCalc=1
             return max(dimsOf)
+        
+        
+    def _echelon(self):
+        """
+        ### NEEDS SOME CLEAN UP###
+        ### CAN'T BE USED TO CALCULATE DETERMINANT YET ###
+        Returns the non-reduced echelon form of the matrix
+        """
+        temp = FMatrix(listed=self._matrix)
+        i=0
+        while i <self._dim[0]:
+            try:
+                temp2 = [round(a/temp._matrix[i][i],3) for a in temp._matrix[i]]
+                for nums in temp2:
+                    if nums<=0.0000 and nums>-0.0001:
+                        temp2[temp2.index(nums)]=0
+            except ZeroDivisionError:
+                try:
+                    """Note to self : Try using pop and push"""
+                    if temp._matrix[i+1]==[0]*self._dim[1]:
+                        m=temp._matrix[-1]
+                        temp._matrix[-1]=temp._matrix[i+1]
+                        temp._matrix[i+1]=m
+                        i+=1
+                        continue
+                    rowN=temp._matrix[i]
+                    temp._matrix[i]=temp._matrix[i+1]
+                    temp._matrix[i+1]=rowN
+                except IndexError:
+                    m=temp._matrix[-1]
+                    temp._matrix[-1]=temp._matrix[i]
+                    temp._matrix[i]=m
+                    i+=1
+                continue
+            else:
+                temp[i]=temp2
+                for j in range(i+1,self._dim[0]):
+                    temp3=[]
+                    co=temp[j][i]
+                    for k in range(self._dim[1]):
+                        num=temp[j][k]-co*temp[i][k]
+                        if num<=0.0000 and num>-0.0001:
+                            num=0
+                        temp3.append(round(temp[j][k]-co*temp[i][k],3))
+                    temp._matrix[j]=temp3
+                i+=1
+        t=[]
+        ind=0
+        for rows in temp._matrix:
+            t.append(list())
+            for els in rows:
+                if els<=0.0000 and els>-0.0001:
+                    els=0
+                t[ind].append(els)
+            ind+=1
+            
+        t1=[]
+        zeroRow=0
+        for r in t:
+            if r==[0]*self._dim[1]:
+               zeroRow+=1
+            else:
+                t1.append(r)
+        
+        for j in range(zeroRow):
+            t1.append([0]*self._dim[1])
+        return FMatrix(listed=t1)
 # =============================================================================
 
     def _average(self):
@@ -1009,7 +1084,7 @@ EXAMPLES:
         print(self)
     @property
     def grid(self):
-        print(self._stringfy())
+        print (self._stringfy())
     @property
     def copy(self):
         if self._isIdentity:
@@ -1027,6 +1102,9 @@ EXAMPLES:
     @property
     def dim(self):
         return self._dim
+    @property
+    def echelon(self):
+        return self._echelon()
     @property
     def rank(self):
         if not self.__rankCalc:
@@ -1109,7 +1187,7 @@ EXAMPLES:
         if decimal==0:
             return Matrix(listed=self.__round__(n=decimal))
         return FMatrix(listed=self.__round__(n=decimal))
-        
+       
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)  
     
