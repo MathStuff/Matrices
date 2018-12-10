@@ -79,13 +79,23 @@ C.dim #Returns the dimension of the matrix
 
 C.string #Returns the string for of the matrix's elements
 
+C.intForm #Returns integer form of the matrix
+
+C.floatForm #Returns integer form of the matrix
+
+C.ceilForm #Returns a matrix of all the elements' ceiling value
+
+C.floorForm #Returns the same matrix as "intForm"
+
+C.roundForm(decimal=n) #Returns a matrix of elements' rounded up to n decimal digits 
+
 C.avg #Returns the overall average of the elements
 
 C.det #Returns the determinant of the matrix
 
 C.t #Returns the transposed matrix
 
-C.minor(1,1) #Returns the 1st row's 1st element's minor matrix
+C.minor(m,n) #Returns the mth row's nth element's minor matrix
 
 C.adj #Returns the adjoint matrix
 
@@ -96,6 +106,7 @@ C.rank #Returns the rank of the matrix
 C.copy #Returns a copy of the matrix
 
 C.summary #Returns the string form of the object 
+
 
 ----------------------------------------
 
