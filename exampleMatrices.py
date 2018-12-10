@@ -135,7 +135,8 @@ print("f.subM(1,4,2,3):\n",f.subM(1,4,2,3),"\n")
 print(f)
 print("f.delDim(4)")
 print(f)
-
+print("f.echelon.p")
+f.echelon.p
 print('################')
       
 print("g.dim:\n",g.dim)
