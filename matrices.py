@@ -700,8 +700,17 @@ EXAMPLES:
                     return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
 
 # =============================================================================
-                    
-    def _determinant(self):
+    def _determinantByEchelonForm(self):
+        try:
+            if not self.__detCalc:
+                self._det=self._echelon()[1]
+                self.__detCalc=1
+        except:
+            print("error")
+        else:
+            return self._det
+        
+    def _determinantByLiebnizRule(self):
         """
         Leibniz formula for determinants
              
@@ -989,19 +998,22 @@ EXAMPLES:
     def _echelon(self):
         """
         ### NEEDS SOME CLEAN UP###
-        ### CAN'T BE USED TO CALCULATE DETERMINANT YET ###
-        Returns the non-reduced echelon form of the matrix
+        ### DETERMINANT CALCULATION DONE BY ERROR RATE OF 0.0001% ###
+        Returns the not reduced echelon form of the matrix
         """
         temp = FMatrix(listed=self._matrix)
         i=0
+        rowC=0
+        prod=1
         while i <self._dim[0]:
             try:
-                temp2 = [round(a/temp._matrix[i][i],3) for a in temp._matrix[i]]
+                temp2 = [round(a/temp._matrix[i][i],4) for a in temp._matrix[i]]
                 for nums in temp2:
                     if nums<=0.0000 and nums>-0.0001:
                         temp2[temp2.index(nums)]=0
             except ZeroDivisionError:
                 try:
+                    rowC+=1
                     """Note to self : Try using pop and push"""
                     if temp._matrix[i+1]==[0]*self._dim[1]:
                         m=temp._matrix[-1]
@@ -1019,6 +1031,7 @@ EXAMPLES:
                     i+=1
                 continue
             else:
+                prod*=temp[i][i]
                 temp[i]=temp2
                 for j in range(i+1,self._dim[0]):
                     temp3=[]
@@ -1027,8 +1040,8 @@ EXAMPLES:
                         num=temp[j][k]-co*temp[i][k]
                         if num<=0.0000 and num>-0.0001:
                             num=0
-                        temp3.append(round(temp[j][k]-co*temp[i][k],3))
-                    temp._matrix[j]=temp3
+                        temp3.append(round(num,4))
+                    temp[j]=temp3
                 i+=1
         t=[]
         ind=0
@@ -1050,7 +1063,11 @@ EXAMPLES:
         
         for j in range(zeroRow):
             t1.append([0]*self._dim[1])
-        return FMatrix(listed=t1)
+        if zeroRow>0:
+            prod=0
+        else:
+            self._det=prod
+        return (FMatrix(listed=t1),((-1)**(rowC))*prod)
 # =============================================================================
 
     def _average(self):
@@ -1084,7 +1101,7 @@ EXAMPLES:
         print(self)
     @property
     def grid(self):
-        print (self._stringfy())
+        print(self._stringfy())
     @property
     def copy(self):
         if self._isIdentity:
@@ -1104,7 +1121,7 @@ EXAMPLES:
         return self._dim
     @property
     def echelon(self):
-        return self._echelon()
+        return self._echelon()[0]
     @property
     def rank(self):
         if not self.__rankCalc:
@@ -1132,9 +1149,18 @@ EXAMPLES:
        return self._matrix
     @property
     def det(self):
-        if self.__detCalc:
-            return self._det
-        return self._determinant()
+        try:
+            assert self._dim[0]==self._dim[1]
+        except AssertionError:
+            print("Not a square matrix")
+        else:
+            if self.__detCalc:
+                return self._det
+            else:
+                if self._dim[0]<=6:
+                    return self._determinantByLiebnizRule()
+                return self._determinantByEchelonForm()
+            
     @property
     def avg(self):
         if self._average()!=None:
