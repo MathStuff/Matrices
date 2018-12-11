@@ -1103,7 +1103,7 @@ EXAMPLES:
         return self._dim
     @property
     def echelon(self):
-        return self._echelon()[0].p
+        return self._echelon()[0]
     @property
     def rank(self):
         if not self.__rankCalc:
