@@ -803,17 +803,59 @@ EXAMPLES:
             return self._inv
 
     def _Rank(self):
-        try:
-            r=0
-            temp=self._echelon()[0]
-            for rows in temp._matrix:
-                if rows!=[0]*self._dim[1]:
-                    r+=1
-        except:
-            print("error getting rank")
+        """
+        Returns the rank of the matrix
+        """
+        #If matrix is not a square matrix
+        if self._dim[0]!=self._dim[1]:
+            m=min(self.dim)
+            dimsOf=[]
+            #Get square matrices from mxn dimension matrix (m!=n)
+            if self._dim[0]<2 or self._dim[1]<2:
+                return 1
+            if self._dim[0]!=self._dim[1]:
+                if m==self.dim[0]:
+                    for i in range(1,m+2):    
+                        temp=self.subM(1,m,i,i+m-1)
+                        if temp.det!=0 and temp.det!=None:
+                            return m
+                        else:
+                            dimsOf.append(temp.rank)
+                elif m==self.dim[1]:
+                    for i in range(1,m+2):    
+                        temp=self.subM(i,i+m-1,1,m)
+                        if temp.det!=0 and temp.det!=None:
+                            return m
+                        else:
+                            dimsOf.append(temp.rank)
+                return max(dimsOf)
+            else:
+                topLeft=self.minor(1,1)
+                topRight=self.minor(1,m)
+                bottomLeft=self.minor(m,1)
+                bottomRight=self.minor(m,m)
+                a=[topLeft,topRight,bottomLeft,bottomRight]
+                for items in [self,topLeft,topRight,bottomLeft,bottomRight]:
+                    if items.det!=0 and items.det!=None:
+                        return items.dim[0]
+                else:
+                    for jj in range(len(a)):
+                        dimsOf.append(a[jj].rank)
+                self.__rankCalc=1
+                return max(dimsOf)
+            
+        #If matrix is a square matrix
         else:
-            return r
-        
+            try:
+                r=0
+                temp=self._echelon()[0]
+                for rows in temp._matrix:
+                    if rows!=[0]*self._dim[1]:
+                        r+=1
+            except:
+                print("error getting rank")
+            else:
+                return r
     def _echelon(self):
         """
         ### NEEDS SOME CLEAN UP###
@@ -827,7 +869,7 @@ EXAMPLES:
         dia=[]
         while i <min(self._dim):
             try:
-                temp2 = [round(a/temp._matrix[i][i],5) for a in temp._matrix[i]]
+                temp2 = [a/temp._matrix[i][i] for a in temp._matrix[i]]
                 for nums in temp2:
                     if nums<=0.0000 and nums>-0.0001:
                         temp2[temp2.index(nums)]=0
@@ -858,12 +900,12 @@ EXAMPLES:
                     co=temp[j][i]
                     for k in range(self._dim[1]):
                         num=temp[j][k]-co*temp[i][k]
-                        if num<=0.0001 and num>=-0.0001:
+                        if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
                             num=0
-                        temp3.append(round(num,5))
+                        temp3.append(round(num,4))
                     temp[j]=temp3
                 
-                temp[i]=[a*dia[i] for a in temp[i]]
+                temp[i]=[round(a*dia[i],4) for a in temp[i]]
                 i+=1
         
         t=[]
