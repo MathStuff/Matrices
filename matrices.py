@@ -708,167 +708,7 @@ EXAMPLES:
             print("error")
         else:
             return self._det
-        
-    def _determinantByLiebnizRule(self):
-        """
-        Leibniz formula for determinants
-             
-        """
 
-        def __zerochecker(m):
-            """
-            Checks linear dependency on 2 vectors ( Linear dependency of all vectors individually to rest of the vectors will be added later)
-            Possibly speed up the process by checking the linear dependencies in row vectors ( Column vectors will be added later)
-            """
-            def __allsame(lis):
-                validate=0
-                prev=lis[0]
-                for item in lis:
-                    if item==prev:
-                        validate+=1
-                    prev=item
-                    
-                return validate==len(lis)
-            try:
-                assert self._dim[0]==self._dim[1]
-            except AssertionError:
-                self.__detCalc=1
-                self._det=None
-                print("Not a square matrix")
-            else:    
-                i=0
-                for rows in m:
-                    n=m[i+1:]
-                    i+=1
-                    #CHECK REST OF THE VECTORS IN THE MATRIX FOR THE LINEAR DEPENDENCY
-                    for items in n:
-                        res=[]
-                        j=0
-                        for a in range(len(m)):
-                            try:
-                                res.append(rows[j]/items[j])
-                            except ZeroDivisionError:
-                                res.append(0)
-                                j+=1
-                            else:
-                                j+=1
-                        if __allsame(res):
-                            #print("Row{0} and row{1} are linearly dependent: {2} * ({3}) = {4}".format(m.index(rows),m.index(items),items,res[0],rows))
-                            self._det=0
-                            self.__detCalc=1
-                            return self._det
-                
-                    
-                    
-        def __factorial(num1,dict1={0:1,1:1}):
-            if num1 not in dict1.keys():
-                dict1[num1]=num1*__factorial(num1-1,dict1)    
-            return dict1[num1]
-        
-        def __findPermutations(num):  
-            """
-            Find all the permutations of the given string or list
-            """
-            def __permutations(s,e='',l=[]):
-    
-                if isinstance(s,list):
-                    s="".join(str(element) for element in s)
-                    
-                if len(s)==0:
-                    if e not in l:
-                        p=[int(letter) for letter in e]
-                        l.append(p)
-                else:
-                    for i in range(len(s)):
-                        __permutations(s[:i] + s[i+1:], e+s[i])
-                
-                return l
-            
-            allPermutations=__permutations(allNums)
-            for permutation in allPermutations:
-                yield permutation  
-        
-        def __signature(perm1,perm2):
-            """
-            Determine the signature of the product
-            """
-            def __orderChangeSteps(p1,p2):
-                mirrorDict={}
-                looping=True
-                l=0
-                for items in p1:
-                    mirrorDict[items]=p2[l]
-                    l+=1
-
-                while looping:
-                    try:                        
-                        d=0
-                        for k,v in mirrorDict.items():
-                            if k!=v: 
-                                d+=1
-                                for keys,values in mirrorDict.items():
-                                    if  values==k:
-                                        mirrorDict[k]=values
-                                        mirrorDict[keys]=v
-                                    
-                    except RuntimeError:
-                        continue
-                    except Exception as err:
-                        print(err)
-                    else:
-                        looping=False
-                        if d==len(perm1):
-                            return d-1
-                        return d
-            
-            dif=__orderChangeSteps(perm1,perm2)
-
-            if dif%2==1:
-                return -1
-            else:
-                return 1
-        #Check if there are any two linearly dependent row vectors, return 0 if there is any   
-        __zerochecker(self._matrix) 
-        
-        if not self.__detCalc and self._valid:  
-            try:
-                assert self.dim[0]==self.dim[1]
-                d0=self.dim[0]
-                if d0>8:
-                    print("Press CTRL+C to quit, current runtime is too inefficient for dimensions beyond 8")
-                if d0<8 and d0>0:
-                    return self._matrix[0][0]
-                else:
-                    self._valid=0
-                    return None
-            except AssertionError:
-                print("Not a square matrix")
-            else:
-                permPossible=__factorial(d0)
-                allNums=[n for n in range(1,d0+1)]
-                permGen=__findPermutations(d0)  
-                
-                det=0
-                for sums in range(permPossible):
-                    s=1
-                    perms=next(permGen)
-                    
-                    for p in range(d0):
-                        s*=self.matrix[p][perms[p]-1]                    
-                    
-                    sign=__signature(allNums,perms)
-                    det+=s*sign
-                self.__detCalc=1
-                if not self._fMat:                        
-                    self._det=int(det)
-                    return self._det
-                else:
-                    a="{0:.4f}".format(det)
-                    self._det=float(a)
-                    return self._det
-        else:
-            return self._det
-        
     def _transpose(self):
         try:
             assert self._valid==1
@@ -920,12 +760,9 @@ EXAMPLES:
                 adjL.append(list())
                 for cols in range(0,self.dim[1]):
                     res=self._minor(rows+1,cols+1).det*__sign([rows,cols])
-                    adjL[rows].append(res)
-
-            if not self._fMat:
-                adjM=Matrix(dim=self.dim,listed=adjL)
-            else:
-                adjM=FMatrix(dim=self.dim,listed=adjL)
+                    adjL[rows].append(round(res,4))
+                    
+            adjM=FMatrix(dim=self.dim,listed=adjL)
             self._adj=adjM.t
             self.__adjCalc=1
             return self._adj
@@ -957,6 +794,10 @@ EXAMPLES:
                 a=self._adjoint()
             d=self.det
             i=a/d
+            for rows in i._matrix:
+                for cols in rows:
+                    if cols<=0.0001 and cols>=-0.0001:
+                        cols=0
             new=FMatrix(listed=i.matrix)
             self._inv=new
             return self._inv
@@ -1163,8 +1004,6 @@ EXAMPLES:
             if self.__detCalc:
                 return self._det
             else:
-                if self._dim[0]<=6:
-                    return self._determinantByLiebnizRule()
                 return self._determinantByEchelonForm()
             
     @property
@@ -1277,8 +1116,11 @@ EXAMPLES:
                     temp[r].append(0)
                     total=0
                     for cs in range(other.dim[0]):
-                        total+=(self.matrix[r][cs]*other.matrix[cs][rs])
-                    temp[r][rs]=total
+                        num=self.matrix[r][cs]*other.matrix[cs][rs]
+                        if num<=0.0001 and num>=-0.0001:
+                            num=0
+                        total+=num
+                    temp[r][rs]=round(total,4)
             if isinstance(self,FMatrix) or isinstance(other,FMatrix):
                 return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp)
             return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp)
