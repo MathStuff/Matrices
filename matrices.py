@@ -54,6 +54,7 @@ Check exampleMatrices.py for further explanation and examples
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
+        self._valid = 1
         
         if isinstance(self,FMatrix):
             self._fMat=1
@@ -67,10 +68,8 @@ Check exampleMatrices.py for further explanation and examples
             if dim==None:
                 self._dim = [0,0]
             else:
-                self._dimSet(dim)
-                
+                self._dimSet(dim)             
             #Attributes    
-            self._valid = 1
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0
@@ -178,14 +177,14 @@ Check exampleMatrices.py for further explanation and examples
             self._dim=dim[:]
             rows=dim[0]
             cols=dim[1]
-            if rows<0 or cols<0: 
+            if rows<=0 or cols<=0: 
                 self._valid=0
                 self._dim=[0,0]
             else:                              
                 self._dim=[rows,cols]
             
         elif isinstance(dim,int):
-            if dim<0:
+            if dim<=0:
                 self._valid=0
                 self._dim=[0,0]
             else:
@@ -837,9 +836,11 @@ EXAMPLES:
                 d0=self.dim[0]
                 if d0>8:
                     print("Press CTRL+C to quit, current runtime is too inefficient for dimensions beyond 8")
-                if d0<2:
+                if d0<8 and d0>0:
                     return self._matrix[0][0]
-    
+                else:
+                    self._valid=0
+                    return None
             except AssertionError:
                 print("Not a square matrix")
             else:
@@ -870,6 +871,7 @@ EXAMPLES:
         
     def _transpose(self):
         try:
+            assert self._valid==1
             if self._isIdentity:
                 return self
             temp=[a[:] for a in self.matrix]
@@ -890,6 +892,7 @@ EXAMPLES:
             
     def _minor(self,row=None,col=None):
         try:
+            assert self._valid==1
             assert row!=None and col!=None
             assert row<=self.dim[0] and col<=self.dim[1]
             assert row>0 and col>0
@@ -905,6 +908,7 @@ EXAMPLES:
         def __sign(pos):
             return (-1)**(pos[0]+pos[1])   
         try:
+            assert self._valid==1
             assert self.dim[0]==self.dim[1]
         except AssertionError:
             print("Not a square matrix")
@@ -1052,7 +1056,7 @@ EXAMPLES:
         return (FMatrix(listed=t1),((-1)**(rowC))*prod)
 # =============================================================================
 
-    def _average(self):
+    def _average(self,col=None):
         """
         Sets the avg attribute of the matrix as the average of it's elements
         """
@@ -1060,13 +1064,33 @@ EXAMPLES:
             d=self._dim[:]
             if d[0]==0 or d[1]==0:
                 return None
-            total=0
-            for row in self._matrix:
-                if isinstance(row,list):
-                    for ele in row:
-                        total+=ele
+            
+            if col==None:
+                colAvg={}
+                for rows in self._matrix:
+                    nth=1
+                    for cols in rows:
+                        if "Col "+str(nth) not in colAvg.keys():
+                            colAvg["Col "+str(nth)]=cols
+                        else:
+                            colAvg["Col "+str(nth)]+=cols
+                        nth+=1
+                for key,value in colAvg.items():
+                    colAvg[key]=round(value/self._dim[0],4)
+                return colAvg
+                    
+            else:
+                try:
+                    assert col>0 and col<=self._dim[1]
+                except AssertionError:
+                    print("Col parameter should be in range [1,amount of columns]")
                 else:
-                    total+=row
+                    total=0
+                    for rows in self._matrix:
+                        total+=rows[col-1]
+                    avg=total/self._dim[0]
+                    return avg
+            
         except Exception as err:
             print("Bad matrix and/or dimension")
             print(err)
@@ -1144,12 +1168,6 @@ EXAMPLES:
                 return self._determinantByEchelonForm()
             
     @property
-    def avg(self):
-        if self._average()!=None:
-            return float(self._average())
-        else:
-            return None
-    @property
     def highest(self):
         if not self._isIdentity:
             return self._inRange[1]
@@ -1199,6 +1217,10 @@ EXAMPLES:
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)  
     
+    def avg(self,col=None):
+        if self._average(col)!=None:
+            return self._average(col)
+        return None
 # =============================================================================
     def __getitem__(self,pos):
         try:
@@ -1695,72 +1717,45 @@ EXAMPLES:
             print("Can't raise to the given power")
 ################################################################################                    
     def __lt__(self,other):
-        
-        if self._valid:
+        if self._valid==1 and other._valid==1:
             if self.dim==other.dim:
-                print("Same dimension")
-                if self.avg>other.avg:
-                    print("Higher average!")
+                if self.matrix==other.matrix:
                     return False
-                elif self.avg==other.avg:
-                    print("Same matrices!")
-                    return "Equal"
+                elif self._dim[0]==self._dim[1]:
+                    return self.det<other.det
                 else:
-                    print("Lower average!")
-                    return True
-                
-            elif self.dim[0]<other.dim[0] and self.dim[1]<other.dim[1]:   
-                print("Lower dimension!")    
-                return True
+                    return None
+            elif self._dim[0]==self._dim[1] and other._dim[0]==other._dim[1] :   
+                return self.det<other.det
             else:
-                print("Higher dimension!")
-                return False
+                return None
         print("Invalid")        
         return None
     
     def __eq__(self,other):
-        
-        if self._valid:
+        if self._valid==1 and other._valid==1:
             if self._dim==other.dim:
-                print("Same dimension")
-                if self.avg==other.avg:
-                    print("Same average")
-                    if self.matrix==other.matrix:
-                        print("All the elements and their positions are same!")
-                        return True
-                elif self.avg<other.avg:
-                    print("Lower average!")
-                    return False
-                else:
-                    print("Higher average!")
-                    return False
+                if self.matrix==other.matrix:
+                    return True
+                return False
             else:   
-                print("Different dimensions!") 
                 return False
         print("Invalid")        
         return None
     
     def __gt__(self,other):
-        
-        if self._valid:
+        if self._valid==1 and other._valid==1:
             if self.dim==other.dim:
-                print("Same dimension")
-                if self.avg>other.avg:
-                    print("Higher average!")
-                    return True
-                elif self.avg==other.avg:
-                    print("Same matrices!")
-                    return "Equal"
-                else:
-                    print("Lower average!")
+                if self.matrix==other.matrix:
                     return False
-                
-            elif self.dim[0]>other.dim[0] and self.dim[1]>other.dim[1]:   
-                print("Higher dimension!")    
-                return True
+                elif self._dim[0]==self._dim[1]:
+                    return self.det>other.det
+                else:
+                    return None
+            elif self._dim[0]==self._dim[1] and other._dim[0]==other._dim[1] :   
+                return self.det>other.det
             else:
-                print("Lower dimension!")
-                return False
+                return None
         print("Invalid")
         return None
 # =============================================================================
@@ -1794,11 +1789,11 @@ EXAMPLES:
         """
         if self._fMat:
             print("\nFloat Matrix",end="")
-        if self._valid and not self._cMat and not self._isIdentity and self.avg!=None:
+        if self._valid and not self._cMat and not self._isIdentity and self.avg()!=None:
             if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3:.4f}".format(self._dim[0],self._dim[1],self.inRange,self.avg))
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self.inRange,self.avg()))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2:.4f}".format(self._dim[0],self.inRange,self.avg))
+                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self.inRange,self.avg()))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
@@ -1890,14 +1885,15 @@ class FMatrix(Matrix):
     """
 Matrix which contain float numbers
     """
-    def __init__(self,*args,**a):
-        super().__init__(*args,**a)
+    def __init__(self,*args,decimal=None,**kwargs):
+        super().__init__(*args,**kwargs)
         self._valid=1
+        self._decimal=decimal
         self._fMat=1
-              
+        
 class CMatrix(FMatrix):
     """
-****************This class requires extra work, it doesn't work as intended yet****************
+######This class requires extra work, it doesn't work as intended yet######
 Matrix which contain complex numbers
     """
     def __init__(self,*args,**a):
@@ -1909,8 +1905,8 @@ Matrix which contain complex numbers
         if self._cMat:
             print("\nComplex matrix, ",end="")
             if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg))
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg()))
             else:
-                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg))            
+                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg()))            
                 
             return self._stringfy()+"\n"
