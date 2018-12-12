@@ -18,11 +18,11 @@ B=Matrix([3,5],inRange=[10,25]) #Creates a 3x5 matrix with elements ranged betwe
 ##### Give list of numbers to create matrices
 filled_rows=[[1,2,3],[4,5,6],[7,8,9]]
 
-C1=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
+C=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
 
-C2=Matrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
+C1=Matrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
 
-C3=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
+C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
 
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix (Integers only for now)
@@ -89,7 +89,9 @@ C.floorForm #Returns the same matrix as "intForm"
 
 C.roundForm(decimal=n) #Returns a matrix of elements' rounded up to n decimal digits 
 
-C.avg #Returns the overall average of the elements
+C.echelon #Returns a not-reduced(will be changed later) form of echelon form of the matrix 
+
+C.avg(n) #Returns the nth column's average, give None as argument to get the all columns' averages
 
 C.det #Returns the determinant of the matrix
 
@@ -132,6 +134,8 @@ B @ B.t #Matrix multiplication example
    A.t.t==A
    
    A.adj.t[1][2]==A.minor(2,3).det*-1
+   
+   (B @ B.inv).roundForm() == Identity(B.dim[0]) # roundForm call is currently required due to %0.001 error rate on calculations 
    
 ----------------------------------------
 
