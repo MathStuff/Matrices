@@ -632,7 +632,7 @@ Removes desired number of dimensions from bottom left corner
                     indeces.append((r+1,i+1))
                     while element in row[i+1:]:
                         indeces.append((r+1,self._matrix[i+1:].index(element)+1))
-            except IndexError:
+            except ValueError:
                 r+=1
                 continue
             else:
