@@ -12,7 +12,7 @@ Some examples:
 ##### Create matrices filled with random integers 
 A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default range which is [-10,10]
 
-B=Matrix([3,5],inRange=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
+B=Matrix([3,5],ranged=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
 
 ----------------------------------------
 ##### Give list of numbers to create matrices
@@ -92,6 +92,8 @@ C.roundForm(decimal=n) #Returns a matrix of elements' rounded up to n decimal di
 C.echelon #Returns a not-reduced(will be changed later) form of echelon form of the matrix 
 
 C.avg(n) #Returns the nth column's average, give None as argument to get the all columns' averages
+
+C.inRange(n) #Returns the nth column's range, give None as argument to get the all columns' ranges
 
 C.det #Returns the determinant of the matrix
 
