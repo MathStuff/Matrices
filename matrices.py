@@ -1012,11 +1012,7 @@ EXAMPLES:
     def inv(self):
         if self.__invCalc:
             return self._inv
-        return self._inverse()
-    @property
-    def inRange(self):
-        self._inRange=self._declareRange(self._matrix)
-        return self._inRange
+        return self._inverse()    
     @property
     def matrix(self):
        return self._matrix
@@ -1030,8 +1026,7 @@ EXAMPLES:
             if self.__detCalc:
                 return self._det
             else:
-                return self._determinantByEchelonForm()
-            
+                return self._determinantByEchelonForm()       
     @property
     def highest(self):
         if not self._isIdentity:
@@ -1078,10 +1073,15 @@ EXAMPLES:
         if decimal==0:
             return Matrix(listed=self.__round__(n=decimal))
         return FMatrix(listed=self.__round__(n=decimal))
-       
-    def minor(self,r=None,c=None):
-        return self._minor(row=r,col=c)  
     
+    def minor(self,r=None,c=None):
+        return self._minor(row=r,col=c)
+    
+    def inRange(self,col=None):
+        if col==None:
+            return self._inRange
+        return self._inRange["Col {}".format(col)]   
+
     def avg(self,col=None):
         if self._average(col)!=None:
             return self._average(col)
@@ -1659,9 +1659,9 @@ EXAMPLES:
             print("\nFloat Matrix",end="")
         if self._valid and not self._cMat and not self._isIdentity and self.avg()!=None:
             if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self._dim[0],self._dim[1],self.inRange,self.avg()))
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg()))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self._dim[0],self.inRange,self.avg()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self._dim[0],self._inRange,self.avg()))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
