@@ -14,11 +14,10 @@ class Matrix(object):
 
 -dim:dimension of the matrix;natural numbers as [rows,cols],if and integer given, matrix will be a square matrix 
 -listed:(a list of integers | a string) with & dim**2 amount of integers
--inRange:list of 2 numbers
 -randomFill: 
     ->1 to fill the matrix with random integers if no list is given
     ->0 to fill the matrix with 0s
-    
+-ranged: 2 numbers as a list, to determine the upper and lower bound of the random elements    
 -Giving ~300< elements may make grid look terrible, adjust your terminal size to display it better
 -Can contain integers only (Unless it's a FMatrix class) 
 
@@ -28,7 +27,7 @@ class Matrix(object):
 -Sub-matrices can be obtained with "subM" method
 -Get specific items by using a[i][j] for the (i+1)th row and (j+1)th column   
 
--Average of the all given elements can be seen with "avg" property
+-Average of the all colums can be seen with "avg" property
 -Determinant of the matrix can be calculated by "det" propery
 -For the adjoint form of the matrix, use "adj" property
 -To get the transposed matrix, use "t" property
@@ -50,7 +49,7 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],directory="",header=0,inRange=[-10,10],randomFill=1):
+    def __init__(self,dim=None,listed=[],directory="",header=0,ranged=[-5,5],randomFill=1):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
@@ -66,7 +65,7 @@ Check exampleMatrices.py for further explanation and examples
 
         if not self._isIdentity:
             if dim==None:
-                self._dim = [0,0]
+                self._dim=[0,0]
             else:
                 self._dimSet(dim)             
             #Attributes    
@@ -75,93 +74,80 @@ Check exampleMatrices.py for further explanation and examples
             self.__invCalc=0
             self.__rankCalc=0    
             self._matrix = []     
-            self._inRange = inRange
+            self._initRange = ranged
             self._randomFill = randomFill
             self._string=""
             self._dir=directory
             self._header=header
-        try:
-            if len(inRange)!=2:
-                self._valid=0
-                return None
-            elif inRange[0]==inRange[1]:
-                self._valid=0
-                return None
-            
-        except Exception as err:
-            print(err)
-            print(Matrix.__doc__)
-            return None
-        else:
-            if self._valid:
+        if self._valid:
 ##########################################################################################################                
-                if isinstance(listed,str):
-                    try:
-                        self._matrix=self._listify(listed,self._header)
+            if isinstance(listed,str):
+                try:
+                    self._matrix=self._listify(listed,self._header)
+                    self._dim=self._declareDim()
+                    self._inRange=self._declareRange(self._matrix)
+                    self._string=self._stringfy()
+                except Exception as err:
+                    print(err)
+                    self._valid=0
+                    return None
+                else:
+                    self._valid=1
+##########################################################################################################                        
+            elif len(directory)>0:
+                try:
+                    lis=self.__fromFile(directory)
+                    if not lis==None:
+                        self._matrix=self._listify(lis,self._header)
                         self._dim=self._declareDim()
                         self._inRange=self._declareRange(self._matrix)
                         self._string=self._stringfy()
-                    except Exception as err:
-                        print(err)
-                        self._valid=0
-                        return None
                     else:
-                        self._valid=1
-##########################################################################################################                        
-                elif len(directory)>0:
-                    try:
-                        lis=self.__fromFile(directory)
-                        if not lis==None:
-                            self._matrix=self._listify(lis,self._header)
-                            self._dim=self._declareDim()
-                            self._inRange=self._declareRange(self._matrix)
-                            self._string=self._stringfy()
-                        else:
-                            raise Exception
-                    except Exception as err:
-                        print(err)
-                        self._valid=0
-                        return None
-                    else:
-                        self._valid=1
-##########################################################################################################                    
-                elif self._validateList(listed):
-                    try:
-                        self.__temp1=[a[:] for a in listed]
-                        
-                        if len(self.__temp1)>0:                        
-                                self._matrix = self.__temp1.copy()  
-                                self._inRange=self._declareRange(self._matrix)
-                                self._dim=self._declareDim()
-                                self._string=self._stringfy()   
-                                
-                        elif len(self.__temp1)==0 and dim!=[0,0]:
-                            if not self._randomFill:
-                                self._matrix=self._zeroFiller(self.__temp1)
-                                self._inRange=self._declareRange(self._matrix)
-                                
-                            elif self._randomFill:
-                                self._matrix=self._randomFiller(self.__temp1)
-                                self._inRange=self._declareRange(self._matrix)
-                                self._dim=self._declareDim() 
-                                self._string=self._stringfy()
-                        else:
-                            self._valid=0
-                            return None
-                    except Exception as err:
-                        print(err)
-                        self._valid=0
-                        
-                    else:
-                        self._valid=1
-
-##########################################################################################################
-                else:
+                        raise Exception
+                except Exception as err:
+                    print(err)
                     self._valid=0
                     return None
+                else:
+                    self._valid=1
+##########################################################################################################                    
+            elif self._validateList(listed):
+                try:
+                    self.__temp1=[a[:] for a in listed]
+                    
+                    if len(self.__temp1)>0:                        
+                            self._matrix = self.__temp1.copy()  
+                            self._inRange=self._declareRange(self._matrix)
+                            self._dim=self._declareDim()
+                            self._string=self._stringfy()   
+                            
+                    elif len(self.__temp1)==0 and dim!=[0,0]:
+                        if not self._randomFill:
+                            self._matrix=self._zeroFiller(self.__temp1)
+                            self._inRange=self._declareRange(self._matrix)
+                            
+                        elif self._randomFill:
+                            self._matrix=self._randomFiller(self.__temp1)
+                            self._inRange=self._declareRange(self._matrix)
+                            self._dim=self._declareDim() 
+                            self._string=self._stringfy()
+                    else:
+                        self._valid=0
+                        return None
+                except Exception as err:
+                    print(err)
+                    self._valid=0
+                    
+                else:
+                    self._valid=1
+
+##########################################################################################################
             else:
+                self._valid=0
                 return None
-            
+        else:
+            return None
+        
 # =============================================================================
             
     def _dimSet(self,dim):        
@@ -235,26 +221,24 @@ Check exampleMatrices.py for further explanation and examples
         Finds and returns the range of the elements in a given list
         """
         try:
-            low=0
-            high=0
-            first=True
-            for row in lis:
-                m=max(row)
-                n=min(row)
-                if first:
-                    low=n
-                    high=m
-                    first=False
-                else:
-                    temp=[low,high,n,m]
-                    low=min(temp)
-                    high=max(temp)
+            assert self._valid==1
+            c={}
+            i=0
+            for cols in range(len(lis[0])):
+                i+=1
+                temp=[]
+                for rows in range(len(lis)):
+                    temp.append(lis[rows][cols])
+                c["Col {}".format(i)]=[round(min(temp),4),round(max(temp),4)]
+        except AssertionError:
+            return None
         except Exception as err:
-            print("Can't declare range")
+            print("Can't declare range: ",err)
             #print(Matrix.__doc__)
-            return [low,high]
+            return None
         else:
-            return [low,high]
+            
+            return c
         
     def __fromFile(self,d):
         try:
@@ -402,13 +386,16 @@ Check exampleMatrices.py for further explanation and examples
         try:
             assert self._valid==1
             string=""
-            i=self._inRange[0]
-            j=self._inRange[1]
-            b1=__digits(i)
-            b2=__digits(j)
-            bound=max([b1,b2])
-        except:
-            print("Invalid")
+            if not self._isIdentity:
+                i=min([min(a) for a in self._inRange.values()])
+                j=max([max(a) for a in self._inRange.values()])
+                b1=__digits(i)
+                b2=__digits(j)
+                bound=max([b1,b2])
+            else:
+                bound=2
+        except Exception as e:
+            print(e)
             return None
         else:
             for rows in self._matrix:
@@ -449,19 +436,10 @@ Check exampleMatrices.py for further explanation and examples
         Fill the matrix with random integers from given range
         """
         try:
-            assert len(self._inRange)==2 and self._inRange[0]!=self._inRange[1]
-        except AssertionError:
-            print("Bad argument for inRange parameter!")
-            print(Matrix.__doc__)
-        except Exception as err:
-            print(err)
-            print(Matrix.__doc__)
-        else:
-            
             if  self._randomFill:
                 
                 lis=self._zeroFiller(lis)
-                m,n=max(self._inRange),min(self._inRange)
+                m,n=max(self._initRange),min(self._initRange)
                 d=self._dim[:]
                 for row in range(0,d[0]):
                     for column in range(0,d[1]):
@@ -471,7 +449,13 @@ Check exampleMatrices.py for further explanation and examples
                             new=rd.randint(n,m)*rd.random()
                             ele="{0:.4f}".format(new)
                             lis[row].append(float(ele))
-
+        
+        except AssertionError:
+            print("Bad argument for inRange parameter!")
+        except Exception as err:
+            print(err)
+            print(Matrix.__doc__)
+        else:
             return lis
         
     def __floatFix(self):    
@@ -891,7 +875,7 @@ EXAMPLES:
                     temp._matrix[-1]=temp._matrix[i]
                     temp._matrix[i]=m
                     i+=1
-                continue
+                    continue
             else:
                 dia.append(temp[i][i])
                 temp[i]=temp2
@@ -934,8 +918,8 @@ EXAMPLES:
             t1.append([0]*self._dim[1])
         if zeroRow>0:
             prod=0
-        else:
-            self._det=prod
+        self._det=prod
+        self.__detCalc=1
         return (FMatrix(listed=t1),((-1)**(rowC))*prod)
 # =============================================================================
 
@@ -996,9 +980,9 @@ EXAMPLES:
         if self._isIdentity:
             return Identity(dim=self._dim)
         elif self._fMat:
-            return FMatrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,randomFill=self._randomFill)
+            return FMatrix(dim=self._dim,listed=self._matrix,randomFill=self._randomFill)
         else:
-            return Matrix(dim=self._dim,listed=self._matrix,inRange=self._inRange,randomFill=self._randomFill)
+            return Matrix(dim=self._dim,listed=self._matrix,randomFill=self._randomFill)
     @property
     def string(self):
         return self._stringfy()
@@ -1031,7 +1015,7 @@ EXAMPLES:
         return self._inverse()
     @property
     def inRange(self):
-        self._inRange=self._declareRange(self._matrix)[:]
+        self._inRange=self._declareRange(self._matrix)
         return self._inRange
     @property
     def matrix(self):
@@ -1051,13 +1035,13 @@ EXAMPLES:
     @property
     def highest(self):
         if not self._isIdentity:
-            return self._inRange[1]
+            return self._initRange[1]
         else:
             return 1
     @property
     def lowest(self):
         if not self._isIdentity:
-            return self._inRange[0]   
+            return self._initRange[0]   
         else:
             return 0
     @property
@@ -1675,9 +1659,9 @@ EXAMPLES:
             print("\nFloat Matrix",end="")
         if self._valid and not self._cMat and not self._isIdentity and self.avg()!=None:
             if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self.inRange,self.avg()))
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self._dim[0],self._dim[1],self.inRange,self.avg()))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self.inRange,self.avg()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self._dim[0],self.inRange,self.avg()))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
@@ -1694,6 +1678,7 @@ Identity matrix
         self._matrix=list()
         self._randomFill=0
         self._inRange=[0,1]
+        self._initRange=[0,1]
         self._valid=1
         self._fMat=0
         self._cMat=0
@@ -1789,8 +1774,8 @@ Matrix which contain complex numbers
         if self._cMat:
             print("\nComplex matrix, ",end="")
             if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverage: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg()))
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg()))
             else:
-                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverage: {2}".format(self._dim[0],self._inRange,self.avg()))            
+                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self._dim[0],self._inRange,self.avg()))            
                 
             return self._stringfy()+"\n"
