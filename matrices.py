@@ -1071,8 +1071,8 @@ EXAMPLES:
     
     def roundForm(self,decimal=1):
         if decimal==0:
-            return Matrix(listed=self.__round__(n=decimal))
-        return FMatrix(listed=self.__round__(n=decimal))
+            return Matrix(listed=round(self,decimal).matrix)
+        return FMatrix(listed=round(self,decimal).matrix)
     
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)
@@ -1634,7 +1634,7 @@ EXAMPLES:
         temp=[]
         for elements in self._matrix:
             temp.append([round(a,n) for a in elements])
-        return temp
+        return Matrix(listed=temp)
     
     def __floor__(self):
         temp=[]
