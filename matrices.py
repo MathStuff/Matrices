@@ -965,7 +965,39 @@ EXAMPLES:
         else:
             new=total/(d[0]*d[1])
             return new
-
+        
+    def col(self,column=None):
+        """
+        Get a specific column of the matrix
+        Starts from 1
+        Returns an ordered list 
+        """
+        try:
+            assert isinstance(column,int)
+            assert column>0 and column<=self.dim[1]
+        except:
+            print("Bad arguments")
+            return None
+        else:
+            temp=[]
+            for rows in self._matrix:
+                temp.append(rows[column-1])
+            return temp
+    def row(self,row=None):
+        """
+        Get a specific row of the matrix
+        Starts from 1
+        You can also use self._matrix[row-1]
+        """
+        try:
+            assert isinstance(row,int)
+            assert row>0 and row<=self.dim[0]
+        except:
+            print("Bad arguments")
+            return None
+        else:
+            return self._matrix[row-1]
+            
 # =============================================================================
     """Properties available for public"""               
 # =============================================================================
