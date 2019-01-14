@@ -65,7 +65,7 @@ Check exampleMatrices.py for further explanation and examples
 
         if not self._isIdentity:
             if dim==None:
-                self._dim=[0,0]
+                self.__dim=[0,0]
             else:
                 self._dimSet(dim)             
             #Attributes    
@@ -84,7 +84,7 @@ Check exampleMatrices.py for further explanation and examples
             if isinstance(listed,str):
                 try:
                     self._matrix=self._listify(listed,self._header)
-                    self._dim=self._declareDim()
+                    self.__dim=self._declareDim()
                     self._inRange=self._declareRange(self._matrix)
                     self._string=self._stringfy()
                 except Exception as err:
@@ -99,7 +99,7 @@ Check exampleMatrices.py for further explanation and examples
                     lis=self.__fromFile(directory)
                     if not lis==None:
                         self._matrix=self._listify(lis,self._header)
-                        self._dim=self._declareDim()
+                        self.__dim=self._declareDim()
                         self._inRange=self._declareRange(self._matrix)
                         self._string=self._stringfy()
                     else:
@@ -118,7 +118,7 @@ Check exampleMatrices.py for further explanation and examples
                     if len(self.__temp1)>0:                        
                             self._matrix = self.__temp1.copy()  
                             self._inRange=self._declareRange(self._matrix)
-                            self._dim=self._declareDim()
+                            self.__dim=self._declareDim()
                             self._string=self._stringfy()   
                             
                     elif len(self.__temp1)==0 and dim!=[0,0]:
@@ -129,7 +129,7 @@ Check exampleMatrices.py for further explanation and examples
                         elif self._randomFill:
                             self._matrix=self._randomFiller(self.__temp1)
                             self._inRange=self._declareRange(self._matrix)
-                            self._dim=self._declareDim() 
+                            self.__dim=self._declareDim() 
                             self._string=self._stringfy()
                     else:
                         self._valid=0
@@ -157,30 +157,32 @@ Check exampleMatrices.py for further explanation and examples
         if isinstance(dim,list):
             if len(dim)!=2:
                 self._valid=0
-                self._dim=[0,0]
+                self.__dim=[0,0]
                 print("Bad dimension argument")
                 return None
-            self._dim=dim[:]
+            self.__dim=dim[:]
             rows=dim[0]
             cols=dim[1]
             if rows<=0 or cols<=0: 
                 self._valid=0
-                self._dim=[0,0]
+                self.__dim=[0,0]
             else:                              
-                self._dim=[rows,cols]
+                self.__dim=[rows,cols]
             
         elif isinstance(dim,int):
             if dim<=0:
                 self._valid=0
-                self._dim=[0,0]
+                self.__dim=[0,0]
             else:
-                self._dim=[dim,dim]
+                self.__dim=[dim,dim]
             
     def _declareDim(self):
         """
         Set new dimension 
         """
         try:
+            if self._isIdentity:
+                return self.dim
             rows=0
             cols=0
             for row in self._matrix:
@@ -327,18 +329,18 @@ Check exampleMatrices.py for further explanation and examples
             print(Matrix.__doc__)
         else:          
             try:
-                if self._dim!=[0,0]:
+                if self.__dim!=[0,0]:
                     try:
-                        assert self._dim[0]*self._dim[1]==len(list1)
+                        assert self.dim[0]*self.dim[1]==len(list1)
                     except AssertionError:
                         print("Can't create a matrix in given dimensions")
                         return None
                     else:
                         list2=[]
                         ind=0
-                        for i in range(self._dim[0]):
+                        for i in range(self.dim[0]):
                             list2.append(list())
-                            for j in range(self._dim[1]):
+                            for j in range(self.dim[1]):
                                 list2[i].append(list1[ind])
                                 ind+=1
                         return list2
@@ -417,16 +419,16 @@ Check exampleMatrices.py for further explanation and examples
         Fills the matrix with zeros
         """
           
-        for rows in range(0,self._dim[0]):
+        for rows in range(0,self.dim[0]):
             lis.append(list())
             if not self._randomFill: 
-                for cols in range(0,self._dim[1]):
+                for cols in range(0,self.dim[1]):
                     lis[rows].append(0)
             else:
                 pass
                 #print("Try turning on randomFill if you're having issues")
         if self._isIdentity:            
-            for row in range(0,self._dim[0]):
+            for row in range(0,self.dim[0]):
                 lis[row][row]=1  
                 
         return lis
@@ -440,7 +442,7 @@ Check exampleMatrices.py for further explanation and examples
                 
                 lis=self._zeroFiller(lis)
                 m,n=max(self._initRange),min(self._initRange)
-                d=self._dim[:]
+                d=self.__dim[:]
                 for row in range(0,d[0]):
                     for column in range(0,d[1]):
                         if not self._fMat:
@@ -526,7 +528,7 @@ Check exampleMatrices.py for further explanation and examples
             return None
         else:
             self._valid=1
-            self._dim=self._declareDim()
+            self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
             self._string=self._stringfy()
             self.__adjCalc=0
@@ -570,7 +572,7 @@ If no parameter name given, takes it as row
             self.__invCalc=0  
             self.__rankCalc=0                        
             self._matrix=[a[:] for a in newM]
-            self._dim=self._declareDim()
+            self.__dim=self._declareDim()
             self._string=self._stringfy()
             
     def delDim(self,num):
@@ -581,11 +583,11 @@ Removes desired number of dimensions from bottom left corner
             if self.matrix==[]:
                 return "Empty matrix"
             assert isinstance(num,int) and num>0 and self.dim[0]-num>=0 and self.dim[1]-num>=0
-            goal1=self._dim[0]-num
-            goal2=self._dim[1]-num
+            goal1=self.dim[0]-num
+            goal2=self.dim[1]-num
             if goal1==0 and goal2==0:
                 print("All rows have been deleted")
-            self._dim=[goal1,goal2]
+            self.__dim=[goal1,goal2]
             temp=[]
             for i in range(goal1):
                 temp.append(self._matrix[i][:goal2])
@@ -658,7 +660,7 @@ EXAMPLES:
             #IF MORE THAN 2 ARGUMENTS ARE GIVEN MAKE SURE IT IS 4 OF THEM AND THEY ARE VALID
             else:
                 assert (rowS,rowE,colS,colE)!=(None,None,None,None) and (rowS,rowE,colS,colE)>(0,0,0,0)
-            assert rowS<=self._dim[0] and rowE<=self._dim[0] and colS<=self._dim[1] and colE<=self._dim[1]
+            assert rowS<=self.dim[0] and rowE<=self.dim[0] and colS<=self.dim[1] and colE<=self.dim[1]
             
         except AssertionError:
             print("Bad arguments")
@@ -746,7 +748,7 @@ EXAMPLES:
                     res=self._minor(rows+1,cols+1).det*__sign([rows,cols])
                     adjL[rows].append(round(res,4))
                     
-            adjM=FMatrix(dim=self.dim,listed=adjL)
+            adjM=FMatrix(dim=self.__dim,listed=adjL)
             self._adj=adjM.t
             self.__adjCalc=1
             return self._adj
@@ -761,7 +763,7 @@ EXAMPLES:
         Sets the inverse form in float numbers format
         """
         try:
-            assert self.dim[0] == self.dim[1]
+            assert self.dim[0]== self.dim[1]
             assert self.det!=0
         except AssertionError:    
             if self.det==0:
@@ -791,13 +793,13 @@ EXAMPLES:
         Returns the rank of the matrix
         """
         #If matrix is not a square matrix
-        if self._dim[0]!=self._dim[1]:
-            m=min(self.dim)
+        if self.dim[0]!=self.dim[1]:
+            m=min(self.__dim)
             dimsOf=[]
             #Get square matrices from mxn dimension matrix (m!=n)
-            if self._dim[0]<2 or self._dim[1]<2:
+            if self.dim[0]<2 or self.dim[1]<2:
                 return 1
-            if self._dim[0]!=self._dim[1]:
+            if self.dim[0]!=self.dim[1]:
                 if m==self.dim[0]:
                     for i in range(1,m+2):    
                         temp=self.subM(1,m,i,i+m-1)
@@ -834,7 +836,7 @@ EXAMPLES:
                 r=0
                 temp=self._echelon()[0]
                 for rows in temp._matrix:
-                    if rows!=[0]*self._dim[1]:
+                    if rows!=[0]*self.dim[1]:
                         r+=1
             except:
                 print("error getting rank")
@@ -851,7 +853,7 @@ EXAMPLES:
         rowC=0
         prod=1
         dia=[]
-        while i <min(self._dim):
+        while i <min(self.__dim):
             try:
                 temp2 = [a/temp._matrix[i][i] for a in temp._matrix[i]]
                 for nums in temp2:
@@ -861,7 +863,7 @@ EXAMPLES:
                 try:
                     rowC+=1
                     """Note to self : Try using pop and push"""
-                    if temp._matrix[i+1]==[0]*self._dim[1]:
+                    if temp._matrix[i+1]==[0]*self.dim[1]:
                         m=temp._matrix[-1]
                         temp._matrix[-1]=temp._matrix[i+1]
                         temp._matrix[i+1]=m
@@ -879,10 +881,10 @@ EXAMPLES:
             else:
                 dia.append(temp[i][i])
                 temp[i]=temp2
-                for j in range(i+1,self._dim[0]):
+                for j in range(i+1,self.dim[0]):
                     temp3=[]
                     co=temp[j][i]
-                    for k in range(self._dim[1]):
+                    for k in range(self.dim[1]):
                         num=temp[j][k]-co*temp[i][k]
                         if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
                             num=0
@@ -909,13 +911,13 @@ EXAMPLES:
         t1=[]
         zeroRow=0
         for r in t:
-            if r==[0]*self._dim[1]:
+            if r==[0]*self.dim[1]:
                zeroRow+=1
             else:
                 t1.append(r)
         
         for j in range(zeroRow):
-            t1.append([0]*self._dim[1])
+            t1.append([0]*self.dim[1])
         if zeroRow>0:
             prod=0
         self._det=prod
@@ -928,7 +930,7 @@ EXAMPLES:
         Sets the avg attribute of the matrix as the average of it's elements
         """
         try:
-            d=self._dim[:]
+            d=self.__dim[:]
             if d[0]==0 or d[1]==0:
                 return None
             
@@ -943,19 +945,19 @@ EXAMPLES:
                             colAvg["Col "+str(nth)]+=cols
                         nth+=1
                 for key,value in colAvg.items():
-                    colAvg[key]=round(value/self._dim[0],4)
+                    colAvg[key]=round(value/self.dim[0],4)
                 return colAvg
                     
             else:
                 try:
-                    assert col>0 and col<=self._dim[1]
+                    assert col>0 and col<=self.dim[1]
                 except AssertionError:
                     print("Col parameter should be in range [1,amount of columns]")
                 else:
                     total=0
                     for rows in self._matrix:
                         total+=rows[col-1]
-                    avg=total/self._dim[0]
+                    avg=total/self.dim[0]
                     return avg
             
         except Exception as err:
@@ -1010,20 +1012,51 @@ EXAMPLES:
     @property
     def copy(self):
         if self._isIdentity:
-            return Identity(dim=self._dim)
+            return Identity(dim=self.__dim)
         elif self._fMat:
-            return FMatrix(dim=self._dim,listed=self._matrix,randomFill=self._randomFill)
+            return FMatrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill)
         else:
-            return Matrix(dim=self._dim,listed=self._matrix,randomFill=self._randomFill)
+            return Matrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill)
     @property
     def string(self):
         return self._stringfy()
     @property
     def directory(self):
         return self._dir
+    
     @property
     def dim(self):
-        return self._dim
+        return self.__dim
+    @dim.setter
+    def dim(self,val):
+        if self._valid:
+            try:
+                a=self.dim[0]*self.dim[1]
+                if isinstance(val,int):
+                    assert val>0
+                    val=[val,val]
+                elif isinstance(val,list):
+                    assert len(val)==2
+                else:
+                    return None
+                assert val[0]*val[1]==a
+            except:
+                return None
+            else:
+                els=[]
+                for rows in self.matrix:
+                    for cols in rows:
+                        els.append(cols)
+                new=[]
+                i=-1
+                for r in range(val[0]):
+                    i+=1
+                    new.append([])
+                    for c in range(val[1]):
+                        new[i].append(els[c+val[1]*r])
+                self.__init__(dim=val,listed=new)
+            
+        
     @property
     def echelon(self):
         return self._echelon()[0]
@@ -1051,7 +1084,7 @@ EXAMPLES:
     @property
     def det(self):
         try:
-            assert self._dim[0]==self._dim[1]
+            assert self.dim[0]==self.dim[1]
         except AssertionError:
             print("Not a square matrix")
         else:
@@ -1074,11 +1107,11 @@ EXAMPLES:
     @property
     def summary(self):
         if self._valid and self._fMat:
-            return "FMatrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self._dim,self._matrix,self._inRange,self._randomFill)
+            return "FMatrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self.__dim,self._matrix,self._inRange,self._randomFill)
         elif self._valid and not self._isIdentity:
-            return "Matrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self._dim,self._matrix,self._inRange,self._randomFill)
+            return "Matrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self.__dim,self._matrix,self._inRange,self._randomFill)
         elif self._valid and self._isIdentity:
-            return "Identity(dim={0},listed={1},inRange=[0,1],randomFill=0)".format(self._dim,self._matrix)
+            return "Identity(dim={0},listed={1},inRange=[0,1],randomFill=0)".format(self.__dim,self._matrix)
         else:
             return None
         
@@ -1119,6 +1152,9 @@ EXAMPLES:
             return self._average(col)
         return None
 # =============================================================================
+    """ Setters to secure some attributes """
+# =============================================================================
+
     def __getitem__(self,pos):
         try:
             if isinstance(pos,tuple):
@@ -1141,7 +1177,7 @@ EXAMPLES:
                 if len(item)==self.dim[1]: 
                     row=pos
                     self._matrix[row]=item[:]
-                    self._dim=self._declareDim()
+                    self.__dim=self._declareDim()
                     self._inRange=self._declareRange(self._matrix)
                 else:
                     print("Check the dimension of the given list")
@@ -1159,7 +1195,7 @@ EXAMPLES:
         
 
 # =============================================================================
-   
+
     def __matmul__(self,other):
         try:
             assert self.dim[1]==other.dim[0]
@@ -1186,7 +1222,7 @@ EXAMPLES:
     def __add__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1196,9 +1232,9 @@ EXAMPLES:
                 print("Can't add")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
             
-                return Matrix(dim=self.dim,listed=temp)    
+                return Matrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1211,8 +1247,8 @@ EXAMPLES:
                 print("Can't add") 
             else:
                 if isinstance(self,FMatrix) or isinstance(other,float):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                 
            
         elif (isinstance(self,int) or isinstance(self,float)) and isinstance(other,Matrix):
@@ -1226,8 +1262,8 @@ EXAMPLES:
                 print("Can't add") 
             else:
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                             
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1242,15 +1278,15 @@ EXAMPLES:
                         temp[s].append(rows[d]+other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
         else:
             print("Can't add")
 ################################################################################            
     def __sub__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1260,9 +1296,9 @@ EXAMPLES:
                 print("Can't subtract")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
             
-                return Matrix(dim=self.dim,listed=temp)    
+                return Matrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1275,8 +1311,8 @@ EXAMPLES:
                 print("Can't subtract") 
             else:
                 if isinstance(self,FMatrix) or isinstance(other,float):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                 
            
         elif (isinstance(self,int) or isinstance(self,float)) and isinstance(other,Matrix):
@@ -1290,8 +1326,8 @@ EXAMPLES:
                 print("Can't subtract") 
             else:
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                     
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1306,15 +1342,15 @@ EXAMPLES:
                         temp[s].append(rows[d]-other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
         else:
             print("Can't subtract")
 ################################################################################     
     def __mul__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1324,9 +1360,9 @@ EXAMPLES:
                 print("Can't multiply")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
             
-                return Matrix(dim=self.dim,listed=temp)    
+                return Matrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1339,8 +1375,8 @@ EXAMPLES:
                 print("Can't multiply") 
             else:
                 if isinstance(self,FMatrix) or isinstance(other,float):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                  
         elif (isinstance(self,int) or isinstance(self,float)) and isinstance(other,Matrix):
             try:
@@ -1353,8 +1389,8 @@ EXAMPLES:
                 print("Can't multiply") 
             else:
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
             
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1369,15 +1405,15 @@ EXAMPLES:
                         temp[s].append(rows[d]*other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
         else:
             print("Can't multiply")
 ################################################################################
     def __floordiv__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1388,7 +1424,7 @@ EXAMPLES:
             except:
                 print("Can't divide")
             else:
-                return Matrix(dim=self.dim,listed=temp)    
+                return Matrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1402,7 +1438,7 @@ EXAMPLES:
             except:
                 print("Can't divide") 
             else:
-                return Matrix(dim=self.dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                 
            
         elif (isinstance(self,int) or isinstance(self,float)) and isinstance(other,Matrix):
@@ -1417,7 +1453,7 @@ EXAMPLES:
             except:
                 print("Can't divide") 
             else:
-                return Matrix(dim=self.dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
             
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1431,7 +1467,7 @@ EXAMPLES:
                     for d in range(len(other)):
                         temp[s].append(rows[d]//other[d])
                     s+=1
-                return Matrix(dim=self.dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
             
         else:
             print("Can't divide")
@@ -1439,7 +1475,7 @@ EXAMPLES:
     def __truediv__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1450,7 +1486,7 @@ EXAMPLES:
             except:
                 print("Can't divide")
             else:
-                return FMatrix(dim=self.dim,listed=temp)    
+                return FMatrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1464,7 +1500,7 @@ EXAMPLES:
             except:
                 print("Can't divide") 
             else:
-                return FMatrix(dim=self.dim,listed=temp)
+                return FMatrix(dim=self.__dim,listed=temp)
                          
         elif (isinstance(self,int) or isinstance(self,float)) and isinstance(other,Matrix):
             try:
@@ -1478,7 +1514,7 @@ EXAMPLES:
             except:
                 print("Can't divide") 
             else:
-                return FMatrix(dim=self.dim,listed=temp)
+                return FMatrix(dim=self.__dim,listed=temp)
             
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1492,7 +1528,7 @@ EXAMPLES:
                     for d in range(len(other)):
                         temp[s].append(rows[d]/other[d])
                     s+=1
-                return FMatrix(dim=self.dim,listed=temp)
+                return FMatrix(dim=self.__dim,listed=temp)
             
         else:
             print("Can't divide")
@@ -1500,7 +1536,7 @@ EXAMPLES:
     def __mod__ (self, other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1512,9 +1548,9 @@ EXAMPLES:
                 print("Dimensions doesn't match")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
             
-                return Matrix(dim=self.dim,listed=temp)    
+                return Matrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1529,8 +1565,8 @@ EXAMPLES:
                 print("Can't get modular")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,float):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                 
            
         elif (isinstance(self,int) or isinstance(self,float)) and isinstance(other,Matrix):
@@ -1546,8 +1582,8 @@ EXAMPLES:
                 print("Can't get modular")
             else:
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                     
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1562,15 +1598,15 @@ EXAMPLES:
                         temp[s].append(rows[d]%other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
         else:
             print("Can't get modular")
 ################################################################################         
     def __pow__(self,other):
         if isinstance(self,Matrix) and isinstance(other,Matrix):
             try:
-                assert self.dim==other.dim                
+                assert self.__dim==other.dim                
                 temp=[]
                 for rows in range(self.dim[0]):
                     temp.append(list())
@@ -1580,9 +1616,9 @@ EXAMPLES:
                 print("Can't raise to the given power")
             else:
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
             
-                return Matrix(dim=self.dim,listed=temp)    
+                return Matrix(dim=self.__dim,listed=temp)    
             
         elif isinstance(self,Matrix) and (isinstance(other,int) or isinstance(other,float)):
             try:
@@ -1595,8 +1631,8 @@ EXAMPLES:
                 print("Can't raise to the given power") 
             else:
                 if isinstance(self,FMatrix) or isinstance(other,float):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
                 
         elif isinstance(other,list):
             if len(other)!=len(self.matrix[0]):
@@ -1611,21 +1647,21 @@ EXAMPLES:
                         temp[s].append(rows[d]**other[d])
                     s+=1
                 if isinstance(self,float) or isinstance(other,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.__dim,listed=temp)
+                return Matrix(dim=self.__dim,listed=temp)
         else:
             print("Can't raise to the given power")
 ################################################################################                    
     def __lt__(self,other):
         if self._valid==1 and other._valid==1:
-            if self.dim==other.dim:
+            if self.__dim==other.dim:
                 if self.matrix==other.matrix:
                     return False
-                elif self._dim[0]==self._dim[1]:
+                elif self.dim[0]==self.dim[1]:
                     return self.det<other.det
                 else:
                     return None
-            elif self._dim[0]==self._dim[1] and other._dim[0]==other._dim[1] :   
+            elif self.dim[0]==self.dim[1] and other._dim[0]==other._dim[1] :   
                 return self.det<other.det
             else:
                 return None
@@ -1634,7 +1670,7 @@ EXAMPLES:
     
     def __eq__(self,other):
         if self._valid==1 and other._valid==1:
-            if self._dim==other.dim:
+            if self.__dim==other.dim:
                 if self.matrix==other.matrix:
                     return True
                 return False
@@ -1645,14 +1681,14 @@ EXAMPLES:
     
     def __gt__(self,other):
         if self._valid==1 and other._valid==1:
-            if self.dim==other.dim:
+            if self.__dim==other.dim:
                 if self.matrix==other.matrix:
                     return False
-                elif self._dim[0]==self._dim[1]:
+                elif self.dim[0]==self.dim[1]:
                     return self.det>other.det
                 else:
                     return None
-            elif self._dim[0]==self._dim[1] and other._dim[0]==other._dim[1] :   
+            elif self.dim[0]==self.dim[1] and other._dim[0]==other._dim[1] :   
                 return self.det>other.det
             else:
                 return None
@@ -1690,10 +1726,10 @@ EXAMPLES:
         if self._fMat:
             print("\nFloat Matrix",end="")
         if self._valid and not self._cMat and not self._isIdentity and self.avg()!=None:
-            if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg()))
+            if self.dim[0]!=self.dim[1]:
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self._dim[0],self._inRange,self.avg()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
@@ -1704,30 +1740,28 @@ class Identity(Matrix):
     """
 Identity matrix
     """
-    def __init__(self,dim=[1,1]):
-        self._dim=dim
-        self._dimSet(self._dim)
-        self._matrix=list()
+    def __init__(self,dim=[1,1]):     
+        self._valid=1 
+        self.__dim=self._dimSet(dim)
+        if self.dim[0]!=self.dim[1]:
+            self._valid=0
+            return None
+
         self._randomFill=0
         self._inRange=[0,1]
         self._initRange=[0,1]
-        self._valid=1
+        
         self._fMat=0
         self._cMat=0
-        
+        self._isIdentity=1       
         self.__adjCalc=1
         self.__detCalc=1
         self.__invCalc=1
-        
-        if self.dim[0]==self.dim[1]:
-            if self.dim[0]>0:
-                self._isIdentity=1
-        else:
-            self._valid=0
-            return None
-        if self._isIdentity:
-            self._matrix=self._zeroFiller(self._matrix)
-            self._string=self._stringfy()
+
+        self._dimSet(dim)
+        self._matrix=list()
+        self._matrix=self._zeroFiller(self._matrix)
+        self._string=self._stringfy()
                     
     def addDim(self,num):
         """
@@ -1740,8 +1774,8 @@ Identity matrix
         except Exception as err:
             print(err)
         else:
-            goal=self._dim[0]+num
-            self._dim=[goal,goal]
+            goal=self.dim[0]+num
+            self.__dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy()
             return self
@@ -1759,27 +1793,27 @@ Identity matrix
         except Exception as err:
             print(err)
         else:
-            goal=self._dim[0]-num
+            goal=self.dim[0]-num
             if goal==0:
                 print("All rows have been deleted")
-            self._dim=[goal,goal]
+            self.__dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy()
             return self
         
     @property
     def inv(self):
-        return Identity(dim=self._dim)
+        return Identity(dim=self.__dim)
     @property    
     def det(self):
         return 1
     @property
     def adj(self):
-        return Identity(dim=self._dim)
+        return Identity(dim=self.__dim)
     
     def __str__(self):
         if self._isIdentity:
-            print("\nIdentity Matrix\nDimension: {0}x{0}".format(self._dim[0]))
+            print("\nIdentity Matrix\nDimension: {0}x{0}".format(self.dim[0]))
             return self._stringfy()+"\n"
         
 class FMatrix(Matrix):
@@ -1805,9 +1839,9 @@ Matrix which contain complex numbers
     def __str__(self):
         if self._cMat:
             print("\nComplex matrix, ",end="")
-            if self._dim[0]!=self._dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self._dim[0],self._dim[1],self._inRange,self.avg()))
+            if self.dim[0]!=self.dim[1]:
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
             else:
-                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self._dim[0],self._inRange,self.avg()))            
+                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))            
                 
             return self._stringfy()+"\n"
