@@ -446,7 +446,7 @@ Check exampleMatrices.py for further explanation and examples
                         if not self._fMat:
                             lis[row].append(rd.randint(n,m))
                         else:
-                            new=rd.randint(n,m)*rd.random()
+                            new=rd.uniform(n,m)
                             ele="{0:.4f}".format(new)
                             lis[row].append(float(ele))
         
