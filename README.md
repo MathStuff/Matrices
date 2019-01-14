@@ -75,7 +75,7 @@ C.p #Print the dimension,range,average and the grid
 
 C.directory #Returns the directory of the matrix if there is any given
 
-C.dim #Returns the dimension of the matrix
+C.dim #Returns the dimension of the matrix; you can change the dimension, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
 C.string #Returns the string for of the matrix's elements
 
