@@ -79,6 +79,10 @@ C.dim #Returns the dimension of the matrix
 
 C.string #Returns the string for of the matrix's elements
 
+C.col(n) #Returns nth column of the matrix as a list n∈[1,column amount]
+
+C.row(n) #Returns nth row of the matrix as a list n∈[1,row amount]
+
 C.intForm #Returns integer form of the matrix
 
 C.floatForm #Returns integer form of the matrix
