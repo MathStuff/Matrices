@@ -1,4 +1,4 @@
-# Matrices (Pre-release)
+# Matrices (Alpha)
 ### Python 3 code to create and operate on matrices:
    
    ##### -<a href=https://github.com/semihM/Matrices/blob/master/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
