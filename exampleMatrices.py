@@ -136,8 +136,8 @@ print("f.subM(1,4,2,3):\n",f.subM(1,4,2,3),"\n")
 print(f)
 print("f.delDim(4)")
 print(f)
-print("f.echelon.p")
-f.echelon.p
+print("f.uptri.p")
+f.uptri.p
 print('################')
       
 print("g.dim:\n",g.dim)
@@ -591,7 +591,7 @@ Averages: {'Col 1': -85.4941, 'Col 2': -73.7148, 'Col 3': -1.2768, 'Col 4': -442
  308.2639 -512.2159 -402.0273 -292.1546  380.7943 -815.8729 
 -223.4775   -9.8699   65.4972 -158.9980 -523.3778   74.3882 
 
-f.echelon.p
+f.uptri.p
 
 Float Matrix
 Square matrix

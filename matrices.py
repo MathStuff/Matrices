@@ -685,10 +685,10 @@ EXAMPLES:
                     return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
 
 # =============================================================================
-    def _determinantByEchelonForm(self):
+    def _determinantByUpperTriangulerForm(self):
         try:
             if not self.__detCalc:
-                self._det=self._echelon()[1]
+                self._det=self._UpperTrianguler()[1]
                 self.__detCalc=1
         except:
             print("error")
@@ -834,7 +834,7 @@ EXAMPLES:
         else:
             try:
                 r=0
-                temp=self._echelon()[0]
+                temp=self._UpperTrianguler()[0]
                 for rows in temp._matrix:
                     if rows!=[0]*self.dim[1]:
                         r+=1
@@ -842,11 +842,11 @@ EXAMPLES:
                 print("error getting rank")
             else:
                 return r
-    def _echelon(self):
+    def _UpperTrianguler(self):
         """
         ### NEEDS SOME CLEAN UP###
         ### DETERMINANT CALCULATION DONE BY ERROR RATE OF 0.0001% ###
-        Returns the not reduced echelon form of the matrix
+        Returns the not reduced upper trianguler form of the matrix
         """
         temp = FMatrix(listed=self._matrix)
         i=0
@@ -1058,8 +1058,8 @@ EXAMPLES:
             
         
     @property
-    def echelon(self):
-        return self._echelon()[0]
+    def uptri(self):
+        return self._UpperTrianguler()[0]
     @property
     def rank(self):
         if not self.__rankCalc:
@@ -1091,7 +1091,7 @@ EXAMPLES:
             if self.__detCalc:
                 return self._det
             else:
-                return self._determinantByEchelonForm()       
+                return self._determinantByUpperTriangulerForm()       
     @property
     def highest(self):
         if not self._isIdentity:

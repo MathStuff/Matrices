@@ -93,7 +93,7 @@ C.floorForm #Returns the same matrix as "intForm"
 
 C.roundForm(decimal=n) #Returns a matrix of elements' rounded up to n decimal digits 
 
-C.echelon #Returns a not-reduced(will be changed later) form of echelon form of the matrix 
+C.uptri #Returns the upper triangular form of the matrix 
 
 C.avg(n) #Returns the nth column's average, give None as argument to get the all columns' averages
 
