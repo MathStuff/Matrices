@@ -1,6 +1,14 @@
 # Matrices (Alpha)
-### Python 3 code to create and operate on matrices:
+### Python 3 code to create and operate on matrices
    
+#### Install using pip:
+   
+   <code>pip install MatricesM</code>
+   
+#### Import by using:
+   <code>import matrices
+   
+   from matrices import *</code>
    ##### -<a href=https://github.com/semihM/Matrices/blob/master/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
   
    ##### -<a href=https://github.com/semihM/Matrices/blob/master/exampleMatrices.py>exampleMatrices.py</a> contains example matrices
