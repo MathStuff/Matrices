@@ -7,6 +7,7 @@ Created on Wed Oct 31 17:26:48 2018
 
 import random as rd
 
+
 class Matrix(object):
     """Matrix object:
 ***Create matrices and print them as grids***
@@ -1845,3 +1846,4 @@ Matrix which contain complex numbers
                 print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))            
                 
             return self._stringfy()+"\n"
+        
