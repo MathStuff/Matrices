@@ -574,6 +574,7 @@ If no parameter name given, takes it as row
             self.__rankCalc=0                        
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
+            self._inRange=self._declareRange(self._matrix)
             self._string=self._stringfy()
             
     def delDim(self,num):
@@ -854,6 +855,7 @@ EXAMPLES:
         rowC=0
         prod=1
         dia=[]
+        L=Matrix(dim=self.dim,randomFill=0)
         while i <min(self.__dim):
             try:
                 temp2 = [a/temp._matrix[i][i] for a in temp._matrix[i]]
@@ -1144,6 +1146,7 @@ EXAMPLES:
         return self._minor(row=r,col=c)
     
     def inRange(self,col=None):
+        self._inRange=self._declareRange(self.matrix)
         if col==None:
             return self._inRange
         return self._inRange["Col {}".format(col)]   
@@ -1166,20 +1169,17 @@ EXAMPLES:
         except:
             print("Bad indeces")
             return None
-
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):           
                 row,col=pos
                 self._matrix[row][col]=item
-                self._inRange=self._declareRange(self._matrix)
                 
             elif isinstance(pos,int) and isinstance(item,list):
                 if len(item)==self.dim[1]: 
                     row=pos
                     self._matrix[row]=item[:]
                     self.__dim=self._declareDim()
-                    self._inRange=self._declareRange(self._matrix)
                 else:
                     print("Check the dimension of the given list")
         except:
@@ -1724,6 +1724,7 @@ EXAMPLES:
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
         """
+        self._inRange=self._declareRange(self._matrix)
         if self._fMat:
             print("\nFloat Matrix",end="")
         if self._valid and not self._cMat and not self._isIdentity and self.avg()!=None:
