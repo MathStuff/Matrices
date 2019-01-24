@@ -55,7 +55,7 @@ Check exampleMatrices.py for further explanation and examples
         self._fMat=0
         self._cMat=0
         self._valid = 1
-        
+
         if isinstance(self,FMatrix):
             self._fMat=1
         elif isinstance(self,CMatrix):
@@ -687,13 +687,13 @@ EXAMPLES:
                     return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
 
 # =============================================================================
-    def _determinantByUpperTriangulerForm(self):
+    def _determinantByLUForm(self):
         try:
             if not self.__detCalc:
-                self._det=self._UpperTrianguler()[1]
+                self._det=self._LU()[1]
                 self.__detCalc=1
-        except:
-            print("error")
+        except Exception as e:
+            print("error ",e)
         else:
             return self._det
 
@@ -728,8 +728,10 @@ EXAMPLES:
             print("Bad arguments")
         else:
             temp=self.copy
-            temp.remove(r=row)
-            temp.remove(c=col)
+            if not temp.dim[0]<=1:   
+                temp.remove(r=row)
+            if not temp.dim[1]<=1: 
+                temp.remove(c=col)
             return temp
 
     def _adjoint(self):
@@ -836,7 +838,7 @@ EXAMPLES:
         else:
             try:
                 r=0
-                temp=self._UpperTrianguler()[0]
+                temp=self._LU()[0]
                 for rows in temp._matrix:
                     if rows!=[0]*self.dim[1]:
                         r+=1
@@ -844,18 +846,19 @@ EXAMPLES:
                 print("error getting rank")
             else:
                 return r
-    def _UpperTrianguler(self):
+    def _LU(self):
         """
-        ### NEEDS SOME CLEAN UP###
-        ### DETERMINANT CALCULATION DONE BY ERROR RATE OF 0.0001% ###
-        Returns the not reduced upper trianguler form of the matrix
+        Returns L and U matrices of the matrix
+        ***KNOWN ISSUE:Doesn't always work if determinant is 0 | linear system is inconsistant***
+        ***STILL NEEDS CLEAN UP***
         """
         temp = FMatrix(listed=self._matrix)
         i=0
         rowC=0
         prod=1
         dia=[]
-        L=Matrix(dim=self.dim,randomFill=0)
+        L=FMatrix(dim=self.dim,randomFill=0)
+        L+=Identity(dim=self.dim)
         while i <min(self.__dim):
             try:
                 temp2 = [a/temp._matrix[i][i] for a in temp._matrix[i]]
@@ -863,54 +866,65 @@ EXAMPLES:
                     if nums<=0.0000 and nums>-0.0001:
                         temp2[temp2.index(nums)]=0
             except ZeroDivisionError:
-                try:
-                    rowC+=1
-                    """Note to self : Try using pop and push"""
-                    if temp._matrix[i+1]==[0]*self.dim[1]:
-                        m=temp._matrix[-1]
-                        temp._matrix[-1]=temp._matrix[i+1]
-                        temp._matrix[i+1]=m
-                        i+=1
-                        continue
-                    rowN=temp._matrix[i]
-                    temp._matrix[i]=temp._matrix[i+1]
-                    temp._matrix[i+1]=rowN
-                except IndexError:
-                    m=temp._matrix[-1]
-                    temp._matrix[-1]=temp._matrix[i]
-                    temp._matrix[i]=m
-                    i+=1
-                    continue
-            else:
                 dia.append(temp[i][i])
-                temp[i]=temp2
+                temp[i]=temp[:]
                 for j in range(i+1,self.dim[0]):
+                    swapped=0
                     temp3=[]
                     co=temp[j][i]
-                    for k in range(self.dim[1]):
-                        num=temp[j][k]-co*temp[i][k]
-                        if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
-                            num=0
-                        temp3.append(round(num,4))
-                    temp[j]=temp3
-                
-                temp[i]=[round(a*dia[i],4) for a in temp[i]]
+                    try:
+                        L[j][i]=co/dia[i]
+                    except ZeroDivisionError:
+                        swapped=1
+                        t1=temp[i][:]
+                        temp[i+1]=temp[i]
+                        temp[i]=t1
+                    else:
+                        for k in range(self.dim[1]):
+                            num=temp[j][k]-co*temp[i][k]
+                            if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
+                                num=0
+                            temp3.append(round(num,4))
+                        temp[j]=temp3
+                if not swapped:
+                    temp[i]=[round(a*dia[i],4) for a in temp[i]]
                 i+=1
-        
+            else:
+                dia.append(temp[i][i])
+                temp[i]=temp2[:]
+                for j in range(i+1,self.dim[0]):
+                    swapped=0
+                    temp3=[]
+                    co=temp[j][i]
+                    try:
+                        L[j][i]=co/dia[i]
+                    except ZeroDivisionError:
+                        swapped=1
+                        t1=temp[i][:]
+                        temp[i+1]=temp[i]
+                        temp[i]=t1
+                    else:
+                        for k in range(self.dim[1]):
+                            num=temp[j][k]-co*temp[i][k]
+                            if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
+                                num=0
+                            temp3.append(round(num,4))
+                        temp[j]=temp3
+                if not swapped:    
+                    temp[i]=[round(a*dia[i],4) for a in temp[i]]
+                i+=1
         t=[]
         ind=0
         for items in dia:
             prod*=items
-
-            
+     
         for rows in temp._matrix:
             t.append(list())
             for els in rows:
                 if els<=0.0000 and els>-0.0001:
                     els=0
                 t[ind].append(els)
-            ind+=1
-            
+            ind+=1   
         t1=[]
         zeroRow=0
         for r in t:
@@ -918,14 +932,14 @@ EXAMPLES:
                zeroRow+=1
             else:
                 t1.append(r)
-        
         for j in range(zeroRow):
             t1.append([0]*self.dim[1])
         if zeroRow>0:
             prod=0
         self._det=prod
         self.__detCalc=1
-        return (FMatrix(listed=t1),((-1)**(rowC))*prod)
+        U=FMatrix(listed=t1)
+        return (U,((-1)**(rowC))*prod,L)
 # =============================================================================
 
     def _average(self,col=None):
@@ -1062,7 +1076,10 @@ EXAMPLES:
         
     @property
     def uptri(self):
-        return self._UpperTrianguler()[0]
+        return self._LU()[0]
+    @property
+    def lowtri(self):
+        return self._LU()[2]
     @property
     def rank(self):
         if not self.__rankCalc:
@@ -1094,7 +1111,7 @@ EXAMPLES:
             if self.__detCalc:
                 return self._det
             else:
-                return self._determinantByUpperTriangulerForm()       
+                return self._determinantByLUForm()       
     @property
     def highest(self):
         if not self._isIdentity:
