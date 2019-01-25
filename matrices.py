@@ -693,7 +693,8 @@ EXAMPLES:
                 self._det=self._LU()[1]
                 self.__detCalc=1
         except Exception as e:
-            print("error ",e)
+#            print("error ",e)
+            return 0
         else:
             return self._det
 
@@ -728,9 +729,11 @@ EXAMPLES:
             print("Bad arguments")
         else:
             temp=self.copy
-            if not temp.dim[0]<=1:   
+            if temp.dim[0]==1 and temp.dim[1]==1:
+                return temp            
+            if not temp.dim[0]<1:   
                 temp.remove(r=row)
-            if not temp.dim[1]<=1: 
+            if not temp.dim[1]<1: 
                 temp.remove(c=col)
             return temp
 
@@ -846,6 +849,7 @@ EXAMPLES:
                 print("error getting rank")
             else:
                 return r
+# =============================================================================            
     def _LU(self):
         """
         Returns L and U matrices of the matrix
@@ -853,92 +857,53 @@ EXAMPLES:
         ***STILL NEEDS CLEAN UP***
         """
         temp = FMatrix(listed=self._matrix)
-        i=0
         rowC=0
         prod=1
         dia=[]
-        L=FMatrix(dim=self.dim,randomFill=0)
-        L+=Identity(dim=self.dim)
+        i=0
+        L=FMatrix(self.dim,randomFill=0)+Identity(dim=self.dim)
         while i <min(self.__dim):
-            try:
-                temp2 = [a/temp._matrix[i][i] for a in temp._matrix[i]]
-                for nums in temp2:
-                    if nums<=0.0000 and nums>-0.0001:
-                        temp2[temp2.index(nums)]=0
-            except ZeroDivisionError:
-                dia.append(temp[i][i])
-                temp[i]=temp[:]
-                for j in range(i+1,self.dim[0]):
-                    swapped=0
-                    temp3=[]
-                    co=temp[j][i]
-                    try:
-                        L[j][i]=co/dia[i]
-                    except ZeroDivisionError:
-                        swapped=1
-                        t1=temp[i][:]
-                        temp[i+1]=temp[i]
-                        temp[i]=t1
-                    else:
-                        for k in range(self.dim[1]):
-                            num=temp[j][k]-co*temp[i][k]
-                            if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
-                                num=0
-                            temp3.append(round(num,4))
-                        temp[j]=temp3
-                if not swapped:
-                    temp[i]=[round(a*dia[i],4) for a in temp[i]]
-                i+=1
-            else:
-                dia.append(temp[i][i])
-                temp[i]=temp2[:]
-                for j in range(i+1,self.dim[0]):
-                    swapped=0
-                    temp3=[]
-                    co=temp[j][i]
-                    try:
-                        L[j][i]=co/dia[i]
-                    except ZeroDivisionError:
-                        swapped=1
-                        t1=temp[i][:]
-                        temp[i+1]=temp[i]
-                        temp[i]=t1
-                    else:
-                        for k in range(self.dim[1]):
-                            num=temp[j][k]-co*temp[i][k]
-                            if round(num,4)<=0.0001 and round(num,4)>=-0.0001:
-                                num=0
-                            temp3.append(round(num,4))
-                        temp[j]=temp3
-                if not swapped:    
-                    temp[i]=[round(a*dia[i],4) for a in temp[i]]
-                i+=1
-        t=[]
-        ind=0
-        for items in dia:
-            prod*=items
-     
-        for rows in temp._matrix:
-            t.append(list())
-            for els in rows:
-                if els<=0.0000 and els>-0.0001:
-                    els=0
-                t[ind].append(els)
-            ind+=1   
-        t1=[]
-        zeroRow=0
-        for r in t:
-            if r==[0]*self.dim[1]:
-               zeroRow+=1
-            else:
-                t1.append(r)
-        for j in range(zeroRow):
-            t1.append([0]*self.dim[1])
-        if zeroRow>0:
-            prod=0
-        self._det=prod
-        self.__detCalc=1
-        U=FMatrix(listed=t1)
+            #Swap lines if diagonal has 0, stop when you find a non zero in the column
+            if temp[i][i]==0:
+                try:
+                    i2=i
+                    old=temp[i][:]
+                    while temp[i2][i]==0 and i2<min(self.dim):
+                        rowC+=1
+                        i2+=1
+                    temp[i]=temp[i2][:]
+                    temp[i2]=old[:]
+                except:
+                    print("Determinant is 0, can't get lower/upper triangular matrices")
+                    self.__detCalc=1
+                    self._det=0
+                    return [None,0,None]
+                
+            #Loop through the ith column find the coefficients to multiply the diagonal element with
+            #to make the elements under [i][i] all zeros
+            rowMulti=[]
+            for j in range(i+1,self.dim[0]):
+                co=temp[j][i]/temp[i][i]
+                rowMulti.append(co)            
+            #Loop to substitute ith row times the coefficient found from the i+n th row (n>0 & n<rows)
+            k0=0
+            for k in range(i+1,self.dim[0]):
+                for m in range(self.dim[1]):
+                    num=temp[k][m]-(rowMulti[k0]*temp[i][m])
+                    if num>=-0.0001 and num<=0.0001:
+                        num=0
+                    temp[k][m]=num
+                #Lower triangular matrix
+                L[k][i]=rowMulti[k0]
+                k0+=1   
+            #Get the diagonal for determinant calculation
+            dia.append(temp[i][i])
+            i+=1
+# =============================================================================
+        for element in dia:
+            prod*=element
+        U=temp.copy
+#        print(dia)
         return (U,((-1)**(rowC))*prod,L)
 # =============================================================================
 
@@ -1184,7 +1149,7 @@ EXAMPLES:
             elif isinstance(pos,int):
                 return self.matrix[pos]
         except:
-            print("Bad indeces")
+#            print("Bad indeces")
             return None
     def __setitem__(self,pos,item):
         try:
@@ -1201,7 +1166,7 @@ EXAMPLES:
                     print("Check the dimension of the given list")
         except:
             print(pos,item)
-            print("Bad indeces")
+#            print("Bad indeces")
             return None
         else:
             self._string=self._stringfy()
@@ -1725,13 +1690,13 @@ EXAMPLES:
     def __floor__(self):
         temp=[]
         for elements in self._matrix:
-            temp.append([int(a) for a in elements if isinstance(a,float)])
+            temp.append([int(a) for a in elements if isinstance(a,float) or isinstance(a,int)])
         return temp       
     
     def __ceil__(self):
         temp=[]
         for elements in self._matrix:
-            temp.append([int(a)+1 for a in elements if isinstance(a,float)])
+            temp.append([int(a)+1 for a in elements if isinstance(a,float) or isinstance(a,int)])
         return temp     
     
     def __repr__(self):
