@@ -699,7 +699,7 @@ EXAMPLES:
             return 0
         else:
             return self._det
-
+# =============================================================================    
     def _transpose(self):
         try:
             assert self._valid==1
@@ -720,7 +720,7 @@ EXAMPLES:
                 return FMatrix(listed=transposed)
             else:
                 return Matrix(listed=transposed)
-            
+# =============================================================================                
     def _minor(self,row=None,col=None):
         try:
             assert self._valid==1
@@ -738,7 +738,7 @@ EXAMPLES:
             if not temp.dim[1]<1: 
                 temp.remove(c=col)
             return temp
-
+# =============================================================================    
     def _adjoint(self):
         def __sign(pos):
             return (-1)**(pos[0]+pos[1])   
@@ -761,7 +761,7 @@ EXAMPLES:
             self._adj=adjM.t
             self.__adjCalc=1
             return self._adj
-                       
+# =============================================================================                           
     def _inverse(self):
         """
         Returns the inversed matrix
@@ -820,7 +820,7 @@ EXAMPLES:
             self._inv=FMatrix(listed=id1.matrix)
             self.__invCalc=1
             return self._inv
-
+# =============================================================================    
     def _Rank(self):
         """
         Returns the rank of the matrix
@@ -872,10 +872,56 @@ EXAMPLES:
                     if rows!=[0]*self.dim[1]:
                         r+=1
             except:
-                print("error getting rank")
+                #print("error getting rank")
+                return self._echelon()[1]
             else:
                 return r
+# =============================================================================        
+
+    def _echelon(self):
+        """
+        Returns reduced row echelon form of the matrix
+        """
+        temp=self.copy
+        i=0
+        zeros=[0]*self.dim[1]
+        while i <self.dim[0]:
+            if zeros in temp.matrix:
+                ind=0
+                while temp.matrix[ind]!=zeros:
+                    ind+=1
+            if temp[i][i]==0:
+                try:
+                    i2=i
+                    old=temp[i][:]
+                    while temp[i2][i]==0 and i2<self.dim[0]:
+                        i2+=1
+                    temp[i]=temp[i2][:]
+                    temp[i2]=old[:]
+                except:
+                    break
+            co=temp[i][i]
+            for j in range(self.dim[0]):
+                temp[i][j]/=co
+
+            for k in range(self.dim[0]):
+                if k!=i:
+                    mult=temp[k][i]
+                    for m in range(self.dim[1]):
+                        num=temp[k][m]-temp[i][m]*mult
+                        if num>=-0.0001 and num<=0.0001:
+                            num=0
+                        temp[k][m]=round(num,4)
+            i+=1
+            
+        z=0    
+        for a in temp.matrix:
+            if a==zeros:
+                z+=1    
+        return (FMatrix(listed=temp.matrix),self.dim[0]-z)
+            
 # =============================================================================            
+
     def _LU(self):
         """
         Returns L and U matrices of the matrix
@@ -929,7 +975,7 @@ EXAMPLES:
             #Get the diagonal for determinant calculation
             dia.append(temp[i][i])
             i+=1
-# =============================================================================
+
         for element in dia:
             prod*=element
         U=temp.copy
@@ -1080,6 +1126,12 @@ EXAMPLES:
         if not self.__rankCalc:
             self._rank=self._Rank()
         return self._rank
+    @property
+    def rrechelon(self):
+        """
+        Reduced-Row-Echelon
+        """
+        return self._echelon()[0]
     @property
     def t(self):
         return self._transpose()
