@@ -689,6 +689,8 @@ EXAMPLES:
 # =============================================================================
     def _determinantByLUForm(self):
         try:
+            if self.dim[0]==self.dim[1] and self.dim[0]==1:
+                return self.matrix[0][0]
             if not self.__detCalc:
                 self._det=self._LU()[1]
                 self.__detCalc=1
@@ -762,15 +764,12 @@ EXAMPLES:
                        
     def _inverse(self):
         """
-        Uses the formula:
-            
-                inv(A)=(1/det(A))*adj(A)
-            
-        Finds the inverse of the given square matrix
-        Sets the inverse form in float numbers format
+        Returns the inversed matrix
+        O(n^3)
+        Takes about a second to solve a 50x50 matrix
         """
         try:
-            assert self.dim[0]== self.dim[1]
+            assert self.dim[0] == self.dim[1]
             assert self.det!=0
         except AssertionError:    
             if self.det==0:
@@ -781,18 +780,45 @@ EXAMPLES:
         except:
             print("Error getting inverse of the matrix")
         else:
-            if self.__adjCalc:
-                a=self._adj
-            else:
-                a=self._adjoint()
-            d=self.det
-            i=a/d
-            for rows in i._matrix:
-                for cols in rows:
-                    if cols<=0.0001 and cols>=-0.0001:
-                        cols=0
-            new=FMatrix(listed=i.matrix)
-            self._inv=new
+            id1=Identity(self.dim[0])
+            temp=self.copy
+            i=0
+            while i <self.dim[0]:
+                #Swap lines if diagonal is 0, stop when you find a non zero in the column
+                if temp[i][i]==0:
+                    i2=i
+                    old=temp[i][:]
+                    while temp[i2][i]==0 and i2<self.dim[0]:
+                        i2+=1
+                    temp[i]=temp[i2][:]
+                    temp[i2]=old[:]
+                    
+                    old=id1[i][:]
+                    id1[i]=id1[i2][:]
+                    id1[i2]=old[:]
+                
+                co=temp[i][i]
+                for j in range(self.dim[0]):
+                    temp[i][j]/=co
+                    id1[i][j]/=co
+
+                for k in range(self.dim[0]):
+                    if k!=i:
+                        mult=temp[k][i]
+                        for m in range(self.dim[1]):
+                            num=temp[k][m]-temp[i][m]*mult
+                            if num>=-0.0001 and num<=0.0001:
+                                num=0
+                            temp[k][m]=num
+                            
+                            num2=id1[k][m]-id1[i][m]*mult
+                            if num2>=-0.0001 and num2<=0.0001:
+                                num2=0
+                            id1[k][m]=num2         
+                i+=1
+            
+            self._inv=FMatrix(listed=id1.matrix)
+            self.__invCalc=1
             return self._inv
 
     def _Rank(self):
@@ -861,7 +887,11 @@ EXAMPLES:
         prod=1
         dia=[]
         i=0
-        L=FMatrix(self.dim,randomFill=0)+Identity(dim=self.dim)
+        L=FMatrix(self.dim,randomFill=0)
+        #Set diagonal elements to 1
+        for diags in range(self.dim[0]):
+            L[diags][diags]=1
+            
         while i <min(self.__dim):
             #Swap lines if diagonal has 0, stop when you find a non zero in the column
             if temp[i][i]==0:
@@ -1143,6 +1173,10 @@ EXAMPLES:
 
     def __getitem__(self,pos):
         try:
+            self.__rankCalc=0
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0
             if isinstance(pos,tuple):
                 row,col=pos
                 return self.matrix[row][col]
@@ -1151,6 +1185,7 @@ EXAMPLES:
         except:
 #            print("Bad indeces")
             return None
+        
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):           
@@ -1724,28 +1759,32 @@ class Identity(Matrix):
     """
 Identity matrix
     """
-    def __init__(self,dim=[1,1]):     
+    def __init__(self,dim=1):     
         self._valid=1 
-        self.__dim=self._dimSet(dim)
-        if self.dim[0]!=self.dim[1]:
+        try:
+            assert isinstance(dim,int)
+            assert dim>0
+        except AssertionError:
+            print("Give integer as the dimension")
             self._valid=0
             return None
-
-        self._randomFill=0
-        self._inRange=[0,1]
-        self._initRange=[0,1]
-        
-        self._fMat=0
-        self._cMat=0
-        self._isIdentity=1       
-        self.__adjCalc=1
-        self.__detCalc=1
-        self.__invCalc=1
-
-        self._dimSet(dim)
-        self._matrix=list()
-        self._matrix=self._zeroFiller(self._matrix)
-        self._string=self._stringfy()
+        else:
+            self._dim=[dim,dim]
+            self._randomFill=0
+            self._inRange=[0,1]
+            self._initRange=[0,1]
+            
+            self._fMat=0
+            self._cMat=0
+            self._isIdentity=1       
+            self.__adjCalc=1
+            self.__detCalc=1
+            self.__invCalc=1
+    
+            self._dimSet(dim)
+            self._matrix=list()
+            self._matrix=self._zeroFiller(self._matrix)
+            self._string=self._stringfy()
                     
     def addDim(self,num):
         """
@@ -1758,7 +1797,7 @@ Identity matrix
         except Exception as err:
             print(err)
         else:
-            goal=self.dim[0]+num
+            goal=self._dim[0]+num
             self.__dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy()
@@ -1771,13 +1810,13 @@ Identity matrix
         try:
             if self.matrix==[]:
                 return "Empty matrix"
-            assert isinstance(num,int) and num>0 and self.dim[0]-num>=0
+            assert isinstance(num,int) and num>0 and self._dim[0]-num>=0
         except AssertionError:
             print("Enter a valid input")
         except Exception as err:
             print(err)
         else:
-            goal=self.dim[0]-num
+            goal=self._dim[0]-num
             if goal==0:
                 print("All rows have been deleted")
             self.__dim=[goal,goal]
@@ -1787,17 +1826,17 @@ Identity matrix
         
     @property
     def inv(self):
-        return Identity(dim=self.__dim)
+        return self
     @property    
     def det(self):
         return 1
     @property
     def adj(self):
-        return Identity(dim=self.__dim)
+        return self
     
     def __str__(self):
         if self._isIdentity:
-            print("\nIdentity Matrix\nDimension: {0}x{0}".format(self.dim[0]))
+            print("\nIdentity Matrix\nDimension: {0}x{0}".format(self._dim[0]))
             return self._stringfy()+"\n"
         
 class FMatrix(Matrix):
