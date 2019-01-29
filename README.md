@@ -34,7 +34,7 @@ C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
 
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix (Integers only for now)
-
+```python 
 data="""1,K,60,69900,6325
 2,K,30,79000,5200
 3,E,52,85500,7825
@@ -47,7 +47,7 @@ data="""1,K,60,69900,6325
 10,E,37,31800,5975"""
 
 D=Matrix(dim=[10,4],listed=data) #Creates a matrix form of the given string's *integers*, dimension is *required* as [dataAmount,features]
-
+```
 ##### OR
 
 ##### Read data from files
@@ -55,28 +55,28 @@ D=Matrix(dim=[10,4],listed=data) #Creates a matrix form of the given string's *i
 ##### If your file is a table of data AND has a header AND header has numbers in it, use give header parameter 1 or you will get a row of all numbers in the file
 
 ##### Currently only works for INTEGER values and if the data in string format doesn't have new lines, it will return a row vector of all values
-
+```python 
 dataDir="Example\Directory\DATAFILE"
 
 dataMatrix=Matrix(directory=dataDir) #Create a matrix from a table of data
-
+```
 ----------------------------------------
 ##### Create matrices filled with random float numbers
-
+```python 
 E=FMatrix(6) #Create a matrix filled with random float values in the default range
 
 F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
-
+```
 ----------------------------------------
 ##### Create identity matrices
-
+```python 
 i=Identity(3) #3x3 identity matrix
 
 i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
-
+``` 
 ----------------------------------------
 ##### Get properties of your matrix
-
+```python 
 C.grid #Prints the matrix's elements as a grid
 
 C.p #Print the dimension,range,average and the grid
@@ -126,12 +126,12 @@ C.rrechelon #Returns the reduced row echelon form of the matrix
 C.copy #Returns a copy of the matrix
 
 C.summary #Returns the string form of the object 
-
+```
 
 ----------------------------------------
 
 ##### Add or remove rows/columns and operate on them
-
+```python 
 E.add(r=3,lis=[1.0 ,2.5 ,52,242 ,-9883,212, 0.000001, -555,554]) #Make the list given the 3rd row
 
 A.remove(c=2) #Remove the second column 
@@ -139,12 +139,12 @@ A.remove(c=2) #Remove the second column
 for a in A.matrix: a[0]%=2 #Change first column's values to the remainder of division by 2 
 
 B @ B.t #Matrix multiplication example
-
+```
 ----------------------------------------
 
 
 ##### All calculations below returns True
-
+```python 
    A**2 == A * A
    
    A*2==A+A
@@ -154,7 +154,7 @@ B @ B.t #Matrix multiplication example
    A.adj.t[1][2]==A.minor(2,3).det*-1
    
    (B @ B.inv).roundForm() == Identity(B.dim[0]) # roundForm call is currently required due to %0.001 error rate on calculations 
-   
+``` 
 ----------------------------------------
 
 #### More examples can be found in <a href=https://github.com/semihM/Matrices/blob/master/exampleMatrices.py>exampleMatrices.py</a>
