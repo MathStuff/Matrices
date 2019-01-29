@@ -14,7 +14,7 @@ class Matrix(object):
 ***Use this if and only if you are going to work with integers. Use FMatrix class to use float values***
 
 -dim:dimension of the matrix;natural numbers as [rows,cols],if and integer given, matrix will be a square matrix 
--listed:(a list of integers | a string) with & dim**2 amount of integers
+-listed:string of integers,list of integers/floats or list of lists containing integers/floats ([[numbers],[given],[here]])
 -randomFill: 
     ->1 to fill the matrix with random integers if no list is given
     ->0 to fill the matrix with 0s
@@ -55,7 +55,7 @@ Check exampleMatrices.py for further explanation and examples
         self._fMat=0
         self._cMat=0
         self._valid = 1
-
+        self.__temp1 = None
         if isinstance(self,FMatrix):
             self._fMat=1
         elif isinstance(self,CMatrix):
@@ -114,12 +114,13 @@ Check exampleMatrices.py for further explanation and examples
 ##########################################################################################################                    
             elif self._validateList(listed):
                 try:
-                    self.__temp1=[a[:] for a in listed]
+                    if self.__temp1==None:
+                        self.__temp1=[a[:] for a in listed]
                     
-                    if len(self.__temp1)>0:                        
-                            self._matrix = self.__temp1.copy()  
-                            self._inRange=self._declareRange(self._matrix)
+                    if len(self.__temp1)>0 and dim!=[0,0]:                        
+                            self._matrix = self.__temp1.copy() 
                             self.__dim=self._declareDim()
+                            self._inRange=self._declareRange(self._matrix)
                             self._string=self._stringfy()   
                             
                     elif len(self.__temp1)==0 and dim!=[0,0]:
@@ -129,8 +130,8 @@ Check exampleMatrices.py for further explanation and examples
                             
                         elif self._randomFill:
                             self._matrix=self._randomFiller(self.__temp1)
+                            self.__dim=self._declareDim()
                             self._inRange=self._declareRange(self._matrix)
-                            self.__dim=self._declareDim() 
                             self._string=self._stringfy()
                     else:
                         self._valid=0
@@ -203,21 +204,44 @@ Check exampleMatrices.py for further explanation and examples
         """
         Validates the given matrix by checking if all the rows are the same length
         """
-        if isinstance(alist,list):
-            if len(alist)>0:
+        try:
+            if isinstance(alist,list):
 
-                r=0
-                l=[]
-                c=0
-                for row in alist:
+                if isinstance(alist[0],int) or isinstance(alist[0],float):
+                    try:
+                        assert len(alist)==self.dim[0]*self.dim[1]
+                        t=[]
+                        i=0
+                        for rows in range(self.dim[0]):
+                           t.append(list())
+                           for cols in range(self.dim[1]):
+                               t[rows].append(alist[i])
+                               i+=1
+                        self.__temp1=t
+                    except AssertionError:
+                        print("Given list is not valid")
+                        self._valid=0
+                        self._randomFill=0
+                        return False
+                    else:
+                        return True
+                if len(alist)>0:
+                    l=[]
                     c=0
-                    r+=1
-                    for col in row:
-                        c+=1
-                    l.append(c)
-                return max(l)==min(l)
-            return True
-        return False
+                    for row in alist:
+                        c=0
+                        for col in row:
+                            c+=1
+                        l.append(c)
+                    return max(l)==min(l)
+                return True
+        except IndexError:
+            if self.dim!=[0,0]:
+                return True
+            self._valid=0
+            return False
+        else:
+            return False
     
     def _declareRange(self,lis):
         """
@@ -825,57 +849,17 @@ EXAMPLES:
         """
         Returns the rank of the matrix
         """
-        #If matrix is not a square matrix
-        if self.dim[0]!=self.dim[1]:
-            m=min(self.__dim)
-            dimsOf=[]
-            #Get square matrices from mxn dimension matrix (m!=n)
-            if self.dim[0]<2 or self.dim[1]<2:
-                return 1
-            if self.dim[0]!=self.dim[1]:
-                if m==self.dim[0]:
-                    for i in range(1,m+2):    
-                        temp=self.subM(1,m,i,i+m-1)
-                        if temp.det!=0 and temp.det!=None:
-                            return m
-                        else:
-                            dimsOf.append(temp.rank)
-                elif m==self.dim[1]:
-                    for i in range(1,m+2):    
-                        temp=self.subM(i,i+m-1,1,m)
-                        if temp.det!=0 and temp.det!=None:
-                            return m
-                        else:
-                            dimsOf.append(temp.rank)
-                return max(dimsOf)
-            else:
-                topLeft=self.minor(1,1)
-                topRight=self.minor(1,m)
-                bottomLeft=self.minor(m,1)
-                bottomRight=self.minor(m,m)
-                a=[topLeft,topRight,bottomLeft,bottomRight]
-                for items in [self,topLeft,topRight,bottomLeft,bottomRight]:
-                    if items.det!=0 and items.det!=None:
-                        return items.dim[0]
-                else:
-                    for jj in range(len(a)):
-                        dimsOf.append(a[jj].rank)
-                self.__rankCalc=1
-                return max(dimsOf)
-            
-        #If matrix is a square matrix
+        try:
+            r=0
+            temp=self._LU()[0]
+            for rows in temp._matrix:
+                if rows!=[0]*self.dim[1]:
+                    r+=1
+        except:
+            #print("error getting rank")
+            return self._echelon()[1]
         else:
-            try:
-                r=0
-                temp=self._LU()[0]
-                for rows in temp._matrix:
-                    if rows!=[0]*self.dim[1]:
-                        r+=1
-            except:
-                #print("error getting rank")
-                return self._echelon()[1]
-            else:
-                return r
+            return r
 # =============================================================================        
 
     def _echelon(self):
@@ -885,11 +869,15 @@ EXAMPLES:
         temp=self.copy
         i=0
         zeros=[0]*self.dim[1]
-        while i <self.dim[0]:
+        while i <min(self.dim):
             if zeros in temp.matrix:
                 ind=0
-                while temp.matrix[ind]!=zeros:
-                    ind+=1
+                for rows in temp.matrix:
+                    while temp.matrix[ind]!=zeros:
+                        ind+=1
+                del(temp.matrix[ind])
+                temp.matrix.append(zeros)
+                    
             if temp[i][i]==0:
                 try:
                     i2=i
@@ -901,7 +889,7 @@ EXAMPLES:
                 except:
                     break
             co=temp[i][i]
-            for j in range(self.dim[0]):
+            for j in range(self.dim[1]):
                 temp[i][j]/=co
 
             for k in range(self.dim[0]):
@@ -1229,10 +1217,7 @@ EXAMPLES:
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0
-            if isinstance(pos,tuple):
-                row,col=pos
-                return self.matrix[row][col]
-            elif isinstance(pos,int):
+            if isinstance(pos,slice) or isinstance(pos,int):
                 return self.matrix[pos]
         except:
 #            print("Bad indeces")
@@ -1240,9 +1225,12 @@ EXAMPLES:
         
     def __setitem__(self,pos,item):
         try:
-            if isinstance(pos,tuple) and (isinstance(item,complex) or isinstance(item,float) or isinstance(item,int)):           
-                row,col=pos
-                self._matrix[row][col]=item
+            if isinstance(pos,slice) and  isinstance(item,list):
+                if len(item)>0:
+                    if isinstance(item[0],list):
+                        self._matrix[pos]=item
+                    else:
+                        self._matrix[pos]=[item]
                 
             elif isinstance(pos,int) and isinstance(item,list):
                 if len(item)==self.dim[1]: 
@@ -1256,6 +1244,7 @@ EXAMPLES:
 #            print("Bad indeces")
             return None
         else:
+            self.__dim=self._declareDim()
             self._string=self._stringfy()
             self.__rankCalc=0
             self.__adjCalc=0
@@ -1896,10 +1885,11 @@ class FMatrix(Matrix):
 Matrix which contain float numbers
     """
     def __init__(self,*args,decimal=None,**kwargs):
-        super().__init__(*args,**kwargs)
         self._valid=1
         self._decimal=decimal
         self._fMat=1
+        super().__init__(*args,**kwargs)
+
         
 class CMatrix(FMatrix):
     """
@@ -1920,4 +1910,294 @@ Matrix which contain complex numbers
                 print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))            
                 
             return self._stringfy()+"\n"
-        
+
+
+projectGrid="""08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
+49 49 99 40 17 81 18 57 60 87 17 40 98 43 69 48 04 56 62 00
+81 49 31 73 55 79 14 29 93 71 40 67 53 88 30 03 49 13 36 65
+52 70 95 23 04 60 11 42 69 24 68 56 01 32 56 71 37 02 36 91
+22 31 16 71 51 67 63 89 41 92 36 54 22 40 40 28 66 33 13 80
+24 47 32 60 99 03 45 02 44 75 33 53 78 36 84 20 35 17 12 50
+32 98 81 28 64 23 67 10 26 38 40 67 59 54 70 66 18 38 64 70
+67 26 20 68 02 62 12 20 95 63 94 39 63 08 40 91 66 49 94 21
+24 55 58 05 66 73 99 26 97 17 78 78 96 83 14 88 34 89 63 72
+21 36 23 09 75 00 76 44 20 45 35 14 00 61 33 97 34 31 33 95
+78 17 53 28 22 75 31 67 15 94 03 80 04 62 16 14 09 53 56 92
+16 39 05 42 96 35 31 47 55 58 88 24 00 17 54 24 36 29 85 57
+86 56 00 48 35 71 89 07 05 44 44 37 44 60 21 58 51 54 17 58
+19 80 81 68 05 94 47 69 28 73 92 13 86 52 17 77 04 89 55 40
+04 52 08 83 97 35 99 16 07 97 57 32 16 26 26 79 33 27 98 66
+88 36 68 87 57 62 20 72 03 46 33 67 46 55 12 32 63 93 53 69
+04 42 16 73 38 25 39 11 24 94 72 18 08 46 29 32 40 62 76 36
+20 69 36 41 72 30 23 88 34 62 99 69 82 67 59 85 74 04 36 16
+20 73 35 29 78 31 90 01 74 31 49 71 48 86 81 16 23 57 05 54
+01 70 54 71 83 51 54 69 16 92 33 48 61 43 52 01 89 19 67 48"""
+
+# =============================================================================
+# Valid Matrices
+# =============================================================================
+proj=Matrix(listed=projectGrid)
+o=Matrix(dim=8,randomFill=0)
+b=Matrix(1)
+c=Matrix(dim=[2,4])
+d=FMatrix([4,3])
+e=Matrix(8,randomFill=0)
+f=FMatrix(dim=6,ranged=[-1250,1250])
+g=Matrix(dim=[3,6])
+p=Matrix(5,ranged=[0,100])
+q=FMatrix(4)
+y=Matrix(3,listed=[3,5,7,8,3,4,5,2,5])
+# =============================================================================
+# String inputs Matrices
+# =============================================================================
+validStr1=Matrix(dim=[2,3],listed=" 34-52\n33a c9d88 hello\n--3-")
+validStr2=Matrix(listed="312as45\ndid12,,,44\ncc352as45\ndid12,,,44\ncc3-5")
+validStr3=Matrix(listed="\n\n\ndd34 5\n\n44\nn659")
+validStr4=Matrix(dim=[22,3],listed="""ulke,boy,kilo,yas,cinsiyet
+tr,130,30,10,e
+tr,125,36,11,e
+tr,135,34,10,k
+tr,133,30,9,k
+tr,129,38,12,e
+tr,180,90,30,e
+tr,190,80,25,e
+tr,175,90,35,e
+tr,177,60,22,k
+us,185,105,33,e
+us,165,55,27,k
+us,155,50,44,k
+us,160,58,39,k
+us,162,59,41,k
+us,167,62,55,k
+fr,174,70,47,e
+fr,193,90,23,e
+fr,187,80,27,e
+fr,183,88,28,e
+fr,159,40,29,k
+fr,164,66,32,k
+fr,166,56,42,k
+""")
+
+# =============================================================================
+# InvalidMatrices
+# =============================================================================
+#You have to give the matrix a valid dimension, or a list to get a dimension, or it won't be a valid matrix
+
+#a=Matrix(0)
+#v=Matrix()
+#k=Matrix(dim=-1)
+#l=Matrix(ranged=[0])
+#m=Matrix(randomFill=1)
+
+# =============================================================================
+# Identity Matrices
+# =============================================================================
+id1=Identity()
+id2=Identity(5)
+id3=id2.subM(3,3)
+id4=Identity(6)
+
+# =============================================================================
+"""PRINT THE MATRICES """
+# =============================================================================
+print('################################') 
+print("Matrices created by giving dimensions")
+l=[proj,o,b,c,d,e,f,g,p,q,y]
+for matrix in l:
+    print(matrix)
+print('################################')     
+# =============================================================================
+"""PRINT THE MATRICES """
+# =============================================================================
+print('################################') 
+print("Matrices created by giving strings or a directory")
+for matrix in [validStr1,validStr2,validStr3,validStr4]:
+    print(matrix)
+print('################################') 
+# =============================================================================
+"""PRINT THE IDENTITY MATRICES """
+# =============================================================================
+print('################################') 
+print("Identity matrices")
+for i in [id1,id2,id3,id4]:
+    print(i)
+print('################################')     
+# =============================================================================
+"""PROPERTIES, METHODS CALLS"""   
+# =============================================================================
+print('################################')  
+print("Attribute call outputs\n")
+print('################\n')
+      
+print("d:")
+print(d)
+print("d.matrix:\n")
+print(d.matrix)
+
+print('\n################\n')
+      
+print("f.subM(1,4,2,3):\n",f.subM(1,4,2,3),"\n")
+print(f)
+print("f.delDim(4)")
+print(f)
+print("f.uptri.p")
+f.uptri.p
+print("f.lowtri.p")
+f.lowtri.p
+print("f-(f.lowtri@f.uptri)")#There is a %0.001 error due to rounding
+print(f-(f.lowtri@f.uptri))
+print('################')
+      
+print("g.dim:\n",g.dim)
+print("g.inRange():\n",g.inRange())
+print("g:",g)      
+print("g.remove(3):")
+g.remove(3)
+print(g)
+
+print('################')
+      
+h=proj.subM(12,18,5,11)
+print("h=proj.subM(12,18,5,11):\n",h)
+print("h.avg():",h.avg())
+print("\nh.det:",h.det)
+print("\nh.rank:",h.rank)
+print("\nh.rrechelon:",h.rrechelon)
+print("\nh.inv:")
+print(h.inv)
+print("h.minor(3,4):\n",h.minor(3,4),"\n")
+
+print('################')
+      
+j=g.subM(1,2,1,4)
+print("j=g.sub(1,2,1,4):\n",j,"\n")
+print("j.summary:\n",j.summary)
+
+print('\n################')
+      
+print("proj=proj.subM(5,15).copy:\n")
+proj=proj.subM(5,15).copy
+print(proj)
+
+print('################')
+      
+print("p:",p)
+print("p.det:\n",p.det)
+print("\np.adj:\n",p.adj)
+print("p.inv:\n")
+print(p.inv)
+
+print('################')
+      
+print("p:")
+print(p)
+print("p.remove(c=1) and p.remove(r=2)")
+p.remove(c=1)
+p.remove(r=2)
+print(p)
+print("p.add(col=2,lis=[55,55,55,55,55]):")
+p.add(col=2,lis=[55,55,55,55])
+print(p)
+print('################\n')
+      
+r=p.t
+print("r:",r)
+print("p==r.t:\n")
+print(p==r.t)
+
+print("################")
+      
+print("id2:\n",id2)
+print("\nid2.addDim(2):",id2.addDim(2))
+print("id2.matrix:\n",id2.matrix)
+
+print('\n################')
+      
+print("id3:\n")
+print(id3)
+
+print('################')
+      
+print("id4:\n")
+print(id4)
+print("\nid4.delDim(6):\n")
+print(id4.delDim(6))
+
+print('################')
+      
+print("id4:",id4)
+print("\nid4.addDim(10)):\n",id4.addDim(10))
+
+# =============================================================================
+"""OPERATIONS ON ELEMENTS"""    
+# =============================================================================
+
+print("################################")   
+print("Operator examples")
+print("################")
+      
+print("\nc.dim=",c.dim," d.dim:",d.dim)
+print("\nmMulti=c@d:")
+mMulti=c@d
+print(mMulti)
+print("\n((((mMulti)+125)**3)%2):")
+print(((((mMulti)+125)**3)%2))
+
+print("################\n")
+      
+print(f)
+print("f=f.intForm")
+f1=f.intForm
+print(f1)
+print("f2=f.roundForm(3)")
+f2=f.roundForm(2)
+print(f2)
+print("f2-f1")
+f3=f2-f1
+print(f3)
+
+print("################")
+      
+print("r.remove(r=2):")
+r.remove(r=2)
+print(r)
+print("r.rank:",r.rank)
+print("\nr[0]=r[1][:]")
+r[0]=r[1][:]
+print(r)
+print("r.rank:",r.rank)    
+
+print("################")
+      
+print("for i in range(len(e.matrix)): e[i][-i-1]=99")
+for i in range(len(e.matrix)):e[i][i]=99
+print(e)
+print("\ne+=50:")
+e+=50
+print(e)
+print("for i in range(len(e.matrixiid)):e[i]=[b%2 for b in e[i]]:\n")
+for i in range(len(e.matrix)):e[i]=[b%2 for b in e[i]]
+print(e)
+
+print("################")
+      
+print("\nc%j")
+print(c%j)
+
+print("################")
+      
+print("\nf.roundForm(3)>f.roundForm(1)")
+print(f.roundForm(3)>f.roundForm(1))
+
+# =============================================================================
+""" STRING MATRICES' OUTPUTS"""
+# =============================================================================
+print("\n################################")
+print("Strings' matrices:")
+print("################\n")
+      
+for numb,strings in enumerate([validStr1,validStr2,validStr3,validStr4]):
+    print("validStr"+str(numb+1)+":")
+    print(strings)         
+    print('################')
+print("")
