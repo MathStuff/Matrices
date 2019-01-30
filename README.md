@@ -85,6 +85,8 @@ C.p #Print the dimension,range,average and the grid
 
 C.directory #Returns the directory of the matrix if there is any given
 
+C.matrix #Returns the matrix's rows as a list in a list
+
 C.dim #Returns the dimension of the matrix; you can change the dimension, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
 C.string #Returns the string for of the matrix's elements
@@ -110,6 +112,8 @@ C.lowtri #Returns the lower triangular form of the matrix
 C.avg(n) #Returns the nth column's average, give None as argument to get the all columns' averages
 
 C.inRange(n) #Returns the nth column's range, give None as argument to get the all columns' ranges
+
+C.sdev(n) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations
 
 C.det #Returns the determinant of the matrix
 
