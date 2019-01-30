@@ -1013,7 +1013,41 @@ EXAMPLES:
         else:
             new=total/(d[0]*d[1])
             return new
-        
+    
+    def _sdev(self,col=None):
+        """
+        Standard deviation of the columns
+        """
+        try:
+            assert self.dim[0]>1
+        except:
+            print("Bad arguments")
+        else:
+            if col==None:
+                sd={}
+                avgs=self._average()
+                for i in range(self.dim[1]):
+                    e=0
+                    for j in range(self.dim[0]):
+                        e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
+                    sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
+                return sd
+            else:
+                try:
+                    assert col>0 and col<=self.dim[1]
+                except AssertionError:
+                    print("Col parameter is not valid")
+                else:
+                    sd={}
+                    a=self._average(col)
+                    e=0
+                    for i in range(self.dim[0]):
+                        e+=(self.matrix[i][col-1]-a)**2
+                    sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
+                    return (e/(self.dim[0]-1))**(1/2)
+                
+# =============================================================================
+       
     def col(self,column=None):
         """
         Get a specific column of the matrix
@@ -1206,6 +1240,11 @@ EXAMPLES:
     def avg(self,col=None):
         if self._average(col)!=None:
             return self._average(col)
+        return None
+    
+    def sdev(self,col=None):
+        if self._sdev(col)!=None:
+            return self._sdev(col)
         return None
 # =============================================================================
     """ Setters to secure some attributes """
