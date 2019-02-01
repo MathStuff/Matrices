@@ -1184,23 +1184,25 @@ EXAMPLES:
     @property
     def highest(self):
         if not self._isIdentity:
-            return self._initRange[1]
+            return max([max(a) for a in self.inRange().values()])
         else:
             return 1
     @property
     def lowest(self):
         if not self._isIdentity:
-            return self._initRange[0]   
+            return min([min(a) for a in self.inRange().values()])  
         else:
             return 0
+        
     @property
     def summary(self):
+        #ranged and randomFill arguments are NOT required to create the same matrix
         if self._valid and self._fMat:
-            return "FMatrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self.__dim,self._matrix,self._inRange,self._randomFill)
+            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3})".format(self.__dim,self._matrix,self._initRange,self._randomFill)
         elif self._valid and not self._isIdentity:
-            return "Matrix(dim={0},listed={1},inRange={2},randomFill={3})".format(self.__dim,self._matrix,self._inRange,self._randomFill)
+            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3})".format(self.__dim,self._matrix,self._initRange,self._randomFill)
         elif self._valid and self._isIdentity:
-            return "Identity(dim={0},listed={1},inRange=[0,1],randomFill=0)".format(self.__dim,self._matrix)
+            return "Identity(dim={0},listed={1},ranged=[0,1],randomFill=0)".format(self.__dim,self._matrix)
         else:
             return None
         
