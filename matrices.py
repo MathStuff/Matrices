@@ -6,17 +6,14 @@ Created on Wed Oct 31 17:26:48 2018
 """
 
 import random as rd
-
+import re
 
 class Matrix(object):
-    """Matrix object:
-***Create matrices and print them as grids***
-***Use this if and only if you are going to work with integers. Use FMatrix class to use float values***
-
+    """Matrix object for integers(Use FMatrix for float values):
 -dim:dimension of the matrix;natural numbers as [rows,cols],if and integer given, matrix will be a square matrix 
 -listed:string of integers,list of integers/floats or list of lists containing integers/floats ([[numbers],[given],[here]])
--randomFill: 
-    ->1 to fill the matrix with random integers if no list is given
+-randomFill(Doesn't matter if "listed" parament is provided): 
+    ->1 to fill the matrix with random integers/floats
     ->0 to fill the matrix with 0s
 -ranged: 2 numbers as a list, to determine the upper and lower bound of the random elements    
 -Giving ~300< elements may make grid look terrible, adjust your terminal size to display it better
@@ -50,7 +47,7 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],directory="",header=0,ranged=[-5,5],randomFill=1):
+    def __init__(self,dim=None,listed=[],directory="",ranged=[-5,5],randomFill=1):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
@@ -79,12 +76,11 @@ Check exampleMatrices.py for further explanation and examples
             self._randomFill = randomFill
             self._string=""
             self._dir=directory
-            self._header=header
         if self._valid:
 ##########################################################################################################                
             if isinstance(listed,str):
                 try:
-                    self._matrix=self._listify(listed,self._header)
+                    self._matrix=self._listify(listed)
                     self.__dim=self._declareDim()
                     self._inRange=self._declareRange(self._matrix)
                     self._string=self._stringfy()
@@ -99,7 +95,7 @@ Check exampleMatrices.py for further explanation and examples
                 try:
                     lis=self.__fromFile(directory)
                     if not lis==None:
-                        self._matrix=self._listify(lis,self._header)
+                        self._matrix=self._listify(lis)
                         self.__dim=self._declareDim()
                         self._inRange=self._declareRange(self._matrix)
                         self._string=self._stringfy()
@@ -207,9 +203,17 @@ Check exampleMatrices.py for further explanation and examples
         try:
             if isinstance(alist,list):
 
-                if isinstance(alist[0],int) or isinstance(alist[0],float):
+                if isinstance(alist[0],int) or isinstance(alist[0],float) or isinstance(alist[0],str):
                     try:
-                        assert len(alist)==self.dim[0]*self.dim[1]
+                        if self.__dim==[0,0]:
+                            self.__dim=[1,len(alist)]
+                        else:
+                            assert len(alist)==self.dim[0]*self.dim[1]
+                        if isinstance(alist[0],str):
+                            if "." in alist[0] or isinstance(self,FMatrix):
+                                alist=[float(strs) for strs in alist]
+                            else:
+                                alist=[int(strs) for strs in alist]
                         t=[]
                         i=0
                         for rows in range(self.dim[0]):
@@ -223,8 +227,11 @@ Check exampleMatrices.py for further explanation and examples
                         self._valid=0
                         self._randomFill=0
                         return False
+                    except ValueError:
+                        print("List contain non-integer values, use FMatrix")
+                        return False
                     else:
-                        return True
+                        return True   
                 if len(alist)>0:
                     l=[]
                     c=0
@@ -285,115 +292,27 @@ Check exampleMatrices.py for further explanation and examples
             f.close()
             return data
 # =============================================================================  
-    def _listify(self,string,header=0):
+    def _listify(self,string):
         """
-        Finds all the positive and negative numbers in the given string
-        Tries to fit the numbers into a grid shape
-
+        Finds all the numbers in the given string
         """
-        try:
-            gridNum=""
-            numbers=[str(i) for i in range(10)]
+        pattern=r"(?:\-?[0-9]+)(?:\.?[0-9]*)"
+        found=re.findall(pattern,string)
+        if not isinstance(self,FMatrix):
+            found=[int(a) for a in found]
+        elif isinstance(self,FMatrix):
+            found=[float(a) for a in found]  
+        temp=[]
+        e=0
+        if self.dim==[0,0]:
+            self.__dim=[1,len(found)]
+        for rows in range(self.dim[0]):
+            temp.append(list())
+            for cols in range(self.dim[1]):
+                temp[rows].append(found[cols+e])
+            e+=self.dim[1]
+        return temp
             
-            l=len(string)
-            list1=list()
-            negative=0
-            newRow=1
-            rowadded=None
-            
-            for c in range(0,l):    
-                if string[c] in numbers:
-                    gridNum+=string[c]
-                    if c==l-1:
-                        if negative:
-                            list1.append(int(gridNum)*-1)
-                            rowadded=0
-                            gridNum=""
-                            negative=0
-                        else:
-                            list1.append(int(gridNum))
-                            rowadded=0
-                            gridNum=""
-                elif string[c]=="-":
-                    
-                    if len(gridNum)>0:
-                        list1.append(int(gridNum))
-                        rowadded=0
-                        gridNum=""
-                    negative=1  
-                
-                elif string[c]=="\n":
-                    if rowadded==0:
-                        newRow+=1
-                        rowadded=1
-                    if len(gridNum)>0:
-                        if negative:
-                            list1.append(int(gridNum)*-1)
-                            rowadded=0
-                            gridNum=""
-                            negative=0
-                        else:
-                            list1.append(int(gridNum))
-                            rowadded=0
-                            gridNum=""
-                            
-                else:
-                    if len(gridNum)>0:
-                        if negative:
-                            list1.append(int(gridNum)*-1)
-                            rowadded=0
-                            negative=0
-                            gridNum=""
-                        else:
-                            list1.append(int(gridNum))
-                            rowadded=0
-                            gridNum=""
-                            
-        except Exception as err:
-            print("Bad stirng")
-            print(Matrix.__doc__)
-        else:          
-            try:
-                if self.__dim!=[0,0]:
-                    try:
-                        assert self.dim[0]*self.dim[1]==len(list1)
-                    except AssertionError:
-                        print("Can't create a matrix in given dimensions")
-                        return None
-                    else:
-                        list2=[]
-                        ind=0
-                        for i in range(self.dim[0]):
-                            list2.append(list())
-                            for j in range(self.dim[1]):
-                                list2[i].append(list1[ind])
-                                ind+=1
-                        return list2
-                else:
-                    try:
-                        if header:
-                            newRow-=1
-                        l2=len(list1)/newRow
-                        if int(l2)<l2 or int(l2)>l2:
-                            #print("New rows couldn't be created")
-                            return [list1]
-                        list2=[]
-                        ind=0
-                        for i in range(newRow):
-                            list2.append(list())
-                            for j in range(int(l2)):
-                                list2[i].append(list1[ind])
-                                ind+=1
-                    except ZeroDivisionError:
-                        return [list1]
-                    else:
-                        return list2
-            except Exception as err:
-                print(err)
-                self._valid=0
-            else:
-                return list2
-    
     def _stringfy(self):
         """
         Turns a square matrix shaped list into a grid-like form that is printable
@@ -430,7 +349,7 @@ Check exampleMatrices.py for further explanation and examples
                 for cols in rows:
                     s=__digits(cols)
                     if self._fMat:
-                        round(cols,4)
+                        round(cols,self._decimal)
                         item="{0:.4f}".format(cols)
                     else:
                         item=str(cols)
@@ -1014,7 +933,7 @@ EXAMPLES:
             new=total/(d[0]*d[1])
             return new
     
-    def _sdev(self,col=None):
+    def _sd(self,col=None):
         """
         Standard deviation of the columns
         """
@@ -1245,8 +1164,8 @@ EXAMPLES:
         return None
     
     def sdev(self,col=None):
-        if self._sdev(col)!=None:
-            return self._sdev(col)
+        if self._sd(col)!=None:
+            return self._sd(col)
         return None
 # =============================================================================
     """ Setters to secure some attributes """
@@ -1824,9 +1743,7 @@ EXAMPLES:
         Prints the matrix's attributes and itself as a grid of numbers
         """
         self._inRange=self._declareRange(self._matrix)
-        if self._fMat:
-            print("\nFloat Matrix",end="")
-        if self._valid and not self._cMat and not self._isIdentity and self.avg()!=None:
+        if self._valid and self.avg()!=None:
             if self.dim[0]!=self.dim[1]:
                 print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
             else:
@@ -1924,13 +1841,28 @@ Identity matrix
 class FMatrix(Matrix):
     """
 Matrix which contain float numbers
+decimal: digits to round up to 
     """
-    def __init__(self,*args,decimal=None,**kwargs):
+    def __init__(self,*args,decimal=8,**kwargs):
         self._valid=1
         self._decimal=decimal
         self._fMat=1
         super().__init__(*args,**kwargs)
 
+    def __str__(self): 
+        """ 
+        Prints the matrix's attributes and itself as a grid of numbers
+        """
+        self._inRange=self._declareRange(self._matrix)
+        print("\nFloat Matrix",end="")
+        if self._valid and self.avg()!=None:
+            if self.dim[0]!=self.dim[1]:
+                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
+            else:
+                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))
+            return self._stringfy()+"\n"
+        else:
+            return "Invalid matrix\n"        
         
 class CMatrix(FMatrix):
     """
@@ -1951,4 +1883,3 @@ Matrix which contain complex numbers
                 print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))            
                 
             return self._stringfy()+"\n"
-
