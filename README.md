@@ -35,7 +35,7 @@ C1=Matrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
 C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
 ``` 
 ----------------------------------------
-##### Give a string filled with data and use the numbers in it to create a matrix (Integers only for now)
+##### Give a string filled with data and use the numbers in it to create a matrix
 ```python 
 data="""1,K,60,69900,6325
 2,K,30,79000,5200
