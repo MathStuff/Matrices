@@ -48,16 +48,18 @@ data="""1,K,60,69900,6325
 9,K,33,13200,8325
 10,E,37,31800,5975"""
 
-D=Matrix(dim=[10,4],listed=data) #Creates a matrix form of the given string's *integers*, dimension is *required* as [dataAmount,features]
+D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates a matrix form of the given string's *integers*, dimension is *required* as [dataAmount,features]
 ```
 ##### OR
 
 ##### Read data from files
+###### header: boolean value, **True** if data file has a header as the **first** row, default is **False**
 
+###### If bool(header) is True, feature names automatically get picked up from the first row
 ```python 
 dataDir="Example\Directory\DATAFILE"
-dataDim=[dataAmount,features]
-dataMatrix=FMatrix(dim=dataDim,directory=dataDir) #Create a float matrix from a table of data
+dataDim=[data_amount,feature_amount]
+dataMatrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a float matrix from a table of data
 ```
 ----------------------------------------
 ##### Create matrices filled with random float numbers
