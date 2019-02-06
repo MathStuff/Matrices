@@ -54,13 +54,10 @@ D=Matrix(dim=[10,4],listed=data) #Creates a matrix form of the given string's *i
 
 ##### Read data from files
 
-##### If your file is a table of data AND has a header AND header has numbers in it, use give header parameter 1 or you will get a row of all numbers in the file
-
-##### Currently only works for INTEGER values and if the data in string format doesn't have new lines, it will return a row vector of all values
 ```python 
 dataDir="Example\Directory\DATAFILE"
-
-dataMatrix=Matrix(directory=dataDir) #Create a matrix from a table of data
+dataDim=[dataAmount,features]
+dataMatrix=FMatrix(dim=dataDim,directory=dataDir) #Create a float matrix from a table of data
 ```
 ----------------------------------------
 ##### Create matrices filled with random float numbers
