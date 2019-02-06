@@ -47,11 +47,12 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],directory="",ranged=[-5,5],randomFill=1):
+    def __init__(self,dim=None,listed=[],directory="",ranged=[-5,5],randomFill=1,header=None,features=[]):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
         self._valid = 1
+        self._badDims= 0
         self.__temp1 = None
         if isinstance(self,FMatrix):
             self._fMat=1
@@ -76,6 +77,8 @@ Check exampleMatrices.py for further explanation and examples
             self._randomFill = randomFill
             self._string=""
             self._dir=directory
+            self._features=features
+            self._header=header
         if self._valid:
 ##########################################################################################################                
             if isinstance(listed,str):
@@ -263,7 +266,10 @@ Check exampleMatrices.py for further explanation and examples
                 temp=[]
                 for rows in range(len(lis)):
                     temp.append(lis[rows][cols])
-                c["Col {}".format(i)]=[round(min(temp),4),round(max(temp),4)]
+                if len(self._features)==0:
+                    c["Col {}".format(i)]=[round(min(temp),4),round(max(temp),4)]
+                else:
+                    c[self._features[i-1]]=[round(min(temp),4),round(max(temp),4)]
         except AssertionError:
             return None
         except Exception as err:
@@ -290,27 +296,47 @@ Check exampleMatrices.py for further explanation and examples
             return None
         else:
             f.close()
+
             return data
 # =============================================================================  
     def _listify(self,string):
         """
         Finds all the numbers in the given string
         """
+        #Get the features from the first row if header exists
+        if self._header:
+            i=0
+            for ch in string:
+                if ch!="\n":
+                    i+=1
+                else:
+                    if self._features==[]:
+                        pattern=r"\w+"
+                        self._features=re.findall(pattern,string[:i])
+                    string=string[i:]
+                    break
+        #Get all integer and float values       
         pattern=r"(?:\-?[0-9]+)(?:\.?[0-9]*)"
         found=re.findall(pattern,string)
+        
+        #String to number
         if not isinstance(self,FMatrix):
             found=[int(a) for a in found]
         elif isinstance(self,FMatrix):
-            found=[float(a) for a in found]  
-        temp=[]
-        e=0
+            found=[float(a) for a in found] 
+        #Fix dimensions to create a row matrix   
         if self.dim==[0,0]:
             self.__dim=[1,len(found)]
+            self._badDims=1
+        #Create the row matrix
+        temp=[]
+        e=0            
         for rows in range(self.dim[0]):
             temp.append(list())
             for cols in range(self.dim[1]):
                 temp[rows].append(found[cols+e])
             e+=self.dim[1]
+            
         return temp
             
     def _stringfy(self):
@@ -909,9 +935,17 @@ EXAMPLES:
                         else:
                             colAvg["Col "+str(nth)]+=cols
                         nth+=1
+                i=0
+                new=dict()
                 for key,value in colAvg.items():
-                    colAvg[key]=round(value/self.dim[0],4)
-                return colAvg
+                    if len(self._features)==0:
+                        colAvg[key]=round(value/self.dim[0],4)
+                    else:
+                        new[self._features[i]]=round(value/self.dim[0],4)
+                        i+=1
+                if len(self._features)==0:
+                    return colAvg
+                return new
                     
             else:
                 try:
@@ -947,9 +981,14 @@ EXAMPLES:
                 avgs=self._average()
                 for i in range(self.dim[1]):
                     e=0
-                    for j in range(self.dim[0]):
-                        e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
-                    sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
+                    if len(self._features)==0:
+                        for j in range(self.dim[0]):
+                            e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
+                        sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
+                    else:
+                        for j in range(self.dim[0]):
+                            e+=(self.matrix[j][i]-avgs[self._features[i]])**2
+                        sd[self._features[i]]=(e/(self.dim[0]-1))**(1/2)
                 return sd
             else:
                 try:
@@ -962,7 +1001,6 @@ EXAMPLES:
                     e=0
                     for i in range(self.dim[0]):
                         e+=(self.matrix[i][col-1]-a)**2
-                    sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
                     return (e/(self.dim[0]-1))**(1/2)
                 
 # =============================================================================
@@ -1156,8 +1194,10 @@ EXAMPLES:
         self._inRange=self._declareRange(self.matrix)
         if col==None:
             return self._inRange
-        return self._inRange["Col {}".format(col)]   
-
+        if len(self._features)==0:
+            return self._inRange["Col {}".format(col)]   
+        return self._inRange[self._features[col-1]]
+    
     def avg(self,col=None):
         if self._average(col)!=None:
             return self._average(col)
@@ -1742,6 +1782,8 @@ EXAMPLES:
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
         """
+        if self._badDims:
+            print("You should give proper dimensions to work with the data\nExample dimension:[data_amount,feature_amount]")
         self._inRange=self._declareRange(self._matrix)
         if self._valid and self.avg()!=None:
             if self.dim[0]!=self.dim[1]:
@@ -1853,6 +1895,9 @@ decimal: digits to round up to
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
         """
+        if self._badDims:
+            print("You should give proper dimensions to work with the data\nExample dimension:[data_amount,feature_amount]")
+
         self._inRange=self._declareRange(self._matrix)
         print("\nFloat Matrix",end="")
         if self._valid and self.avg()!=None:
