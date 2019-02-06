@@ -52,7 +52,7 @@ D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates a m
 ```
 ##### OR
 
-##### Read data from files
+##### Read data from files (Only tested on CSV and TXT files)
 ###### header: boolean value, **True** if data file has a header as the **first** row, default is **False**
 
 ###### If bool(header) is True, feature names automatically get picked up from the first row
