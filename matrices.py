@@ -498,7 +498,7 @@ Check exampleMatrices.py for further explanation and examples
             return None
         else:
             self._valid=1
-            if col!=None:
+            if col!=None and self._features!=[]:
                 self._features.insert(col-1,feature)
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
@@ -522,7 +522,7 @@ If no parameter name given, takes it as row
             if c==None:
                     if r>1:
                         newM+=self.matrix[:r-1]
-                        if r<self.dim[1]:
+                        if r<self.dim[0]:
                             newM+=self.matrix[r:]  
                     if r==1:
                         newM=[b[:] for b in self.matrix[r:]]
@@ -543,7 +543,7 @@ If no parameter name given, takes it as row
             self.__detCalc=0
             self.__invCalc=0  
             self.__rankCalc=0  
-            if c!=None:
+            if c!=None and len(self._features)>0:
                 self._features.pop(c-1)                    
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
@@ -573,7 +573,8 @@ Removes desired number of dimensions from bottom right corner
         except Exception as err:
             print(err)
         else:
-            self._features=self._features[:goal2]
+            if self._features!=[]:
+                self._features=self._features[:goal2]
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
@@ -972,12 +973,15 @@ EXAMPLES:
             new=total/(d[0]*d[1])
             return new
     
-    def _sd(self,col=None):
+    def _sd(self,col=None,population=0):
         """
         Standard deviation of the columns
+        col:integer>=1
+        population: 1 for σ, 0 for s value (default 0)
         """
         try:
             assert self.dim[0]>1
+            assert population==0 or population==1
         except:
             print("Bad arguments")
         else:
@@ -1006,7 +1010,7 @@ EXAMPLES:
                     e=0
                     for i in range(self.dim[0]):
                         e+=(self.matrix[i][col-1]-a)**2
-                    return (e/(self.dim[0]-1))**(1/2)
+                    return (e/(self.dim[0]-1+population))**(1/2)
                 
 # =============================================================================
        
@@ -1208,9 +1212,9 @@ EXAMPLES:
             return self._average(col)
         return None
     
-    def sdev(self,col=None):
+    def sdev(self,col=None,population=0):
         if self._sd(col)!=None:
-            return self._sd(col)
+            return self._sd(col,population)
         return None
 # =============================================================================
     """ Setters to secure some attributes """
