@@ -77,7 +77,7 @@ Check exampleMatrices.py for further explanation and examples
             self._randomFill = randomFill
             self._string=""
             self._dir=directory
-            self._features=features
+            self.__features=features
             self._header=header
         if self._valid:
 ##########################################################################################################                
@@ -266,10 +266,10 @@ Check exampleMatrices.py for further explanation and examples
                 temp=[]
                 for rows in range(len(lis)):
                     temp.append(lis[rows][cols])
-                if len(self._features)==0:
+                if len(self.__features)==0:
                     c["Col {}".format(i)]=[round(min(temp),4),round(max(temp),4)]
                 else:
-                    c[self._features[i-1]]=[round(min(temp),4),round(max(temp),4)]
+                    c[self.__features[i-1]]=[round(min(temp),4),round(max(temp),4)]
         except AssertionError:
             return None
         except Exception as err:
@@ -310,9 +310,9 @@ Check exampleMatrices.py for further explanation and examples
                 if ch!="\n":
                     i+=1
                 else:
-                    if self._features==[]:
+                    if self.__features==[]:
                         pattern=r"\w+"
-                        self._features=re.findall(pattern,string[:i])
+                        self.__features=re.findall(pattern,string[:i])
                     string=string[i:]
                     break
         #Get all integer and float values       
@@ -498,8 +498,8 @@ Check exampleMatrices.py for further explanation and examples
             return None
         else:
             self._valid=1
-            if col!=None and self._features!=[]:
-                self._features.insert(col-1,feature)
+            if col!=None and self.__features!=[]:
+                self.__features.insert(col-1,feature)
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
             self._string=self._stringfy()
@@ -543,8 +543,8 @@ If no parameter name given, takes it as row
             self.__detCalc=0
             self.__invCalc=0  
             self.__rankCalc=0  
-            if c!=None and len(self._features)>0:
-                self._features.pop(c-1)                    
+            if c!=None and len(self.__features)>0:
+                self.__features.pop(c-1)                    
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
@@ -573,8 +573,8 @@ Removes desired number of dimensions from bottom right corner
         except Exception as err:
             print(err)
         else:
-            if self._features!=[]:
-                self._features=self._features[:goal2]
+            if self.__features!=[]:
+                self.__features=self.__features[:goal2]
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
@@ -655,11 +655,11 @@ EXAMPLES:
                 if isinstance(self,Identity):
                     return Identity(dim=len(temp2))
                 elif isinstance(self,FMatrix):
-                    return FMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self._features[colS-1:colE])
+                    return FMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
                 elif isinstance(self,CMatrix):
-                    return CMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self._features[colS-1:colE])
+                    return CMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
                 else:
-                    return Matrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self._features[colS-1:colE])
+                    return Matrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
 
 # =============================================================================
     def _determinantByLUForm(self):
@@ -944,12 +944,12 @@ EXAMPLES:
                 i=0
                 new=dict()
                 for key,value in colAvg.items():
-                    if len(self._features)==0:
+                    if len(self.__features)==0:
                         colAvg[key]=round(value/self.dim[0],4)
                     else:
-                        new[self._features[i]]=round(value/self.dim[0],4)
+                        new[self.__features[i]]=round(value/self.dim[0],4)
                         i+=1
-                if len(self._features)==0:
+                if len(self.__features)==0:
                     return colAvg
                 return new
                     
@@ -990,14 +990,14 @@ EXAMPLES:
                 avgs=self._average()
                 for i in range(self.dim[1]):
                     e=0
-                    if len(self._features)==0:
+                    if len(self.__features)==0:
                         for j in range(self.dim[0]):
                             e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
                         sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
                     else:
                         for j in range(self.dim[0]):
-                            e+=(self.matrix[j][i]-avgs[self._features[i]])**2
-                        sd[self._features[i]]=(e/(self.dim[0]-1))**(1/2)
+                            e+=(self.matrix[j][i]-avgs[self.__features[i]])**2
+                        sd[self.__features[i]]=(e/(self.dim[0]-1))**(1/2)
                 return sd
             else:
                 try:
@@ -1070,6 +1070,20 @@ EXAMPLES:
     def directory(self):
         return self._dir
     
+    @property
+    def features(self):
+        return self.__features
+    @features.setter
+    def features(self,li):
+        if self._valid:
+            try:
+                assert isinstance(li,list)
+                assert len(li)==self.dim[1]
+            except AssertionError:
+                print("Give the feature names as a list of strings with the right amount")
+            else:
+                temp=[str(i) for i in li]
+                self.__features=temp
     @property
     def dim(self):
         return self.__dim
@@ -1203,9 +1217,9 @@ EXAMPLES:
         self._inRange=self._declareRange(self.matrix)
         if col==None:
             return self._inRange
-        if len(self._features)==0:
+        if len(self.__features)==0:
             return self._inRange["Col {}".format(col)]   
-        return self._inRange[self._features[col-1]]
+        return self._inRange[self.__features[col-1]]
     
     def avg(self,col=None):
         if self._average(col)!=None:
