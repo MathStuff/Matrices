@@ -86,9 +86,11 @@ C.directory #Returns the directory of the matrix if there is any given
 
 C.matrix #Returns the matrix's rows as a list in a list
 
-C.dim #Returns the dimension of the matrix; you can change the dimension, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
+C.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
 C.string #Returns the string for of the matrix's elements
+
+C.features #Returns the column names if given, can also be used to set column names
 
 C.col(n) #Returns nth column of the matrix as a list n∈[1,column amount]
 
