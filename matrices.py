@@ -1065,7 +1065,7 @@ EXAMPLES:
             return Matrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill)
     @property
     def string(self):
-        return self._stringfy()
+        return " ".join(self.__features)+self._stringfy()
     @property
     def directory(self):
         return self._dir
@@ -1178,9 +1178,9 @@ EXAMPLES:
     def summary(self):
         #ranged and randomFill arguments are NOT required to create the same matrix
         if self._valid and self._fMat:
-            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3})".format(self.__dim,self._matrix,self._initRange,self._randomFill)
+            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}')".format(self.__dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir)
         elif self._valid and not self._isIdentity:
-            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3})".format(self.__dim,self._matrix,self._initRange,self._randomFill)
+            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}')".format(self.__dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir)
         elif self._valid and self._isIdentity:
             return "Identity(dim={0},listed={1},ranged=[0,1],randomFill=0)".format(self.__dim,self._matrix)
         else:
