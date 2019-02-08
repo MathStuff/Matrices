@@ -434,7 +434,7 @@ Check exampleMatrices.py for further explanation and examples
         pass
 # =============================================================================
             
-    def add(self,lis=[],row=None,col=None):
+    def add(self,feature="Col",lis=[],row=None,col=None):
         """
         Add a row or a column of numbers
         lis: list of numbers desired to be added to the matrix
@@ -498,6 +498,8 @@ Check exampleMatrices.py for further explanation and examples
             return None
         else:
             self._valid=1
+            if col!=None:
+                self._features.insert(col-1,feature)
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
             self._string=self._stringfy()
@@ -540,7 +542,9 @@ If no parameter name given, takes it as row
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
-            self.__rankCalc=0                        
+            self.__rankCalc=0  
+            if c!=None:
+                self._features.pop(c-1)                    
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
@@ -548,7 +552,7 @@ If no parameter name given, takes it as row
             
     def delDim(self,num):
         """
-Removes desired number of dimensions from bottom left corner
+Removes desired number of dimensions from bottom right corner
         """        
         try:
             if self.matrix==[]:
@@ -569,6 +573,7 @@ Removes desired number of dimensions from bottom left corner
         except Exception as err:
             print(err)
         else:
+            self._features=self._features[:goal2]
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
@@ -649,11 +654,11 @@ EXAMPLES:
                 if isinstance(self,Identity):
                     return Identity(dim=len(temp2))
                 elif isinstance(self,FMatrix):
-                    return FMatrix(dim=[rowE-rowS,colE-colS],listed=temp2)
+                    return FMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self._features[colS-1:colE])
                 elif isinstance(self,CMatrix):
-                    return CMatrix(dim=[rowE-rowS,colE-colS],listed=temp2)
+                    return CMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self._features[colS-1:colE])
                 else:
-                    return Matrix(dim=[rowE-rowS,colE-colS],listed=temp2)
+                    return Matrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self._features[colS-1:colE])
 
 # =============================================================================
     def _determinantByLUForm(self):
