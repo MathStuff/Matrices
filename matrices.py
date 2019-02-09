@@ -25,7 +25,7 @@ class Matrix(object):
 -Sub-matrices can be obtained with "subM" method
 -Get specific items by using a[i][j] for the (i+1)th row and (j+1)th column   
 
--Average of the all colums can be seen with "avg" property
+-Mean of the all colums can be seen with "mean" property
 -Determinant of the matrix can be calculated by "det" propery
 -For the adjoint form of the matrix, use "adj" property
 -To get the transposed matrix, use "t" property
@@ -310,7 +310,7 @@ Check exampleMatrices.py for further explanation and examples
                 if ch!="\n":
                     i+=1
                 else:
-                    if self.__features==[]:
+                    if len(self.__features)!=0:
                         pattern=r"\w+"
                         self.__features=re.findall(pattern,string[:i])
                     string=string[i:]
@@ -922,9 +922,9 @@ EXAMPLES:
         return (U,((-1)**(rowC))*prod,L)
 # =============================================================================
 
-    def _average(self,col=None):
+    def _mean(self,col=None):
         """
-        Sets the avg attribute of the matrix as the average of it's elements
+        Sets the "mean" attribute of the matrix as the mean of it's elements
         """
         try:
             d=self.__dim[:]
@@ -987,7 +987,7 @@ EXAMPLES:
         else:
             if col==None:
                 sd={}
-                avgs=self._average()
+                avgs=self._mean()
                 for i in range(self.dim[1]):
                     e=0
                     if len(self.__features)==0:
@@ -1006,7 +1006,7 @@ EXAMPLES:
                     print("Col parameter is not valid")
                 else:
                     sd={}
-                    a=self._average(col)
+                    a=self._mean(col)
                     e=0
                     for i in range(self.dim[0]):
                         e+=(self.matrix[i][col-1]-a)**2
@@ -1164,13 +1164,13 @@ EXAMPLES:
     @property
     def highest(self):
         if not self._isIdentity:
-            return max([max(a) for a in self.inRange().values()])
+            return max([max(a) for a in self.ranged().values()])
         else:
             return 1
     @property
     def lowest(self):
         if not self._isIdentity:
-            return min([min(a) for a in self.inRange().values()])  
+            return min([min(a) for a in self.ranged().values()])  
         else:
             return 0
         
@@ -1213,7 +1213,7 @@ EXAMPLES:
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)
     
-    def inRange(self,col=None):
+    def ranged(self,col=None):
         self._inRange=self._declareRange(self.matrix)
         if col==None:
             return self._inRange
@@ -1221,17 +1221,231 @@ EXAMPLES:
             return self._inRange["Col {}".format(col)]   
         return self._inRange[self.__features[col-1]]
     
-    def avg(self,col=None):
-        if self._average(col)!=None:
-            return self._average(col)
+    def mean(self,col=None):
+        if self._mean(col)!=None:
+            return self._mean(col)
         return None
     
     def sdev(self,col=None,population=0):
         if self._sd(col)!=None:
             return self._sd(col,population)
         return None
+    
+    def median(self,col=None):
+        """
+        Returns the median of the columns
+        col:integer>=1 and <=column amount
+        """
+        try:
+            if col==None:
+                temp=self.t
+                feats=self.__features[:]
+            else:
+                assert col>=1 and col<=self.dim[1]
+                temp=self.subM(1,self.dim[0],col,col).t
+                if len(self.__features)!=0:
+                    feats=self.__features[col-1]
+                else:
+                    feats="Col "+str(col)
+                    
+            meds={}
+            i=1
+            for rows in temp.matrix:
+                
+                n=sorted(rows)[self.dim[0]//2]
+                
+                if len(feats)!=0 and isinstance(feats,list):
+                    meds[feats[i-1]]=n
+                elif len(feats)==0:
+                    meds["Col "+str(i)]=n
+                else:
+                    meds[feats]=n
+                i+=1
+        except:
+            print("Error getting median")
+        else:
+            return meds
+    
+    def mode(self,col=None):
+        """
+        Returns the most columns' most repeated elements
+        col:integer>=1 and <=amount of columns
+        """
+        try:
+            #Set feature name and the matrix to use dependent on the column desired
+            if col==None:
+                temp=self.t
+                feats=self.__features[:]
+            else:
+                assert col>=1 and col<=self.dim[1]
+                temp=self.subM(1,self.dim[0],col,col).t
+                if len(self.__features)>0:
+                    feats=self.features[col-1]
+                else:
+                    feats="Col "+str(col)
+            #Set keys in the dictionary which will be returned at the end
+            mods={}
+            if len(feats)!=0 and isinstance(feats,list):
+                for fs in feats:
+                    mods[fs]=None
+            elif len(feats)==0:
+                for fs in range(self.dim[1]):
+                    mods["Col "+str(fs+1)]=None
+                   
+            #Set column amount
+            if col==None:
+                r=self.dim[1]
+            else:
+                r=1
+                
+            #Loop through the transpozed matrices (From column to row matrices to make calculations easier)               
+            for rows in range(r):
+                #Variables to keep track of the frequency of the numbers
+                a={}
+                i=0
+                
+                #Loop through the column to get frequencies
+                for els in temp[rows]:
+                    if els not in a.keys():
+                        a[els]=1
+                    else:
+                        a[els]+=1
+                    i+=1
+                
+                #Get a list of the values from the frequency dictionary
+                temp2=[]
+                for k,v in a.items():
+                    temp2.append(v)
+                
+                #Find the maximum repetation
+                m=max(temp2)
+                #Create a dictionary to store the most repated key(s) as keys and frequency as the value
+                n={}
+                s=""
+                allSame=0
+                #Check if there are multiple most repeated elements
+                for k,v in a.items(): 
+                    if v==m:
+                        allSame+=1
+                        if len(s)!=0:
+                            s+=", "+str(k)
+                        else:
+                            s+=str(k)
+                #If all the elements repeated same amount don't get all the numbers, just set the name to "All"          
+                if allSame==len(temp2):
+                    n["All"]=temp2[0]
+                else:
+                    n[s]=m
+                
+                #Set the final dictionary's key(s) and  value(s) calculated
+                if len(feats)!=0 and isinstance(feats,list):
+                    mods[feats[rows]]=n
+                elif len(feats)==0:
+                    mods["Col "+str(rows+1)]=n
+                else:
+                    mods[feats]=n
+                #END
+        except Exception as err:
+            print("Bad arguments given to mode method\n",err)
+        else:
+            return mods
+    
+    def iqr(self,col=None,as_quartiles=False):
+        """
+        Returns the interquartile range(IQR)
+        col:integer>=1 and <=column amount
+        as_quartiles:
+            True to return dictionary as:
+                {Column1=[First_Quartile,Median,Third_Quartile],Column2=[First_Quartile,Median,Third_Quartile],...}
+            False to get iqr values(default):
+                {Column1=IQR_1,Column2=IQR_2,...}
+        """
+        
+        try:
+            if col==None:
+                temp=self.t
+                feats=self.__features[:]
+            else:
+                assert col>=1 and col<=self.dim[1]
+                temp=self.subM(1,self.dim[0],col,col).t
+                if len(self.__features)!=0:
+                    feats=self.__features[col-1]
+                else:
+                    feats="Col "+str(col)
+                    
+            iqr={}
+            qmeds={}
+            i=1
+            for rows in temp.matrix:
+                low=sorted(rows)[:self.dim[0]//2]
+                low=low[len(low)//2]
+                
+                up=sorted(rows)[self.dim[0]//2:]
+                up=up[len(up)//2]
+                
+                if len(feats)!=0 and isinstance(feats,list):
+                    iqr[feats[i-1]]=up-low
+                    qmeds[feats[i-1]]=[low,self.median(col)[feats[i-1]],up]
+                elif len(feats)==0:
+                    iqr["Col "+str(i)]=up-low
+                    qmeds["Col "+str(i)]=[low,self.median(col)["Col "+str(i)],up]
+                else:
+                    iqr[feats]=up-low
+                    qmeds[feats]=[low,self.median(col)[feats],up]
+                i+=1
+        except Exception as err:
+            print("Error getting median",err)
+        else:
+            if as_quartiles:
+                return qmeds
+            return iqr
+        
 # =============================================================================
-    """ Setters to secure some attributes """
+    def __contains__(self,val):
+        """
+        val:value to search for in the whole matrix
+        Returns True or False
+        syntax: "value" in a.matrix
+        """
+        inds=self.find(val)
+        return bool(inds)
+    
+    def concat(self,b,concat_as="row"):
+        """
+        Concatenate matrices row or columns vice
+        b:matrix to concatenate to self
+        concat_as:"row" to concat b matrix as rows, "col" to add b matrix as columns
+        Note: This method concatenates the matrix to self
+        """
+        try:
+            assert isinstance(b,Matrix)
+            if concat_as=="row":
+                assert b.dim[1]==self.dim[1]
+            elif concat_as=="col":
+                assert b.dim[0]==self.dim[0]
+        except AssertionError:
+            print("Bad dimensions")
+        else:
+            if concat_as=="row":
+                for rows in b.matrix:
+                    self._matrix.append(rows)
+
+            else:
+                i=0
+                for rows in self.matrix:
+                    for cols in range(b.dim[1]):
+                        rows.append(b[i][cols])
+                    i+=1
+                    
+            self.__adjCalc=0
+            self.__detCalc=0
+            self.__invCalc=0  
+            self.__rankCalc=0  
+            self.__dim=self._declareDim()
+            self._inRange=self._declareRange(self._matrix)
+            self._string=self._stringfy()
+            return self
+                  
 # =============================================================================
 
     def __getitem__(self,pos):
@@ -1808,11 +2022,11 @@ EXAMPLES:
         if self._badDims:
             print("You should give proper dimensions to work with the data\nExample dimension:[data_amount,feature_amount]")
         self._inRange=self._declareRange(self._matrix)
-        if self._valid and self.avg()!=None:
+        if self._valid and self.mean()!=None:
             if self.dim[0]!=self.dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
+                print("\nDimension: {0}x{1}\nRange: {2}\nMean: {3}".format(self.dim[0],self.dim[1],self._inRange,self.mean()))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nRange: {1}\nMean: {2}".format(self.dim[0],self._inRange,self.mean()))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
@@ -1923,11 +2137,11 @@ decimal: digits to round up to
 
         self._inRange=self._declareRange(self._matrix)
         print("\nFloat Matrix",end="")
-        if self._valid and self.avg()!=None:
+        if self._valid and self.mean()!=None:
             if self.dim[0]!=self.dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
+                print("\nDimension: {0}x{1}\nRange: {2}\nMean: {3}".format(self.dim[0],self.dim[1],self._inRange,self.mean()))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nRange: {1}\nMean: {2}".format(self.dim[0],self._inRange,self.mean()))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"        
@@ -1946,8 +2160,8 @@ Matrix which contain complex numbers
         if self._cMat:
             print("\nComplex matrix, ",end="")
             if self.dim[0]!=self.dim[1]:
-                print("\nDimension: {0}x{1}\nNumbers' range: {2}\nAverages: {3}".format(self.dim[0],self.dim[1],self._inRange,self.avg()))
+                print("\nDimension: {0}x{1}\nRange: {2}\nMean: {3}".format(self.dim[0],self.dim[1],self._inRange,self.mean()))
             else:
-                print("Square matrix\nDimension: {0}x{0}\nNumbers' range: {1}\nAverages: {2}".format(self.dim[0],self._inRange,self.avg()))            
+                print("Square matrix\nDimension: {0}x{0}\nRange: {1}\nMean: {2}".format(self.dim[0],self._inRange,self.mean()))            
                 
             return self._stringfy()+"\n"
