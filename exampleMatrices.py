@@ -311,6 +311,10 @@ print("validStr4.mean()")
 print(validStr4.mean())
 print("")
 
+print("validStr4.sdev()")
+print(validStr4.sdev())
+print("")
+
 print("validStr4.median()")
 print(validStr4.median())
 print("")
@@ -325,6 +329,10 @@ print("")
 
 print("validStr4.iqr(as_quartiles=True)")
 print(validStr4.iqr(as_quartiles=True))
+print("")
+
+print("validStr4.variance()")
+print(validStr4.variance())
 print("")
 # =============================================================================
 """ Expected Outputs """
@@ -1240,11 +1248,15 @@ Mean: {'Height': 163.3636, 'Weight': 62.1364, 'Age': 28.6818}
 
 ################
 
+
 validStr4.ranged()
 {'Height': [125, 193], 'Weight': [30, 105], 'Age': [9, 55]}
 
 validStr4.mean()
 {'Height': 163.3636, 'Weight': 62.1364, 'Age': 28.6818}
+
+validStr4.sdev()
+{'Height': 21.07705919344085, 'Weight': 22.28665082950308, 'Age': 12.988589731137461}
 
 validStr4.median()
 {'Height': 166, 'Weight': 60, 'Age': 29}
@@ -1257,6 +1269,10 @@ validStr4.iqr()
 
 validStr4.iqr(as_quartiles=True)
 {'Height': [155, 166, 180], 'Weight': [40, 60, 80], 'Age': [22, 29, 39]}
+
+validStr4.variance()
+{'Height': 444.2424242438094, 'Weight': 496.6948051961904, 'Age': 168.7034632038095}
+
 """
 # =============================================================================
 
