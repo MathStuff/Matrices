@@ -120,7 +120,9 @@ C.mode(n) #Returns the nth column's mode, give None to get all columns' modes
 
 C.iqr(n,as_quartiles) #Returns the nth column's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True)
 
-C.sdev(n) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations
+C.sdev(n,population) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter True if calculation is not for samples
+
+C.variance(n,population)#Returns the nth column's variance, if None is given as an argument returns all columns' variance. Give population parameter True if calculation is not for samples
 
 C.det #Returns the determinant of the matrix
 
@@ -136,7 +138,7 @@ C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
 
-C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatination required is as columns, give "col" as the argument
+C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
 C.copy #Returns a copy of the matrix
 
