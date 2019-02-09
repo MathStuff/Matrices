@@ -110,9 +110,15 @@ C.uptri #Returns the upper triangular form of the matrix
 
 C.lowtri #Returns the lower triangular form of the matrix
 
-C.avg(n) #Returns the nth column's average, give None as argument to get the all columns' averages
+C.mean(n) #Returns the nth column's average, give None as argument to get the all columns' averages
 
-C.inRange(n) #Returns the nth column's range, give None as argument to get the all columns' ranges
+C.ranged(n) #Returns the nth column's range, give None as argument to get the all columns' ranges
+
+C.median(n) #Returns the nth column's median, give None to get all columns' medians
+
+C.mode(n) #Returns the nth column's mode, give None to get all columns' modes
+
+C.iqr(n,as_quartiles) #Returns the nth column's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True)
 
 C.sdev(n) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations
 
@@ -129,6 +135,8 @@ C.inv #Returns the inversed matrix
 C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
+
+C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatination required is as columns, give "col" as the argument
 
 C.copy #Returns a copy of the matrix
 
@@ -157,6 +165,10 @@ B @ B.t #Matrix multiplication example
    A*2==A+A
    
    A.t.t==A
+   
+   A.lowtri@A.uptri==A
+   
+   A.inv.inv==A (Doesn't always work for matrices with big numbers,due to decimal rounding,but gets close estimations)
    
    A.adj.t[1][2]==A.minor(2,3).det*-1
    
