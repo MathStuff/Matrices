@@ -1010,7 +1010,11 @@ EXAMPLES:
                     e=0
                     for i in range(self.dim[0]):
                         e+=(self.matrix[i][col-1]-a)**2
-                    return (e/(self.dim[0]-1+population))**(1/2)
+                    if len(self.__features)==0:
+                        sd["Col "+str(col)]=(e/(self.dim[0]-1+population))**(1/2)
+                    else:
+                        sd[self.__features[col-1]]=(e/(self.dim[0]-1+population))**(1/2)
+                    return sd
                 
 # =============================================================================
        
@@ -1400,6 +1404,13 @@ EXAMPLES:
                 return qmeds
             return iqr
         
+    def variance(self,col=None,population=0):
+        s=self.sdev(col,population)
+        vs={}
+        for k,v in s.items():
+            vs[k]=v**2
+        return vs
+    
 # =============================================================================
     def __contains__(self,val):
         """
