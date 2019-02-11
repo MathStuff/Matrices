@@ -47,7 +47,7 @@ class Matrix(object):
     
 Check exampleMatrices.py for further explanation and examples
     """
-    def __init__(self,dim=None,listed=[],directory="",ranged=[-5,5],randomFill=1,header=None,features=[]):
+    def __init__(self,dim=None,listed=[],directory=r"",ranged=[-5,5],randomFill=1,header=None,features=[]):
         self._isIdentity=0
         self._fMat=0
         self._cMat=0
@@ -310,8 +310,8 @@ Check exampleMatrices.py for further explanation and examples
                 if ch!="\n":
                     i+=1
                 else:
-                    if len(self.__features)!=0:
-                        pattern=r"\w+"
+                    if len(self.__features)==0:
+                        pattern=r" ?[a-zA-Z ?]+ ?"
                         self.__features=re.findall(pattern,string[:i])
                     string=string[i:]
                     break
@@ -507,7 +507,7 @@ Check exampleMatrices.py for further explanation and examples
             self.__detCalc=0
             self.__invCalc=0  
             self.__rankCalc=0     
-            return self._matrix
+
         
     def remove(self,r=None,c=None):
         """
@@ -590,6 +590,7 @@ Removes desired number of dimensions from bottom right corner
         r=0
         for row in self._matrix:
             try:
+                assert isinstance(element,int) or isinstance(element,float) or isinstance(element,list)
                 if element in row:
                     i=row.index(element)
                     indeces.append((r+1,i+1))
@@ -598,6 +599,8 @@ Removes desired number of dimensions from bottom right corner
             except ValueError:
                 r+=1
                 continue
+            except AssertionError:
+                print("Invalid element type to search for")
             else:
                 r+=1
         if len(indeces):
@@ -655,11 +658,11 @@ EXAMPLES:
                 if isinstance(self,Identity):
                     return Identity(dim=len(temp2))
                 elif isinstance(self,FMatrix):
-                    return FMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
+                    return FMatrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
                 elif isinstance(self,CMatrix):
-                    return CMatrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
+                    return CMatrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
                 else:
-                    return Matrix(dim=[rowE-rowS,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
+                    return Matrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
 
 # =============================================================================
     def _determinantByLUForm(self):
@@ -921,108 +924,12 @@ EXAMPLES:
 #        print(dia)
         return (U,((-1)**(rowC))*prod,L)
 # =============================================================================
-
-    def _mean(self,col=None):
-        """
-        Sets the "mean" attribute of the matrix as the mean of it's elements
-        """
-        try:
-            d=self.__dim[:]
-            if d[0]==0 or d[1]==0:
-                return None
-            
-            if col==None:
-                colAvg={}
-                for rows in self._matrix:
-                    nth=1
-                    for cols in rows:
-                        if "Col "+str(nth) not in colAvg.keys():
-                            colAvg["Col "+str(nth)]=cols
-                        else:
-                            colAvg["Col "+str(nth)]+=cols
-                        nth+=1
-                i=0
-                new=dict()
-                for key,value in colAvg.items():
-                    if len(self.__features)==0:
-                        colAvg[key]=round(value/self.dim[0],4)
-                    else:
-                        new[self.__features[i]]=round(value/self.dim[0],4)
-                        i+=1
-                if len(self.__features)==0:
-                    return colAvg
-                return new
-                    
-            else:
-                try:
-                    assert col>0 and col<=self.dim[1]
-                except AssertionError:
-                    print("Col parameter should be in range [1,amount of columns]")
-                else:
-                    total=0
-                    for rows in self._matrix:
-                        total+=rows[col-1]
-                    avg=total/self.dim[0]
-                    return avg
-            
-        except Exception as err:
-            print("Bad matrix and/or dimension")
-            print(err)
-            return None
-        else:
-            new=total/(d[0]*d[1])
-            return new
-    
-    def _sd(self,col=None,population=0):
-        """
-        Standard deviation of the columns
-        col:integer>=1
-        population: 1 for σ, 0 for s value (default 0)
-        """
-        try:
-            assert self.dim[0]>1
-            assert population==0 or population==1
-        except:
-            print("Bad arguments")
-        else:
-            if col==None:
-                sd={}
-                avgs=self._mean()
-                for i in range(self.dim[1]):
-                    e=0
-                    if len(self.__features)==0:
-                        for j in range(self.dim[0]):
-                            e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
-                        sd["Col "+str(i+1)]=(e/(self.dim[0]-1))**(1/2)
-                    else:
-                        for j in range(self.dim[0]):
-                            e+=(self.matrix[j][i]-avgs[self.__features[i]])**2
-                        sd[self.__features[i]]=(e/(self.dim[0]-1))**(1/2)
-                return sd
-            else:
-                try:
-                    assert col>0 and col<=self.dim[1]
-                except AssertionError:
-                    print("Col parameter is not valid")
-                else:
-                    sd={}
-                    a=self._mean(col)
-                    e=0
-                    for i in range(self.dim[0]):
-                        e+=(self.matrix[i][col-1]-a)**2
-                    if len(self.__features)==0:
-                        sd["Col "+str(col)]=(e/(self.dim[0]-1+population))**(1/2)
-                    else:
-                        sd[self.__features[col-1]]=(e/(self.dim[0]-1+population))**(1/2)
-                    return sd
-                
-# =============================================================================
        
-    def col(self,column=None):
+    def col(self,column=None,as_matrix=True):
         """
         Get a specific column of the matrix
-        Starts from 1
-        Returns an ordered list 
+        column:integer>=1 and <=column_amount
+        as_matrix:False to get the column as a list, True to get a column matrix (default) 
         """
         try:
             assert isinstance(column,int)
@@ -1034,12 +941,16 @@ EXAMPLES:
             temp=[]
             for rows in self._matrix:
                 temp.append(rows[column-1])
+            
+            if as_matrix:
+                return self.subM(1,self.dim[0],column,column)
             return temp
-    def row(self,row=None):
+        
+    def row(self,row=None,as_matrix=True):
         """
         Get a specific row of the matrix
-        Starts from 1
-        You can also use self._matrix[row-1]
+        row:integer>=1 and <=row_amount
+        as_matrix:False to get the row as a list, True to get a row matrix (default) 
         """
         try:
             assert isinstance(row,int)
@@ -1048,6 +959,8 @@ EXAMPLES:
             print("Bad arguments")
             return None
         else:
+            if as_matrix:
+                return self.subM(row,row,1,self.dim[1])
             return self._matrix[row-1]
             
 # =============================================================================
@@ -1064,9 +977,9 @@ EXAMPLES:
         if self._isIdentity:
             return Identity(dim=self.__dim)
         elif self._fMat:
-            return FMatrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill)
+            return FMatrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill,header=self._header,directory=self._dir,features=self.__features)
         else:
-            return Matrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill)
+            return Matrix(dim=self.__dim,listed=self._matrix,randomFill=self._randomFill,header=self._header,directory=self._dir,features=self.__features)
     @property
     def string(self):
         return " ".join(self.__features)+self._stringfy()
@@ -1226,15 +1139,85 @@ EXAMPLES:
         return self._inRange[self.__features[col-1]]
     
     def mean(self,col=None):
-        if self._mean(col)!=None:
-            return self._mean(col)
-        return None
-    
+        """
+        Sets the "mean" attribute of the matrix as the mean of it's elements
+        """
+        try:
+            assert (isinstance(col,int) and col>=1 and col<=self.dim[1]) or col==None
+            avg={}
+            feats=self.features[:]
+            if len(feats)==0:
+                for nn in range(self.dim[1]):
+                    feats.append("Col "+str(nn+1))
+      
+            if col==None:
+                cLow=0
+                cUp=self.dim[1]
+            else:
+                cLow=col-1
+                cUp=col        
+                
+            for c in range(cLow,cUp):
+                t=0
+                for r in range(self.dim[0]):
+                    t+=self[r][c]
+                avg[feats[c]]=t/self.dim[0]
+   
+        except AssertionError:
+            print("Col parameter should be in range [1,amount of columns]")
+        except Exception as err:
+            print("Bad matrix and/or dimension")
+            print(err)
+            return None
+        
+        else:
+            return avg    
+
     def sdev(self,col=None,population=0):
-        if self._sd(col)!=None:
-            return self._sd(col,population)
-        return None
-    
+        """
+        Standard deviation of the columns
+        col:integer>=1
+        population: 1 for σ, 0 for s value (default 0)
+        """
+        try:
+            assert self.dim[0]>1
+            assert population==0 or population==1
+        except:
+            print("Bad arguments")
+        else:
+            if col==None:
+                sd={}
+                avgs=self.mean()
+                for i in range(self.dim[1]):
+                    e=0
+                    if len(self.__features)==0:
+                        for j in range(self.dim[0]):
+                            e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
+                        sd["Col "+str(i+1)]=(e/(self.dim[0]-1+population))**(1/2)
+                    else:
+                        for j in range(self.dim[0]):
+                            e+=(self.matrix[j][i]-avgs[self.__features[i]])**2
+                        sd[self.__features[i]]=(e/(self.dim[0]-1+population))**(1/2)
+                return sd
+            else:
+                try:
+                    assert col>0 and col<=self.dim[1]
+                except AssertionError:
+                    print("Col parameter is not valid")
+                else:
+                    sd={}
+                    a=list(self.mean(col).values())[0]
+
+                    e=0
+                    for i in range(self.dim[0]):
+                        e+=(self.matrix[i][col-1]-a)**2
+                        
+                    if len(self.__features)==0:
+                        sd["Col "+str(col)]=(e/(self.dim[0]-1+population))**(1/2)
+                    else:
+                        sd[self.__features[col-1]]=(e/(self.dim[0]-1+population))**(1/2)
+                    return sd
+                
     def median(self,col=None):
         """
         Returns the median of the columns
@@ -1411,6 +1394,61 @@ EXAMPLES:
             vs[k]=v**2
         return vs
     
+    def z(self,row=None,col=None):
+        try:
+            if col==None:
+                assert (isinstance(row,int) and row>=1 and row<=self.dim[1]) or row==None
+                dims=self.dim
+                feats=self.features
+                sub=self.copy
+            elif isinstance(col,int) and col>=1 and col<=self.dim[1] and row==None:
+                dims=[self.dim[0],1]
+                if len(self.features)==0:
+                    feats=["Col "+str(col)]
+                else:
+                    feats=self.features[col-1]
+                sub=self.subM(1,self.dim[0],col,col)
+                col=1
+            else:
+                assert isinstance(col,int) and col>=1 and col<=self.dim[1]
+                assert isinstance(row,int) and row>=1 and row<=self.dim[0]
+                return (self[row-1][col-1]-self.mean(col))/self.sdev(col)
+                
+        except:
+            print("error getting z scores")
+        else:
+            scores=FMatrix(dims,randomFill=0,features=feats)
+            m=sub.mean(col)
+            s=sub.sdev(col,1)
+            names=[]
+            for n in m.keys():
+                names.append(n)
+
+            for c in range(scores.dim[1]):
+                key=names[c]
+                for r in range(scores.dim[0]):
+                    scores[r][c]=(sub.matrix[r][c]-m[key])/s[key]
+            if row!=None and col==None:
+                return scores.subM(row,row,1,self.dim[1])    
+            return scores
+        
+    def pearson_r(self,col1=None,col2=None):
+        try:
+            if self.dim[1]<2 or self.dim[0]<=1:
+                print("Not enough columns/rows")
+                return None
+            assert isinstance(col1,int) and isinstance(col1,int)
+            assert col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1]
+        except:
+            print("Bad arguments")
+        else:
+            z1=self.z(col=col1)
+            z2=self.z(col=col2)
+            prod=(z1*z2).col(1,as_matrix=False)
+            total=0
+            for els in prod:
+                total+=els
+            return total/(self.dim[0]-1)
 # =============================================================================
     def __contains__(self,val):
         """
