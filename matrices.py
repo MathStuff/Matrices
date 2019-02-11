@@ -311,7 +311,7 @@ Check exampleMatrices.py for further explanation and examples
                     i+=1
                 else:
                     if len(self.__features)==0:
-                        pattern=r" ?[a-zA-Z ?]+ ?"
+                        pattern=r" ?[a-zA-Z( |_|\-)?]+[0-9]* ?"
                         self.__features=re.findall(pattern,string[:i])
                     string=string[i:]
                     break
