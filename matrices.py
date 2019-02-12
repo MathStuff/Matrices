@@ -2047,19 +2047,27 @@ EXAMPLES:
         temp=[]
         for elements in self._matrix:
             temp.append([round(a,n) for a in elements])
-        return Matrix(listed=temp)
+        return FMatrix(listed=temp)
     
     def __floor__(self):
         temp=[]
         for elements in self._matrix:
             temp.append([int(a) for a in elements if isinstance(a,float) or isinstance(a,int)])
-        return temp       
+        return Matrix(listed=temp)       
     
     def __ceil__(self):
         temp=[]
         for elements in self._matrix:
             temp.append([int(a)+1 for a in elements if isinstance(a,float) or isinstance(a,int)])
-        return temp     
+        return Matrix(listed=temp)    
+    
+    def __abs__(self):
+        temp=[]
+        for elements in self._matrix:
+            temp.append([abs(a) for a in elements])
+        if isinstance(self,FMatrix):
+            return FMatrix(listed=temp)   
+        return Matrix(listed=temp)
     
     def __repr__(self):
         return str(self.matrix)
