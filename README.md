@@ -92,9 +92,9 @@ C.string #Returns the string for of the matrix's elements
 
 C.features #Returns the column names if given, can also be used to set column names
 
-C.col(n) #Returns nth column of the matrix as a list n∈[1,column amount]
+C.col(n,as_matrix) #Returns nth column of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
-C.row(n) #Returns nth row of the matrix as a list n∈[1,row amount]
+C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
 C.intForm #Returns integer form of the matrix
 
@@ -122,7 +122,11 @@ C.iqr(n,as_quartiles) #Returns the nth column's iqr, give None to get all column
 
 C.sdev(n,population) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter True if calculation is not for samples
 
-C.variance(n,population)#Returns the nth column's variance, if None is given as an argument returns all columns' variance. Give population parameter True if calculation is not for samples
+C.variance(n,population) #Returns the nth column's variance, if None is given as an argument returns all columns' variance. Give population parameter True if calculation is not for samples
+
+C.z(row,col) #Returns the z-scores of the desired row and/or column, call without arguments to get the all z-scores as a matrix
+
+C.pearson_r(column_1,column_2) #Returns linear correlation of 2 columns chosen from the matrix
 
 C.det #Returns the determinant of the matrix
 
