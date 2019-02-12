@@ -2070,12 +2070,11 @@ EXAMPLES:
         """
         if self._badDims:
             print("You should give proper dimensions to work with the data\nExample dimension:[data_amount,feature_amount]")
-        self._inRange=self._declareRange(self._matrix)
-        if self._valid and self.mean()!=None:
+        if self._valid:
             if self.dim[0]!=self.dim[1]:
-                print("\nDimension: {0}x{1}\nRange: {2}\nMean: {3}".format(self.dim[0],self.dim[1],self._inRange,self.mean()))
+                print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nRange: {1}\nMean: {2}".format(self.dim[0],self._inRange,self.mean()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"
@@ -2096,7 +2095,7 @@ Identity matrix
             self._valid=0
             return None
         else:
-            self._dim=[dim,dim]
+            self.__dim=[dim,dim]
             self._randomFill=0
             self._inRange=[0,1]
             self._initRange=[0,1]
@@ -2107,8 +2106,7 @@ Identity matrix
             self.__adjCalc=1
             self.__detCalc=1
             self.__invCalc=1
-    
-            self._dimSet(dim)
+
             self._matrix=list()
             self._matrix=self._zeroFiller(self._matrix)
             self._string=self._stringfy()
@@ -2124,7 +2122,7 @@ Identity matrix
         except Exception as err:
             print(err)
         else:
-            goal=self._dim[0]+num
+            goal=self.dim[0]+num
             self.__dim=[goal,goal]
             self._matrix=self._zeroFiller(list())
             self._string=self._stringfy()
@@ -2137,13 +2135,13 @@ Identity matrix
         try:
             if self.matrix==[]:
                 return "Empty matrix"
-            assert isinstance(num,int) and num>0 and self._dim[0]-num>=0
+            assert isinstance(num,int) and num>0 and self.dim[0]-num>=0
         except AssertionError:
             print("Enter a valid input")
         except Exception as err:
             print(err)
         else:
-            goal=self._dim[0]-num
+            goal=self.dim[0]-num
             if goal==0:
                 print("All rows have been deleted")
             self.__dim=[goal,goal]
@@ -2151,6 +2149,9 @@ Identity matrix
             self._string=self._stringfy()
             return self
         
+    @property
+    def dim(self):
+        return self.__dim        
     @property
     def inv(self):
         return self
@@ -2163,7 +2164,7 @@ Identity matrix
     
     def __str__(self):
         if self._isIdentity:
-            print("\nIdentity Matrix\nDimension: {0}x{0}".format(self._dim[0]))
+            print("\nIdentity Matrix\nDimension: {0}x{0}".format(self.dim[0]))
             return self._stringfy()+"\n"
         
 class FMatrix(Matrix):
@@ -2184,13 +2185,12 @@ decimal: digits to round up to
         if self._badDims:
             print("You should give proper dimensions to work with the data\nExample dimension:[data_amount,feature_amount]")
 
-        self._inRange=self._declareRange(self._matrix)
         print("\nFloat Matrix",end="")
-        if self._valid and self.mean()!=None:
+        if self._valid:
             if self.dim[0]!=self.dim[1]:
-                print("\nDimension: {0}x{1}\nRange: {2}\nMean: {3}".format(self.dim[0],self.dim[1],self._inRange,self.mean()))
+                print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
             else:
-                print("\nSquare matrix\nDimension: {0}x{0}\nRange: {1}\nMean: {2}".format(self.dim[0],self._inRange,self.mean()))
+                print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
             return self._stringfy()+"\n"
         else:
             return "Invalid matrix\n"        
