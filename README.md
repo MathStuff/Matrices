@@ -69,6 +69,11 @@ E=FMatrix(6) #Create a matrix filled with random float values in the default ran
 F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
 ```
 ----------------------------------------
+##### Create matrices filled with random complex numbers (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
+```python 
+Cm1=CMatrix(5) #Create a matrix filled with random float values in the default range
+```
+----------------------------------------
 ##### Create identity matrices
 ```python 
 i=Identity(3) #3x3 identity matrix
