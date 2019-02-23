@@ -120,11 +120,17 @@ class Matrix:
         """
         Set the matrix based on the arguments given
         """
-        if d==None:
-            d=self.__dim[:]
+        #Set new dimension
+        if d!=None:
+            self._setDim(d)
+        d=self.__dim
+        #Set new range    
         if r==None:
             r=self._initRange[:]
-            
+        else:
+            self._initRange=r
+        
+        #Set the new matrix
         if isinstance(lis,str):
             self._matrix=self._listify(lis)
 
