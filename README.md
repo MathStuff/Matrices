@@ -154,6 +154,10 @@ C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
 
+C.head #Returns the first 5 rows (if there are less than 5 rows it returns all the rows)
+
+C.tail #Returns the last 5 rows (if there are less than 5 rows it returns all the rows)
+
 C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
 C.copy #Returns a copy of the matrix
