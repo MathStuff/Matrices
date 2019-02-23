@@ -1008,7 +1008,16 @@ EXAMPLES:
             return "Identity(dim={0},listed={1},ranged=[0,1],randomFill=0)".format(self.__dim,self._matrix)
         else:
             return None
-        
+    @property
+    def head(self):
+        if self.__dim[0]>=5:
+            return self.subM(1,5,1,self.__dim[1])
+        return self.subM(1,self.__dim[0],1,self.__dim[1])
+    @property
+    def tail(self):
+        if self.__dim[0]>=5:
+            return self.subM(self.__dim[0]-4,self.__dim[0],1,self.__dim[1])
+        return self.subM(1,self.__dim[0],1,self.__dim[1])
     @property
     def floorForm(self):
         return Matrix(self.dim[:],listed=self.__floor__().matrix)  
