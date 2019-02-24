@@ -257,7 +257,7 @@ class Matrix:
     def __fromFile(self,d):
         try:
             data="" 
-            with open(d,"r") as f:
+            with open(d,"r",encoding="utf8") as f:
                 for lines in f:
                     data+=lines
         except FileNotFoundError:
@@ -291,16 +291,19 @@ class Matrix:
                     string=string[i:]
                     break
         #Get all integer and float values       
-        pattern=r"(?:\-?[0-9]+)(?:\.?[0-9]*)"
+        pattern=r"(?:\-?[0-9]+\,?)+(?:\.?[0-9]*)"
         found=re.findall(pattern,string)
+        #Get numbers separated by cammas and remove cammas from (123,456,789.001) to (123456789.001) 
+        found=["".join([j for j in i if j!=","]) if "," in i else i for i in found]
+        #print(found)
         #String to number
         try:
             if not isinstance(self,FMatrix):
                 found=[int(a) for a in found]
             elif isinstance(self,FMatrix):
                 found=[float(a) for a in found]
-        except ValueError:
-            print("If your matrix has float values, use FMatrix. If not use Matrix")
+        except ValueError as v:
+            print("If your matrix has float values, use FMatrix. If not use Matrix\n",v)
             return []
         #Fix dimensions to create a row matrix   
         if self.__dim==[0,0]:
@@ -2147,3 +2150,8 @@ Matrix which contain complex numbers
                 
             return self._string+"\n"
 
+class SMatrix(Matrix):
+    """
+Matrix with strings as elements
+    """
+    pass
