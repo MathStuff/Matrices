@@ -285,8 +285,8 @@ print("################")
 print("\nc%j")
 print(c%j)
 
-print("\nf.lowtri@f.uptri==f.roundForm(4)")
-print(f.lowtri@f.uptri==f.roundForm(4))
+print("\n(f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)")
+print((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4))
 # =============================================================================
 """ STRING MATRICES' OUTPUTS"""
 # =============================================================================
@@ -1142,7 +1142,7 @@ Features: []
 8 5 0 3 
 
 
-f.lowtri@f.uptri==f.roundForm(4)
+(f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)
 True
 
 ################################

@@ -804,10 +804,7 @@ EXAMPLES:
                 
             #Loop through the ith column find the coefficients to multiply the diagonal element with
             #to make the elements under [i][i] all zeros
-            rowMulti=[]
-            for j in range(i+1,self.dim[0]):
-                co=temp[j][i]/temp[i][i]
-                rowMulti.append(co)            
+            rowMulti=[temp[j][i]/temp[i][i] for j in range(i+1,self.dim[0])]
             #Loop to substitute ith row times the coefficient found from the i+n th row (n>0 & n<rows)
             k0=0
             for k in range(i+1,self.dim[0]):
