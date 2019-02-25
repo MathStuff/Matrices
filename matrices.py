@@ -291,7 +291,7 @@ class Matrix:
                     string=string[i:]
                     break
         #Get all integer and float values       
-        pattern=r"(?:\-?[0-9]+\,?)+(?:\.?[0-9]*)"
+        pattern=r"(?:\-?[0-9]+)(?:\.?[0-9]*)"
         found=re.findall(pattern,string)
         #Get numbers separated by cammas and remove cammas from (123,456,789.001) to (123456789.001) 
         found=["".join([j for j in i if j!=","]) if "," in i else i for i in found]
