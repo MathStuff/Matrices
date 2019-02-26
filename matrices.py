@@ -291,7 +291,7 @@ class Matrix:
                     string=string[i:]
                     break
         #Get all integer and float values       
-        pattern=r"(?:\-?[0-9]+\,?)+(?:\.?[0-9]*)"
+        pattern=r"(?:\-?[0-9]+)(?:\.?[0-9]*)"
         found=re.findall(pattern,string)
         #Get numbers separated by cammas and remove cammas from (123,456,789.001) to (123456789.001) 
         found=["".join([j for j in i if j!=","]) if "," in i else i for i in found]
@@ -1170,7 +1170,7 @@ EXAMPLES:
     
     def mode(self,col=None):
         """
-        Returns the most columns' most repeated elements
+        Returns the columns' most repeated elements
         col:integer>=1 and <=amount of columns
         """
         try:
@@ -1204,16 +1204,13 @@ EXAMPLES:
             for rows in range(r):
                 #Variables to keep track of the frequency of the numbers
                 a={}
-                i=0
-                
                 #Loop through the column to get frequencies
                 for els in temp[rows]:
                     if els not in a.keys():
                         a[els]=1
                     else:
                         a[els]+=1
-                    i+=1
-                
+
                 #Get a list of the values from the frequency dictionary
                 temp2=[]
                 for k,v in a.items():
@@ -1251,7 +1248,46 @@ EXAMPLES:
             print("Bad arguments given to mode method\n",err)
         else:
             return mods
+        
+    def freq(self,col=None):
+        """
+        returns the frequency of every element on desired column(s)
+        col:column
+        """
+        try:
+            if col==None:
+                temp=self.t
+                feats=self.__features[:]
+            else:
+                assert col>=1 and col<=self.dim[1]
+                temp=self.subM(1,self.dim[0],col,col).t
+                if len(self.__features)==self.dim[1]:
+                    feats=self.features[col-1]
+                else:
+                    feats="Col "+str(col)
     
+            res={}
+            if col==None:
+                r=self.dim[1]
+            else:
+                r=1
+
+            for rows in range(r):
+                a={}
+                for els in temp[rows]:
+                    if els not in a.keys():
+                        a[els]=1
+                    else:
+                        a[els]+=1
+                if col!=None:
+                    res[feats]=a
+                else:
+                    res[feats[rows]]=a
+        except:
+            print("Bad index")
+        else:
+            return res
+
     def iqr(self,col=None,as_quartiles=False):
         """
         Returns the interquartile range(IQR)
