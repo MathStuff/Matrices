@@ -170,7 +170,6 @@ class Matrix:
                     
                     elif self._fMat:
                         if self._initRange==[0,1]:
-                            print("in")
                             self._matrix=[[rd.random() for a in range(d[1])] for b in range(d[0])]
                         else:
                             self._matrix=[[rd.uniform(n,m) for a in range(d[1])] for b in range(d[0])]
@@ -514,7 +513,6 @@ If no parameter name given, takes it as row
             
             if c!=None and len(self.__features)>0:
                 del(self.__features[c-1])        
-            print(newM)
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
