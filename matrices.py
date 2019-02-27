@@ -51,8 +51,8 @@ class Matrix:
                  listed = [],
                  directory = r"",
                  ranged = [0,1],
-                 randomFill = 1,
-                 header = None,
+                 randomFill = True,
+                 header = False,
                  features = []):  
         
         self._valid = 1
@@ -72,7 +72,7 @@ class Matrix:
         self._setDim(dim)
         self.setInstance()                     
         self.setMatrix(self.__dim,self._initRange,listed,directory)
-        
+        self.setFeatures()
 # =============================================================================
     def setInstance(self):
         """
@@ -94,6 +94,13 @@ class Matrix:
             self._isIdentity=0
             self._fMat=0
             self._cMat=0
+            
+    def setFeatures(self):
+        """
+        Set default feature names
+        """
+        if len(self.__features)!=self.__dim[1]:
+            self.__features=["Col {}".format(i+1) for i in range(self.__dim[1])]    
             
     def _setDim(self,d):
         """
@@ -124,6 +131,7 @@ class Matrix:
         if d!=None:
             self._setDim(d)
         d=self.__dim
+
         #Set new range    
         if r==None:
             r=self._initRange[:]
@@ -145,7 +153,14 @@ class Matrix:
                 if isinstance(lis[0],list):                        
                     self._matrix = [a[:] for a in lis[:]]
                 else:
-                    self._matrix=[lis]
+                    try:
+                        assert self.__dim[0]*self.__dim[1] == len(lis)
+                    except Exception as err:
+                        print(err)
+                    else:
+                        self._matrix=[]
+                        for j in range(0,len(lis),self.__dim[1]):
+                                self._matrix.append(lis[j:j+self.__dim[1]])
            
             elif len(lis)==0 and isinstance(r,list):
                 if self._randomFill:
@@ -155,12 +170,18 @@ class Matrix:
                     
                     elif self._fMat:
                         if self._initRange==[0,1]:
+                            print("in")
                             self._matrix=[[rd.random() for a in range(d[1])] for b in range(d[0])]
                         else:
                             self._matrix=[[rd.uniform(n,m) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
-                        self._matrix=[[int(rd.uniform(n-1,m+1)) for a in range(d[1])] for b in range(d[0])]
+                        if self._initRange==[0,1]:
+                            self._matrix=[[round(rd.random()) for a in range(d[1])] for b in range(d[0])]
+                        else:
+                            n-=1
+                            m-=1
+                            self._matrix=[[int(rd.uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
                     self._matrix=[[0 for a in range(self.__dim[1])] for b in range(self.__dim[0])]
@@ -231,27 +252,20 @@ class Matrix:
         Finds and returns the range of the elements in a given list
         """
         c={}
-        i=0
+        self.setFeatures()
         if self._cMat:
-            for i in range(self.dim[1]):
+            for i in range(self.__dim[1]):
                 temp=[]
                 for rows in range(self.__dim[0]):
                     temp.append(lis[rows][i].real)
                     temp.append(lis[rows][i].imag)
-                if len(self.__features)!=self.__dim[1]:
-                    c["Col {}".format(i+1)]=[round(min(temp),4),round(max(temp),4)]
-                else:
-                    c[self.__features[i]]=[round(min(temp),4),round(max(temp),4)]
+                c[self.__features[i]]=[round(min(temp),4),round(max(temp),4)]
         else:
             for cols in range(self.__dim[1]):
-                i+=1
                 temp=[]
                 for rows in range(self.__dim[0]):
                     temp.append(lis[rows][cols])
-                if len(self.__features)!=self.__dim[1]:
-                    c["Col {}".format(i)]=[round(min(temp),4),round(max(temp),4)]
-                else:
-                    c[self.__features[i-1]]=[round(min(temp),4),round(max(temp),4)]
+                c[self.__features[cols]]=[round(min(temp),4),round(max(temp),4)]
         return c
         
     def __fromFile(self,d):
@@ -288,6 +302,9 @@ class Matrix:
                     if len(self.__features)!=self.__dim[1]:
                         pattern=r" ?[a-zA-Z( |_|\-)?]+[0-9]* ?"
                         self.__features=re.findall(pattern,string[:i])
+                        if len(self.__features)!=self.__dim[1]:
+                            print("Can't get enough column names from the header")
+                            self.setFeatures()
                     string=string[i:]
                     break
         #Get all integer and float values       
@@ -309,6 +326,7 @@ class Matrix:
         if self.__dim==[0,0]:
             self.__dim=[1,len(found)]
             self._badDims=1
+            self.setFeatures()
         #Create the row matrix
         temp=[]
         e=0            
@@ -492,9 +510,11 @@ If no parameter name given, takes it as row
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
-            self.__rankCalc=0  
+            self.__rankCalc=0
+            
             if c!=None and len(self.__features)>0:
-                self.__features.pop(c-1)                    
+                del(self.__features[c-1])        
+            print(newM)
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
             self._inRange=self._declareRange(self._matrix)
@@ -1049,8 +1069,6 @@ EXAMPLES:
         self._inRange=self._declareRange(self._matrix)
         if col==None:
             return self._inRange
-        if len(self.__features)!=self.__dim[1]:
-            return self._inRange["Col {}".format(col)]   
         return self._inRange[self.__features[col-1]]
     
     def mean(self,col=None):
@@ -1105,14 +1123,9 @@ EXAMPLES:
                 avgs=self.mean()
                 for i in range(self.dim[1]):
                     e=0
-                    if len(self.__features)!=self.__dim[1]:
-                        for j in range(self.dim[0]):
-                            e+=(self.matrix[j][i]-avgs["Col "+str(i+1)])**2
-                        sd["Col "+str(i+1)]=(e/(self.dim[0]-1+population))**(1/2)
-                    else:
-                        for j in range(self.dim[0]):
-                            e+=(self.matrix[j][i]-avgs[self.__features[i]])**2
-                        sd[self.__features[i]]=(e/(self.dim[0]-1+population))**(1/2)
+                    for j in range(self.dim[0]):
+                        e+=(self.matrix[j][i]-avgs[self.__features[i]])**2
+                    sd[self.__features[i]]=(e/(self.dim[0]-1+population))**(1/2)
                 return sd
             else:
                 try:
@@ -1127,10 +1140,7 @@ EXAMPLES:
                     for i in range(self.dim[0]):
                         e+=(self.matrix[i][col-1]-a)**2
                         
-                    if len(self.__features)!=self.__dim[1]:
-                        sd["Col "+str(col)]=(e/(self.dim[0]-1+population))**(1/2)
-                    else:
-                        sd[self.__features[col-1]]=(e/(self.dim[0]-1+population))**(1/2)
+                    sd[self.__features[col-1]] = (e/(self.dim[0]-1+population))**(1/2)
                     return sd
                 
     def median(self,col=None):
@@ -1145,10 +1155,7 @@ EXAMPLES:
             else:
                 assert col>=1 and col<=self.dim[1]
                 temp=self.subM(1,self.dim[0],col,col).t
-                if len(self.__features)==self.__dim[1]:
-                    feats=self.__features[col-1]
-                else:
-                    feats="Col "+str(col)
+                feats=self.__features[col-1]
                     
             meds={}
             i=1
@@ -1181,10 +1188,7 @@ EXAMPLES:
             else:
                 assert col>=1 and col<=self.dim[1]
                 temp=self.subM(1,self.dim[0],col,col).t
-                if len(self.__features)>0:
-                    feats=self.features[col-1]
-                else:
-                    feats="Col "+str(col)
+                feats=self.features[col-1]
             #Set keys in the dictionary which will be returned at the end
             mods={}
             if len(feats)!=0 and isinstance(feats,list):
@@ -1261,10 +1265,8 @@ EXAMPLES:
             else:
                 assert col>=1 and col<=self.dim[1]
                 temp=self.subM(1,self.dim[0],col,col).t
-                if len(self.__features)==self.dim[1]:
-                    feats=self.features[col-1]
-                else:
-                    feats="Col "+str(col)
+                feats=self.features[col-1]
+
     
             res={}
             if col==None:
@@ -1306,10 +1308,7 @@ EXAMPLES:
             else:
                 assert col>=1 and col<=self.dim[1]
                 temp=self.subM(1,self.dim[0],col,col).t
-                if len(self.__features)==self.__dim[1]:
-                    feats=self.__features[col-1]
-                else:
-                    feats="Col "+str(col)
+                feats=self.__features[col-1]
                     
             iqr={}
             qmeds={}
@@ -1354,10 +1353,7 @@ EXAMPLES:
                 sub=self.copy
             elif isinstance(col,int) and col>=1 and col<=self.dim[1] and row==None:
                 dims=[self.dim[0],1]
-                if len(self.__features)!=self.__dim[1]:
-                    feats=["Col "+str(col)]
-                else:
-                    feats=self.features[col-1]
+                feats=self.features[col-1]
                 sub=self.subM(1,self.dim[0],col,col)
                 col=1
             else:
@@ -1443,7 +1439,12 @@ EXAMPLES:
             self.__invCalc=0  
             self.__rankCalc=0  
             self.__dim=self._declareDim()
-            self._inRange=self._declareRange(self._matrix)
+            if concat_as=="col":
+                if isinstance(matrix,Identity):
+                    self.__features+=["Col {}".format(i+1) for i in range(self.dim[1]-matrix.dim[1],self.dim[1])]
+                else:
+                    self.__features+=matrix.features
+            self._inRange=self._declareRange(self._matrix)    
             self._string=self._stringfy()
             return self
                   
