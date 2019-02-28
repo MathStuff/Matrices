@@ -64,9 +64,9 @@ D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates a m
 
 ###### If bool(header) is True, feature names automatically get picked up from the first row
 ```python 
-dataDir="Example\Directory\DATAFILE"
-dataDim=[data_amount,feature_amount]
-dataMatrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a float matrix from a table of data
+data_directory="Example\Directory\DATAFILE"
+data_dim=[data_amount,feature_amount]
+data_matrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a float matrix from a table of data
 ```
 ----------------------------------------
 ##### Create matrices filled with random float numbers
@@ -88,19 +88,19 @@ i=Identity(3) #3x3 identity matrix
 i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
 ``` 
 ----------------------------------------
-##### Get properties of your matrix
+##### Use your matrix's methods and properties 
 ```python 
 C.grid #Prints the matrix's elements as a grid
 
-C.p #Print the dimension,range,average and the grid
+C.p #Print the type, dimension, column names and the grid
 
 C.directory #Returns the directory of the matrix if there is any given
 
-C.matrix #Returns the matrix's rows as a list in a list
+C.matrix #Returns the matrix's rows as lists in a list
 
 C.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
-C.string #Returns the string for of the matrix's elements
+C.string #Returns the string form of the matrix's elements
 
 C.features #Returns the column names if given, can also be used to set column names
 
@@ -127,6 +127,8 @@ C.mean(n) #Returns the nth column's average, give None as argument to get the al
 C.ranged(n) #Returns the nth column's range, give None as argument to get the all columns' ranges
 
 C.median(n) #Returns the nth column's median, give None to get all columns' medians
+
+C.freq(n) #Returns the nth column's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies 
 
 C.mode(n) #Returns the nth column's mode, give None to get all columns' modes
 
@@ -163,6 +165,10 @@ C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row"
 C.copy #Returns a copy of the matrix
 
 C.summary #Returns the string form of the object 
+
+C.setFeatures() #Can be used to fix column naming issues, sets the column names to defaults
+
+
 ```
 
 ----------------------------------------
