@@ -758,10 +758,12 @@ EXAMPLES:
         i=0
         zeros=[0]*self.dim[1]
         while i <min(self.dim):
+            #Find any zero-filled rows and make sure they are on the last row
             if zeros in temp.matrix:
                 del(temp.matrix[temp.matrix.index(zeros)])
                 temp.matrix.append(zeros)
-                    
+                
+            #Swap rows if diagonal is 0       
             if temp[i][i]==0:
                 try:
                     i2=i
@@ -772,20 +774,17 @@ EXAMPLES:
                     temp[i2]=old[:]
                 except:
                     break
-            co=temp[i][i]
-            for j in range(self.dim[1]):
-                temp[i][j]/=co
+                
+            #Do the calculations to reduce rows
+            temp[i]=[temp[i][j]/temp[i][i] for j in range(self.__dim[1])]
+            temp._matrix=[[temp[k][m]-temp[i][m]*temp[k][i] for m in range(self.__dim[1])] if k!=i else temp[i] 
+                                                                                           for k in range(self.__dim[0])]
 
-            for k in range(self.dim[0]):
-                if k!=i:
-                    mult=temp[k][i]
-                    for m in range(self.dim[1]):
-                        num=temp[k][m]-temp[i][m]*mult
-                        if num==0:
-                            num=float(int(num))
-                        temp[k][m]=num
             i+=1
-            
+        
+        #Fix -0.0 issue
+        temp._matrix=[[temp[i][j] if str(temp[i][j])!="-0.0" else 0 for j in range(temp.__dim[1])] for i in range(temp.__dim[0])]
+        
         z=temp.matrix.count(zeros)   
         return (FMatrix(self.dim,temp.matrix),self.dim[0]-z)
             
@@ -825,15 +824,11 @@ EXAMPLES:
                 
             #Loop through the ith column find the coefficients to multiply the diagonal element with
             #to make the elements under [i][i] all zeros
-            rowMulti=[temp[j][i]/temp[i][i] for j in range(i+1,self.dim[0])]
+            rowMulti=[temp[j][i]/temp[i][i] for j in range(i+1,self.__dim[0])]
             #Loop to substitute ith row times the coefficient found from the i+n th row (n>0 & n<rows)
             k0=0
-            for k in range(i+1,self.dim[0]):
-                for m in range(self.dim[1]):
-                    num=temp[k][m]-(rowMulti[k0]*temp[i][m])
-                    if num>=-0.0001 and num<=0.0001:
-                        num=0
-                    temp[k][m]=num
+            for k in range(i+1,self.__dim[0]):
+                temp[k]=[temp[k][m]-(rowMulti[k0]*temp[i][m]) for m in range(self.__dim[1])]
                 #Lower triangular matrix
                 L[k][i]=rowMulti[k0]
                 k0+=1   
@@ -1484,8 +1479,6 @@ EXAMPLES:
 #            print("Bad indeces")
             return None
         else:
-            self.__dim=self._declareDim()
-            self._string=self._stringfy()
             self.__rankCalc=0
             self.__adjCalc=0
             self.__detCalc=0
