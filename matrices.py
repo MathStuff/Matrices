@@ -893,7 +893,10 @@ EXAMPLES:
         print(self)
     @property
     def grid(self):
-        print(self._stringfy())
+        self.__dim=self._declareDim()
+        self._inRange=self._declareRange(self._matrix)
+        self._string=self._stringfy()
+        print(self._string)
     @property
     def copy(self):
         if self._isIdentity:
