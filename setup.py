@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="MatricesM",
-    version="0.9.alpha2",
+    version="0.9.alpha3",
     author="MathStuff members",
     author_email="business@semihmumcu.com",
-	license="GPL V3",
+	license="MIT",
     description="A Python 3 library of matrices",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -17,7 +17,7 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3 :: Only",
         "Development Status :: 3 - Alpha",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Mathematics",

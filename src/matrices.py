@@ -4,9 +4,10 @@ Created on Wed Oct 31 17:26:48 2018
 
 @author: Semih
 """
-
-import random as rd
+from random import random as rrand
+from random import uniform as runi
 import re
+from time import clock
   
 class Matrix:
     """
@@ -166,21 +167,21 @@ class Matrix:
                 if self._randomFill:
                     m,n=max(self._initRange),min(self._initRange)
                     if self._cMat:
-                        self._matrix=[[complex(rd.uniform(n,m),rd.uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
+                        self._matrix=[[complex(runi(n,m),runi(n,m)) for a in range(d[1])] for b in range(d[0])]
                     
                     elif self._fMat:
                         if self._initRange==[0,1]:
-                            self._matrix=[[rd.random() for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[rrand() for a in range(d[1])] for b in range(d[0])]
                         else:
-                            self._matrix=[[rd.uniform(n,m) for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[runi(n,m) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
                         if self._initRange==[0,1]:
-                            self._matrix=[[round(rd.random()) for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[round(rrand()) for a in range(d[1])] for b in range(d[0])]
                         else:
                             n-=1
-                            m-=1
-                            self._matrix=[[int(rd.uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
+                            m+=1
+                            self._matrix=[[int(runi(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
                     self._matrix=[[0 for a in range(self.__dim[1])] for b in range(self.__dim[0])]
@@ -200,7 +201,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([complex(rd.uniform(n,m),rd.uniform(n,m)) for a in range(d[0])])
+                            temp.append([complex(runi(n,m),runi(n,m)) for a in range(d[0])])
                             i+=1
                         self._matrix=CMatrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix
                         
@@ -209,7 +210,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([rd.uniform(n,m) for a in range(d[0])])
+                            temp.append([runi(n,m) for a in range(d[0])])
                             i+=1
                         self._matrix=FMatrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
                     else:
@@ -217,7 +218,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([int(rd.uniform(n-1,m+1)) for a in range(d[0])])
+                            temp.append([int(runi(n-2,m+1)) for a in range(d[0])])
                             i+=1
                         self._matrix=Matrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
                     
@@ -888,8 +889,9 @@ EXAMPLES:
         print(self)
     @property
     def grid(self):
-        self.__dim=self._declareDim()
-        self._inRange=self._declareRange(self._matrix)
+        if not self._isIdentity:
+            self.__dim=self._declareDim()
+            self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy()
         print(self._string)
     @property
@@ -2046,7 +2048,7 @@ class Identity(Matrix):
 Identity matrix
     """
     def __init__(self,dim=1):     
-        self._valid=1 
+        self._valid=1
         try:
             assert isinstance(dim,int)
             assert dim>0
@@ -2059,14 +2061,14 @@ Identity matrix
             self._randomFill=0
             self._inRange=[0,1]
             self._initRange=[0,1]
-            
+            self.__features=["Col {}".format(i+1) for i in range(self.__dim[1])]
             self._isIdentity=1
             self._fMat=0
             self._cMat=0    
             self.__adjCalc=1
             self.__detCalc=1
             self.__invCalc=1
-
+            
             self.setMatrix() 
             self._string=self._stringfy()
                 
@@ -2125,7 +2127,15 @@ Identity matrix
     @property
     def adj(self):
         return self
-    
+    @property
+    def string(self):
+        return self._string 
+    @property
+    def features(self):
+        return self.__features[:]
+    @property
+    def summary(self):
+        return "Identity(dim={0})".format(self.dim)
     def __str__(self):
         if self._isIdentity:
             print("\nIdentity Matrix\nDimension: {0}x{0}".format(self.dim[0]))
@@ -2185,4 +2195,5 @@ class SMatrix(Matrix):
     """
 Matrix with strings as elements
     """
-    pass
+    def __init__(self,*args,**kwargs):
+        pass
