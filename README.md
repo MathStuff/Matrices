@@ -6,9 +6,47 @@
    <code>pip install MatricesM</code>
    
 ### Import by using:
-   <code>import matrices </code>
+   ```python 
+   import matrices 
+   ```
    #### OR
-   <code>from matrices import *</code>
+   ```python 
+   from matrices import Matrix,FMatrix,CMatrix,Identity
+   ```
+### Basic syntax:
+```python 
+
+IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
+
+                     listed=elements, #Optional, if no argument is passed matrix is filled depending on the randomFill 
+
+                     directory=directory, #Optional, path to the dataset. listed parameter shouldn't get any value if directory is given
+
+                     ranged=intervalToPickFrom, #Optional, default is [0,1]
+
+                     randomFill=fillRandomly, #Optional, default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+
+                     header=hasHeader, #Optional, default is 0. Wheter or not the dataset in the "directory" has a header row
+
+                     features=columnNames #Optional, if no argument given , columns get named "Col {}".format(colNumber) 
+                     )
+
+FloatMatrix = FMatrix(#Same parameters from the Matrix class
+                    decimal=decimalsToRoundOnPrinting, #Optional, default is 4.
+                    )
+
+IdentityMatrix = Identity(dim=dimension #Required, int
+                       )
+
+ComplexMatrix = CMatrix(dim=dimension, #Required, int | list as [rows,cols]
+
+                      ranged=intervalToPickFrom, #Optional, default is [0,1]. Real and imaginary part has the same interval 
+
+                      randomFill=fillRandomly, #Optional, default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+
+                      features=columnNames #Optional, if no argument given , columns get named "Col {}".format(colNumber)
+                      )
+```         
    ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/src/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
   
    ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/src/exampleMatrices.py>exampleMatrices.py</a> contains example matrices
