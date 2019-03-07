@@ -18,17 +18,17 @@
 
 IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
 
-                     listed=elements, #Optional, if no argument is passed matrix is filled depending on the randomFill 
+                     listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the randomFill 
 
-                     directory=directory, #Optional, path to the dataset. listed parameter shouldn't get any value if directory is given
+                     directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                     ranged=intervalToPickFrom, #Optional, default is [0,1]
+                     ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [0,1]
 
-                     randomFill=fillRandomly, #Optional, default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+                     randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
 
-                     header=hasHeader, #Optional, default is 0. Wheter or not the dataset in the "directory" has a header row
+                     header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
-                     features=columnNames #Optional, if no argument given , columns get named "Col {}".format(colNumber) 
+                     features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
                      )
 
 FloatMatrix = FMatrix(#Same parameters from the Matrix class
@@ -40,11 +40,11 @@ IdentityMatrix = Identity(dim=dimension #Required, int
 
 ComplexMatrix = CMatrix(dim=dimension, #Required, int | list as [rows,cols]
 
-                      ranged=intervalToPickFrom, #Optional, default is [0,1]. Real and imaginary part has the same interval 
+                      ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [0,1]
 
-                      randomFill=fillRandomly, #Optional, default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+                      randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
 
-                      features=columnNames #Optional, if no argument given , columns get named "Col {}".format(colNumber)
+                      features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
                       )
 ```         
    ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/src/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
