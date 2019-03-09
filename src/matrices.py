@@ -7,7 +7,6 @@ Created on Wed Oct 31 17:26:48 2018
 from random import random as rrand
 from random import uniform as runi
 import re
-from time import clock
   
 class Matrix:
     """
@@ -25,25 +24,6 @@ class Matrix:
     
     features=list of strings; column names
     
-    You can use +,-,*,/,//,**,%,@,<,>,== operators:
-        o Addition : +
-
-        o Subtraction : -
-        
-        o Multiplication : *
-        
-        o True division : /
-        
-        o Floor division : //
-        
-        o Modular : %
-       
-        o Power : **
-       
-        o Matrix multiplication : @
-       
-        o Less than, greater than, equal to : <, >, ==
-        
     Check exampleMatrices.py or https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
 
@@ -218,7 +198,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([int(runi(n-2,m+1)) for a in range(d[0])])
+                            temp.append([int(runi(n,m)) for a in range(d[0])])
                             i+=1
                         self._matrix=Matrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
                     
@@ -730,7 +710,9 @@ EXAMPLES:
         except:
             print("Error getting inverse of the matrix")
         else:
-            self._inv=self.copy.concat(Identity(self.__dim[0]),"col").rrechelon.subM(1,self.__dim[0],self.__dim[1]+1,self.__dim[1]*2)
+            temp=self.copy
+            temp.concat(Identity(self.__dim[0]),"col")
+            self._inv=temp.rrechelon.subM(1,self.__dim[0],self.__dim[1]+1,self.__dim[1]*2)
             self.__invCalc=1
             return self._inv
 # =============================================================================    
@@ -745,7 +727,7 @@ EXAMPLES:
                 if rows!=[0]*self.dim[1]:
                     r+=1
         except:
-            #print("error getting rank")
+            print("error getting rank")
             return self._echelon()[1]
         else:
             return r
@@ -1088,7 +1070,7 @@ EXAMPLES:
             else:
                 cLow=col-1
                 cUp=col        
-                
+                    
             for c in range(cLow,cUp):
                 t=0
                 for r in range(self.dim[0]):
@@ -1115,7 +1097,7 @@ EXAMPLES:
             assert self.dim[0]>1
             assert population==0 or population==1
         except:
-            print("Bad arguments")
+            print("Can't get standard deviation")
         else:
             if col==None:
                 sd={}
@@ -1285,7 +1267,7 @@ EXAMPLES:
                 else:
                     res[feats[rows]]=a
         except:
-            print("Bad index")
+            print("Bad indeces in freq method")
         else:
             return res
 
@@ -1330,7 +1312,7 @@ EXAMPLES:
                     qmeds[feats]=[low,self.median(col)[feats],up]
                 i+=1
         except Exception as err:
-            print("Error getting median",err)
+            print("Error getting iqr: ",err)
         else:
             if as_quartiles:
                 return qmeds
@@ -1386,7 +1368,7 @@ EXAMPLES:
             assert isinstance(col1,int) and isinstance(col1,int)
             assert col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1]
         except:
-            print("Bad arguments")
+            print("Error getting pearson correlation")
         else:
             z1=self.z(col=col1)
             z2=self.z(col=col2)
@@ -1420,7 +1402,7 @@ EXAMPLES:
                 assert matrix.dim[0]==self.dim[0]
             b=matrix.copy
         except AssertionError:
-            print("Bad dimensions")
+            print("Bad dimensions at concat")
         else:
             if concat_as=="row":
                 for rows in b.matrix:
@@ -1445,7 +1427,6 @@ EXAMPLES:
                     self.__features+=matrix.features
             self._inRange=self._declareRange(self._matrix)    
             self._string=self._stringfy()
-            return self
                   
 # =============================================================================
 
@@ -1458,7 +1439,7 @@ EXAMPLES:
             if isinstance(pos,slice) or isinstance(pos,int):
                 return self.matrix[pos]
         except:
-#            print("Bad indeces")
+            print("Bad indeces while getting elements")
             return None
         
     def __setitem__(self,pos,item):
@@ -1479,7 +1460,7 @@ EXAMPLES:
                     print("Check the dimension of the given list")
         except:
             print(pos,item)
-#            print("Bad indeces")
+            print("Bad indeces while setting elements")
             return None
         else:
             self.__rankCalc=0
@@ -1961,7 +1942,7 @@ EXAMPLES:
                 return self.det<other.det
             else:
                 return None
-        print("Invalid")        
+        print("Invalid matrices")
         return None
     
     def __eq__(self,other):
@@ -1972,7 +1953,7 @@ EXAMPLES:
                 return False
             else:   
                 return False
-        print("Invalid")        
+        print("Invalid matrices")
         return None
     
     def __gt__(self,other):
@@ -1988,7 +1969,7 @@ EXAMPLES:
                 return self.det>other.det
             else:
                 return None
-        print("Invalid")
+        print("Invalid matrices")
         return None
 # =============================================================================
     
@@ -2085,7 +2066,7 @@ Identity matrix
         try:
             assert isinstance(num,int) and num>0
         except AssertionError:
-            print("Enter a positive integer")
+            print("Invalid input in addDim")
         except Exception as err:
             print(err)
         else:
@@ -2104,7 +2085,7 @@ Identity matrix
                 return "Empty matrix"
             assert isinstance(num,int) and num>0 and self.dim[0]-num>=0
         except AssertionError:
-            print("Enter a valid input")
+            print("Invalid input in delDim")
         except Exception as err:
             print(err)
         else:
