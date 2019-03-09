@@ -1,3 +1,0 @@
-examplematrices
-matrices
-src
