@@ -62,13 +62,32 @@ A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default r
 B=Matrix([3,5],ranged=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
 ``` 
 ----------------------------------------
+##### Create matrices filled with random float numbers
+```python 
+E=FMatrix(6) #Create a matrix filled with random float values in the default range
+
+F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
+```
+----------------------------------------
+##### Create identity matrices
+```python 
+i=Identity(3) #3x3 identity matrix
+
+i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
+``` 
+----------------------------------------
+##### Create matrices filled with random complex numbers (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
+```python 
+Cm1=CMatrix(5) #Create a matrix filled with random float values in the default range
+```
+----------------------------------------
 ##### Give list of numbers to create matrices
 ```python 
 filled_rows=[[1,2,3],[4,5,6],[7,8,9]]
 
 C=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
 
-C1=Matrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
+C1=FMatrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
 
 C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
 ``` 
@@ -107,30 +126,14 @@ data_dim=[data_amount,feature_amount]
 data_matrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a float matrix from a table of data
 ```
 ----------------------------------------
-##### Create matrices filled with random float numbers
-```python 
-E=FMatrix(6) #Create a matrix filled with random float values in the default range
 
-F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
-```
-----------------------------------------
-##### Create matrices filled with random complex numbers (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
-```python 
-Cm1=CMatrix(5) #Create a matrix filled with random float values in the default range
-```
-----------------------------------------
-##### Create identity matrices
-```python 
-i=Identity(3) #3x3 identity matrix
-
-i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
-``` 
-----------------------------------------
 ##### Use your matrix's methods and properties 
 ```python 
 C.grid #Prints the matrix's elements as a grid
 
 C.p #Print the type, dimension, column names and the grid
+
+C.decimal #Returns the chosen amount of decimals while printing. Can be used to set it's value
 
 C.directory #Returns the directory of the matrix if there is any given
 
@@ -154,7 +157,7 @@ C.ceilForm #Returns a matrix of all the elements' ceiling value
 
 C.floorForm #Returns the same matrix as "intForm"
 
-C.roundForm(decimal=n) #Returns a matrix of elements' rounded up to n decimal digits 
+C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits 
 
 C.uptri #Returns the upper triangular form of the matrix
 
@@ -200,6 +203,8 @@ C.tail(n) #Returns the last n rows (if there are less than n rows it returns all
 
 C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
+C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
+
 C.copy #Returns a copy of the matrix
 
 C.summary #Returns the string form of the object 
@@ -217,9 +222,10 @@ E.add(r=3,lis=[1.0 ,2.5 ,52,242 ,-9883,212, 0.000001, -555,554]) #Make the list 
 
 A.remove(c=2) #Remove the second column 
 
-for a in A.matrix: a[0]%=2 #Change first column's values to the remainder of division by 2 
+F*=[2]+[1]*F.dim[1]-1 #Multiplies the first column with 2 and the rest with 1 
 
 B @ B.t #Matrix multiplication example
+
 ```
 ----------------------------------------
 
