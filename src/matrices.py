@@ -2077,7 +2077,7 @@ Matrix which contain complex numbers
                  decimal = 4):
         
         self.__decimal=decimal
-        super().__init__(dim,listed,directory,ranged,randomFill,header,features)
+        super().__init__(dim,listed,directory,ranged,randomFill,header,features,decimal)
         
     def __str__(self):
         print("\nComplex Matrix",end="")
