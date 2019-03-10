@@ -7,7 +7,7 @@ Created on Wed Oct 31 17:26:48 2018
 from random import random as rrand
 from random import uniform as runi
 import re
-  
+
 class Matrix:
     """
     dim:integer | list; dimensions of the matrix. Giving integer values creates a square matrix
@@ -826,6 +826,7 @@ EXAMPLES:
             prod*=element
         U=FMatrix(temp.dim,listed=temp.matrix)
         return (U,((-1)**(rowC))*prod,L)
+
 # =============================================================================
           
     def col(self,column=None,as_matrix=True):

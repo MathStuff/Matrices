@@ -7,11 +7,15 @@
    
 ### Import by using:
    ```python 
-   import matrices 
+   import MatricesM.matrices as mm #Use by calling : mm.MatrixName(arguments)
    ```
    #### OR
    ```python 
-   from matrices import Matrix,FMatrix,CMatrix,Identity
+   from MatricesM.matrices import * #Use matrices directly : MatrixName(arguments)
+   ```
+   ####Import and print example matrices:
+   ```python 
+   from MatricesM.exampleMatrices import *
    ```
 ### Basic syntax:
 ```python 
