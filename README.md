@@ -13,7 +13,7 @@
    ```python 
    from MatricesM.matrices import * #Use matrices directly : MatrixName(arguments)
    ```
-   ####Import and print example matrices:
+   #### Import and print example matrices:
    ```python 
    from MatricesM.exampleMatrices import *
    ```
