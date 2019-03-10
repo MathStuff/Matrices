@@ -51,9 +51,9 @@ ComplexMatrix = CMatrix(dim=dimension, #Required, int | list as [rows,cols]
                       features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
                       )
 ```         
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/src/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
+   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
   
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/src/exampleMatrices.py>exampleMatrices.py</a> contains example matrices
+   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py>exampleMatrices.py</a> contains example matrices
    
    ##### -Check the <a href="https://github.com/semihM/Matrices/projects">project tab</a> to see the progress
 -------------- 
@@ -252,4 +252,4 @@ B @ B.t #Matrix multiplication example
 ``` 
 ----------------------------------------
 
-#### More examples can be found in <a href=https://github.com/MathStuff/MatricesM/blob/master/src/exampleMatrices.py>exampleMatrices.py</a>
+#### More examples can be found in <a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py>exampleMatrices.py</a>
