@@ -280,7 +280,7 @@ class Matrix:
                     i+=1
                 else:
                     if len(self.__features)!=self.__dim[1]:
-                        pattern=r" ?[a-zA-Z( |_|\-)?]+[0-9]* ?"
+                        pattern=r"(?:\w+ ?[0-9]*)+"
                         self.__features=re.findall(pattern,string[:i])
                         if len(self.__features)!=self.__dim[1]:
                             print("Can't get enough column names from the header")
@@ -1366,23 +1366,40 @@ EXAMPLES:
                 return scores.subM(row,row,1,self.dim[1])    
             return scores
         
-    def pearson_r(self,col1=None,col2=None):
-        try:
-            if self.dim[1]<2 or self.dim[0]<=1:
-                print("Not enough columns/rows")
-                return None
-            assert isinstance(col1,int) and isinstance(col1,int)
-            assert col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1]
-        except:
-            print("Error getting pearson correlation")
-        else:
-            z1=self.z(col=col1)
-            z2=self.z(col=col2)
+    def corr(self,col1=None,col2=None):
+        """
+        Pearson correlation coefficient r
+        Not optimal for big datasets yet
+        """
+        def calc(c1,c2):
+            z1=self.z(col=c1)
+            z2=self.z(col=c2)
             prod=(z1*z2).col(1,as_matrix=False)
             total=0
             for els in prod:
                 total+=els
             return total/(self.dim[0]-1)
+        
+        try:
+            if self.dim[1]<2 or self.dim[0]<=1:
+                print("Not enough columns/rows")
+                return None            
+            if col1!=None and col2!=None:
+                assert isinstance(col1,int) and isinstance(col1,int)
+                assert col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1]
+                return calc(col1,col2)
+            
+            elif col1==None and col2==None:
+                temp=FMatrix(self.dim[1],randomFill=0)+Identity(self.dim[1])
+                for i in range(self.dim[1]):
+                    for j in range(1+i,self.dim[1]):
+                        c=calc(i+1,j+1)
+                        temp[j][i]=c
+                        temp[i][j]=c
+                return temp
+        except Exception as err:
+            print("Error getting pearson correlation:",err)
+
 # =============================================================================
     def __contains__(self,val):
         """
