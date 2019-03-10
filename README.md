@@ -185,7 +185,7 @@ C.variance(n,population) #Returns the nth column's variance, if None is given as
 
 C.z(row,col) #Returns the z-scores of the desired row and/or column, call without arguments to get the all z-scores as a matrix
 
-C.pearson_r(column_1,column_2) #Returns linear correlation of 2 columns chosen from the matrix
+C.corr(column_1,column_2) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix
 
 C.det #Returns the determinant of the matrix
 
