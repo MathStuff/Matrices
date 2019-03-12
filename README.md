@@ -131,7 +131,8 @@ data_matrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a fl
 ```
 ----------------------------------------
 
-##### Use your matrix's methods and properties 
+#### Use your matrix's methods and properties
+##### Basics
 ```python 
 C.grid #Prints the matrix's elements as a grid
 
@@ -147,11 +148,17 @@ C.dim #Returns the dimension of the matrix; can be used to change the dimensions
 
 C.string #Returns the string form of the matrix's elements
 
-C.features #Returns the column names if given, can also be used to set column names
-
 C.col(n,as_matrix) #Returns nth column of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
 C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
+
+C.subM(rowStart,rowEnd,columnStart,columnEnd) #Returns a sub-matrix by using the parameters as corners. Check exampleMatrices.py
+
+C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
+
+C.copy #Returns a copy of the matrix
+
+C.summary #Returns the string form of the object
 
 C.intForm #Returns integer form of the matrix
 
@@ -161,11 +168,38 @@ C.ceilForm #Returns a matrix of all the elements' ceiling value
 
 C.floorForm #Returns the same matrix as "intForm"
 
-C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits 
+C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits
 
+```
+##### Algebric properties
+```python 
 C.uptri #Returns the upper triangular form of the matrix
 
 C.lowtri #Returns the lower triangular form of the matrix
+
+C.det #Returns the determinant of the matrix
+
+C.t #Returns the transposed matrix
+
+C.minor(m,n) #Returns the mth row's nth element's minor matrix
+
+C.adj #Returns the adjoint matrix
+
+C.inv #Returns the inversed matrix
+
+C.rank #Returns the rank of the matrix
+
+C.rrechelon #Returns the reduced row echelon form of the matrix
+
+```
+##### Statistical properties 
+```python 
+
+C.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
+
+C.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
+
+C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
 C.mean(n) #Returns the nth column's average, give None as argument to get the all columns' averages
 
@@ -187,34 +221,9 @@ C.z(row,col) #Returns the z-scores of the desired row and/or column, call withou
 
 C.corr(column_1,column_2) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix
 
-C.det #Returns the determinant of the matrix
-
-C.t #Returns the transposed matrix
-
-C.minor(m,n) #Returns the mth row's nth element's minor matrix
-
-C.adj #Returns the adjoint matrix
-
-C.inv #Returns the inversed matrix
-
-C.rank #Returns the rank of the matrix
-
-C.rrechelon #Returns the reduced row echelon form of the matrix
-
-C.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
-
-C.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
-
-C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
-
-C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
-
-C.copy #Returns a copy of the matrix
-
-C.summary #Returns the string form of the object 
+C.features #Returns the column names if given, can also be used to set column names
 
 C.setFeatures() #Can be used to fix column naming issues, sets the column names to defaults
-
 
 ```
 
@@ -236,19 +245,23 @@ B @ B.t #Matrix multiplication example
 
 ##### All calculations below returns True
 ```python 
-   A**2 == A * A
+   A**2 == A*A
    
-   A*2==A+A
+   A*2 == A+A
    
-   A.t.t==A
+   A.t.t == A
    
-   A.lowtri@A.uptri==A
+   A @ Identity(A.dim[0]) == A #A assumed to be a square matrix
    
-   A.inv.inv==A (Doesn't always work for matrices with big numbers,due to decimal rounding,but gets close estimations)
+   A.adj.t[1][2]==A.minor(2,3).det*-1 
    
-   A.adj.t[1][2]==A.minor(2,3).det*-1
+   #roundForm() call is currently required for the next examples due to ~%1e-5 error rate on some calculations 
    
-   (B @ B.inv).roundForm() == Identity(B.dim[0]) # roundForm call is currently required due to %0.001 error rate on calculations 
+   (A.lowtri@A.uptri).roundForm(4)==A.roundForm(4) 
+   
+   (A.inv.inv).roundForm(4)==A.roundForm(4) 
+   
+   (B @ B.inv).roundForm() == Identity(B.dim[0])
 ``` 
 ----------------------------------------
 
