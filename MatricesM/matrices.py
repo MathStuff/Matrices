@@ -287,12 +287,11 @@ class Matrix:
                             self.setFeatures()
                     string=string[i:]
                     break
+                
         #Get all integer and float values       
-        pattern=r"(?:\-?[0-9]+)(?:\.?[0-9]*)"
+        pattern=r"-?\d+\.?\d*"
         found=re.findall(pattern,string)
-        #Get numbers separated by cammas and remove cammas from (123,456,789.001) to (123456789.001) 
-        found=["".join([j for j in i if j!=","]) if "," in i else i for i in found]
-        #print(found)
+        
         #String to number
         try:
             if not isinstance(self,FMatrix):
@@ -1399,7 +1398,69 @@ EXAMPLES:
                 return temp
         except Exception as err:
             print("Error getting pearson correlation:",err)
-
+            
+    def power_iter(self,err=1e-5,iters=100):
+        """
+        ***** Currently doesn't work as intended for matrices which aren't 2x2 *****
+        Power iteration method to get eigenvalues and eigenvectors
+        """
+        def norm(vec):
+            return sum([i**2 for i in vec])**(1/2)
+        try:
+            assert self.dim[0]==self.dim[1] and self.dim[0]>=2
+            if self.dim[0]==2:
+                d=self.det
+                tr=self.matrix[0][0]+self.matrix[1][1]
+                return [(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]
+        except:
+            print("error")
+        else:
+            if self.t!=self:
+                print("Currently doesn't work for non-symmetrical matrices")
+                return None
+            eV=FMatrix([self.dim[0],1])
+            eV/=norm(eV.t[0])
+            
+            while iters>0:
+                iters-=1
+                old=eV.t[0][:]
+                eV=self@eV
+                eV/=norm(eV.t[0])
+                if max([abs(i-j) for i in eV.t[0] for j in old])<=err:
+                    print("Stopping at iteration ",iters)
+                    break
+                
+            e=((self@eV)/eV).highest  
+            dic={}
+            dic["E1"]=(e,eV.col(1,0))
+            
+            """
+            ********************************************************************************
+            Help needed:
+            FINDS THE HIGHEST EIGENVALUE AND EIGENVECTOR RESPONDING TO THE VALUE
+            FAILS TO FIND THE REST OF THE EIGENVECTORS
+            ********************************************************************************
+            
+            if eV.dim[0]==3:
+                for i in range(2):
+                    #Orthogonal vector
+                    a,b=rrand(),rrand()
+                    eV=FMatrix([3,1],[[a],[b],[(1/eV.col(1,0)[2])*(-eV.col(1,0)[0]*a-eV.col(1,0)[1]*b)]])
+                    #Find another eigenvector
+                    iters=100
+                    while iters>0:
+                        iters-=1
+                        old=eV.t[0][:]
+                        eV=self@eV
+                        eV/=norm(eV.t[0])
+                        if max([abs(i-j) for i in eV.t[0] for j in old])<=err:
+                            print("Stopping at iteration ",iters)
+                            break
+                    #Find the corresponding eigenvalue
+                    e=((self@eV)/eV).highest
+                    dic["E"+str(i+2)]=(e,eV.col(1,0))
+            """
+            return dic  
 # =============================================================================
     def __contains__(self,val):
         """
