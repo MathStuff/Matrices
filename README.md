@@ -26,7 +26,7 @@ IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
 
                      directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                     ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [0,1]
+                     ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [-5,5]
 
                      randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
 
