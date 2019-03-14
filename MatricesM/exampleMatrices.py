@@ -348,6 +348,34 @@ print("validStr4.variance()")
 print(validStr4.variance())
 print("")
 
+print('################')
+print("Linear model for validStr4:")
+print("""
+validStr4.corr().p #First and second columns have strong positive correlation. Let's choose first column to be predicted
+
+var=validStr4.subM(1,validStr4.dim[0],2,2)
+var.add("bias",[1]*validStr4.dim[0],col=1)
+
+out=validStr4.subM(1,validStr4.dim[0],1,1)
+
+coefs=(((var.t@var).inv)@var.t)@out
+
+preds=var@coefs
+err=out-preds
+""")
+validStr4.corr().p
+
+var=validStr4.subM(1,validStr4.dim[0],2,2)
+var.add("bias",[1]*validStr4.dim[0],col=1)
+
+out=validStr4.subM(1,validStr4.dim[0],1,1)
+
+coefs=(((var.t@var).inv)@var.t)@out
+
+preds=var@coefs
+err=out-preds
+print("Height={0} + {1}*{2}".format(coefs[0][0],coefs[1][0],validStr4.features[1]))
+print("\nAverage error:",err.mean(1)["Col 1"])
 # =============================================================================
 """ Expected Outputs """
 # =============================================================================
@@ -1294,6 +1322,34 @@ validStr4.iqr(as_quartiles=True)
 validStr4.variance()
 {'Height': 444.24242424242414, 'Weight': 496.6948051948051, 'Age': 168.70346320346317}
 
+################
+Linear model for validStr4:
+
+validStr4.corr().p #First and second columns have strong positive correlation. Let's choose first column to be predicted
+
+var=validStr4.subM(1,validStr4.dim[0],2,2)
+var.add("bias",[1]*validStr4.dim[0],col=1)
+
+out=validStr4.subM(1,validStr4.dim[0],1,1)
+
+coefs=(((var.t@var).inv)@var.t)@out
+
+preds=var@coefs
+err=out-preds
+
+
+Float Matrix
+Square matrix
+Dimension: 3x3
+Features: ['Col 1', 'Col 2', 'Col 3']
+
+1.0000 0.9420 0.5329 
+0.9420 1.0000 0.4434 
+0.5329 0.4434 1.0000 
+
+Height=110.52445385731674 + 0.8503745538690818*Weight
+
+Average error: -1.4081665126881984e-13
 """
 # =============================================================================
 
