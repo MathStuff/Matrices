@@ -241,10 +241,8 @@ class Matrix:
                     temp.append(lis[rows][i].imag)
                 c[self.__features[i]]=[round(min(temp),4),round(max(temp),4)]
         else:
-            for cols in range(self.__dim[1]):
-                temp=[]
-                for rows in range(self.__dim[0]):
-                    temp.append(lis[rows][cols])
+            for cols in range(self.dim[1]):
+                temp=[lis[rows][cols] for rows in range(self.dim[0])]
                 c[self.__features[cols]]=[round(min(temp),4),round(max(temp),4)]
         return c
         
@@ -585,7 +583,6 @@ EXAMPLES:
         """
         try:
             temp2=[]
-            valid=0
             if (rowS,rowE,colS,colE)==(None,None,None,None):
                 return None
             #IF 2 ARGUMENTS ARE GIVEN, SET THEM AS ENDING POINTS
@@ -608,10 +605,8 @@ EXAMPLES:
             return ""
         else:
             temp=self._matrix[rowS-1:rowE]
-            for column in range(len(temp)):
-                valid=1
-                temp2.append(temp[column][colS-1:colE])
-            if valid:
+            if len(temp):
+                temp2=[temp[c][colS-1:colE] for c in range(len(temp))]
                 if isinstance(self,Identity):
                     return Identity(dim=len(temp2))
                 elif isinstance(self,FMatrix):
@@ -1353,9 +1348,7 @@ EXAMPLES:
             scores=FMatrix(dims,randomFill=0,features=feats)
             m=sub.mean(col)
             s=sub.sdev(col,1)
-            names=[]
-            for n in m.keys():
-                names.append(n)
+            names=[n for n in m.keys()]
 
             for c in range(scores.dim[1]):
                 key=names[c]
@@ -1374,10 +1367,7 @@ EXAMPLES:
             z1=self.z(col=c1)
             z2=self.z(col=c2)
             prod=(z1*z2).col(1,as_matrix=False)
-            total=0
-            for els in prod:
-                total+=els
-            return total/(self.dim[0]-1)
+            return sum(prod)/(self.dim[0]-1)
         
         try:
             if self.dim[1]<2 or self.dim[0]<=1:
