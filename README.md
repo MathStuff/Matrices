@@ -175,7 +175,7 @@ C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row"
 
 C.copy #Returns a copy of the matrix
 
-C.summary #Returns the string form of the object
+C.obj #Returns the string form of the object
 
 C.intForm #Returns integer form of the matrix
 
@@ -208,6 +208,21 @@ C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
 
+C.isSquare #Returns a True if the matrix is a square matrix
+
+C.isSymmetric #Returns a True if the matrix is a symmetric matrix
+
+C.isSkewSymmetric #Returns a True if the matrix is a skew-symmetric matrix
+
+C.isTriangular #Returns a True if the matrix is a triangular matrix
+
+C.isUpperTri #Returns a True if the matrix is a upper-trianguar matrix
+
+C.isLowerTri #Returns a True if the matrix is a lower-triangular matrix
+
+C.isDiagonal #Returns a True if the matrix is a diagonal matrix
+
+C.isIdempotent #Returns a True if the matrix is an idempotent matrix
 ```
 ##### Statistical properties 
 ```python 
