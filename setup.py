@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="MatricesM",
-    version="0.9.alpha4.post1",
+    version="0.9.a6.post2",
     author="MathStuff members",
     author_email="business@semihmumcu.com",
 	license="MIT",
@@ -23,4 +23,5 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Mathematics",
     ],
 	python_requires='>=3',
+	include_package_data=True,
 )
