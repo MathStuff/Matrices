@@ -169,7 +169,7 @@ print('################')
       
 j=g.subM(1,2,1,4)
 print("j=g.sub(1,2,1,4):\n",j,"\n")
-print("j.summary:\n",j.summary)
+print("j.obj:\n",j.obj)
 
 print('\n################')
       
@@ -837,7 +837,7 @@ Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4']
 2 5 1 5 
  
 
-j.summary:
+j.obj:
  Matrix(dim=[2, 4],listed=[[6, 8, 6, 1], [2, 5, 1, 5]],ranged=[-5, 5],randomFill=True,features=['Col 1', 'Col 2', 'Col 3', 'Col 4'],header=False,directory='')
 
 ################
