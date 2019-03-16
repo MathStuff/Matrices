@@ -4,9 +4,40 @@ Created on Wed Oct 31 17:26:48 2018
 
 @author: Semih
 """
-from random import random as rrand
-from random import uniform as runi
-import re
+import os
+
+try:
+    p=os.environ["PYTHONPATH"].split(os.pathsep)[-1]
+    p+=r"\MatricesM\randgen_source"
+    a=os.getcwd()
+    os.chdir(p)
+    from randgen import getrand,rgetrand,getuni,igetuni,getzeros
+    os.chdir(a)
+    del a,p
+    
+except ImportError:
+    i=input("Use Cython to get ~2x faster performance ? (y/n)")
+    assert i in ["y","Y","n","N"]
+    if i in ["y","Y"]:
+        print("Compiling the proper pyd library for your system...")
+        print("This process won't be executed again unless you reinstall the MatricesM library")
+        try:
+            os.system("python setup.py build_ext --inplace")
+        except Exception as err:
+            print("Error compiling the randgen\nAre you sure you have GCC and Cython installed?")
+            print(err)
+        else:
+            from randgen import getrand,rgetrand,getuni,igetuni,getzeros
+            print("Compilation done.\nIf you get asked the same question again, it means pyd libary wasn't created successfully")
+            print("Open an Issue Report on the source page site if so:https://github.com/MathStuff/MatricesM/issues/new/choose")
+    else:
+        from random import random
+        from random import uniform
+        print("Imported built-in random library\nYou will be asked again next time you import MatricesM.matrices")
+    os.chdir(a)
+    del a,p,i
+
+vs=dir()   
 
 class Matrix:
     """
@@ -30,7 +61,7 @@ class Matrix:
     def __init__(self,
                  dim = None,
                  listed = [],
-                 directory = r"",
+                 directory = "",
                  ranged = [-5,5],
                  randomFill = True,
                  header = False,
@@ -108,6 +139,8 @@ class Matrix:
         """
         Set the matrix based on the arguments given
         """
+        global vs
+        from random import uniform
         #Set new dimension
         if d!=None:
             self._setDim(d)
@@ -142,29 +175,46 @@ class Matrix:
                         self._matrix=[]
                         for j in range(0,len(lis),self.__dim[1]):
                                 self._matrix.append(lis[j:j+self.__dim[1]])
-           
+            #Same range for all columns
             elif len(lis)==0 and isinstance(r,list):
                 if self._randomFill:
                     m,n=max(self._initRange),min(self._initRange)
                     if self._cMat:
-                        self._matrix=[[complex(runi(n,m),runi(n,m)) for a in range(d[1])] for b in range(d[0])]
+                        self._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                     
                     elif self._fMat:
                         if self._initRange==[0,1]:
-                            self._matrix=[[rrand() for a in range(d[1])] for b in range(d[0])]
+                            if "getrand" in vs:
+                                self._matrix=getrand(d[0],d[1])
+                            else:
+                                self._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
                         else:
-                            self._matrix=[[runi(n,m) for a in range(d[1])] for b in range(d[0])]
+                            if "getuni" in vs:
+                                self._matrix=getuni(d[0],d[1],n,m)
+                            else:
+                                self._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
                         if self._initRange==[0,1]:
-                            self._matrix=[[round(rrand()) for a in range(d[1])] for b in range(d[0])]
+                            if "rgetrand" in vs:
+                                self._matrix=rgetrand(d[0],d[1])
+                            else:
+                                self._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
                         else:
                             n-=1
                             m+=1
-                            self._matrix=[[int(runi(n,m)) for a in range(d[1])] for b in range(d[0])]
+                            if "igetuni" in vs:
+                                self._matrix=igetuni(d[0],d[1],n,m)
+                            else:
+                                self._matrix=[[int(uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
-                    self._matrix=[[0 for a in range(self.__dim[1])] for b in range(self.__dim[0])]
+                    if "getzeros" in vs:
+                        self._matrix=getzeros(d[0],d[1])
+                    else:
+                        self._matrix=[[0 for a in range(d[1])] for b in range(d[0])]
+                    
+            #Different ranges over individual columns
             elif len(lis)==0 and isinstance(r,dict):
                 try:
                     assert len([i for i in r.keys()])==self.__dim[1]
@@ -181,7 +231,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([complex(runi(n,m),runi(n,m)) for a in range(d[0])])
+                            temp.append([complex(uniform(n,m),uniform(n,m)) for a in range(d[0])])
                             i+=1
                         self._matrix=CMatrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix
                         
@@ -190,7 +240,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([runi(n,m) for a in range(d[0])])
+                            temp.append([uniform(n,m) for a in range(d[0])])
                             i+=1
                         self._matrix=FMatrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
                     else:
@@ -198,7 +248,7 @@ class Matrix:
                         temp=[]
                         while i<d[1]:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
-                            temp.append([int(runi(n,m)) for a in range(d[0])])
+                            temp.append([int(uniform(n,m)) for a in range(d[0])])
                             i+=1
                         self._matrix=Matrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
                     
@@ -270,6 +320,7 @@ class Matrix:
         Finds all the numbers in the given string
         """
         #Get the features from the first row if header exists
+        import re
         string=stringold[:]
         if self._header:
             i=0
@@ -320,6 +371,7 @@ class Matrix:
         Turns a square matrix shaped list into a grid-like form that is printable
         Returns a string
         """
+        import re
         def __digits(num):
             dig=0
             if num==0:
@@ -1434,7 +1486,7 @@ EXAMPLES:
             if eV.dim[0]==3:
                 for i in range(2):
                     #Orthogonal vector
-                    a,b=rrand(),rrand()
+                    a,b=random(),random()
                     eV=FMatrix([3,1],[[a],[b],[(1/eV.col(1,0)[2])*(-eV.col(1,0)[0]*a-eV.col(1,0)[1]*b)]])
                     #Find another eigenvector
                     iters=100
@@ -1959,7 +2011,7 @@ EXAMPLES:
         return Matrix(self.dim[:],listed=temp)
     
     def __repr__(self):
-        return str(self._matrix)
+        return str(self.matrix)
     
     def __str__(self): 
         """ 
