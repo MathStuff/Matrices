@@ -83,7 +83,7 @@ class Matrix:
         
         self._setDim(dim)
         self.setInstance()                     
-        self.setMatrix(self.__dim,self._initRange,listed,directory)
+        self.setMatrix(self.dim,self._initRange,listed,directory)
         self.setFeatures()
 # =============================================================================
     def setInstance(self):
@@ -111,8 +111,8 @@ class Matrix:
         """
         Set default feature names
         """
-        if len(self.__features)!=self.__dim[1]:
-            self.__features=["Col {}".format(i+1) for i in range(self.__dim[1])]    
+        if len(self.features)!=self.dim[1]:
+            self.__features=["Col {}".format(i+1) for i in range(self.dim[1])]    
             
     def _setDim(self,d):
         """
@@ -144,7 +144,7 @@ class Matrix:
         #Set new dimension
         if d!=None:
             self._setDim(d)
-        d=self.__dim
+        d=self.dim
 
         #Set new range    
         if r==None:
@@ -168,13 +168,13 @@ class Matrix:
                     self._matrix = [a[:] for a in lis[:]]
                 else:
                     try:
-                        assert self.__dim[0]*self.__dim[1] == len(lis)
+                        assert self.dim[0]*self.dim[1] == len(lis)
                     except Exception as err:
                         print(err)
                     else:
                         self._matrix=[]
-                        for j in range(0,len(lis),self.__dim[1]):
-                                self._matrix.append(lis[j:j+self.__dim[1]])
+                        for j in range(0,len(lis),self.dim[1]):
+                                self._matrix.append(lis[j:j+self.dim[1]])
             #Same range for all columns
             elif len(lis)==0 and isinstance(r,list):
                 if self._randomFill:
@@ -217,7 +217,7 @@ class Matrix:
             #Different ranges over individual columns
             elif len(lis)==0 and isinstance(r,dict):
                 try:
-                    assert len([i for i in r.keys()])==self.__dim[1]
+                    assert len([i for i in r.keys()])==self.dim[1]
                     vs=[len(i) for i in r.values()]
                     assert vs.count(vs[0])==len(vs)
                     feats=[i for i in r.keys()]
@@ -233,7 +233,7 @@ class Matrix:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
                             temp.append([complex(uniform(n,m),uniform(n,m)) for a in range(d[0])])
                             i+=1
-                        self._matrix=CMatrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix
+                        self._matrix=CMatrix([self.dim[1],self.dim[0]],listed=temp).t.matrix
                         
                     elif self._fMat:
                         i=0
@@ -242,7 +242,7 @@ class Matrix:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
                             temp.append([uniform(n,m) for a in range(d[0])])
                             i+=1
-                        self._matrix=FMatrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
+                        self._matrix=FMatrix([self.dim[1],self.dim[0]],listed=temp).t.matrix 
                     else:
                         i=0
                         temp=[]
@@ -250,7 +250,7 @@ class Matrix:
                             m,n=max(r[feats[i]]),min(r[feats[i]])
                             temp.append([int(uniform(n,m)) for a in range(d[0])])
                             i+=1
-                        self._matrix=Matrix([self.__dim[1],self.__dim[0]],listed=temp).t.matrix 
+                        self._matrix=Matrix([self.dim[1],self.dim[0]],listed=temp).t.matrix 
                     
             else:
                 self._valid=0
@@ -261,8 +261,6 @@ class Matrix:
         Set new dimension 
         """
         try:
-            if self._isIdentity:
-                return self.__dim
             rows=0
             cols=0
             for row in self._matrix:
@@ -284,9 +282,9 @@ class Matrix:
         c={}
         self.setFeatures()
         if self._cMat:
-            for i in range(self.__dim[1]):
+            for i in range(self.dim[1]):
                 temp=[]
-                for rows in range(self.__dim[0]):
+                for rows in range(self.dim[0]):
                     temp.append(lis[rows][i].real)
                     temp.append(lis[rows][i].imag)
                 c[self.__features[i]]=[round(min(temp),4),round(max(temp),4)]
@@ -328,10 +326,10 @@ class Matrix:
                 if ch!="\n":
                     i+=1
                 else:
-                    if len(self.__features)!=self.__dim[1]:
+                    if len(self.__features)!=self.dim[1]:
                         pattern=r"(?:\w+ ?[0-9]*)+"
                         self.__features=re.findall(pattern,string[:i])
-                        if len(self.__features)!=self.__dim[1]:
+                        if len(self.__features)!=self.dim[1]:
                             print("Can't get enough column names from the header")
                             self.setFeatures()
                     string=string[i:]
@@ -455,9 +453,6 @@ class Matrix:
         To append a column, you need to use col = self.dim[1]
         """
         try:
-            if self._isIdentity:
-                print("Can't add to identity matrix.\nUse addDim instead!")
-                return None
             if row==None or col==None:
                 if row==None and col==None:
                     """Append a row """
@@ -671,7 +666,7 @@ EXAMPLES:
 # =============================================================================
     def _determinantByLUForm(self):
         try:
-            if self.dim[0]==self.dim[1] and self.dim[0]==1:
+            if self.isSquare and self.dim[0]==1:
                 return self.matrix[0][0]
             if not self.__detCalc:
                 self._det=self._LU()[1]
@@ -685,8 +680,6 @@ EXAMPLES:
     def _transpose(self):
         try:
             assert self._valid==1
-            if self._isIdentity:
-                return self
             temp=[a[:] for a in self.matrix]
             transposed=[]
             d0,d1=self.dim[0],self.dim[1]
@@ -726,7 +719,7 @@ EXAMPLES:
             return (-1)**(pos[0]+pos[1])   
         try:
             assert self._valid==1
-            assert self.dim[0]==self.dim[1]
+            assert self.isSquare
         except AssertionError:
             print("Not a square matrix")
         except Exception as err:
@@ -761,8 +754,8 @@ EXAMPLES:
             print("Error getting inverse of the matrix")
         else:
             temp=self.copy
-            temp.concat(Identity(self.__dim[0]),"col")
-            self._inv=temp.rrechelon.subM(1,self.__dim[0],self.__dim[1]+1,self.__dim[1]*2)
+            temp.concat(Identity(self.dim[0]),"col")
+            self._inv=temp.rrechelon.subM(1,self.dim[0],self.dim[1]+1,self.dim[1]*2)
             self.__invCalc=1
             return self._inv
 # =============================================================================    
@@ -808,9 +801,9 @@ EXAMPLES:
                     break
                 
             #Do the calculations to reduce rows
-            temp[i]=[temp[i][j]/temp[i][i] for j in range(self.__dim[1])]
-            temp._matrix=[[temp[k][m]-temp[i][m]*temp[k][i] for m in range(self.__dim[1])] if k!=i else temp[i] 
-                                                                                           for k in range(self.__dim[0])]
+            temp[i]=[temp[i][j]/temp[i][i] for j in range(self.dim[1])]
+            temp._matrix=[[temp[k][m]-temp[i][m]*temp[k][i] for m in range(self.dim[1])] if k!=i else temp[i] 
+                                                                                           for k in range(self.dim[0])]
 
             i+=1
         
@@ -856,11 +849,11 @@ EXAMPLES:
                 
             #Loop through the ith column find the coefficients to multiply the diagonal element with
             #to make the elements under [i][i] all zeros
-            rowMulti=[temp[j][i]/temp[i][i] for j in range(i+1,self.__dim[0])]
+            rowMulti=[temp[j][i]/temp[i][i] for j in range(i+1,self.dim[0])]
             #Loop to substitute ith row times the coefficient found from the i+n th row (n>0 & n<rows)
             k0=0
-            for k in range(i+1,self.__dim[0]):
-                temp[k]=[temp[k][m]-(rowMulti[k0]*temp[i][m]) for m in range(self.__dim[1])]
+            for k in range(i+1,self.dim[0]):
+                temp[k]=[temp[k][m]-(rowMulti[k0]*temp[i][m]) for m in range(self.dim[1])]
                 #Lower triangular matrix
                 L[k][i]=rowMulti[k0]
                 k0+=1   
@@ -919,6 +912,7 @@ EXAMPLES:
     @property
     def p(self):
         print(self)
+   
     @property
     def grid(self):
         if not self._isIdentity:
@@ -926,19 +920,25 @@ EXAMPLES:
             self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy()
         print(self._string)
+    
     @property
     def copy(self):
         if self._isIdentity:
-            return Identity(dim=self.dim[0])
+            if self==Identity(self.dim[0]):
+                return Identity(self.dim[0])
+            else:
+                return FMatrix(dim=self.dim[:],listed=self.matrix,features=self.features)
         elif self._fMat:
             return FMatrix(dim=self.dim[:],listed=self._matrix,randomFill=0,header=self._header,directory=self._dir,features=self.__features,decimal=self.decimal)
         else:
             return Matrix(dim=self.dim[:],listed=self._matrix,randomFill=0,header=self._header,directory=self._dir,features=self.__features)
+    
     @property
     def string(self):
         self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy()
         return " ".join(self.__features)+self._string
+    
     @property
     def directory(self):
         return self._dir[:]
@@ -957,6 +957,7 @@ EXAMPLES:
             else:
                 temp=[str(i) for i in li]
                 self.__features=temp
+                
     @property
     def dim(self):
         return self.__dim[:]
@@ -989,57 +990,66 @@ EXAMPLES:
                         new[i].append(els[c+val[1]*r])
                 self.__init__(dim=val,listed=new)
             
-        
     @property
     def uptri(self):
         return self._LU()[0]
+    
     @property
     def lowtri(self):
         return self._LU()[2]
+    
     @property
     def rank(self):
         if not self.__rankCalc:
             self._rank=self._Rank()
         return self._rank
+    
     @property
     def rrechelon(self):
         """
         Reduced-Row-Echelon
         """
         return self._echelon()[0]
+    
     @property
     def t(self):
         return self._transpose()
+    
     @property
     def adj(self):
         if self.__adjCalc:
             return self._adj
         return self._adjoint()
+    
     @property
     def inv(self):
         if self.__invCalc:
             return self._inv
         return self._inverse()    
+    
     @property
     def matrix(self):
        return self._matrix
+   
     @property
     def det(self):
         try:
-            assert self.dim[0]==self.dim[1]
+            assert self.isSquare
         except AssertionError:
             print("Not a square matrix")
         else:
             if self.__detCalc:
                 return self._det
             else:
-                return self._determinantByLUForm()       
+                return self._determinantByLUForm()  
+            
     @property
     def highest(self):
         if not self._isIdentity:
             return max([max(a) for a in self.ranged().values()])
         else:
             return 1
+        
     @property
     def lowest(self):
         if not self._isIdentity:
@@ -1048,19 +1058,82 @@ EXAMPLES:
             return 0
         
     @property
-    def summary(self):
+    def obj(self):
         #ranged and randomFill arguments are NOT required to create the same matrix
         if self._cMat:
-            return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7})".format(self.__dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal)
+            return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal)
         elif self._fMat:
-            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7})".format(self.__dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal)
+            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal)
         elif self._valid and not self._isIdentity:
-            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}')".format(self.__dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir)
+            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}')".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir)
         elif self._valid and self._isIdentity:
-            return "Identity(dim={0},listed={1},ranged=[0,1],randomFill=0)".format(self.__dim,self._matrix)
+            return "Identity(dim={0},listed={1},ranged=[0,1],randomFill=0)".format(self.dim,self._matrix)
         else:
             return None
-
+        
+    @property
+    def isSquare(self):
+        return self.dim[0]==self.dim[1]
+    
+    @property
+    def isSymmetric(self):
+        if not self.isSquare:
+            return False
+        return self.t==self
+    
+    @property
+    def isSkewSymmetric(self):
+        if self.isSymmetric:
+            return self.dim[0] == [1 if self.matrix[a][a]==0 else 0 for a in range(self.dim[0])].count(1)
+        return False
+    
+    @property
+    def isTriangular(self):
+        from functools import reduce
+        if not self.isSquare:
+            return False
+        return self.det == reduce((lambda a,b: a*b),[self.matrix[a][a] for a in range(self.dim[0])])
+    
+    @property
+    def isUpperTri(self):
+        if not self.isSquare:
+            return False
+        if self.isTriangular:
+            for i in range(1,self.dim[0]):
+                for j in range(i):
+                    if self.matrix[i][j]!=0:
+                        return False
+            return True
+        return False
+    
+    @property
+    def isLowerTri(self):
+        if not self.isSquare:
+            return False
+        if self.isTriangular:
+            for i in range(self.dim[0]):
+                for j in range(i+1,self.dim[1]):
+                    if self.matrix[i][j]!=0:
+                        return False
+            return True
+        return False
+    
+    @property
+    def isDiagonal(self):
+        return self.isUpperTri and self.isLowerTri
+    
+    @property
+    def isIdempotent(self):
+        return self==self*self
+    
+    @property
+    def isOrthogonal(self):
+        pass
+    
+    @property
+    def nilpotency(self):
+        pass
+    
     @property
     def floorForm(self):
         return Matrix(self.dim[:],listed=self.__floor__().matrix)  
@@ -1086,14 +1159,14 @@ EXAMPLES:
         return FMatrix(self.dim[:],listed=round(self,decimal).matrix)
     
     def head(self,rows=5):
-        if self.__dim[0]>=rows:
-            return self.subM(1,rows,1,self.__dim[1])
-        return self.subM(1,self.__dim[0],1,self.__dim[1])
+        if self.dim[0]>=rows:
+            return self.subM(1,rows,1,self.dim[1])
+        return self.subM(1,self.dim[0],1,self.dim[1])
 
     def tail(self,rows=5):
-        if self.__dim[0]>=rows:
-            return self.subM(self.__dim[0]-rows+1,self.__dim[0],1,self.__dim[1])
-        return self.subM(1,self.__dim[0],1,self.__dim[1])
+        if self.dim[0]>=rows:
+            return self.subM(self.dim[0]-rows+1,self.dim[0],1,self.dim[1])
+        return self.subM(1,self.dim[0],1,self.dim[1])
     
     def minor(self,r=None,c=None):
         return self._minor(row=r,col=c)
@@ -1449,7 +1522,7 @@ EXAMPLES:
         def norm(vec):
             return sum([i**2 for i in vec])**(1/2)
         try:
-            assert self.dim[0]==self.dim[1] and self.dim[0]>=2
+            assert self.isSquare and self.dim[0]>=2
             if self.dim[0]==2:
                 d=self.det
                 tr=self.matrix[0][0]+self.matrix[1][1]
@@ -1594,7 +1667,7 @@ EXAMPLES:
             return self
     
     def __len__(self):
-        return self.__dim[0]*self.__dim[1]
+        return self.dim[0]*self.dim[1]
 # =============================================================================
 
     def __matmul__(self,other):
@@ -1943,11 +2016,11 @@ EXAMPLES:
             if self.dim==other.dim:
                 if self.matrix==other.matrix:
                     return False
-                elif self.dim[0]==self.dim[1]:
+                elif self.isSquare:
                     return self.det<other.det
                 else:
                     return None
-            elif self.dim[0]==self.dim[1] and other._dim[0]==other._dim[1] :   
+            elif self.isSquare and other._dim[0]==other._dim[1] :   
                 return self.det<other.det
             else:
                 return None
@@ -1970,11 +2043,11 @@ EXAMPLES:
             if self.dim==other.dim:
                 if self.matrix==other.matrix:
                     return False
-                elif self.dim[0]==self.dim[1]:
+                elif self.isSquare:
                     return self.det>other.det
                 else:
                     return None
-            elif self.dim[0]==self.dim[1] and other._dim[0]==other._dim[1] :   
+            elif self.isSquare and other._dim[0]==other._dim[1] :   
                 return self.det>other.det
             else:
                 return None
@@ -2023,7 +2096,7 @@ EXAMPLES:
         if self._badDims:
             print("You should give proper dimensions to work with the data\nExample dimension:[data_amount,feature_amount]")
         if self._valid:
-            if self.dim[0]!=self.dim[1]:
+            if not self.isSquare:
                 print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
             else:
                 print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
@@ -2048,24 +2121,12 @@ Identity matrix
             self._valid=0
             return None
         else:
-            self.__dim=[dim,dim]
-            self._randomFill=0
-            self._inRange=[0,1]
-            self._initRange=[0,1]
-            self.__features=["Col {}".format(i+1) for i in range(self.__dim[1])]
-            self._isIdentity=1
-            self._fMat=0
-            self._cMat=0    
-            self.__adjCalc=1
-            self.__detCalc=1
-            self.__invCalc=1
-            
-            self.setMatrix() 
-            self._string=self._stringfy()
+            super().__init__(dim,randomFill=0)
+            self._setMatrix()
                 
-    def setMatrix(self):
-        self._matrix=[[0 for _ in range(self.__dim[1])] for _ in range(self.__dim[0])]
-        for row in range(0,self.__dim[0]):
+    def _setMatrix(self):
+        self._matrix=[[0 for a in range(self.dim[1])] for b in range(self.dim[0])]
+        for row in range(0,self.dim[0]):
             self._matrix[row][row]=1          
                 
     def addDim(self,num):
@@ -2081,7 +2142,7 @@ Identity matrix
         else:
             goal=self.dim[0]+num
             self.__dim=[goal,goal]
-            self.setMatrix()
+            self._setMatrix()
             self._string=self._stringfy()
             return self
         
@@ -2102,33 +2163,17 @@ Identity matrix
             if goal==0:
                 print("All rows have been deleted")
             self.__dim=[goal,goal]
-            self.setMatrix()
+            self._setMatrix()
             self._string=self._stringfy()
             return self
         
     @property
-    def dim(self):
-        return self.__dim        
-    @property
-    def inv(self):
-        return self
-    @property    
-    def det(self):
-        return 1
-    @property
-    def adj(self):
-        return self
-    @property
-    def string(self):
-        return self._string 
-    @property
-    def features(self):
-        return self.__features[:]
-    @property
-    def summary(self):
+    def obj(self):
         return "Identity(dim={0})".format(self.dim)
+    
     def __str__(self):
         if self._isIdentity:
+            self._string=self._stringfy()
             print("\nIdentity Matrix\nDimension: {0}x{0}".format(self.dim[0]))
             return self._string+"\n"
         
@@ -2162,7 +2207,7 @@ decimal: digits to round up to
         self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy()
         if self._valid:
-            if self.dim[0]!=self.dim[1]:
+            if not self.isSquare:
                 print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
             else:
                 print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
@@ -2206,7 +2251,7 @@ Matrix which contain complex numbers
         self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy()
         if self._valid:
-            if self.dim[0]!=self.dim[1]:
+            if not self.isSquare:
                 print("\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
             else:
                 print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))            
