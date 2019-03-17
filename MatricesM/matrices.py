@@ -1098,20 +1098,20 @@ EXAMPLES:
         return self.dim[0]==self.dim[1]
     
     @property
-    def isSymmetrical(self):
+    def isSymmetric(self):
         if not self.isSquare:
             return False
         return self.t==self
         
     @property  
-    def isAntiSymmetrical(self):
+    def isAntiSymmetric(self):
         if not self.isSquare:
             return False
         return self.t*-1==self
     
     @property
-    def isSkewSymmetrical(self):
-        if self.isSymmetrical:
+    def isSkewSymmetric(self):
+        if self.isSymmetric:
             return self.dim[0] == [1 if self.matrix[a][a]==0 else 0 for a in range(self.dim[0])].count(1)
         return False
     
@@ -1558,8 +1558,8 @@ EXAMPLES:
         except:
             print("error")
         else:
-            if not self.isSymmetrical:
-                print("Currently doesn't work for non-symmetrical matrices")
+            if not self.isSymmetric:
+                print("Currently doesn't work for non-symmetric matrices")
                 return None
             
             eV=FMatrix([self.dim[0],1])
