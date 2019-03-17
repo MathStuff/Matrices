@@ -1,9 +1,9 @@
-# Matrices (Alpha)
+# MatricesM (Alpha)
 #### Python 3 code to create and operate on matrices
    
 ### Install using pip:
    
-   <code>pip install MatricesM</code>
+   <code>pip install MatricesM==0.9a6</code>
    
 ### Import by using:
    ```python 
@@ -194,6 +194,10 @@ C.uptri #Returns the upper triangular form of the matrix
 
 C.lowtri #Returns the lower triangular form of the matrix
 
+C.sym #Returns the symmetric part of the matrix 
+
+C.anti #Returns the antisymmetric part of the matrix
+
 C.det #Returns the determinant of the matrix
 
 C.t #Returns the transposed matrix
@@ -208,21 +212,23 @@ C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
 
-C.isSquare #Returns a True if the matrix is a square matrix
+C.isSquare #Returns True if the matrix is a square matrix
 
-C.isSymmetric #Returns a True if the matrix is a symmetric matrix
+C.isSymmetric #Returns True if the matrix is a symmetric matrix
 
-C.isSkewSymmetric #Returns a True if the matrix is a skew-symmetric matrix
+C.isSkewSymmetric #Returns True if the matrix is a skew-symmetric matrix
 
-C.isTriangular #Returns a True if the matrix is a triangular matrix
+C.isAntiSymmetric #Returns True if the matrix is an antisymmetric matrix
 
-C.isUpperTri #Returns a True if the matrix is a upper-trianguar matrix
+C.isTriangular #Returns True if the matrix is a triangular matrix
 
-C.isLowerTri #Returns a True if the matrix is a lower-triangular matrix
+C.isUpperTri #Returns True if the matrix is a upper-trianguar matrix
 
-C.isDiagonal #Returns a True if the matrix is a diagonal matrix
+C.isLowerTri #Returns True if the matrix is a lower-triangular matrix
 
-C.isIdempotent #Returns a True if the matrix is an idempotent matrix
+C.isDiagonal #Returns True if the matrix is a diagonal matrix
+
+C.isIdempotent #Returns True if the matrix is an idempotent matrix
 ```
 ##### Statistical properties 
 ```python 
