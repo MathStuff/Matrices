@@ -814,7 +814,23 @@ EXAMPLES:
         return (FMatrix(self.dim,temp.matrix),self.dim[0]-z)
             
 # =============================================================================            
-
+        
+    def _symDecomp(self):
+        try:
+            assert self.isSquare
+        except:
+            print("Cant decompose the matrix into symmetric and antisymmetric matrices")
+        else:
+            m=self.matrix
+            anti=FMatrix(self.dim,randomFill=0)
+            for i in range(0,self.dim[0]-1):
+                for j in range(i+1,self.dim[1]):
+                    avg=(m[i][j]+m[j][i])/2
+                    anti.matrix[i][j]=m[i][j]-avg
+                    anti.matrix[j][i]=m[j][i]-avg
+            sym=self-anti
+            return (sym,anti)
+        
     def _LU(self):
         """
         Returns L and U matrices of the matrix
@@ -1064,26 +1080,38 @@ EXAMPLES:
             return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal)
         elif self._fMat:
             return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal)
-        elif self._valid and not self._isIdentity:
+        elif not self._isIdentity:
             return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}')".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir)
-        elif self._valid and self._isIdentity:
-            return "Identity(dim={0},listed={1},ranged=[0,1],randomFill=0)".format(self.dim,self._matrix)
         else:
             return None
-        
+
+    @property
+    def sym(self):
+        return self._symDecomp()[0]
+    
+    @property
+    def anti(self):
+        return self._symDecomp()[1]
+    
     @property
     def isSquare(self):
         return self.dim[0]==self.dim[1]
     
     @property
-    def isSymmetric(self):
+    def isSymmetrical(self):
         if not self.isSquare:
             return False
         return self.t==self
+        
+    @property  
+    def isAntiSymmetrical(self):
+        if not self.isSquare:
+            return False
+        return self.t*-1==self
     
     @property
-    def isSkewSymmetric(self):
-        if self.isSymmetric:
+    def isSkewSymmetrical(self):
+        if self.isSymmetrical:
             return self.dim[0] == [1 if self.matrix[a][a]==0 else 0 for a in range(self.dim[0])].count(1)
         return False
     
@@ -1530,9 +1558,10 @@ EXAMPLES:
         except:
             print("error")
         else:
-            if self.t!=self:
+            if not self.isSymmetrical:
                 print("Currently doesn't work for non-symmetrical matrices")
                 return None
+            
             eV=FMatrix([self.dim[0],1])
             eV/=norm(eV.t[0])
             
