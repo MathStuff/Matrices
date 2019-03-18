@@ -25,7 +25,7 @@
 
    #### Get Cython:
   <code>
-    pip install Cython
+    pip install Cython==0.29.6
   </code>
 
    #### Get GCC if you already don't have it:
