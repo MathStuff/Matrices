@@ -1,5 +1,5 @@
 # MatricesM (Alpha)
-#### Python 3 code to create and operate on matrices
+#### Python 3 library for doing matrix operations related to statistics and algebra mathematics
    
 ### Install using pip:
    
@@ -13,27 +13,25 @@
    ```python 
    from MatricesM.matrices import * #Use matrices directly : MatrixName(arguments)
    ```
-   ##### To get a better performance you'll need Cython and GCC and run MatricesM.matrices and answer the question script asks.
+### Import and print example matrices:
+   ```python 
+   from MatricesM.exampleMatrices import *
+   ```
 
-   ##### Get Cython:
+### Note:
+   ##### After importing MatricesM.matrices for the first time, you will be asked a question on wheter or not to compile the Cython file.
+   ##### To get faster performance on generating random matrices you'll need Cython and GCC installed. 
+   ##### You won't be asked again if you let the script to compile the proper pyd library for your OS.
+
+   #### Get Cython:
   <code>
     pip install Cython
   </code>
 
-   ##### Get GCC if you already don't have:
+   #### Get GCC if you already don't have it:
    https://gcc.gnu.org/
 
-   ##### Example expected output of letting Cython to compile
-   
-   ![let](https://npbiiq.db.files.1drv.com/y4m-2-yWtgVliGpPIBwMSq-PnMgzzE6Rbc7katcX1eHQPvTQBlVGFdt9xkTvriI62Juq7aRrKhTAiuULhPez1PotzeOlX7wzgBsgxoe8ok9Vu4F2I9WRSJcwj1F3DkV57Sj6Le2p-Wvl-wOVIepzqygkJfgJzgke-dUhonYl-1a5fCTGfiU53m7_Yun9wpwfOYM24XZjtmH0eLABf2wGfaR6Q?width=868&height=359&cropmode=none)
-   ##### or not letting Cython to compile
-   ![dont let](https://mvbiiq.db.files.1drv.com/y4mmZhsY7lZkOMsClyyiNbjkcmAa5OP6nOGeRRtsV7wpHE9ntrMKnpm2rKwgOPti05USgqiWlaYOrGHMVaStn8s0vUsr3YLbIIdlvuh8h0qPzetorjujV8KE4M9xr4Qpq-MrDl81fiJHug0xPR6zzCShmee3cQ3h7lJMO1Xw7VXJbVUOXp8V12wdIp9s9gdtwVBfZUKYtgsd5VfROeXM0ED7g?width=747&height=130&cropmode=none)
-   
-   
-   #### Import and print example matrices:
-   ```python 
-   from MatricesM.exampleMatrices import *
-   ```
+
 ### Basic syntax:
 ```python 
 
