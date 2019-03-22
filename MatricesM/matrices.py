@@ -37,7 +37,7 @@ except ImportError:
     os.chdir(a)
     del a,p,i
 
-vs=dir()   
+NAMES_IN_SCOPE=dir()   
 
 class Matrix:
     """
@@ -139,7 +139,7 @@ class Matrix:
         """
         Set the matrix based on the arguments given
         """
-        global vs
+        global NAMES_IN_SCOPE
         from random import uniform
         #Set new dimension
         if d!=None:
@@ -184,32 +184,32 @@ class Matrix:
                     
                     elif self._fMat:
                         if self._initRange==[0,1]:
-                            if "getrand" in vs:
+                            if "getrand" in NAMES_IN_SCOPE:
                                 self._matrix=getrand(d[0],d[1])
                             else:
                                 self._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
                         else:
-                            if "getuni" in vs:
+                            if "getuni" in NAMES_IN_SCOPE:
                                 self._matrix=getuni(d[0],d[1],n,m)
                             else:
                                 self._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
                         if self._initRange==[0,1]:
-                            if "rgetrand" in vs:
+                            if "rgetrand" in NAMES_IN_SCOPE:
                                 self._matrix=rgetrand(d[0],d[1])
                             else:
                                 self._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
                         else:
                             n-=1
                             m+=1
-                            if "igetuni" in vs:
+                            if "igetuni" in NAMES_IN_SCOPE:
                                 self._matrix=igetuni(d[0],d[1],n,m)
                             else:
                                 self._matrix=[[int(uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
-                    if "getzeros" in vs:
+                    if "getzeros" in NAMES_IN_SCOPE:
                         self._matrix=getzeros(d[0],d[1])
                     else:
                         self._matrix=[[0 for a in range(d[1])] for b in range(d[0])]
@@ -505,8 +505,6 @@ class Matrix:
             if col!=None and self.__features!=[]:
                 self.__features.insert(col-1,feature)
             self.__dim=self._declareDim()
-            self._inRange=self._declareRange(self._matrix)
-            self._string=self._stringfy()
             self.__adjCalc=0
             self.__detCalc=0
             self.__invCalc=0  
@@ -552,8 +550,6 @@ If no parameter name given, takes it as row
                 del(self.__features[c-1])        
             self._matrix=[a[:] for a in newM]
             self.__dim=self._declareDim()
-            self._inRange=self._declareRange(self._matrix)
-            self._string=self._stringfy()
             
     def delDim(self,num):
         """
@@ -1541,70 +1537,59 @@ EXAMPLES:
                 return temp
         except Exception as err:
             print("Error getting pearson correlation:",err)
-            
-    def power_iter(self,err=1e-5,iters=100):
+    
+    def _eigenvalues(self):
         """
-        ***** Currently doesn't work as intended for matrices which aren't 2x2 *****
-        Power iteration method to get eigenvalues and eigenvectors
+        ***** Currently doesn't work as intended for matrices bigger than 3x3 *****
+        return the eigenvalues
         """
-        def norm(vec):
-            return sum([i**2 for i in vec])**(1/2)
         try:
             assert self.isSquare and self.dim[0]>=2
             if self.dim[0]==2:
                 d=self.det
                 tr=self.matrix[0][0]+self.matrix[1][1]
-                return [(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]
+                return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
         except:
-            print("error")
+            print("error getting eigenvalues")
         else:
-            if not self.isSymmetric:
-                print("Currently doesn't work for non-symmetric matrices")
-                return None
+            temp=self.copy
+            for i in range(self.dim[0]):
+                temp[i][i]="("+str(temp[i][i])+"-x)"
+            st=temp.chareq
+            print(st)
+            ce=(lambda x:eval(st))
+            return ce
+    
+    @property
+    def eigenvalues(self):
+        return self._eigenvalues()
+    
+    @property
+    def chareq(self):
+        m=self.matrix
+        if self.dim[0]==2:
+            return  f"(({m[0][0]}*{m[1][1]})-({m[0][1]}*{m[1][0]}))"
+        s=""
+        sign=0
+        for co in range(self.dim[1]):
             
-            eV=FMatrix([self.dim[0],1])
-            eV/=norm(eV.t[0])
+            c=m[0][co]*((-1)**sign)
+            sign+=1
             
-            while iters>0:
-                iters-=1
-                old=eV.t[0][:]
-                eV=self@eV
-                eV/=norm(eV.t[0])
-                if max([abs(i-j) for i in eV.t[0] for j in old])<=err:
-                    print("Stopping at iteration ",iters)
-                    break
+            temp=self.copy
+            temp.remove(r=1)
+            temp.remove(c=co+1)
+            
+            s+=f"(({c})*"
+            s+=temp.chareq
+            
+            if co!=self.dim[1]-1:
+                s+=")+"
+            else:
+                s+=")"
+        return s
                 
-            e=((self@eV)/eV).highest  
-            dic={}
-            dic["E1"]=(e,eV.col(1,0))
-            
-            """
-            ********************************************************************************
-            Help needed:
-            FINDS THE HIGHEST EIGENVALUE AND EIGENVECTOR RESPONDING TO THE VALUE
-            FAILS TO FIND THE REST OF THE EIGENVECTORS
-            ********************************************************************************
-            
-            if eV.dim[0]==3:
-                for i in range(2):
-                    #Orthogonal vector
-                    a,b=random(),random()
-                    eV=FMatrix([3,1],[[a],[b],[(1/eV.col(1,0)[2])*(-eV.col(1,0)[0]*a-eV.col(1,0)[1]*b)]])
-                    #Find another eigenvector
-                    iters=100
-                    while iters>0:
-                        iters-=1
-                        old=eV.t[0][:]
-                        eV=self@eV
-                        eV/=norm(eV.t[0])
-                        if max([abs(i-j) for i in eV.t[0] for j in old])<=err:
-                            print("Stopping at iteration ",iters)
-                            break
-                    #Find the corresponding eigenvalue
-                    e=((self@eV)/eV).highest
-                    dic["E"+str(i+2)]=(e,eV.col(1,0))
-            """
-            return dic  
+        
 # =============================================================================
     def __contains__(self,val):
         """
