@@ -4,40 +4,52 @@ Created on Wed Oct 31 17:26:48 2018
 
 @author: Semih
 """
+
+# =============================================================================
 import os
 
 try:
-    p=os.environ["PYTHONPATH"].split(os.pathsep)[-1]
-    p+=r"\MatricesM\randgen_source"
-    a=os.getcwd()
-    os.chdir(p)
+    PYTHON_PATH=os.environ["PYTHONPATH"].split(os.pathsep)[-1]
+    PYTHON_PATH+=r"\MatricesM\randgen_source"
+    CURRENT_DIR=os.getcwd()
+    os.chdir(PYTHON_PATH)
     from randgen import getrand,rgetrand,getuni,igetuni,getzeros
-    os.chdir(a)
-    del a,p
-    
-except ImportError:
-    i=input("Use Cython to get ~2x faster performance ? (y/n)")
-    assert i in ["y","Y","n","N"]
-    if i in ["y","Y"]:
-        print("Compiling the proper pyd library for your system...")
-        print("This process won't be executed again unless you reinstall the MatricesM library")
-        try:
-            os.system("python setup.py build_ext --inplace")
-        except Exception as err:
-            print("Error compiling the randgen\nAre you sure you have GCC and Cython installed?")
-            print(err)
-        else:
-            from randgen import getrand,rgetrand,getuni,igetuni,getzeros
-            print("Compilation done.\nIf you get asked the same question again, it means pyd libary wasn't created successfully")
-            print("Open an Issue Report on the source page site if so:https://github.com/MathStuff/MatricesM/issues/new/choose")
-    else:
-        from random import random
-        from random import uniform
-        print("Imported built-in random library\nYou will be asked again next time you import MatricesM.matrices")
-    os.chdir(a)
-    del a,p,i
 
+    os.chdir(CURRENT_DIR)
+except IndexError:
+    print("Couldn't get the PYTHONPATH, please open an issue report")    
+except ImportError:
+    while True:
+        try:
+            i=input("Use Cython to get ~2x faster performance while generating matrices? (y/n)")
+            assert i in ["y","Y","n","N"]
+        except AssertionError:
+            print("Bad input")
+        else:
+            if i in ["y","Y"]:
+                print("Compiling the proper pyd library for your system...")
+                print("This process won't be executed again unless you reinstall the MatricesM library")
+                try:
+                    os.system("python setup.py build_ext --inplace")
+                except Exception as err:
+                    print("Error compiling the randgen\nAre you sure you have GCC and Cython installed?")
+                    print(err)
+                else:
+                    from randgen import getrand,rgetrand,getuni,igetuni,getzeros
+                    print("Compilation done.\nIf you get asked the same question again, it means pyd library wasn't created successfully")
+                    print("Open an Issue Report on the source page site if so:https://github.com/MathStuff/MatricesM/issues/new/choose")
+            else:
+                print("Imported built-in random library\nYou will be asked again next time you import MatricesM.matrices")
+            
+            os.chdir(CURRENT_DIR)
+            break
+        
+finally:
+    from random import random
+    from random import uniform
+    
 NAMES_IN_SCOPE=dir()   
+# =============================================================================
 
 class Matrix:
     """
@@ -123,7 +135,7 @@ class Matrix:
                 self.__dim=[d,d]
             else:
                 self.__dim=[0,0]
-        elif isinstance(d,list):
+        elif isinstance(d,list) or isinstance(d,tuple):
             if len(d)!=2:
                 self.__dim=[0,0]
             else:
@@ -140,7 +152,6 @@ class Matrix:
         Set the matrix based on the arguments given
         """
         global NAMES_IN_SCOPE
-        from random import uniform
         #Set new dimension
         if d!=None:
             self._setDim(d)
