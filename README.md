@@ -1,4 +1,4 @@
-# MatricesM (Alpha)
+# <a href="https://pypi.org/project/MatricesM/">MatricesM (Alpha)</a>
 #### Python 3 library for doing matrix operations related to statistics and algebra mathematics
    
 ### Install using pip:
