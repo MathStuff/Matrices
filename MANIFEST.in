@@ -3,6 +3,3 @@ include *.md
 
 # Include the license file and requirements
 include *.txt
-
-# Include the Cython implementation
-recursive-include MatricesM/randgen_source *

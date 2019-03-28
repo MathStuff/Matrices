@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="MatricesM",
-    version="0.9.a6.post3",
+    version="0.9.a6",
     author="MathStuff members",
     author_email="business@semihmumcu.com",
 	license="MIT",

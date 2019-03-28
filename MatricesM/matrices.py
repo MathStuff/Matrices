@@ -6,49 +6,9 @@ Created on Wed Oct 31 17:26:48 2018
 """
 
 # =============================================================================
-import os
+from random import random
+from random import uniform
 
-try:
-    PYTHON_PATH=os.environ["PYTHONPATH"].split(os.pathsep)[-1]
-    PYTHON_PATH+=r"\MatricesM\randgen_source"
-    CURRENT_DIR=os.getcwd()
-    os.chdir(PYTHON_PATH)
-    from randgen import getrand,rgetrand,getuni,igetuni,getzeros
-
-    os.chdir(CURRENT_DIR)
-except IndexError:
-    print("Couldn't get the PYTHONPATH, please open an issue report")    
-except ImportError:
-    while True:
-        try:
-            i=input("Use Cython to get ~2x faster performance while generating matrices? (y/n)")
-            assert i in ["y","Y","n","N"]
-        except AssertionError:
-            print("Bad input")
-        else:
-            if i in ["y","Y"]:
-                print("Compiling the proper pyd library for your system...")
-                print("This process won't be executed again unless you reinstall the MatricesM library")
-                try:
-                    os.system("python setup.py build_ext --inplace")
-                except Exception as err:
-                    print("Error compiling the randgen\nAre you sure you have GCC and Cython installed?")
-                    print(err)
-                else:
-                    from randgen import getrand,rgetrand,getuni,igetuni,getzeros
-                    print("Compilation done.\nIf you get asked the same question again, it means pyd library wasn't created successfully")
-                    print("Open an Issue Report on the source page site if so:https://github.com/MathStuff/MatricesM/issues/new/choose")
-            else:
-                print("Imported built-in random library\nYou will be asked again next time you import MatricesM.matrices")
-            
-            os.chdir(CURRENT_DIR)
-            break
-        
-finally:
-    from random import random
-    from random import uniform
-    
-NAMES_IN_SCOPE=dir()   
 # =============================================================================
 
 class Matrix:
@@ -151,7 +111,6 @@ class Matrix:
         """
         Set the matrix based on the arguments given
         """
-        global NAMES_IN_SCOPE
         #Set new dimension
         if d!=None:
             self._setDim(d)
@@ -195,35 +154,20 @@ class Matrix:
                     
                     elif self._fMat:
                         if self._initRange==[0,1]:
-                            if "getrand" in NAMES_IN_SCOPE:
-                                self._matrix=getrand(d[0],d[1])
-                            else:
-                                self._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
                         else:
-                            if "getuni" in NAMES_IN_SCOPE:
-                                self._matrix=getuni(d[0],d[1],n,m)
-                            else:
-                                self._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
                         if self._initRange==[0,1]:
-                            if "rgetrand" in NAMES_IN_SCOPE:
-                                self._matrix=rgetrand(d[0],d[1])
-                            else:
-                                self._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
                         else:
                             n-=1
                             m+=1
-                            if "igetuni" in NAMES_IN_SCOPE:
-                                self._matrix=igetuni(d[0],d[1],n,m)
-                            else:
-                                self._matrix=[[int(uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[int(uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
-                    if "getzeros" in NAMES_IN_SCOPE:
-                        self._matrix=getzeros(d[0],d[1])
-                    else:
-                        self._matrix=[[0 for a in range(d[1])] for b in range(d[0])]
+                    self._matrix=[[0 for a in range(d[1])] for b in range(d[0])]
                     
             #Different ranges over individual columns
             elif len(lis)==0 and isinstance(r,dict):
