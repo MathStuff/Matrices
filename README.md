@@ -3,7 +3,7 @@
    
 ### Install using pip:
    
-   <code>pip install MatricesM==0.9a6</code>
+   <code>pip install MatricesM</code>
    
 ### Import by using:
    ```python 
