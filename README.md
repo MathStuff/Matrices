@@ -18,20 +18,6 @@
    from MatricesM.exampleMatrices import *
    ```
 
-### Note:
-   ##### After importing MatricesM.matrices for the first time, you will be asked a question on wheter or not to compile the Cython file.
-   ##### To get faster performance on generating random matrices you'll need Cython and GCC installed. Performance increases compared to built-in module as the dimensions get higher.
-   ##### You won't be asked again if you let the script to compile the proper pyd library for your OS.
-
-   #### Get Cython:
-  <code>
-    pip install Cython==0.29.6
-  </code>
-
-   #### Get GCC if you already don't have it:
-   https://gcc.gnu.org/
-
-
 ### Basic syntax:
 ```python 
 
