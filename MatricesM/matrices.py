@@ -607,10 +607,10 @@ EXAMPLES:
                 temp2=[temp[c][colS-1:colE] for c in range(len(temp))]
                 if isinstance(self,Identity):
                     return Identity(dim=len(temp2))
-                elif isinstance(self,FMatrix):
-                    return FMatrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE],decimal=self.decimal)
                 elif isinstance(self,CMatrix):
                     return CMatrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE],decimal=self.decimal)
+                elif isinstance(self,FMatrix):
+                    return FMatrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE],decimal=self.decimal)
                 else:
                     return Matrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
 
@@ -642,7 +642,9 @@ EXAMPLES:
                 transposed.append(list())
                 for cols in range(d0):
                     transposed[rows].append(temp[cols][rows])
-            if self._fMat:
+            if self._cMat:
+                return CMatrix([self.dim[1],self.dim[0]],listed=transposed,decimal=self.decimal)
+            elif self._fMat:
                 return FMatrix([self.dim[1],self.dim[0]],listed=transposed,decimal=self.decimal)
             else:
                 return Matrix([self.dim[1],self.dim[0]],listed=transposed)
@@ -682,8 +684,10 @@ EXAMPLES:
                 for cols in range(0,self.dim[1]):
                     res=self._minor(rows+1,cols+1).det*__sign([rows,cols])
                     adjL[rows].append(res)
-                    
-            adjM=FMatrix(dim=self.dim,listed=adjL)
+            if self._cMat:
+                adjM=CMatrix(dim=self.dim,listed=adjL)
+            else:
+                adjM=FMatrix(dim=self.dim,listed=adjL)
             self._adj=adjM.t
             self.__adjCalc=1
             return self._adj
@@ -733,6 +737,8 @@ EXAMPLES:
         temp=self.copy
         i=0
         zeros=[0]*self.dim[1]
+        if self._cMat:
+            zeros=[0j]*self.dim[1]
         while i <min(self.dim):
             #Find any zero-filled rows and make sure they are on the last row
             if zeros in temp.matrix:
@@ -755,13 +761,30 @@ EXAMPLES:
             temp[i]=[temp[i][j]/temp[i][i] for j in range(self.dim[1])]
             temp._matrix=[[temp[k][m]-temp[i][m]*temp[k][i] for m in range(self.dim[1])] if k!=i else temp[i] 
                                                                                            for k in range(self.dim[0])]
-
             i+=1
         
         #Fix -0.0 issue
-        temp._matrix=[[temp[i][j] if str(temp[i][j])!="-0.0" else 0 for j in range(temp.__dim[1])] for i in range(temp.__dim[0])]
+        if self._cMat:
+            boundary=eval("1e-"+str(self.decimal))
+            for i in range(self.dim[0]):
+                for j in range(self.dim[1]):
+                    num=temp[i][j]
+                    if isinstance(num,complex):
+                        if num.real<boundary and num.real>-boundary:
+                            num=complex(0,num.imag)
+                        if num.imag<boundary and num.imag>-boundary:
+                            num=complex(num.real,0)
+                    else:
+                        if str(num)=="-0.0":
+                            num=0
+                    
+                    temp[i][j]=num
+        else:
+            temp._matrix=[[temp[i][j] if str(temp[i][j])!="-0.0" else 0 for j in range(temp.__dim[1])] for i in range(temp.__dim[0])]
         
-        z=temp.matrix.count(zeros)   
+        z=temp.matrix.count(zeros)
+        if self._cMat:
+            return (CMatrix(self.dim,temp.matrix),self.dim[0]-z)
         return (FMatrix(self.dim,temp.matrix),self.dim[0]-z)
             
 # =============================================================================            
@@ -769,6 +792,8 @@ EXAMPLES:
     def _symDecomp(self):
         try:
             assert self.isSquare
+            if self._cMat:
+                return (None,None)
         except:
             print("Cant decompose the matrix into symmetric and antisymmetric matrices")
         else:
@@ -793,9 +818,12 @@ EXAMPLES:
         prod=1
         dia=[]
         i=0
-        L=FMatrix(self.dim,randomFill=0)
+        if self._cMat:
+            L=CMatrix(self.dim,randomFill=0,decimal=self.decimal)
+        else:
+            L=FMatrix(self.dim,randomFill=0)
         #Set diagonal elements to 1
-        for diags in range(self.dim[0]):
+        for diags in range(min(self.dim)):
             L[diags][diags]=1
         while i <min(self.dim):
             #Swap lines if diagonal has 0, stop when you find a non zero in the column
@@ -830,7 +858,12 @@ EXAMPLES:
 
         for element in dia:
             prod*=element
-        U=FMatrix(temp.dim,listed=temp.matrix)
+            
+        if self._cMat:
+            U=CMatrix(temp.dim,listed=temp.matrix,decimal=self.decimal)
+        else:
+            U=FMatrix(temp.dim,listed=temp.matrix)
+            
         return (U,((-1)**(rowC))*prod,L)
 
 # =============================================================================
@@ -895,11 +928,7 @@ EXAMPLES:
                 return Identity(self.dim[0])
             else:
                 return FMatrix(dim=self.dim[:],listed=self.matrix,features=self.features)
-        elif self._fMat:
-            return FMatrix(dim=self.dim[:],listed=self._matrix,randomFill=0,header=self._header,directory=self._dir,features=self.__features,decimal=self.decimal)
-        else:
-            return Matrix(dim=self.dim[:],listed=self._matrix,randomFill=0,header=self._header,directory=self._dir,features=self.__features)
-    
+        return eval(self.obj)
     @property
     def string(self):
         self._inRange=self._declareRange(self._matrix)
@@ -1038,12 +1067,15 @@ EXAMPLES:
 
     @property
     def sym(self):
-        return self._symDecomp()[0]
+        if self.isSquare:
+            return self._symDecomp()[0]
+        return []
     
     @property
     def anti(self):
-        return self._symDecomp()[1]
-    
+        if self.isSquare:
+            return self._symDecomp()[1]
+        return []
     @property
     def isSquare(self):
         return self.dim[0]==self.dim[1]
@@ -1099,11 +1131,15 @@ EXAMPLES:
     
     @property
     def isDiagonal(self):
-        return self.isUpperTri and self.isLowerTri
+        if self.isSquare:
+            return self.isUpperTri and self.isLowerTri
+        return False
     
     @property
     def isIdempotent(self):
-        return self==self*self
+        if self.isSquare:
+            return self==self*self
+        return False
     
     @property
     def isOrthogonal(self):
@@ -1127,6 +1163,8 @@ EXAMPLES:
     
     @property   
     def floatForm(self):
+        if self._cMat:
+            return eval(self.obj)
         t=[]
         for a in self._matrix:
             t.append([float(b) for b in a])            
@@ -1656,10 +1694,17 @@ EXAMPLES:
                         num=self.matrix[r][cs]*other.matrix[cs][rs]
                         total+=num
                     temp[r][rs]=total
-            if isinstance(self,FMatrix):
+                    
+            #Get decimals after the decimal point
+            if isinstance(self,FMatrix) or isinstance(self,CMatrix):
                 a=self.decimal
-            if isinstance(other,FMatrix):
+            if isinstance(other,FMatrix) or isinstance(self,CMatrix):
                 a=other.decimal
+             
+            #Return proper the matrix
+            if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
+            
             if isinstance(other,FMatrix) or isinstance(self,FMatrix):
                 return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
             return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp)
@@ -1997,14 +2042,15 @@ EXAMPLES:
         return None
     
     def __eq__(self,other):
-        if self._valid==1 and other._valid==1:
-            if self.dim==other.dim:
-                if self.matrix==other.matrix:
-                    return True
-                return False
-            else:   
-                return False
-        print("Invalid matrices")
+        if isinstance(other,Matrix):
+            if self._valid==1 and other._valid==1:
+                if self.dim==other.dim:
+                    if self.matrix==other.matrix:
+                        return True
+                    return False
+                else:   
+                    return False
+            print("Invalid matrices")
         return None
     
     def __gt__(self,other):
@@ -2092,6 +2138,7 @@ Identity matrix
         else:
             super().__init__(dim,randomFill=0)
             self._setMatrix()
+
                 
     def _setMatrix(self):
         self._matrix=[[0 for a in range(self.dim[1])] for b in range(self.dim[0])]
@@ -2163,7 +2210,7 @@ decimal: digits to round up to
         
         self.__decimal=decimal
         super().__init__(dim,listed,directory,ranged,randomFill,header,features)
-        
+
     def __str__(self): 
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
@@ -2213,7 +2260,7 @@ Matrix which contain complex numbers
         
         self.__decimal=decimal
         super().__init__(dim,listed,directory,ranged,randomFill,header,features,decimal)
-        
+
     def __str__(self):
         print("\nComplex Matrix",end="")
         self.__dim=self._declareDim()
