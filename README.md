@@ -276,7 +276,7 @@ B @ B.t #Matrix multiplication example
 ----------------------------------------
 
 
-##### All calculations below returns a matrix filled with 1's where the condition is True
+##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
 ```python 
    A**2 == A*A
    
