@@ -23,9 +23,11 @@ class Matrix:
     
     randomFill:boolean; fills the matrix with random numbers
     
-    header=boolean; takes first row as header title
+    header:boolean; takes first row as header title
     
-    features=list of strings; column names
+    features:list of strings; column names
+    
+    seed:int|float|complex|str; seed to use while generating random numbers, not useful without randomFill==True
     
     Check exampleMatrices.py or https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
@@ -60,6 +62,8 @@ class Matrix:
         self.setMatrix(self.dim,self._initRange,listed,directory)
         self.setFeatures()
 # =============================================================================
+    """Attribute formatting and setting methods"""
+# =============================================================================    
     def setInstance(self):
         """
         Set the type
@@ -207,7 +211,9 @@ class Matrix:
             else:
                 self._valid=0
                 return None
-# =============================================================================           
+# =============================================================================
+    """Attribute recalculation methods"""
+# =============================================================================    
     def _declareDim(self):
         """
         Set new dimension 
@@ -245,7 +251,9 @@ class Matrix:
                 temp=[lis[rows][cols] for rows in range(self.dim[0])]
                 c[self.__features[cols]]=[round(min(temp),4),round(max(temp),4)]
         return c
-        
+# =============================================================================
+    """Methods for rading from the files"""
+# =============================================================================
     def __fromFile(self,d):
         try:
             data="" 
@@ -264,7 +272,9 @@ class Matrix:
             f.close()
 
             return data
-# =============================================================================  
+# =============================================================================
+    """Element setting methods"""
+# =============================================================================
     def _listify(self,stringold):
         """
         Finds all the numbers in the given string
@@ -392,7 +402,56 @@ class Matrix:
 
         return string
 # =============================================================================
+    """Row/Column methods"""
+# =============================================================================
+    def head(self,rows=5):
+        if self.dim[0]>=rows:
+            return self.subM(1,rows,1,self.dim[1])
+        return self.subM(1,self.dim[0],1,self.dim[1])
+
+    def tail(self,rows=5):
+        if self.dim[0]>=rows:
+            return self.subM(self.dim[0]-rows+1,self.dim[0],1,self.dim[1])
+        return self.subM(1,self.dim[0],1,self.dim[1])
+
+    def col(self,column=None,as_matrix=True):
+        """
+        Get a specific column of the matrix
+        column:integer>=1 and <=column_amount
+        as_matrix:False to get the column as a list, True to get a column matrix (default) 
+        """
+        try:
+            assert isinstance(column,int)
+            assert column>0 and column<=self.dim[1]
+        except:
+            print("Bad arguments")
+            return None
+        else:
+            temp=[]
+            for rows in self._matrix:
+                temp.append(rows[column-1])
             
+            if as_matrix:
+                return self.subM(1,self.dim[0],column,column)
+            return temp
+    
+    def row(self,row=None,as_matrix=True):
+        """
+        Get a specific row of the matrix
+        row:integer>=1 and <=row_amount
+        as_matrix:False to get the row as a list, True to get a row matrix (default) 
+        """
+        try:
+            assert isinstance(row,int)
+            assert row>0 and row<=self.dim[0]
+        except:
+            print("Bad arguments")
+            return None
+        else:
+            if as_matrix:
+                return self.subM(row,row,1,self.dim[1])
+            return self._matrix[row-1]
+                    
     def add(self,feature="Col",lis=[],row=None,col=None):
         """
         Add a row or a column of numbers
@@ -612,6 +671,8 @@ EXAMPLES:
                     return Matrix(dim=[rowE-rowS+1,colE-colS+1],listed=temp2,features=self.__features[colS-1:colE])
 
 # =============================================================================
+    """Methods for special matrices and basic properties"""
+# =============================================================================     
     def _determinantByLUForm(self):
         try:
             if self.isSquare and self.dim[0]==1:
@@ -624,7 +685,7 @@ EXAMPLES:
             return 0
         else:
             return self._det
-# =============================================================================    
+
     def _transpose(self):
         try:
             assert self._valid==1
@@ -645,8 +706,8 @@ EXAMPLES:
                 return FMatrix([self.dim[1],self.dim[0]],listed=transposed,decimal=self.decimal)
             else:
                 return Matrix([self.dim[1],self.dim[0]],listed=transposed)
-# =============================================================================                
-    def _minor(self,row=None,col=None):
+
+    def minor(self,row=None,col=None):
         try:
             assert self._valid==1
             assert row!=None and col!=None
@@ -663,7 +724,7 @@ EXAMPLES:
             if not temp.dim[1]<1: 
                 temp.remove(c=col)
             return temp
-# =============================================================================    
+
     def _adjoint(self):
         def __sign(pos):
             return (-1)**(pos[0]+pos[1])   
@@ -679,7 +740,7 @@ EXAMPLES:
             for rows in range(0,self.dim[0]):
                 adjL.append(list())
                 for cols in range(0,self.dim[1]):
-                    res=self._minor(rows+1,cols+1).det*__sign([rows,cols])
+                    res=self.minor(rows+1,cols+1).det*__sign([rows,cols])
                     adjL[rows].append(res)
             if self._cMat:
                 adjM=CMatrix(dim=self.dim,listed=adjL)
@@ -688,7 +749,7 @@ EXAMPLES:
             self._adj=adjM.t
             self.__adjCalc=1
             return self._adj
-# =============================================================================                           
+
     def _inverse(self):
         """
         Returns the inversed matrix
@@ -697,7 +758,7 @@ EXAMPLES:
             assert self.dim[0] == self.dim[1]
             assert self.det!=0
         except AssertionError:    
-            if self.det==0:
+            if self.isSingular:
                 print("Determinant of the matrix is 0, can't find inverse")
             else:
                 print("Must be a square matrix")
@@ -710,14 +771,15 @@ EXAMPLES:
             self._inv=temp.rrechelon.subM(1,self.dim[0],self.dim[1]+1,self.dim[1]*2)
             self.__invCalc=1
             return self._inv
-# =============================================================================    
+
     def _Rank(self):
         """
         Returns the rank of the matrix
         """
         return self._echelon()[1]
-# =============================================================================        
-
+# =============================================================================
+    """Decomposition methods"""
+# ============================================================================= 
     def _echelon(self):
         """
         Returns reduced row echelon form of the matrix
@@ -775,9 +837,7 @@ EXAMPLES:
         if self._cMat:
             return (CMatrix(self.dim,temp.matrix),self.dim[0]-z)
         return (FMatrix(self.dim,temp.matrix),self.dim[0]-z)
-            
-# =============================================================================            
-        
+                    
     def _symDecomp(self):
         try:
             assert self.isSquare
@@ -858,48 +918,8 @@ EXAMPLES:
         return (U,((-1)**(rowC))*prod,L)
 
 # =============================================================================
-          
-    def col(self,column=None,as_matrix=True):
-        """
-        Get a specific column of the matrix
-        column:integer>=1 and <=column_amount
-        as_matrix:False to get the column as a list, True to get a column matrix (default) 
-        """
-        try:
-            assert isinstance(column,int)
-            assert column>0 and column<=self.dim[1]
-        except:
-            print("Bad arguments")
-            return None
-        else:
-            temp=[]
-            for rows in self._matrix:
-                temp.append(rows[column-1])
-            
-            if as_matrix:
-                return self.subM(1,self.dim[0],column,column)
-            return temp
-    
-    def row(self,row=None,as_matrix=True):
-        """
-        Get a specific row of the matrix
-        row:integer>=1 and <=row_amount
-        as_matrix:False to get the row as a list, True to get a row matrix (default) 
-        """
-        try:
-            assert isinstance(row,int)
-            assert row>0 and row<=self.dim[0]
-        except:
-            print("Bad arguments")
-            return None
-        else:
-            if as_matrix:
-                return self.subM(row,row,1,self.dim[1])
-            return self._matrix[row-1]
-            
-# =============================================================================
-    """Properties available for public"""               
-# =============================================================================
+    """Basic properties"""
+# =============================================================================  
     @property
     def p(self):
         print(self)
@@ -964,55 +984,15 @@ EXAMPLES:
             except:
                 return None
             else:
-                els=[]
-                for rows in self.matrix:
-                    for cols in rows:
-                        els.append(cols)
-                new=[]
-                i=-1
-                for r in range(val[0]):
-                    i+=1
-                    new.append([])
-                    for c in range(val[1]):
-                        new[i].append(els[c+val[1]*r])
-                self.__init__(dim=val,listed=new)
+                els=[self.matrix[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
+                temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
+                self.__init__(dim=val,listed=temp)
             
-    @property
-    def uptri(self):
-        return self._LU()[0]
-    
-    @property
-    def lowtri(self):
-        return self._LU()[2]
-    
     @property
     def rank(self):
         if not self.__rankCalc:
             self._rank=self._Rank()
-        return self._rank
-    
-    @property
-    def rrechelon(self):
-        """
-        Reduced-Row-Echelon
-        """
-        return self._echelon()[0]
-    
-    @property
-    def t(self):
-        return self._transpose()
-    
-    @property
-    def adj(self):
-        if self.__adjCalc:
-            return self._adj
-        return self._adjoint()
-    
-    @property
-    def inv(self):
-        if self.__invCalc:
-            return self._inv
-        return self._inverse()    
+        return self._rank  
     
     @property
     def matrix(self):
@@ -1030,6 +1010,54 @@ EXAMPLES:
             else:
                 return self._determinantByLUForm()  
             
+    @property
+    def eigenvalues(self):
+        """
+        ***** Currently doesn't work as intended for matrices bigger than 3x3 *****
+        return the eigenvalues
+        """
+        try:
+            assert self.isSquare and self.dim[0]>=2
+            if self.dim[0]==2:
+                d=self.det
+                tr=self.matrix[0][0]+self.matrix[1][1]
+                return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
+        except:
+            print("error getting eigenvalues")
+        else:
+            temp=self.copy
+            for i in range(self.dim[0]):
+                temp[i][i]="("+str(temp[i][i])+"-x)"
+            st=temp.chareq
+            print(st)
+            ce=(lambda x:eval(st))
+            return ce
+        
+    @property
+    def chareq(self):
+        m=self.matrix
+        if self.dim[0]==2:
+            return  f"(({m[0][0]}*{m[1][1]})-({m[0][1]}*{m[1][0]}))"
+        s=""
+        sign=0
+        for co in range(self.dim[1]):
+            
+            c=m[0][co]*((-1)**sign)
+            sign+=1
+            
+            temp=self.copy
+            temp.remove(r=1)
+            temp.remove(c=co+1)
+            
+            s+=f"(({c})*"
+            s+=temp.chareq
+            
+            if co!=self.dim[1]-1:
+                s+=")+"
+            else:
+                s+=")"
+        return s
+                        
     @property
     def highest(self):
         if not self._isIdentity:
@@ -1071,20 +1099,16 @@ EXAMPLES:
             raise err
         else:
             self.setMatrix(self.dim,self._initRange)
-    @property
-    def sym(self):
-        if self.isSquare:
-            return self._symDecomp()[0]
-        return []
-    
-    @property
-    def anti(self):
-        if self.isSquare:
-            return self._symDecomp()[1]
-        return []
+# =============================================================================
+    """Check special cases"""
+# =============================================================================    
     @property
     def isSquare(self):
         return self.dim[0]==self.dim[1]
+    
+    @property
+    def isSingular(self):
+        return self.det==0
     
     @property
     def isSymmetric(self):
@@ -1149,12 +1173,66 @@ EXAMPLES:
     
     @property
     def isOrthogonal(self):
+        if not self.isSquare or self.isSingular:
+            return False
+        return (self.inv).roundForm(4).matrix==self.t.matrix
+    
+    @property
+    def isBidiagonal(self):
+        pass
+    
+    @property
+    def isTridiagonal(self):
         pass
     
     @property
     def nilpotency(self):
         pass
+# =============================================================================
+    """Get special formats"""
+# =============================================================================    
+    @property
+    def rrechelon(self):
+        """
+        Reduced-Row-Echelon
+        """
+        return self._echelon()[0]
     
+    @property
+    def t(self):
+        return self._transpose()
+    
+    @property
+    def adj(self):
+        if self.__adjCalc:
+            return self._adj
+        return self._adjoint()
+    
+    @property
+    def inv(self):
+        if self.__invCalc:
+            return self._inv
+        return self._inverse()  
+
+    @property
+    def uptri(self):
+        return self._LU()[0]
+    
+    @property
+    def lowtri(self):
+        return self._LU()[2]
+    
+    @property
+    def sym(self):
+        if self.isSquare:
+            return self._symDecomp()[0]
+        return []
+    
+    @property
+    def anti(self):
+        if self.isSquare:
+            return self._symDecomp()[1]
+        return []    
     @property
     def floorForm(self):
         return self.__floor__()
@@ -1180,20 +1258,10 @@ EXAMPLES:
         if decimal==0:
             return Matrix(self.dim[:],listed=round(self,decimal).matrix)
         return FMatrix(self.dim[:],listed=round(self,decimal).matrix)
-    
-    def head(self,rows=5):
-        if self.dim[0]>=rows:
-            return self.subM(1,rows,1,self.dim[1])
-        return self.subM(1,self.dim[0],1,self.dim[1])
 
-    def tail(self,rows=5):
-        if self.dim[0]>=rows:
-            return self.subM(self.dim[0]-rows+1,self.dim[0],1,self.dim[1])
-        return self.subM(1,self.dim[0],1,self.dim[1])
-    
-    def minor(self,r=None,c=None):
-        return self._minor(row=r,col=c)
-    
+# =============================================================================
+    """Statistical methods"""
+# =============================================================================      
     def ranged(self,col=None):
         self._inRange=self._declareRange(self._matrix)
         if col==None:
@@ -1536,59 +1604,7 @@ EXAMPLES:
                 return temp
         except Exception as err:
             print("Error getting pearson correlation:",err)
-    
-    def _eigenvalues(self):
-        """
-        ***** Currently doesn't work as intended for matrices bigger than 3x3 *****
-        return the eigenvalues
-        """
-        try:
-            assert self.isSquare and self.dim[0]>=2
-            if self.dim[0]==2:
-                d=self.det
-                tr=self.matrix[0][0]+self.matrix[1][1]
-                return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
-        except:
-            print("error getting eigenvalues")
-        else:
-            temp=self.copy
-            for i in range(self.dim[0]):
-                temp[i][i]="("+str(temp[i][i])+"-x)"
-            st=temp.chareq
-            print(st)
-            ce=(lambda x:eval(st))
-            return ce
-    
-    @property
-    def eigenvalues(self):
-        return self._eigenvalues()
-    
-    @property
-    def chareq(self):
-        m=self.matrix
-        if self.dim[0]==2:
-            return  f"(({m[0][0]}*{m[1][1]})-({m[0][1]}*{m[1][0]}))"
-        s=""
-        sign=0
-        for co in range(self.dim[1]):
-            
-            c=m[0][co]*((-1)**sign)
-            sign+=1
-            
-            temp=self.copy
-            temp.remove(r=1)
-            temp.remove(c=co+1)
-            
-            s+=f"(({c})*"
-            s+=temp.chareq
-            
-            if co!=self.dim[1]-1:
-                s+=")+"
-            else:
-                s+=")"
-        return s
-                
-        
+           
 # =============================================================================
     def __contains__(self,val):
         """
