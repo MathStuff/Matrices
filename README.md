@@ -20,37 +20,40 @@
 
 ### Basic syntax:
 ```python 
+#If numbers are given in a "list of lists with numbers (ex: [[1,2],[3,4]]) dimension is NOT required as an argument
 
 IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
 
-                     listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the randomFill 
+                       listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the randomFill 
 
-                     directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
+                       directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                     ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [-5,5]
+                       ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [-5,5]
 
-                     randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+                       randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
 
-                     header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
+                       header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
-                     features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
-                     )
+                       features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
+                     
+                       seed=randomSeed #Optional, int|float|complex|str . Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+                       )
 
 FloatMatrix = FMatrix(#Same parameters from the Matrix class
-                    decimal=decimalsToRoundOnPrinting, #Optional, default is 4.
-                    )
+                      decimal=decimalsToRoundOnPrinting, #Optional, default is 4.
+                      )
 
 IdentityMatrix = Identity(dim=dimension #Required, int
-                       )
+                         )
 
 ComplexMatrix = CMatrix(dim=dimension, #Required, int | list as [rows,cols]
 
-                      ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [0,1]
+                        ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [0,1]
 
-                      randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+                        randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
 
-                      features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
-                      )
+                        features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
+                        )
 ```         
    ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
   
@@ -69,7 +72,7 @@ B=Matrix([3,5],ranged=[10,25]) #Creates a 3x5 matrix with elements ranged betwee
 ----------------------------------------
 ##### Create matrices filled with random float numbers
 ```python 
-E=FMatrix(6) #Create a matrix filled with random float values in the default range
+E=FMatrix(6) #Create a 6x6 square matrix filled with random float values in the default range
 
 F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
 ```
@@ -83,7 +86,7 @@ i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
 ----------------------------------------
 ##### Create matrices filled with random complex numbers (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
 ```python 
-Cm1=CMatrix(5) #Create a matrix filled with random float values in the default range
+Cm1=CMatrix(5) #Create a square matrix filled with random float values in the default range
 ```
 ----------------------------------------
 ##### Give list of numbers to create matrices
@@ -117,7 +120,7 @@ data="""1,K,60,69900,6325
 9,K,33,13200,8325
 10,E,37,31800,5975"""
 
-D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates a matrix form of the given string's *integers*, dimension is *required* as [dataAmount,features]
+D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates an "integer matrix" from the given string, dimension is *required* as [dataAmount,features]
 ```
 ##### OR
 
@@ -127,7 +130,9 @@ D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates a m
 ###### If bool(header) is True, feature names automatically get picked up from the first row
 ```python 
 data_directory="Example\Directory\DATAFILE"
+
 data_dim=[data_amount,feature_amount]
+
 data_matrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a float matrix from a table of data
 ```
 ----------------------------------------
@@ -161,6 +166,8 @@ C.copy #Returns a copy of the matrix
 
 C.obj #Returns the string form of the object
 
+C.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Seed can be changed to refill the matrix in-place
+
 C.intForm #Returns integer form of the matrix
 
 C.floatForm #Returns integer form of the matrix
@@ -170,6 +177,10 @@ C.ceilForm #Returns a matrix of all the elements' ceiling value
 C.floorForm #Returns the same matrix as "intForm"
 
 C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits
+
+#Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
+
+#Available comparison operators : "<" ,"<=", ">", ">=", "==", "!="
 
 ```
 ##### Algebric properties
@@ -265,7 +276,7 @@ B @ B.t #Matrix multiplication example
 ----------------------------------------
 
 
-##### All calculations below returns True
+##### All calculations below returns a matrix filled with 1's where the condition is True
 ```python 
    A**2 == A*A
    
