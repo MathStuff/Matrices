@@ -718,16 +718,7 @@ EXAMPLES:
         """
         Returns the rank of the matrix
         """
-        try:
-            r=0
-            temp=self._LU()[0]
-            for rows in temp._matrix:
-                if rows!=[0]*self.dim[1]:
-                    r+=1
-        except:
-            return self._echelon()[1]
-        else:
-            return r
+        return self._echelon()[1]
 # =============================================================================        
 
     def _echelon(self):
@@ -765,7 +756,7 @@ EXAMPLES:
         
         #Fix -0.0 issue
         if self._cMat:
-            boundary=eval("1e-"+str(self.decimal))
+            boundary=1e-10
             for i in range(self.dim[0]):
                 for j in range(self.dim[1]):
                     num=temp[i][j]
@@ -780,7 +771,8 @@ EXAMPLES:
                     
                     temp[i][j]=num
         else:
-            temp._matrix=[[temp[i][j] if str(temp[i][j])!="-0.0" else 0 for j in range(temp.__dim[1])] for i in range(temp.__dim[0])]
+            boundary=1e-10
+            temp._matrix=[[temp[i][j] if not (temp[i][j]<boundary and temp[i][j]>-boundary) else 0 for j in range(temp.dim[1])] for i in range(temp.dim[0])]
         
         z=temp.matrix.count(zeros)
         if self._cMat:
@@ -813,6 +805,8 @@ EXAMPLES:
         ***KNOWN ISSUE:Doesn't always work if determinant is 0 | linear system is inconsistant***
         ***STILL NEEDS CLEAN UP***
         """
+        if not self.isSquare:
+            return (None,None,None)
         temp = self.copy
         rowC=0
         prod=1
@@ -1703,7 +1697,7 @@ EXAMPLES:
              
             #Return proper the matrix
             if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
+                return CMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
             
             if isinstance(other,FMatrix) or isinstance(self,FMatrix):
                 return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
@@ -1722,11 +1716,17 @@ EXAMPLES:
                     a=self.decimal
                 if isinstance(other,FMatrix):
                     a=other.decimal
+                    
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
                 return Matrix(dim=self.dim,listed=temp)    
-            
-        elif isinstance(other,int) or isinstance(other,float):
+                #--------------------------------------------------------------------------
+                
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]+other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
 
@@ -1734,10 +1734,14 @@ EXAMPLES:
                 print("Can't add")
                 return self
             else:
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
-
+                #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
             if len(other)!=self.dim[1]:
@@ -1745,9 +1749,15 @@ EXAMPLES:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]+other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
+                
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
         else:
             print("Can't add")
 ################################################################################            
@@ -1764,11 +1774,16 @@ EXAMPLES:
                     a=self.decimal
                 if isinstance(other,FMatrix):
                     a=other.decimal
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
                 return Matrix(dim=self.dim,listed=temp)    
-            
-        elif isinstance(other,int) or isinstance(other,float):
+                #--------------------------------------------------------------------------
+                
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]-other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
 
@@ -1776,10 +1791,14 @@ EXAMPLES:
                 print("Can't subtract")
                 return self
             else:
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
-
+                #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
             if len(other)!=self.dim[1]:
@@ -1787,9 +1806,14 @@ EXAMPLES:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]-other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
         else:
             print("Can't subtract")
 ################################################################################     
@@ -1805,20 +1829,30 @@ EXAMPLES:
                     a=self.decimal
                 if isinstance(other,FMatrix):
                     a=other.decimal
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
                 return Matrix(dim=self.dim,listed=temp)    
+                #--------------------------------------------------------------------------
             
-        elif isinstance(other,int) or isinstance(other,float):
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]*other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
 
             except:
                 print("Can't multiply") 
             else:
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
 
@@ -1827,9 +1861,14 @@ EXAMPLES:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]*other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
         else:
             print("Can't multiply")
 ################################################################################
@@ -1845,9 +1884,16 @@ EXAMPLES:
                 print("Can't divide") 
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp)    
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=1)
             
-        elif isinstance(other,int) or isinstance(other,float):
+                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                    return FMatrix(dim=self.dim,listed=temp,decimal=1)
+                return Matrix(dim=self.dim,listed=temp)    
+                #--------------------------------------------------------------------------   
+            
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]//other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
             except ZeroDivisionError:
@@ -1857,7 +1903,14 @@ EXAMPLES:
                 print("Can't divide") 
                 return self
             else:
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=1)
+
+                if isinstance(self,FMatrix):                
+                    return FMatrix(dim=self.dim,listed=temp,decimal=1)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
                 
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -1873,7 +1926,14 @@ EXAMPLES:
                     print("Can't divide") 
                     return self
                 else:
-                    return Matrix(dim=self.dim,listed=temp) 
+                    #--------------------------------------------------------------------------
+                    if self._cMat:
+                        return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+    
+                    if isinstance(self,FMatrix):                
+                        return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return Matrix(dim=self.dim,listed=temp)
+                    #--------------------------------------------------------------------------
         else:
             print("Can't divide")
 ################################################################################            
@@ -1894,11 +1954,16 @@ EXAMPLES:
                     a=self.decimal
                 if isinstance(other,FMatrix):
                     a=other.decimal
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)  
+                return Matrix(dim=self.dim,listed=temp)    
+                #--------------------------------------------------------------------------
             
-        elif isinstance(other,int) or isinstance(other,float):
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]/other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
             except ZeroDivisionError:
@@ -1908,9 +1973,14 @@ EXAMPLES:
                 print("Can't divide") 
                 return self
             else:
-                if isinstance(self,FMatrix):               
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
+                if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)  
+                return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
                 print("Can't divide")
@@ -1925,9 +1995,14 @@ EXAMPLES:
                     print("Can't divide") 
                     return self
                 else:
-                    if isinstance(self,FMatrix):               
+                    #--------------------------------------------------------------------------
+                    if self._cMat:
+                        return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+    
+                    if isinstance(self,FMatrix):                
                         return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp)
+                    #--------------------------------------------------------------------------
         else:
             print("Can't divide")
 ################################################################################
@@ -1948,11 +2023,16 @@ EXAMPLES:
                     a=self.decimal
                 if isinstance(other,FMatrix):
                     a=other.decimal
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)  
+                return Matrix(dim=self.dim,listed=temp)    
+                #--------------------------------------------------------------------------
             
-        elif isinstance(other,int) or isinstance(other,float):
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]%other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
             except ZeroDivisionError:
@@ -1962,9 +2042,14 @@ EXAMPLES:
                 print("Can't get modular") 
                 return self
             else:
-                if isinstance(self,FMatrix):               
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
+                if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)  
+                return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
                 print("Can't get modular")
@@ -1979,9 +2064,14 @@ EXAMPLES:
                     print("Can't get modular") 
                     return self
                 else:
-                    if isinstance(self,FMatrix):               
+                    #--------------------------------------------------------------------------
+                    if self._cMat:
+                        return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+    
+                    if isinstance(self,FMatrix):                
                         return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp)
+                    #--------------------------------------------------------------------------
         else:
             print("Can't get modular")
 ################################################################################         
@@ -1997,20 +2087,30 @@ EXAMPLES:
                     a=self.decimal
                 if isinstance(other,FMatrix):
                     a=other.decimal
+                #--------------------------------------------------------------------------
+                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
                 return Matrix(dim=self.dim,listed=temp)    
+                #--------------------------------------------------------------------------  
             
-        elif isinstance(other,int) or isinstance(other,float):
+        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
                 temp=[[self.matrix[rows][cols]**other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
 
             except:
                 print("Can't raise to the given power")            
             else:
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
 
@@ -2019,9 +2119,14 @@ EXAMPLES:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]**other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
+                #--------------------------------------------------------------------------
+                if self._cMat:
+                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
+                #--------------------------------------------------------------------------
         else:
             print("Can't raise to the given power")
 ################################################################################                    
