@@ -1873,6 +1873,9 @@ EXAMPLES:
             print("Can't multiply")
 ################################################################################
     def __floordiv__(self,other):
+        if self._cMat or  isinstance(other,CMatrix):
+            print("CMatrix doesn't allow floor division")
+            return self
         if isinstance(other,Matrix):
             try:
                 assert self.dim==other.dim                
@@ -1885,9 +1888,6 @@ EXAMPLES:
                 return self
             else:
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=1)
-            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=1)
                 return Matrix(dim=self.dim,listed=temp)    
@@ -1904,9 +1904,6 @@ EXAMPLES:
                 return self
             else:
                 #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=1)
-
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=1)
                 return Matrix(dim=self.dim,listed=temp)
@@ -1927,9 +1924,6 @@ EXAMPLES:
                     return self
                 else:
                     #--------------------------------------------------------------------------
-                    if self._cMat:
-                        return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-    
                     if isinstance(self,FMatrix):                
                         return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp)
@@ -2007,6 +2001,9 @@ EXAMPLES:
             print("Can't divide")
 ################################################################################
     def __mod__(self, other):
+        if self._cMat or  isinstance(other,CMatrix):
+            print("CMatrix doesn't allow floor division")
+            return self
         if isinstance(other,Matrix):
             try:
                 assert self.dim==other.dim                
@@ -2024,9 +2021,6 @@ EXAMPLES:
                 if isinstance(other,FMatrix):
                     a=other.decimal
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
-            
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
                     return FMatrix(dim=self.dim,listed=temp,decimal=a)
                 return Matrix(dim=self.dim,listed=temp)    
@@ -2043,9 +2037,6 @@ EXAMPLES:
                 return self
             else:
                 #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-
                 if isinstance(self,FMatrix):                
                     return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp)
@@ -2065,9 +2056,6 @@ EXAMPLES:
                     return self
                 else:
                     #--------------------------------------------------------------------------
-                    if self._cMat:
-                        return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-    
                     if isinstance(self,FMatrix):                
                         return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp)
