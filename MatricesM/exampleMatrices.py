@@ -4,7 +4,7 @@ Created on Wed Oct 31 17:38:28 2018
 
 @author: Semih
 """
-from MatricesM.matrices import Matrix,FMatrix,Identity,CMatrix
+from matrices import Matrix,FMatrix,Identity,CMatrix
 
 # =============================================================================
 """Example Inputs"""      
