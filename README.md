@@ -20,7 +20,6 @@
 
 ### Basic syntax:
 ```python 
-#If numbers are given in a "list of lists with numbers (ex: [[1,2],[3,4]]) dimension is NOT required as an argument
 
 IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
 
@@ -93,7 +92,7 @@ Cm1=CMatrix(5) #Create a square matrix filled with random float values in the de
 ```python 
 filled_rows=[[1,2,3],[4,5,6],[7,8,9]]
 
-C=Matrix(listed=filled_rows) #Creates a matrix with the given list of numbers
+C=Matrix(3,filled_rows) #Creates a 3x3 matrix with the given list of numbers
 
 C1=FMatrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
 
@@ -120,7 +119,13 @@ data="""1,K,60,69900,6325
 9,K,33,13200,8325
 10,E,37,31800,5975"""
 
-D=Matrix(dim=[10,4],listed=data,features=["id","age","num1","num2") #Creates an "integer matrix" from the given string, dimension is *required* as [dataAmount,features]
+#Creat an "integer matrix" from the given string, dimension is *required* as [dataAmount,features]
+
+D = Matrix(dim=[10,4],
+           listed=data,
+           features=["id","age","num1","num2"]
+          ) 
+
 ```
 ##### OR
 
