@@ -49,8 +49,8 @@ class Matrix:
         self.__invCalc = 0
         self.__rankCalc = 0    
         self._matrix = []   
-        self._initRange = ranged
-        self._randomFill = randomFill
+        self.__initRange = ranged
+        self.__randomFill = randomFill
         self.__seed = seed
         self._string = ""
         self._dir = directory
@@ -59,7 +59,7 @@ class Matrix:
         
         self._setDim(dim)
         self.setInstance()                     
-        self.setMatrix(self.dim,self._initRange,listed,directory)
+        self.setMatrix(self.dim,self.initRange,listed,directory)
         self.setFeatures()
 # =============================================================================
     """Attribute formatting and setting methods"""
@@ -124,16 +124,16 @@ class Matrix:
 
         #Set new range    
         if r==None:
-            r=self._initRange[:]
+            r=self.initRange
         else:
-            self._initRange=r
+            self.initRange=r
         
         #Save the seed for reproduction
-        if self.seed==None and self._randomFill and len(lis)==0 and len(direc)==0:
+        if self.seed==None and self.randomFill and len(lis)==0 and len(direc)==0:
             randseed=random()
             seed(randseed)
             self.__seed=randseed
-        elif self._randomFill and len(lis)==0 and len(direc)==0:
+        elif self.randomFill and len(lis)==0 and len(direc)==0:
             seed(self.seed)
         else:
             self.__seed=None
@@ -162,24 +162,23 @@ class Matrix:
                                 self._matrix.append(lis[j:j+self.dim[1]])
             #Same range for all columns
             elif len(lis)==0 and isinstance(r,list):
-                if self._randomFill:
-                    m,n=max(self._initRange),min(self._initRange)
+                if self.randomFill:
+                    m,n=max(self.initRange),min(self.initRange)
                     if self._cMat:
                         self._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                     
                     elif self._fMat:
-                        if self._initRange==[0,1]:
+                        if self.initRange==[0,1]:
                             self._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
                         else:
                             self._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
-                        if self._initRange==[0,1]:
+                        if self.initRange==[0,1]:
                             self._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
                         else:
-                            n-=1
                             m+=1
-                            self._matrix=[[int(uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
+                            self._matrix=[[uniform(n,m)//1 for a in range(d[1])] for b in range(d[0])]
                 
                 else:
                     self._matrix=[[0 for a in range(d[1])] for b in range(d[0])]
@@ -205,7 +204,7 @@ class Matrix:
                         self._matrix=FMatrix([self.dim[1],self.dim[0]],listed=temp).t.matrix 
                         
                     else:
-                        temp=[[int(uniform(min(r[feats[i]]),max(r[feats[i]]))) for _ in range(d[0])] for i in range(d[1])]
+                        temp=[[uniform(min(r[feats[i]]),max(r[feats[i]])+1)//1 for _ in range(d[0])] for i in range(d[1])]
                         self._matrix=Matrix([self.dim[1],self.dim[0]],listed=temp).t.matrix 
                     
             else:
@@ -987,6 +986,33 @@ EXAMPLES:
                 els=[self.matrix[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
                 temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
                 self.__init__(dim=val,listed=temp)
+    
+    @property
+    def randomFill(self):
+        return self.__randomFill
+    @randomFill.setter
+    def randomFill(self,value):
+        try:
+            assert isinstance(value,int) or isinstance(value,bool)
+        except AssertionError:
+            raise TypeError("randomFill should be an integer or a boolean")
+        else:
+            self.__randomFill=bool(value)
+            
+    @property
+    def initRange(self):
+        return self.__initRange
+    @initRange.setter
+    def initRange(self,value):
+        try:
+            assert isinstance(value,list) or isinstance(value,tuple)
+            assert len(value)==2
+            assert isinstance(value[0],int) or isinstance(value[0],float)
+            assert isinstance(value[1],int) or isinstance(value[1],float)
+        except AssertionError:
+            raise TypeError("initRange should be a list or a tuple")
+        else:
+            self.__initRange=value
             
     @property
     def rank(self):
@@ -1023,19 +1049,21 @@ EXAMPLES:
                 tr=self.matrix[0][0]+self.matrix[1][1]
                 return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
         except:
-            print("error getting eigenvalues")
+            print("Error getting eigenvalues")
+            return None
         else:
             temp=self.copy
             for i in range(self.dim[0]):
                 temp[i][i]="("+str(temp[i][i])+"-x)"
             st=temp.chareq
-            print(st)
             ce=(lambda x:eval(st))
             return ce
         
     @property
     def chareq(self):
         m=self.matrix
+        if not self.isSquare:
+            return None
         if self.dim[0]==2:
             return  f"(({m[0][0]}*{m[1][1]})-({m[0][1]}*{m[1][0]}))"
         s=""
@@ -1076,11 +1104,11 @@ EXAMPLES:
     def obj(self):
         #ranged and randomFill arguments are NOT required to create the same matrix
         if self._cMat:
-            return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal,self.seed)
+            return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.decimal,self.seed)
         elif self._fMat:
-            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.decimal,self.seed)
+            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.decimal,self.seed)
         elif not self._isIdentity:
-            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',seed={7})".format(self.dim,self._matrix,self._initRange,self._randomFill,self.__features,self._header,self._dir,self.seed)
+            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',seed={7})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.seed)
         else:
             return None
         
@@ -1098,7 +1126,7 @@ EXAMPLES:
         except Exception as err:
             raise err
         else:
-            self.setMatrix(self.dim,self._initRange)
+            self.setMatrix(self.dim,self.initRange)
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -1255,13 +1283,27 @@ EXAMPLES:
         return FMatrix(self.dim[:],listed=t)
     
     def roundForm(self,decimal=1):
-        if decimal==0:
-            return Matrix(self.dim[:],listed=round(self,decimal).matrix)
-        return FMatrix(self.dim[:],listed=round(self,decimal).matrix)
-
+        return round(self,decimal)
+# =============================================================================
+    """Filtering methods"""
+# =============================================================================     
+    def where(self,column,condition):
+        pass
+    
+    def apply(self,operator,value):
+        pass
+    
+    def indexSet(self):
+        pass
+    
+    def sortBy(self,column,order):
+        pass
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
+    def describe(self):
+        pass
+    
     def ranged(self,col=None):
         self._inRange=self._declareRange(self._matrix)
         if col==None:
@@ -1384,7 +1426,7 @@ EXAMPLES:
                 feats=self.__features[:]
             else:
                 assert col>=1 and col<=self.dim[1]
-                temp=self.subM(1,self.dim[0],col,col).t
+                temp=self.col(col)
                 feats=self.features[col-1]
             #Set keys in the dictionary which will be returned at the end
             mods={}
@@ -1605,6 +1647,8 @@ EXAMPLES:
         except Exception as err:
             print("Error getting pearson correlation:",err)
            
+# =============================================================================
+    """Other magic methods """
 # =============================================================================
     def __contains__(self,val):
         """
@@ -2546,7 +2590,7 @@ Matrix which contain complex numbers
 
 class SMatrix(Matrix):
     """
-Matrix with strings as elements
+Data frame matrix
     """
     def __init__(self,*args,**kwargs):
         pass
