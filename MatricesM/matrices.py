@@ -680,31 +680,30 @@ EXAMPLES:
                 self._det=self._LU()[1]
                 self.__detCalc=1
         except Exception as e:
-            print("error ",e)
+            print("error calculating determinant: ",e)
             return 0
         else:
             return self._det
 
-    def _transpose(self):
+    def _transpose(self,hermitian=False):
         try:
             assert self._valid==1
-            temp=[a[:] for a in self.matrix]
-            transposed=[]
+            temp=self.matrix
             d0,d1=self.dim[0],self.dim[1]
+            if hermitian:
+                transposed=[[temp[cols][rows].conjugate() for cols in range(d0)] for rows in range(d1)]
+            else:
+                transposed=[[temp[cols][rows] for cols in range(d0)] for rows in range(d1)]
             
         except Exception as err:
             print(err)
         else:
-            for rows in range(d1):
-                transposed.append(list())
-                for cols in range(d0):
-                    transposed[rows].append(temp[cols][rows])
             if self._cMat:
-                return CMatrix([self.dim[1],self.dim[0]],listed=transposed,decimal=self.decimal)
+                return CMatrix([d1,d0],listed=transposed,decimal=self.decimal)
             elif self._fMat:
-                return FMatrix([self.dim[1],self.dim[0]],listed=transposed,decimal=self.decimal)
+                return FMatrix([d1,d0],listed=transposed,decimal=self.decimal)
             else:
-                return Matrix([self.dim[1],self.dim[0]],listed=transposed)
+                return Matrix([d1,d0],listed=transposed)
 
     def minor(self,row=None,col=None):
         try:
@@ -732,8 +731,11 @@ EXAMPLES:
             assert self.isSquare
         except AssertionError:
             print("Not a square matrix")
+            return None
         except Exception as err:
             print(err)
+            return None
+
         else:
             adjL=[]
             for rows in range(0,self.dim[0]):
@@ -975,7 +977,7 @@ EXAMPLES:
                 if isinstance(val,int):
                     assert val>0
                     val=[val,val]
-                elif isinstance(val,list):
+                elif isinstance(val,list) or isinstance(val,tuple):
                     assert len(val)==2
                 else:
                     return None
@@ -985,7 +987,7 @@ EXAMPLES:
             else:
                 els=[self.matrix[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
                 temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
-                self.__init__(dim=val,listed=temp)
+                self.__init__(dim=list(val),listed=temp)
     
     @property
     def randomFill(self):
@@ -1012,7 +1014,7 @@ EXAMPLES:
         except AssertionError:
             raise TypeError("initRange should be a list or a tuple")
         else:
-            self.__initRange=value
+            self.__initRange=list(value)
             
     @property
     def rank(self):
@@ -1030,6 +1032,7 @@ EXAMPLES:
             assert self.isSquare
         except AssertionError:
             print("Not a square matrix")
+            return None
         else:
             if self.__detCalc:
                 return self._det
@@ -1151,11 +1154,9 @@ EXAMPLES:
         return (self.t*-1).matrix==self.matrix
     
     @property
-    def isSkewSymmetric(self):
-        if self.isSymmetric:
-            return self.dim[0] == [1 if self.matrix[a][a]==0 else 0 for a in range(self.dim[0])].count(1)
-        return False
-    
+    def isHermitian(self):
+        return (self.ht).matrix==self.matrix
+        
     @property
     def isTriangular(self):
         from functools import reduce
@@ -1229,6 +1230,10 @@ EXAMPLES:
     @property
     def t(self):
         return self._transpose()
+    
+    @property
+    def ht(self):
+        return self._transpose(hermitian=True)    
     
     @property
     def adj(self):
