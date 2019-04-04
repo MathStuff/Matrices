@@ -1257,7 +1257,9 @@ EXAMPLES:
     def pseudoinv(self):
         if self.isSquare:
             return self.inv
-        return ((self.t@self).inv)@(self.t)
+        if self.dim[0]>self.dim[1]:
+            return ((self.t@self).inv)@(self.t)
+        return None
     
     @property
     def uptri(self):
