@@ -1228,6 +1228,12 @@ EXAMPLES:
         return self._echelon()[0]
     
     @property
+    def conj(self):
+        temp=self.copy
+        temp._matrix=[[temp.matrix[i][j].conjugate() for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return temp
+    
+    @property
     def t(self):
         return self._transpose()
     
@@ -1246,7 +1252,13 @@ EXAMPLES:
         if self.__invCalc:
             return self._inv
         return self._inverse()  
-
+    
+    @property
+    def pseudoinv(self):
+        if self.isSquare:
+            return self.inv
+        return ((self.t@self).inv)@(self.t)
+    
     @property
     def uptri(self):
         return self._LU()[0]
