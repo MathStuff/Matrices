@@ -204,11 +204,15 @@ C.t #Returns the transposed matrix
 
 C.ht #Returns the hermitian-transpose of the matrix
 
+C.conj #Returns the conjugated forms of the elements in a matrix
+
 C.minor(m,n) #Returns the mth row's nth element's minor matrix
 
 C.adj #Returns the adjoint matrix
 
 C.inv #Returns the inversed matrix
+
+C.pseudoinv #Returns the pseudo inverse of the matrix
 
 C.rank #Returns the rank of the matrix
 
