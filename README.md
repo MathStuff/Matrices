@@ -202,6 +202,8 @@ C.det #Returns the determinant of the matrix
 
 C.t #Returns the transposed matrix
 
+C.ht #Returns the hermitian-transpose of the matrix
+
 C.minor(m,n) #Returns the mth row's nth element's minor matrix
 
 C.adj #Returns the adjoint matrix
@@ -216,8 +218,6 @@ C.isSquare #Returns True if the matrix is a square matrix
 
 C.isSymmetric #Returns True if the matrix is a symmetric matrix
 
-C.isSkewSymmetric #Returns True if the matrix is a skew-symmetric matrix
-
 C.isAntiSymmetric #Returns True if the matrix is an antisymmetric matrix
 
 C.isTriangular #Returns True if the matrix is a triangular matrix
@@ -229,6 +229,9 @@ C.isLowerTri #Returns True if the matrix is a lower-triangular matrix
 C.isDiagonal #Returns True if the matrix is a diagonal matrix
 
 C.isIdempotent #Returns True if the matrix is an idempotent matrix
+
+C.isOrthogonal #Returns True if the matrix is an orthogonal matrix
+
 ```
 ##### Statistical properties 
 ```python 
