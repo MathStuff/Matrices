@@ -224,6 +224,8 @@ C.isSymmetric #Returns True if the matrix is a symmetric matrix
 
 C.isAntiSymmetric #Returns True if the matrix is an antisymmetric matrix
 
+C.isHermitian #Returns True if the matrix is a hermitian matrix
+
 C.isTriangular #Returns True if the matrix is a triangular matrix
 
 C.isUpperTri #Returns True if the matrix is a upper-trianguar matrix
