@@ -200,6 +200,8 @@ C.anti #Returns the antisymmetric part of the matrix
 
 C.det #Returns the determinant of the matrix
 
+C.perma #Returns the permanent of the matrix
+
 C.t #Returns the transposed matrix
 
 C.ht #Returns the hermitian-transpose of the matrix
@@ -214,9 +216,13 @@ C.inv #Returns the inversed matrix
 
 C.pseudoinv #Returns the pseudo inverse of the matrix
 
+C.trace #Returns the trace of the matrix
+
 C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
+
+C.eigenvalues #Returns the eigenvalues (CHECK ISSUE#22 : https://github.com/MathStuff/MatricesM/issues/22)
 
 C.isSquare #Returns True if the matrix is a square matrix
 
