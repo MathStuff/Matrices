@@ -1221,6 +1221,17 @@ EXAMPLES:
     """Get special formats"""
 # =============================================================================    
     @property
+    def signs(self):
+        """
+        Determine the signs of the elements
+        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
+        """
+        if self._cMat:
+            return {"Real":self.realsigns,"Imag":self.imagsigns}
+        signs=[[1 if self._matrix[i][j]>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return Matrix(self.dim,signs)
+    
+    @property
     def rrechelon(self):
         """
         Reduced-Row-Echelon
@@ -1229,32 +1240,50 @@ EXAMPLES:
     
     @property
     def conj(self):
+        """
+        Conjugated matrix
+        """
         temp=self.copy
         temp._matrix=[[temp.matrix[i][j].conjugate() for j in range(self.dim[1])] for i in range(self.dim[0])]
         return temp
     
     @property
     def t(self):
+        """
+        Transposed matrix
+        """
         return self._transpose()
     
     @property
     def ht(self):
+        """
+        Hermitian-transposed matrix
+        """
         return self._transpose(hermitian=True)    
     
     @property
     def adj(self):
+        """
+        Adjoint matrix
+        """
         if self.__adjCalc:
             return self._adj
         return self._adjoint()
     
     @property
     def inv(self):
+        """
+        Inversed matrix
+        """
         if self.__invCalc:
             return self._inv
         return self._inverse()  
     
     @property
     def pseudoinv(self):
+        """
+        Pseudo-inversed matrix
+        """
         if self.isSquare:
             return self.inv
         if self.dim[0]>self.dim[1]:
@@ -1263,37 +1292,62 @@ EXAMPLES:
     
     @property
     def uptri(self):
+        """
+        Upper triangular part of the matrix
+        """
         return self._LU()[0]
     
     @property
     def lowtri(self):
+        """
+        Lower triangular part of the matrix
+        """
         return self._LU()[2]
     
     @property
     def sym(self):
+        """
+        Symmetrical part of the matrix
+        """
         if self.isSquare:
             return self._symDecomp()[0]
         return []
     
     @property
     def anti(self):
+        """
+        Anti-symmetrical part of the matrix
+        """
         if self.isSquare:
             return self._symDecomp()[1]
         return []    
+    
     @property
     def floorForm(self):
+        """
+        Floor values elements
+        """
         return self.__floor__()
     
     @property
     def ceilForm(self):
+        """
+        Ceiling value of the elements
+        """
         return self.__ceil__()
     
     @property   
     def intForm(self):
+        """
+        Integer part of the elements
+        """
         return self.__floor__()
     
     @property   
     def floatForm(self):
+        """
+        Elements in float values
+        """
         if self._cMat:
             return eval(self.obj)
         t=[]
@@ -1302,6 +1356,9 @@ EXAMPLES:
         return FMatrix(self.dim[:],listed=t)
     
     def roundForm(self,decimal=1):
+        """
+        Elements rounded to the desired decimal after dot
+        """
         return round(self,decimal)
 # =============================================================================
     """Filtering methods"""
@@ -1324,6 +1381,10 @@ EXAMPLES:
         pass
     
     def ranged(self,col=None):
+        """
+        col:integer|None ; column number
+        Range of the columns
+        """
         self._inRange=self._declareRange(self._matrix)
         if col==None:
             return self._inRange
@@ -1331,7 +1392,8 @@ EXAMPLES:
     
     def mean(self,col=None):
         """
-        Sets the "mean" attribute of the matrix as the mean of it's elements
+        col:integer|None ; column number
+        Mean of the columns
         """
         try:
             assert (isinstance(col,int) and col>=1 and col<=self.dim[1]) or col==None
@@ -1364,7 +1426,7 @@ EXAMPLES:
         else:
             return avg    
 
-    def sdev(self,col=None,population=0):
+    def sdev(self,col=None,population=1):
         """
         Standard deviation of the columns
         col:integer>=1
@@ -1372,7 +1434,7 @@ EXAMPLES:
         """
         try:
             assert self.dim[0]>1
-            assert population==0 or population==1
+            assert population in [0,1]
         except:
             print("Can't get standard deviation")
         else:
@@ -1435,7 +1497,7 @@ EXAMPLES:
     
     def mode(self,col=None):
         """
-        Returns the columns' most repeated elements
+        Returns the columns' most repeated elements in a dictionary
         col:integer>=1 and <=amount of columns
         """
         try:
@@ -1513,7 +1575,7 @@ EXAMPLES:
         
     def freq(self,col=None):
         """
-        returns the frequency of every element on desired column(s)
+        Returns the frequency of every element on desired column(s)
         col:column
         """
         try:
@@ -1595,7 +1657,7 @@ EXAMPLES:
                 return qmeds
             return iqr
         
-    def variance(self,col=None,population=0):
+    def variance(self,col=None,population=1):
         s=self.sdev(col,population)
         vs={}
         for k,v in s.items():
@@ -2606,7 +2668,25 @@ Matrix which contain complex numbers
                 print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))            
                 
             return self._string+"\n"
-
+        
+    @property
+    def realsigns(self):
+        """
+        Determine the signs of the elements' real parts
+        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
+        """
+        signs=[[1 if self._matrix[i][j].real>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return Matrix(self.dim,signs)
+    
+    @property
+    def imagsigns(self):
+        """
+        Determine the signs of the elements' imaginary parts
+        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
+        """
+        signs=[[1 if self._matrix[i][j].imag>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return Matrix(self.dim,signs)
+    
 class SMatrix(Matrix):
     """
 Data frame matrix
