@@ -1018,9 +1018,52 @@ EXAMPLES:
             
     @property
     def rank(self):
+        """
+        Rank of the matrix ***HAVE ISSUES WORKING WITH SOME MATRICES***
+        """
         if not self.__rankCalc:
             self._rank=self._Rank()
         return self._rank  
+    
+    @property
+    def perma(self):
+        """
+        Permanent of the matrix
+        """
+        if not self.isSquare:
+            return None
+
+        if self.dim[0]==2:
+            return self._matrix[0][0]*self._matrix[1][1] + self._matrix[1][0]*self._matrix[0][1]
+        
+        if self.dim[0]==3:
+            return (self._matrix[0][0]*self._matrix[1][1]*self._matrix[2][2] + 
+                    self._matrix[0][1]*self._matrix[1][2]*self._matrix[2][0] +
+                    self._matrix[0][2]*self._matrix[1][0]*self._matrix[2][1] +
+                    self._matrix[0][2]*self._matrix[1][1]*self._matrix[2][0] +
+                    self._matrix[0][1]*self._matrix[1][0]*self._matrix[2][2] +
+                    self._matrix[0][0]*self._matrix[1][2]*self._matrix[2][1]
+                    )
+        total=0
+        for i in range(self.dim[0]):
+            temp=self.copy
+            temp.remove(c=1)
+            temp.remove(r=i+1)
+
+            co=self.matrix[i][0]
+
+            total+=co*temp.perma
+            
+        return total
+            
+    @property
+    def trace(self):
+        """
+        Trace of the matrix
+        """
+        if not self.isSquare:
+            return None
+        return sum([self._matrix[i][i] for i in range(self.dim[0])])
     
     @property
     def matrix(self):
@@ -1028,6 +1071,9 @@ EXAMPLES:
    
     @property
     def det(self):
+        """
+        Determinant of the matrix
+        """
         try:
             assert self.isSquare
         except AssertionError:
@@ -1043,7 +1089,7 @@ EXAMPLES:
     def eigenvalues(self):
         """
         ***** Currently doesn't work as intended for matrices bigger than 3x3 *****
-        return the eigenvalues
+        Returns the eigenvalues
         """
         try:
             assert self.isSquare and self.dim[0]>=2
@@ -1091,6 +1137,9 @@ EXAMPLES:
                         
     @property
     def highest(self):
+        """
+        Highest value in the matrix
+        """
         if not self._isIdentity:
             return max([max(a) for a in self.ranged().values()])
         else:
@@ -1098,6 +1147,9 @@ EXAMPLES:
         
     @property
     def lowest(self):
+        """
+        Lowest value in the matrix
+        """
         if not self._isIdentity:
             return min([min(a) for a in self.ranged().values()])  
         else:
@@ -1105,6 +1157,9 @@ EXAMPLES:
         
     @property
     def obj(self):
+        """
+        Object call as a string to recreate the matrix
+        """
         #ranged and randomFill arguments are NOT required to create the same matrix
         if self._cMat:
             return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.decimal,self.seed)
@@ -1118,7 +1173,6 @@ EXAMPLES:
     @property
     def seed(self):
         return self.__seed
-    
     @seed.setter
     def seed(self,value):
         try:
@@ -1130,6 +1184,7 @@ EXAMPLES:
             raise err
         else:
             self.setMatrix(self.dim,self.initRange)
+            
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -1217,6 +1272,7 @@ EXAMPLES:
     @property
     def nilpotency(self):
         pass
+    
 # =============================================================================
     """Get special formats"""
 # =============================================================================    
@@ -1360,6 +1416,7 @@ EXAMPLES:
         Elements rounded to the desired decimal after dot
         """
         return round(self,decimal)
+    
 # =============================================================================
     """Filtering methods"""
 # =============================================================================     
@@ -1374,6 +1431,7 @@ EXAMPLES:
     
     def sortBy(self,column,order):
         pass
+    
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
@@ -1587,7 +1645,6 @@ EXAMPLES:
                 temp=self.subM(1,self.dim[0],col,col).t
                 feats=self.features[col-1]
 
-    
             res={}
             if col==None:
                 r=self.dim[1]
@@ -1658,6 +1715,12 @@ EXAMPLES:
             return iqr
         
     def variance(self,col=None,population=1):
+        """
+        Variance in the columns
+        col:integer>=1 |None ; Number of the column, None to get all columns 
+        population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
+        Returns a dictionary
+        """
         s=self.sdev(col,population)
         vs={}
         for k,v in s.items():
@@ -1665,6 +1728,13 @@ EXAMPLES:
         return vs
     
     def z(self,row=None,col=None):
+        """
+        z-scores of the elements
+        row:integer>=1 |None ; z-score of the desired row
+        column:integer>=1 |None ; z-score of the desired column
+        Give no arguments to get the whole scores in a matrix
+        Returns a matrix unless both arguments are passed correctly, returns the value if row and column given
+        """
         try:
             if col==None:
                 assert (isinstance(row,int) and row>=1 and row<=self.dim[1]) or row==None
@@ -1679,10 +1749,10 @@ EXAMPLES:
             else:
                 assert isinstance(col,int) and col>=1 and col<=self.dim[1]
                 assert isinstance(row,int) and row>=1 and row<=self.dim[0]
-                return (self[row-1][col-1]-self.mean(col))/self.sdev(col)
+                return (self.matrix[row-1][col-1]-self.mean(col)[self.features[col-1]])/self.sdev(col)[self.features[col-1]]
                 
-        except:
-            print("error getting z scores")
+        except Exception as e:
+            print("error getting z scores:",e)
         else:
             scores=FMatrix(dims,randomFill=0,features=feats)
             m=sub.mean(col)
@@ -1699,7 +1769,8 @@ EXAMPLES:
         
     def corr(self,col1=None,col2=None):
         """
-        Pearson correlation coefficient r
+        Correlation of 2 columns
+        col1,col2: integers>=1  ; column numbers
         Not optimal for big datasets yet
         """
         def calc(c1,c2):
@@ -1781,8 +1852,6 @@ EXAMPLES:
             self._inRange=self._declareRange(self._matrix)    
             self._string=self._stringfy()
                   
-# =============================================================================
-
     def __getitem__(self,pos):
         try:
             self.__rankCalc=0
@@ -1822,8 +1891,10 @@ EXAMPLES:
     
     def __len__(self):
         return self.dim[0]*self.dim[1]
+    
 # =============================================================================
-
+    """Arithmetic methods"""        
+# =============================================================================
     def __matmul__(self,other):
         try:
             assert self.dim[1]==other.dim[0]
