@@ -746,7 +746,7 @@ EXAMPLES:
         """
         Returns the inversed matrix
         """
-        if not self.isSquare or not self.isSingular:
+        if not self.isSquare or self.isSingular:
             return None
         else:
             temp=self.copy
