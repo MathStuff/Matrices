@@ -6,6 +6,10 @@ Created on Wed Oct 31 17:38:28 2018
 """
 from matrices import Matrix,FMatrix,Identity,CMatrix
 
+try:
+    plotting=bool(int(input("Enable plotting ?(0/1) (Requires matplotlib)")))
+except:
+    plotting=0
 # =============================================================================
 """Example Inputs"""      
 # =============================================================================
@@ -365,17 +369,39 @@ err=out-preds
 """)
 validStr4.corr().p
 
-var=validStr4.subM(1,validStr4.dim[0],2,2)
+var = validStr4.subM(1,validStr4.dim[0],2,2)
 var.add("bias",[1]*validStr4.dim[0],col=1)
 
-out=validStr4.subM(1,validStr4.dim[0],1,1)
+out = validStr4.subM(1,validStr4.dim[0],1,1)
 
-coefs=(((var.t@var).inv)@var.t)@out
+coefs = (((var.t@var).inv)@var.t)@out
 
-preds=var@coefs
-err=out-preds
+preds = var@coefs
+err = out-preds
+
 print("Height={0} + {1}*{2}".format(coefs[0][0],coefs[1][0],validStr4.features[1]))
 print("\nAverage error:",err.mean(1)["Col 1"])
+
+if plotting:
+    try:
+        from matplotlib import pyplot as plt
+    except ImportError:
+        print("Couldn't import matplotlib")
+    else:
+        model = plt.figure()
+        
+        #Data in a scatter plot
+        plt.scatter(var.col(2,0),out.col(1,0))
+        
+        #Linear model to predict
+        plt.plot(var.col(2,0),preds.col(1,0),c="red")
+        
+        #Titles
+        plt.xlabel(validStr4.features[1])
+        plt.ylabel(validStr4.features[0])
+        plt.legend(["Linear model","Data points"],loc=4)
+        model.suptitle("Height prediction")
+
 # =============================================================================
 """ Expected Outputs """
 # =============================================================================
