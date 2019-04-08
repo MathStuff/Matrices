@@ -674,11 +674,13 @@ EXAMPLES:
 # =============================================================================     
     def _determinantByLUForm(self):
         try:
-            if self.isSquare and self.dim[0]==1:
+            if self.dim[0]==1:
                 return self.matrix[0][0]
+            
             if not self.__detCalc:
                 self._det=self._LU()[1]
                 self.__detCalc=1
+                
         except Exception as e:
             print("error calculating determinant: ",e)
             return 0
@@ -724,29 +726,18 @@ EXAMPLES:
             return temp
 
     def _adjoint(self):
-        def __sign(pos):
-            return (-1)**(pos[0]+pos[1])   
-        try:
-            assert self._valid==1
-            assert self.isSquare
-        except AssertionError:
-            print("Not a square matrix")
+        if not self.isSquare:
             return None
-        except Exception as err:
-            print(err)
-            return None
-
         else:
-            adjL=[]
-            for rows in range(0,self.dim[0]):
-                adjL.append(list())
-                for cols in range(0,self.dim[1]):
-                    res=self.minor(rows+1,cols+1).det*__sign([rows,cols])
-                    adjL[rows].append(res)
+            adjL=[[self.minor(rows+1,cols+1).det*((-1)**(rows+cols)) for cols in range(self.dim[1])] for rows in range(self.dim[0])]
+
             if self._cMat:
                 adjM=CMatrix(dim=self.dim,listed=adjL)
-            else:
+            elif self._fMat:
                 adjM=FMatrix(dim=self.dim,listed=adjL)
+            else:
+                adjM=Matrix(dim=self.dim,listed=adjL)
+                
             self._adj=adjM.t
             self.__adjCalc=1
             return self._adj
@@ -755,17 +746,8 @@ EXAMPLES:
         """
         Returns the inversed matrix
         """
-        try:
-            assert self.dim[0] == self.dim[1]
-            assert self.det!=0
-        except AssertionError:    
-            if self.isSingular:
-                print("Determinant of the matrix is 0, can't find inverse")
-            else:
-                print("Must be a square matrix")
+        if not self.isSquare or not self.isSingular:
             return None
-        except:
-            print("Error getting inverse of the matrix")
         else:
             temp=self.copy
             temp.concat(Identity(self.dim[0]),"col")
@@ -840,12 +822,12 @@ EXAMPLES:
         return (FMatrix(self.dim,temp.matrix),self.dim[0]-z)
                     
     def _symDecomp(self):
-        try:
-            assert self.isSquare
-            if self._cMat:
-                return (None,None)
-        except:
-            print("Cant decompose the matrix into symmetric and antisymmetric matrices")
+        """
+        Decompose the matrix into a symmetrical and an antisymmetrical matrix
+        """
+        if not self.isSquare or self._cMat:
+            return (None,None)
+        
         else:
             m=self.matrix
             anti=FMatrix(self.dim,randomFill=0)
@@ -1074,16 +1056,13 @@ EXAMPLES:
         """
         Determinant of the matrix
         """
-        try:
-            assert self.isSquare
-        except AssertionError:
-            print("Not a square matrix")
+        if not self.isSquare:
             return None
+        
+        if self.__detCalc:
+            return self._det
         else:
-            if self.__detCalc:
-                return self._det
-            else:
-                return self._determinantByLUForm()  
+            return self._determinantByLUForm()  
             
     @property
     def eigenvalues(self):
