@@ -1274,6 +1274,10 @@ EXAMPLES:
         return self.t.isUpperHessenberg
     
     @property
+    def isHessenberg(self):
+        return self.isUpperHessenberg or self.isLowerHessenberg
+    
+    @property
     def isTridiagonal(self):
         if not self.isSquare or self.dim[0]<=2:
             return False
@@ -1294,7 +1298,7 @@ EXAMPLES:
         return True
 
     @property
-    def isToepliz(self):
+    def isToeplitz(self):
         for i in range(self.dim[0]-1):
             for j in range(self.dim[1]-1):
                 if self._matrix[i][j] != self._matrix[i+1][j+1]:
