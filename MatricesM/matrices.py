@@ -904,7 +904,7 @@ EXAMPLES:
         """
         Decompose the matrix into Q and R where Q is a orthogonal matrix and R is a upper triangular matrix
         """
-        if not self.isSquare or self.isSingular:
+        if not self.isSquare or self.isSingular or self._cMat:
             return (None,None)
         
         def _projection(vec1,vec2):
