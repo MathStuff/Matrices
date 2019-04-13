@@ -792,10 +792,12 @@ EXAMPLES:
                 
             #Do the calculations to reduce rows
             temp[i]=[temp[i][j]/temp[i][i] for j in range(self.dim[1])]
-            temp._matrix=[[temp[k][m]-temp[i][m]*temp[k][i] for m in range(self.dim[1])] if k!=i else temp[i] 
-                                                                                           for k in range(self.dim[0])]
+            if self._cMat:
+                temp._matrix=[[complex(round((temp[k][m]-temp[i][m]*temp[k][i]).real,12),round((temp[k][m]-temp[i][m]*temp[k][i]).imag,12)) for m in range(self.dim[1])] if k!=i else temp[i] for k in range(self.dim[0])]
+            else:    
+                temp._matrix=[[round(temp[k][m]-temp[i][m]*temp[k][i],12) for m in range(self.dim[1])] if k!=i else temp[i] for k in range(self.dim[0])]
             i+=1
-        
+
         #Fix -0.0 issue
         if self._cMat:
             boundary=1e-10
@@ -815,7 +817,7 @@ EXAMPLES:
         else:
             boundary=1e-10
             temp._matrix=[[temp[i][j] if not (temp[i][j]<boundary and temp[i][j]>-boundary) else 0 for j in range(temp.dim[1])] for i in range(temp.dim[0])]
-        
+
         z=temp.matrix.count(zeros)
         if self._cMat:
             return (CMatrix(self.dim,temp.matrix),self.dim[0]-z)
@@ -878,10 +880,14 @@ EXAMPLES:
                 
             #Loop through the ith column find the coefficients to multiply the diagonal element with
             #to make the elements under [i][i] all zeros
-            rowMulti=[temp[j][i]/temp[i][i] for j in range(i+1,self.dim[0])]
+            if self._cMat:
+                rowMulti=[complex(round((temp[j][i]/temp[i][i]).real,8),round((temp[j][i]/temp[i][i]).real,8)) for j in range(i+1,self.dim[0])]
+            else:
+                rowMulti=[round(temp[j][i]/temp[i][i],8) for j in range(i+1,self.dim[0])]
             #Loop to substitute ith row times the coefficient found from the i+n th row (n>0 & n<rows)
             k0=0
             for k in range(i+1,self.dim[0]):
+
                 temp[k]=[temp[k][m]-(rowMulti[k0]*temp[i][m]) for m in range(self.dim[1])]
                 #Lower triangular matrix
                 L[k][i]=rowMulti[k0]
@@ -1997,8 +2003,10 @@ EXAMPLES:
                     for cs in range(other.dim[0]):
                         num=self.matrix[r][cs]*other.matrix[cs][rs]
                         total+=num
-                    temp[r][rs]=total
-                    
+                    if self._cMat:
+                        temp[r][rs]=complex(round(total.real,12),round(total.imag,12))
+                    else:
+                        temp[r][rs]=round(total,12)
             #Get decimals after the decimal point
             if isinstance(self,FMatrix) or isinstance(self,CMatrix):
                 a=self.decimal
