@@ -759,11 +759,11 @@ EXAMPLES:
         """
         Returns the rank of the matrix
         """
-        return self._echelon()[1]
+        return self._rrechelon()[1]
 # =============================================================================
     """Decomposition methods"""
 # ============================================================================= 
-    def _echelon(self):
+    def _rrechelon(self):
         """
         Returns reduced row echelon form of the matrix
         """
@@ -900,6 +900,19 @@ EXAMPLES:
             
         return (U,((-1)**(rowC))*prod,L)
 
+    def _QR(self):
+        """
+        Decompose the matrix into Q and R where Q is a orthogonal matrix and R is a upper triangular matrix
+        """
+        def _projection(vec1,vec2):
+            """
+            Projection vector of vec1 over vec2
+            """
+            pass
+        pass
+    
+    def _hessenberg(self):
+        pass
 # =============================================================================
     """Basic properties"""
 # =============================================================================  
@@ -1169,27 +1182,29 @@ EXAMPLES:
 # =============================================================================    
     @property
     def isSquare(self):
-        return self.dim[0]==self.dim[1]
+        return self.dim[0] == self.dim[1]
     
     @property
     def isSingular(self):
-        return self.det==0
+        if not self.isSquare:
+            return False
+        return self.det == 0
     
     @property
     def isSymmetric(self):
         if not self.isSquare:
             return False
-        return self.t.matrix==self.matrix
+        return self.t.matrix == self.matrix
         
     @property  
     def isAntiSymmetric(self):
         if not self.isSquare:
             return False
-        return (self.t*-1).matrix==self.matrix
+        return (self.t*-1).matrix == self.matrix
     
     @property
     def isHermitian(self):
-        return (self.ht).matrix==self.matrix
+        return (self.ht).matrix == self.matrix
         
     @property
     def isTriangular(self):
@@ -1200,8 +1215,6 @@ EXAMPLES:
     
     @property
     def isUpperTri(self):
-        if not self.isSquare:
-            return False
         if self.isTriangular:
             for i in range(1,self.dim[0]):
                 for j in range(i):
@@ -1212,46 +1225,104 @@ EXAMPLES:
     
     @property
     def isLowerTri(self):
-        if not self.isSquare:
-            return False
-        if self.isTriangular:
-            for i in range(self.dim[0]):
-                for j in range(i+1,self.dim[1]):
-                    if self.matrix[i][j]!=0:
-                        return False
-            return True
-        return False
+        return self.t.isUpperTri
     
     @property
     def isDiagonal(self):
-        if self.isSquare:
-            return self.isUpperTri and self.isLowerTri
-        return False
+        if not self.isSquare:
+            return False
+        return self.isUpperTri and self.isLowerTri
+
+    @property
+    def isBidiagonal(self):
+        return self.isUpperBidiagonal or self.isLowerBidiagonal
+    
+    @property
+    def isUpperBidiagonal(self):
+        #Assure the matrix is upper triangular
+        if not self.isUpperTri or self.dim[0]<=2:
+            return False
+        
+        #Assure diagonal and superdiagonal have non-zero elements 
+        if 0 in [self._matrix[i][i] for i in range(self.dim[0])] + [self._matrix[i][i+1] for i in range(self.dim[0]-1)]:
+            return False
+        
+        #Assure the elements above first superdiagonal are zero
+        for i in range(self.dim[0]-2):
+            if [0]*(self.dim[0]-2-i) != self._matrix[i][i+2:]:
+                return False
+            
+        return True
+
+    @property
+    def isLowerBidiagonal(self):
+        return self.t.isUpperBidiagonal          
+
+    @property
+    def isUpperHessenberg(self):
+        if not self.isSquare or self.dim[0]<=2:
+            return False
+        
+        for i in range(2,self.dim[0]):
+            if [0]*(i-1) != self._matrix[i][0:i-1]:
+                return False
+                
+        return True
+    
+    @property
+    def isLowerHessenberg(self):
+        return self.t.isUpperHessenberg
+    
+    @property
+    def isTridiagonal(self):
+        if not self.isSquare or self.dim[0]<=2:
+            return False
+        
+        #Check diagonal and first subdiagonal and first superdiagonal
+        if 0 in [self._matrix[i][i] for i in range(self.dim[0])] + [self._matrix[i][i+1] for i in range(self.dim[0]-1)] + [self._matrix[i+1][i] for i in range(self.dim[0]-1)]:
+            return False
+        
+        #Assure rest of the elements are zeros
+        for i in range(self.dim[0]-2):
+            #Non-zero check above first superdiagonal
+            if [0]*(self.dim[0]-2-i) != self._matrix[i][i+2:]:
+                return False
+            
+            #Non-zero check below first subdiagonal
+            if [0]*(self.dim[0]-2-i) != self._matrix[self.dim[0]-i-1][:self.dim[0]-i-2]:
+                return False
+        return True
+
+    @property
+    def isToepliz(self):
+        for i in range(self.dim[0]-1):
+            for j in range(self.dim[1]-1):
+                if self._matrix[i][j] != self._matrix[i+1][j+1]:
+                    return False
+        return True
     
     @property
     def isIdempotent(self):
-        if self.isSquare:
-            return self.matrix==(self*self).matrix
-        return False
+        if not self.isSquare:
+            return False
+        return self.matrix == (self*self).matrix
     
     @property
     def isOrthogonal(self):
         if not self.isSquare or self.isSingular:
             return False
-        return (self.inv).roundForm(4).matrix==self.t.matrix
+        return (self.inv).roundForm(4).matrix == self.t.matrix
     
     @property
-    def isBidiagonal(self):
-        pass
-    
-    @property
-    def isTridiagonal(self):
-        pass
+    def isUnitary(self):
+        if not self.isSquare or self.isSingular:
+            return False
+        return self.conj.t.matrix == self.inv.roundForm(4).matrix
     
     @property
     def nilpotency(self):
         pass
-    
+        
 # =============================================================================
     """Get special formats"""
 # =============================================================================    
@@ -1271,7 +1342,7 @@ EXAMPLES:
         """
         Reduced-Row-Echelon
         """
-        return self._echelon()[0]
+        return self._rrechelon()[0]
     
     @property
     def conj(self):
@@ -1279,7 +1350,7 @@ EXAMPLES:
         Conjugated matrix
         """
         temp=self.copy
-        temp._matrix=[[temp.matrix[i][j].conjugate() for j in range(self.dim[1])] for i in range(self.dim[0])]
+        temp._matrix=[[self.matrix[i][j].conjugate() for j in range(self.dim[1])] for i in range(self.dim[0])]
         return temp
     
     @property
@@ -1963,6 +2034,7 @@ EXAMPLES:
                 #--------------------------------------------------------------------------
         else:
             print("Can't add")
+            return self
 ################################################################################            
     def __sub__(self,other):
         if isinstance(other,Matrix):
@@ -2019,6 +2091,7 @@ EXAMPLES:
                 #--------------------------------------------------------------------------
         else:
             print("Can't subtract")
+            return self
 ################################################################################     
     def __mul__(self,other):
         if isinstance(other,Matrix):
@@ -2075,6 +2148,7 @@ EXAMPLES:
                 #--------------------------------------------------------------------------
         else:
             print("Can't multiply")
+            return self
 ################################################################################
     def __floordiv__(self,other):
         if self._cMat or  isinstance(other,CMatrix):
@@ -2134,6 +2208,7 @@ EXAMPLES:
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
+            return self
 ################################################################################            
     def __truediv__(self,other):
         if isinstance(other,Matrix):
@@ -2203,6 +2278,7 @@ EXAMPLES:
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
+            return self
 ################################################################################
     def __mod__(self, other):
         if self._cMat or  isinstance(other,CMatrix):
@@ -2266,6 +2342,7 @@ EXAMPLES:
                     #--------------------------------------------------------------------------
         else:
             print("Can't get modular")
+            return self
 ################################################################################         
     def __pow__(self,other):
         if isinstance(other,Matrix):
@@ -2322,6 +2399,7 @@ EXAMPLES:
                 #--------------------------------------------------------------------------
         else:
             print("Can't raise to the given power")
+            return self
 ################################################################################                    
     def __le__(self,other):
         try:
