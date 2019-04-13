@@ -216,6 +216,10 @@ C.inv #Returns the inversed matrix
 
 C.pseudoinv #Returns the pseudo inverse of the matrix
 
+C.Q #Returns the orthonormal matrix from the QR decomposition
+
+C.R #Returns the upper-triangular matrix from the QR decomposition
+
 C.trace #Returns the trace of the matrix
 
 C.rank #Returns the rank of the matrix
@@ -324,15 +328,17 @@ B @ B.t #Matrix multiplication example
    
    A @ Identity(A.dim[0]) == A #A assumed to be a square matrix
    
-   A.adj.t[1][2]==A.minor(2,3).det*-1 
+   A.adj.t[1][2] == A.minor(2,3).det*-1 
    
    #roundForm() call is currently required for the next examples due to ~%1e-5 error rate on some calculations 
    
-   (A.lowtri@A.uptri).roundForm(4)==A.roundForm(4) 
+   (A.lowtri @ A.uptri).roundForm(4) == A.roundForm(4) 
    
-   (A.inv.inv).roundForm(4)==A.roundForm(4) 
+   (A.inv.inv).roundForm(4) == A.roundForm(4) 
    
-   (B @ B.inv).roundForm() == Identity(B.dim[0])
+   (A.Q @ A.R).roundForm(4) == A.roundForm(4)
+   
+   (A @ A.inv).roundForm() == Identity(A.dim[0])
 ``` 
 ----------------------------------------
 
