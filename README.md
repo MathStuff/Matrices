@@ -240,6 +240,24 @@ C.isLowerTri #Returns True if the matrix is a lower-triangular matrix
 
 C.isDiagonal #Returns True if the matrix is a diagonal matrix
 
+C.isUpperBidiagonal #Returns True if the matrix is an upper-bidiagonal matrix
+
+C.isLowerBidiagonal #Returns True if the matrix is a lower-bidiagonal matrix
+
+C.isBidiagonal #Returns True if the matrix is an upper-bidiagonal or a lower-bidiagonal matrix
+
+C.isTridiagonal #Returns True if the matrix is a tridiagonal matrix
+
+C.isUpperHessenberg #Returns True if the matrix is an upper-Hessenberg matrix
+
+C.isLowerHessenberg #Returns True if the matrix is a lower-Hessenberg matrix
+
+C.isHessenberg #Returns True if the matrix is an upper-Hessenberg or a lower-Hessenberg matrix
+
+C.isToeplitz #Returns True if the matrix is a Toeplitz matrix
+
+C.isUnitary #Returns True if the matrix is a unitary matrix
+
 C.isIdempotent #Returns True if the matrix is an idempotent matrix
 
 C.isOrthogonal #Returns True if the matrix is an orthogonal matrix
