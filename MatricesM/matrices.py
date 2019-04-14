@@ -916,7 +916,10 @@ EXAMPLES:
         if self.isSquare:
             if self.isSingular:
                 return (None,None)
-            
+         
+        if self.dim[0]>self.dim[1]:
+            return (None,None)
+        
         def _projection(vec1,vec2):
             """
             Projection vector of vec2 over vec1
@@ -926,7 +929,7 @@ EXAMPLES:
         #Gram-Schmitt to get orthogonal set of the matrix
         U=[self.col(1,0)]
         
-        for b in range(2,self.dim[1]+1):
+        for b in range(2,min(self.dim)+1):
             u=self.col(b,0)
             
             for i in range(1,b):
@@ -936,9 +939,8 @@ EXAMPLES:
                 u=[u[i]-p[i] for i in range(len(u))]
                 
             U.append(u.copy())
-            
-        matU = FMatrix((self.dim[1],self.dim[0]),U).t
-
+        
+        matU = FMatrix(min(self.dim),U).t
         #Orthonormalize by diving the columns by their norms
         Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
         #Get the upper-triangular part
@@ -1122,13 +1124,14 @@ EXAMPLES:
         Returns the eigenvalues
         """
         try:
+            if self._cMat:
+                return None
             assert self.isSquare and not self.isSingular and self.dim[0]>=2
             if self.dim[0]==2:
                 d=self.det
                 tr=self.matrix[0][0]+self.matrix[1][1]
                 return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
         except:
-            print("Not a valid matrix or rank is lower than dimensions")
             return None
         else:
             q=self.Q
