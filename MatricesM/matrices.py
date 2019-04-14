@@ -910,9 +910,13 @@ EXAMPLES:
         """
         Decompose the matrix into Q and R where Q is a orthogonal matrix and R is a upper triangular matrix
         """
-        if not self.isSquare or self.isSingular or self._cMat:
+        if self._cMat:
             return (None,None)
         
+        if self.isSquare:
+            if self.isSingular:
+                return (None,None)
+            
         def _projection(vec1,vec2):
             """
             Projection vector of vec2 over vec1
@@ -933,7 +937,7 @@ EXAMPLES:
                 
             U.append(u.copy())
             
-        matU = FMatrix(self.dim,U).t
+        matU = FMatrix((self.dim[1],self.dim[0]),U).t
 
         #Orthonormalize by diving the columns by their norms
         Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
@@ -1106,57 +1110,56 @@ EXAMPLES:
             return self._det
         else:
             return self._determinantByLUForm()  
-            
+    
+    @property
+    def diags(self):
+        return [self._matrix[i][i] for i in range(min(self.dim))]
+    
     @property
     def eigenvalues(self):
         """
-        ***** Currently doesn't work as intended for matrices bigger than 3x3 *****
+        *** CAN NOT FIND THE COMPLEX EIGENVALUES *** 
         Returns the eigenvalues
         """
         try:
-            assert self.isSquare and self.dim[0]>=2
+            assert self.isSquare and not self.isSingular and self.dim[0]>=2
             if self.dim[0]==2:
                 d=self.det
                 tr=self.matrix[0][0]+self.matrix[1][1]
                 return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
         except:
-            print("Error getting eigenvalues")
+            print("Not a valid matrix or rank is lower than dimensions")
             return None
         else:
-            temp=self.copy
-            for i in range(self.dim[0]):
-                temp[i][i]="("+str(temp[i][i])+"-x)"
-            st=temp.chareq
-            ce=(lambda x:eval(st))
-            return ce
+            q=self.Q
+            a1=q.t@self@q
+            for i in range(50):
+                qq=a1.Q
+                a1=qq.t@a1@qq
+            
+            return a1.diags
         
     @property
-    def chareq(self):
-        m=self.matrix
-        if not self.isSquare:
+    def eigenvectors(self):
+        """
+        *** CAN NOT FIND THE EIGENVECTORS RESPONDING TO THE COMPLEX EIGENVALUES ***
+        *** CURRENTLY DOESN'T RETURN ANYTHIN ***
+        Returns the eigenvectors
+        """
+        if not self.isSquare or self.isSingular:
             return None
-        if self.dim[0]==2:
-            return  f"(({m[0][0]}*{m[1][1]})-({m[0][1]}*{m[1][0]}))"
-        s=""
-        sign=0
-        for co in range(self.dim[1]):
-            
-            c=m[0][co]*((-1)**sign)
-            sign+=1
-            
-            temp=self.copy
-            temp.remove(r=1)
-            temp.remove(c=co+1)
-            
-            s+=f"(({c})*"
-            s+=temp.chareq
-            
-            if co!=self.dim[1]-1:
-                s+=")+"
-            else:
-                s+=")"
-        return s
-                        
+        eigs=self.eigenvalues
+        vecs=[]
+
+        for eigen in eigs:
+            temp = self-Identity(self.dim[0])*eigen
+            temp.concat([0]*self.dim[0],"col")
+            temp = temp.rrechelon
+            diff=0
+            for i in range(self.dim[0]-temp.rank):
+                diff+=1
+            pass
+        
     @property
     def highest(self):
         """
