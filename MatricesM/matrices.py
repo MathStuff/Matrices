@@ -1695,7 +1695,7 @@ EXAMPLES:
         if col==None:
             return self._inRange
         return self._inRange[self.__features[col-1]]
-    
+
     def mean(self,col=None):
         """
         col:integer|None ; column number
@@ -1717,9 +1717,7 @@ EXAMPLES:
                 cUp=col        
                     
             for c in range(cLow,cUp):
-                t=0
-                for r in range(self.dim[0]):
-                    t+=self[r][c]
+                t=sum([self.matrix[r][c] for r in range(self.dim[0])])
                 avg[feats[c]]=t/self.dim[0]
    
         except AssertionError:
@@ -1748,9 +1746,7 @@ EXAMPLES:
                 sd={}
                 avgs=self.mean()
                 for i in range(self.dim[1]):
-                    e=0
-                    for j in range(self.dim[0]):
-                        e+=(self.matrix[j][i]-avgs[self.__features[i]])**2
+                    e=sum([(self._matrix[j][i]-avgs[self.__features[i]])**2 for j in range(self.dim[0])])
                     sd[self.__features[i]]=(e/(self.dim[0]-1+population))**(1/2)
                 return sd
             else:
@@ -1761,11 +1757,8 @@ EXAMPLES:
                 else:
                     sd={}
                     a=list(self.mean(col).values())[0]
-
-                    e=0
-                    for i in range(self.dim[0]):
-                        e+=(self.matrix[i][col-1]-a)**2
-                        
+        
+                    e=sum([(self.matrix[i][col-1]-a)**2 for i in range(self.dim[0])])
                     sd[self.__features[col-1]] = (e/(self.dim[0]-1+population))**(1/2)
                     return sd
                 
