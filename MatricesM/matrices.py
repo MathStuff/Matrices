@@ -1568,9 +1568,9 @@ EXAMPLES:
                 
                 if round(mx-mn,zerobound) == 0:
                     raise ZeroDivisionError("Max and min values are the same")
-                    
+                col-=1    
                 for i in range(temp.dim[0]):
-                    temp._matrix[i][0] = (temp._matrix[i][0]-mn)/(mx-mn)
+                    temp._matrix[i][col] = (temp._matrix[i][0]-mn)/(mx-mn)
                             
                 return temp
             
@@ -1601,9 +1601,9 @@ EXAMPLES:
                 
                 if round(mx-mn,zerobound) == 0:
                     raise ZeroDivisionError("Max and min values are the same")
-                    
+                col-=1    
                 for i in range(self.dim[0]):
-                    self._matrix[i][0] = (self._matrix[i][0]-mn)/(mx-mn)
+                    self._matrix[i][col] = (self._matrix[i][0]-mn)/(mx-mn)
                 
                 return self.floatForm    
             
@@ -1645,9 +1645,9 @@ EXAMPLES:
                 
                 if round(sd,zerobound)==0:
                     raise ZeroDivisionError("Standard deviation of 0")
-                    
+                col-=1    
                 for i in range(temp.dim[0]):
-                    temp._matrix[i][0] = (temp._matrix[i][0]-mean)/sd
+                    temp._matrix[i][col] = (temp._matrix[i][0]-mean)/sd
                             
                 return temp
             
@@ -1678,9 +1678,9 @@ EXAMPLES:
                 
                 if round(sd,zerobound)==0:
                     raise ZeroDivisionError("Standard deviation of 0")
-                    
+                col-=1  
                 for i in range(self.dim[0]):
-                    self._matrix[i][0] = (self._matrix[i][0]-mean)/sd
+                    self._matrix[i][col] = (self._matrix[i][0]-mean)/sd
                 
                 return self.floatForm
             
