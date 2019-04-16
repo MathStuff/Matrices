@@ -226,7 +226,7 @@ C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
 
-C.eigenvalues #Returns the eigenvalues (CHECK ISSUE#22 : https://github.com/MathStuff/MatricesM/issues/22)
+C.eigenvalues #Returns the eigenvalues (CAN'T FIND COMPLEX EIGENS,CHECK ISSUE#32 : https://github.com/MathStuff/MatricesM/issues/32)
 
 C.isSquare #Returns True if the matrix is a square matrix
 
@@ -295,6 +295,10 @@ C.variance(n,population) #Returns the nth column's variance, if None is given as
 C.z(row,col) #Returns the z-scores of the desired row and/or column, call without arguments to get the all z-scores as a matrix
 
 C.corr(column_1,column_2) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix
+
+C.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
+
+C.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
 
 C.features #Returns the column names if given, can also be used to set column names
 
