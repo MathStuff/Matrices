@@ -1529,10 +1529,164 @@ EXAMPLES:
     
     def sortBy(self,column,order):
         pass
-    
 # =============================================================================
     """Statistical methods"""
-# =============================================================================      
+# =============================================================================         
+    def normalize(self,col=None,inplace=True,zerobound=12):
+        """
+        Original matrix should be an FMatrix or there will be printing issues when "inplace" is used.
+        Use name=name.floatForm to get better results
+         
+        Normalizes the data to be valued between 0 and 1
+        col : int>=1 ; column number
+        inplace : boolean ; True to apply changes to matrix, False to return a new matrix
+        zerobound : integer ; limit of the decimals after dot to round the max-min of the columns to be considered 0
+        """
+        if not inplace:
+            if col==None:
+                temp = self.floatForm
+                r = list(self.ranged().values())
+                
+                for i in range(self.dim[1]):
+                    mn,mx = r[i][0],r[i][1]
+                    
+                    if round(mx-mn,zerobound) == 0:
+                        raise ZeroDivisionError("Max and min values are the same")
+                        
+                    for j in range(self.dim[0]):
+                        temp._matrix[j][i] = (temp._matrix[j][i]-mn)/(mx-mn)
+                        
+                return temp
+            
+            elif isinstance(col,int):
+                if not col>=1 and col<=self.dim[1]:
+                    return None
+                
+                temp = self.floatForm.col(col)
+                r = list(temp.ranged().values())[0]
+                mn,mx = r[0],r[1]
+                
+                if round(mx-mn,zerobound) == 0:
+                    raise ZeroDivisionError("Max and min values are the same")
+                    
+                for i in range(temp.dim[0]):
+                    temp._matrix[i][0] = (temp._matrix[i][0]-mn)/(mx-mn)
+                            
+                return temp
+            
+            else:
+                return None
+            
+        else:
+            if col==None:
+                r = list(self.ranged().values())
+                
+                for i in range(self.dim[1]):
+                    mn,mx = r[i][0],r[i][1]
+                    
+                    if round(mx-mn,zerobound) == 0:
+                        raise ZeroDivisionError("Max and min values are the same")
+                        
+                    for j in range(self.dim[0]):
+                        self._matrix[j][i] = (self._matrix[j][i]-mn)/(mx-mn)
+            
+                return self.floatForm
+            
+            elif isinstance(col,int):
+                if not col>=1 and col<=self.dim[1]:
+                    return None
+                
+                r = self.ranged(col)
+                mn,mx = r[0],r[1]
+                
+                if round(mx-mn,zerobound) == 0:
+                    raise ZeroDivisionError("Max and min values are the same")
+                    
+                for i in range(self.dim[0]):
+                    self._matrix[i][0] = (self._matrix[i][0]-mn)/(mx-mn)
+                
+                return self.floatForm    
+            
+            else:
+                return None           
+            
+    def stdize(self,col=None,inplace=True,zerobound=12):
+        """
+        Original matrix should be an FMatrix or there will be printing issues when "inplace" is used.
+        Use name=name.floatForm to get better results
+        
+        Standardization to get mean of 0 and standard deviation of 1
+        col : int>=1 ; column number
+        inplace : boolean ; True to apply changes to matrix, False to return a new matrix
+        zerobound : integer ; limit of the decimals after dot to round the sdev to be considered 0
+        """
+        if not inplace:
+            if col==None:
+                temp = self.floatForm
+                mean = list(self.mean().values())
+                sd = list(self.sdev().values())
+                
+                if 0 in sd:
+                    raise ZeroDivisionError("Standard deviation of 0")
+                    
+                for i in range(self.dim[1]):
+                    m,s = mean[i],sd[i]
+                    for j in range(self.dim[0]):
+                        temp._matrix[j][i] = (temp._matrix[j][i]-m)/s
+                        
+                return temp
+            
+            elif isinstance(col,int):
+                if not col>=1 and col<=self.dim[1]:
+                    return None
+                temp = self.floatForm.col(col)
+                mean = list(self.mean(col).values())[0]
+                sd = list(self.sdev(col).values())[0]
+                
+                if round(sd,zerobound)==0:
+                    raise ZeroDivisionError("Standard deviation of 0")
+                    
+                for i in range(temp.dim[0]):
+                    temp._matrix[i][0] = (temp._matrix[i][0]-mean)/sd
+                            
+                return temp
+            
+            else:
+                return None
+
+        
+        else:
+            if col==None:
+                mean = list(self.mean(col).values())
+                sd = list(self.sdev(col).values())
+                
+                if 0 in sd:
+                    raise ZeroDivisionError("Standard deviation of 0")
+                    
+                for i in range(self.dim[1]):
+                    m,s = mean[i],sd[i]
+                    for j in range(self.dim[0]):
+                        self._matrix[j][i] = (self._matrix[j][i]-m)/s
+                
+                return self.floatForm
+            
+            elif isinstance(col,int):
+                if not col>=1 and col<=self.dim[1]:
+                    return None
+                mean = list(self.mean(col).values())[0]
+                sd = list(self.sdev(col).values())[0]
+                
+                if round(sd,zerobound)==0:
+                    raise ZeroDivisionError("Standard deviation of 0")
+                    
+                for i in range(self.dim[0]):
+                    self._matrix[i][0] = (self._matrix[i][0]-mean)/sd
+                
+                return self.floatForm
+            
+            else:
+                return None 
+             
     def describe(self):
         pass
     
