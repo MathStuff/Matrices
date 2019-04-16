@@ -1504,10 +1504,14 @@ EXAMPLES:
         """
         if self._cMat:
             return eval(self.obj)
-        t=[]
-        for a in self._matrix:
-            t.append([float(b) for b in a])            
-        return FMatrix(self.dim[:],listed=t)
+        
+        t=[[float(self._matrix[a][b]) for b in range(self.dim[1])] for a in range(self.dim[0])]
+        
+        if self._fMat:
+            a=self.decimal
+            return FMatrix(self.dim,listed=t,features=self.features,decimal=a,seed=self.seed,directory=self._dir)
+        
+        return FMatrix(self.dim,listed=t,features=self.features,seed=self.seed,directory=self._dir)
     
     def roundForm(self,decimal=1):
         """
@@ -1570,7 +1574,7 @@ EXAMPLES:
                     raise ZeroDivisionError("Max and min values are the same")
                 col-=1    
                 for i in range(temp.dim[0]):
-                    temp._matrix[i][col] = (temp._matrix[i][0]-mn)/(mx-mn)
+                    temp._matrix[i][col] = (temp._matrix[i][col]-mn)/(mx-mn)
                             
                 return temp
             
@@ -1589,9 +1593,7 @@ EXAMPLES:
                         
                     for j in range(self.dim[0]):
                         self._matrix[j][i] = (self._matrix[j][i]-mn)/(mx-mn)
-            
-                return self.floatForm
-            
+
             elif isinstance(col,int):
                 if not col>=1 and col<=self.dim[1]:
                     return None
@@ -1603,10 +1605,8 @@ EXAMPLES:
                     raise ZeroDivisionError("Max and min values are the same")
                 col-=1    
                 for i in range(self.dim[0]):
-                    self._matrix[i][col] = (self._matrix[i][0]-mn)/(mx-mn)
-                
-                return self.floatForm    
-            
+                    self._matrix[i][col] = (self._matrix[i][col]-mn)/(mx-mn)
+
             else:
                 return None           
             
@@ -1647,7 +1647,7 @@ EXAMPLES:
                     raise ZeroDivisionError("Standard deviation of 0")
                 col-=1    
                 for i in range(temp.dim[0]):
-                    temp._matrix[i][col] = (temp._matrix[i][0]-mean)/sd
+                    temp._matrix[i][col] = (temp._matrix[i][col]-mean)/sd
                             
                 return temp
             
@@ -1667,9 +1667,7 @@ EXAMPLES:
                     m,s = mean[i],sd[i]
                     for j in range(self.dim[0]):
                         self._matrix[j][i] = (self._matrix[j][i]-m)/s
-                
-                return self.floatForm
-            
+
             elif isinstance(col,int):
                 if not col>=1 and col<=self.dim[1]:
                     return None
@@ -1680,10 +1678,8 @@ EXAMPLES:
                     raise ZeroDivisionError("Standard deviation of 0")
                 col-=1  
                 for i in range(self.dim[0]):
-                    self._matrix[i][col] = (self._matrix[i][0]-mean)/sd
-                
-                return self.floatForm
-            
+                    self._matrix[i][col] = (self._matrix[i][col]-mean)/sd
+
             else:
                 return None 
              
