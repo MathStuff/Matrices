@@ -119,9 +119,9 @@ data="""1,K,60,69900,6325
 9,K,33,13200,8325
 10,E,37,31800,5975"""
 
-#Creat an "integer matrix" from the given string, dimension is *required* as [dataAmount,features]
+#Create a matrix(FMatrix currently recommended) from the given string, dimension is *required* as [dataAmount,features]
 
-D = Matrix(dim=[10,4],
+D = FMatrix(dim=[10,4],
            listed=data,
            features=["id","age","num1","num2"]
           ) 
@@ -222,6 +222,8 @@ C.R #Returns the upper-triangular matrix from the QR decomposition
 
 C.trace #Returns the trace of the matrix
 
+C.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
+
 C.rank #Returns the rank of the matrix
 
 C.rrechelon #Returns the reduced row echelon form of the matrix
@@ -233,6 +235,8 @@ C.isSquare #Returns True if the matrix is a square matrix
 C.isSymmetric #Returns True if the matrix is a symmetric matrix
 
 C.isAntiSymmetric #Returns True if the matrix is an antisymmetric matrix
+
+C.isPerSymmetric #Returns True if the matrix is a persymmetric matrix
 
 C.isHermitian #Returns True if the matrix is a hermitian matrix
 
@@ -266,6 +270,13 @@ C.isIdempotent #Returns True if the matrix is an idempotent matrix
 
 C.isOrthogonal #Returns True if the matrix is an orthogonal matrix
 
+C.isCircular #Returns True if the matrix is a circular matrix
+
+C.isPositive #Returns True if the matrix is a positive valued matrix
+
+C.isNonNegative #Returns True if the matrix is a non-negative matrix
+
+C.isProjection #Returns True if the matrix is a projection matrix
 ```
 ##### Statistical properties 
 ```python 
