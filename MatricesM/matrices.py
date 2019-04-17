@@ -1448,15 +1448,6 @@ EXAMPLES:
         return self.inv.roundForm(4).matrix == self.roundForm(4).matrix
     
     @property
-    def isConvergant(self):
-        """
-        Wheter or not there is a k number for A**k == 0 where k in (0,inf) interval
-        """
-        if self._cMat:
-            return False
-        return bool(self<1 and self>-1)
-    
-    @property
     def isPositive(self):
         """
         A(i)(j) > 0 for every i and j 
