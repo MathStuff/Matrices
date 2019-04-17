@@ -1250,6 +1250,17 @@ EXAMPLES:
         return (self.t*-1).matrix == self.matrix
     
     @property
+    def isPerSymmetric(self):
+        if not self.isSquare:
+            return False
+        d=self.dim[0]
+        for i in range(d):
+            for j in range(d):
+                if self.matrix[i][j] != self.matrix[d-1-j][d-1-i]:
+                    return False
+        return True
+    
+    @property
     def isHermitian(self):
         """
         A.ht == A
@@ -1394,11 +1405,11 @@ EXAMPLES:
     @property
     def isIdempotent(self):
         """
-        A**2 == A
+        A@A == A
         """
         if not self.isSquare:
             return False
-        return self.matrix == (self*self).matrix
+        return self.roundForm(4).matrix == (self@self).roundForm(4).matrix
     
     @property
     def isOrthogonal(self):
@@ -1428,9 +1439,54 @@ EXAMPLES:
         return (self@self.ht).roundForm(4).matrix == (self.ht@self).roundForm(4).matrix
     
     @property
+    def isCircular(self):
+        """
+        A.inv == A.conj
+        """
+        if not self.isSquare or self.isSingular:
+            return False
+        return self.inv.roundForm(4).matrix == self.roundForm(4).matrix
+    
+    @property
+    def isConvergant(self):
+        """
+        Wheter or not there is a k number for A**k == 0 where k in (0,inf) interval
+        """
+        if self._cMat:
+            return False
+        return bool(self<1 and self>-1)
+    
+    @property
+    def isPositive(self):
+        """
+        A(i)(j) > 0 for every i and j 
+        """
+        if self._cMat:
+            return False
+        return bool(self>0)
+    
+    @property
+    def isNonNegative(self):
+        """
+        A(i)(j) >= 0 for every i and j 
+        """
+        if self._cMat:
+            return False
+        return bool(self>=0)
+    
+    @property
+    def isProjection(self):
+        """
+        A.ht == A@A == A 
+        """
+        if not self.isSquare:
+            return False
+        return self.isHermitian and self.isIdempotent
+    
+    @property
     def nilpotency(self):
         """
-        Value of k for A**k == 0 where k in (-inf,inf) interval
+        Value of k for (A@A@A@...@A) == 0 where the matrix is multipled by itself k times, k in (0,inf) interval
         """
         pass
         
@@ -2114,6 +2170,16 @@ EXAMPLES:
 # =============================================================================
     """Other magic methods """
 # =============================================================================
+    def __bool__(self):
+        """
+        Returns True if all the elements are equal to 1, otherwise returns False
+        """
+        for i in range(self.dim[0]):
+            for j in range(self.dim[1]):
+                if self.matrix[i][j] != 1:
+                    return False
+        return True
+    
     def __contains__(self,val):
         """
         val:value to search for in the whole matrix
