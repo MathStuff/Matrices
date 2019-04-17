@@ -10,7 +10,6 @@ from random import random
 from random import uniform
 from random import seed
 # =============================================================================
-
 class Matrix:
     """
     dim:integer | list; dimensions of the matrix. Giving integer values creates a square matrix
@@ -1218,32 +1217,50 @@ EXAMPLES:
 # =============================================================================    
     @property
     def isSquare(self):
+        """
+        A.dim == (i,j) where i == j
+        """
         return self.dim[0] == self.dim[1]
     
     @property
     def isSingular(self):
+        """
+        A.det == 0
+        """
         if not self.isSquare:
             return False
         return self.det == 0
     
     @property
     def isSymmetric(self):
+        """
+        A(i)(j) == A(j)(i)
+        """        
         if not self.isSquare:
             return False
         return self.t.matrix == self.matrix
         
     @property  
     def isAntiSymmetric(self):
+        """
+        A(i)(j) == -A(j)(i)
+        """
         if not self.isSquare:
             return False
         return (self.t*-1).matrix == self.matrix
     
     @property
     def isHermitian(self):
+        """
+        A.ht == A
+        """
         return (self.ht).matrix == self.matrix
         
     @property
     def isTriangular(self):
+        """
+        A(i)(j) == 0 where i < j XOR i > j
+        """
         from functools import reduce
         if not self.isSquare:
             return False
@@ -1251,6 +1268,9 @@ EXAMPLES:
     
     @property
     def isUpperTri(self):
+        """
+        A(i)(j) == 0 where i > j
+        """
         if self.isTriangular:
             for i in range(1,self.dim[0]):
                 for j in range(i):
@@ -1261,20 +1281,32 @@ EXAMPLES:
     
     @property
     def isLowerTri(self):
+        """
+        A(i)(j) == 0 where i < j
+        """
         return self.t.isUpperTri
     
     @property
     def isDiagonal(self):
+        """
+        A(i)(j) == 0 where i != j
+        """
         if not self.isSquare:
             return False
         return self.isUpperTri and self.isLowerTri
 
     @property
     def isBidiagonal(self):
+        """
+        A(i)(j) == 0 where ( i != j OR i != j+1 ) XOR ( i != j OR i != j-1 )
+        """
         return self.isUpperBidiagonal or self.isLowerBidiagonal
     
     @property
     def isUpperBidiagonal(self):
+        """
+        A(i)(j) == 0 where i != j OR i != j+1
+        """
         #Assure the matrix is upper triangular
         if not self.isUpperTri or self.dim[0]<=2:
             return False
@@ -1292,10 +1324,16 @@ EXAMPLES:
 
     @property
     def isLowerBidiagonal(self):
+        """
+        A(i)(j) == 0 where i != j OR i != j-1
+        """
         return self.t.isUpperBidiagonal          
 
     @property
     def isUpperHessenberg(self):
+        """
+        A(i)(j) == 0 where i<j-1
+        """
         if not self.isSquare or self.dim[0]<=2:
             return False
         
@@ -1307,14 +1345,23 @@ EXAMPLES:
     
     @property
     def isLowerHessenberg(self):
+        """
+        A(i)(j) == 0 where i>j+1
+        """
         return self.t.isUpperHessenberg
     
     @property
     def isHessenberg(self):
+        """
+        A(i)(j) == 0 where i>j+1 XOR i<j-1
+        """
         return self.isUpperHessenberg or self.isLowerHessenberg
     
     @property
     def isTridiagonal(self):
+        """
+        A(i)(j) == 0 where abs(i-j) > 1 AND A(i)(j) != 0 where 0 <= abs(i-j) <= 1
+        """
         if not self.isSquare or self.dim[0]<=2:
             return False
         
@@ -1335,6 +1382,9 @@ EXAMPLES:
 
     @property
     def isToeplitz(self):
+        """
+        A(i)(j) == A(i+1)(j+1) when 0 < i < row number, 0 < j < column number
+        """
         for i in range(self.dim[0]-1):
             for j in range(self.dim[1]-1):
                 if self._matrix[i][j] != self._matrix[i+1][j+1]:
@@ -1343,24 +1393,45 @@ EXAMPLES:
     
     @property
     def isIdempotent(self):
+        """
+        A**2 == A
+        """
         if not self.isSquare:
             return False
         return self.matrix == (self*self).matrix
     
     @property
     def isOrthogonal(self):
+        """
+        A.t == A.inv
+        """
         if not self.isSquare or self.isSingular:
             return False
         return self.inv.roundForm(4).matrix == self.t.roundForm(4).matrix
     
     @property
     def isUnitary(self):
+        """
+        A.ht == A.inv
+        """
         if not self.isSquare or self.isSingular:
             return False
-        return self.conj.roundForm(4).t.matrix == self.inv.roundForm(4).matrix
+        return self.ht.roundForm(4).matrix == self.inv.roundForm(4).matrix
+    
+    @property
+    def isNormal(self):
+        """
+        A@A.ht == A.ht@A OR A@A.t == A.t@A
+        """
+        if not self.isSquare:
+            return False
+        return (self@self.ht).roundForm(4).matrix == (self.ht@self).roundForm(4).matrix
     
     @property
     def nilpotency(self):
+        """
+        Value of k for A**k == 0 where k in (-inf,inf) interval
+        """
         pass
         
 # =============================================================================
