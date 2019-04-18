@@ -287,9 +287,9 @@ C.tail(n) #Returns the last n rows (if there are less than n rows it returns all
 
 C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
-C.mean(n) #Returns the nth column's average, give None as argument to get the all columns' averages
+C.mean(n,asDict) #Returns the nth column's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
 
-C.ranged(n) #Returns the nth column's range, give None as argument to get the all columns' ranges
+C.ranged(n,asDict) #Returns the nth column's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
 
 C.median(n) #Returns the nth column's median, give None to get all columns' medians
 
@@ -297,15 +297,17 @@ C.freq(n) #Returns the nth column's elements frequency as a dictionary where ele
 
 C.mode(n) #Returns the nth column's mode, give None to get all columns' modes
 
-C.iqr(n,as_quartiles) #Returns the nth column's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True)
+C.iqr(n,as_quartiles,asDict) #Returns the nth column's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
 
-C.sdev(n,population) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter True if calculation is not for samples
+C.sdev(n,population,asDict) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
 
-C.variance(n,population) #Returns the nth column's variance, if None is given as an argument returns all columns' variance. Give population parameter True if calculation is not for samples
+C.var(n,population,asDict) #Returns the nth column's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
 
-C.z(row,col) #Returns the z-scores of the desired row and/or column, call without arguments to get the all z-scores as a matrix
+C.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give population parameter True if calculation is not for samples
 
-C.corr(column_1,column_2) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix
+C.z(row,col,population) #Returns the z-scores of the desired row and/or column, call without arguments to get the all z-scores as a matrix. If both row and column given, returns a number. Give population parameter 1 if calculation is not for samples, 0 otherwise.
+
+C.corr(column_1,column_2,population) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise
 
 C.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
 
