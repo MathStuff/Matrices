@@ -348,8 +348,8 @@ print("validStr4.iqr(as_quartiles=True)")
 print(validStr4.iqr(as_quartiles=True))
 print("")
 
-print("validStr4.variance()")
-print(validStr4.variance())
+print("validStr4.var()")
+print(validStr4.var())
 print("")
 
 print('################')
@@ -378,9 +378,10 @@ coefs = (((var.t@var).inv)@var.t)@out
 
 preds = var@coefs
 err = out-preds
+err.features=["Difference"]
 
 print("Height={0} + {1}*{2}".format(coefs[0][0],coefs[1][0],validStr4.features[1]))
-print("\nAverage error:",err.mean(1)["Col 1"])
+print("\nAverage error:",err.mean(1)[err.features[0]])
 
 if plotting:
     try:
@@ -1345,7 +1346,7 @@ validStr4.iqr()
 validStr4.iqr(as_quartiles=True)
 {'Height': [155, 166, 180], 'Weight': [40, 60, 80], 'Age': [22, 29, 39]}
 
-validStr4.variance()
+validStr4.var()
 {'Height': 444.24242424242414, 'Weight': 496.6948051948051, 'Age': 168.70346320346317}
 
 ################
