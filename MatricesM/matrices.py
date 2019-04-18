@@ -88,7 +88,7 @@ class Matrix:
         """
         Set default feature names
         """
-        if len(self.features)!=self.dim[1]:
+        if len(self.__features)!=self.dim[1]:
             self.__features=["Col {}".format(i+1) for i in range(self.dim[1])]    
             
     def _setDim(self,d):
@@ -979,11 +979,11 @@ EXAMPLES:
     
     @property
     def directory(self):
-        return self._dir[:]
+        return self._dir
     
     @property
     def features(self):
-        return self.__features[:]
+        return self.__features
     @features.setter
     def features(self,li):
         if self._valid:
@@ -998,7 +998,7 @@ EXAMPLES:
                 
     @property
     def dim(self):
-        return self.__dim[:]
+        return self.__dim
     @dim.setter
     def dim(self,val):
         if self._valid:
@@ -1824,20 +1824,35 @@ EXAMPLES:
     def describe(self):
         pass
     
-    def ranged(self,col=None):
+    def ranged(self,col=None,asDict=True):
         """
         col:integer|None ; column number
         Range of the columns
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys ranges as lists, if set to False:
+            1) If there is only 1 column returns the list as it is
+            2) If there are multiple columns returns the lists in order in a list        
         """
         self._inRange=self._declareRange(self._matrix)
+        if asDict:
+            if col==None:
+                return self._inRange
+            return {self.features[col-1]:self._inRange[self.__features[col-1]]}
+                    
+        items=list(self._inRange.values())
+        if len(items)==1:
+            return items[0]
+        
         if col==None:
-            return self._inRange
-        return self._inRange[self.__features[col-1]]
-
-    def mean(self,col=None):
+            return items
+        return items[col-1]
+        
+    def mean(self,col=None,asDict=True):
         """
         col:integer|None ; column number
         Mean of the columns
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys means as values, if set to False:
+            1) If there is only 1 column returns the value as it is
+            2) If there are multiple columns returns the values in order in a list
         """
         try:
             assert (isinstance(col,int) and col>=1 and col<=self.dim[1]) or col==None
@@ -1866,27 +1881,36 @@ EXAMPLES:
             return None
         
         else:
-            return avg    
+            if asDict:
+                return avg
+            
+            items=list(avg.values())
+            if len(items)==1:
+                return items[0]
+            
+            if col==None:
+                return items
+            return items[col-1]
 
-    def sdev(self,col=None,population=1):
+    def sdev(self,col=None,population=1,asDict=True):
         """
         Standard deviation of the columns
         col:integer>=1
-        population: 1 for σ, 0 for s value (default 0)
+        population: 1 for σ, 0 for s value (default 1)
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys standard deviations as values, if set to False:
+            1) If there is only 1 column returns the value as it is
+            2) If there are multiple columns returns the values in order in a list
         """
         try:
             assert self.dim[0]>1
             assert population in [0,1]
-        except:
-            print("Can't get standard deviation")
-        else:
             if col==None:
                 sd={}
                 avgs=self.mean()
                 for i in range(self.dim[1]):
                     e=sum([(self._matrix[j][i]-avgs[self.__features[i]])**2 for j in range(self.dim[0])])
                     sd[self.__features[i]]=(e/(self.dim[0]-1+population))**(1/2)
-                return sd
+                    
             else:
                 try:
                     assert col>0 and col<=self.dim[1]
@@ -1898,8 +1922,21 @@ EXAMPLES:
         
                     e=sum([(self.matrix[i][col-1]-a)**2 for i in range(self.dim[0])])
                     sd[self.__features[col-1]] = (e/(self.dim[0]-1+population))**(1/2)
-                    return sd
-                
+        except:
+            print("Can't get standard deviation")
+            
+        else: 
+            if asDict:
+                return sd
+            
+            items=list(sd.values())
+            if len(items)==1:
+                return items[0]
+            
+            if col==None:
+                return items
+            return items[col-1]
+        
     def median(self,col=None):
         """
         Returns the median of the columns
@@ -2046,15 +2083,27 @@ EXAMPLES:
         else:
             return res
 
-    def iqr(self,col=None,as_quartiles=False):
+    def iqr(self,col=None,as_quartiles=False,asDict=True):
         """
         Returns the interquartile range(IQR)
         col:integer>=1 and <=column amount
+        
         as_quartiles:
             True to return dictionary as:
                 {Column1=[First_Quartile,Median,Third_Quartile],Column2=[First_Quartile,Median,Third_Quartile],...}
             False to get iqr values(default):
                 {Column1=IQR_1,Column2=IQR_2,...}
+                
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys iqr's as values, if set to False:
+            1) If there is only 1 column returns the value as it is
+            2) If there are multiple columns returns the values in order in a list
+                
+        Usage:
+            self.iqr() : Returns a dictionary with iqr's as values
+            self.iqr(None,True) : Returns a dictionary where the values are quartile medians in lists
+            self.iqr(None,True,False) : Returns a list of quartile medians in lists
+            self.iqr(None,False,False) : Returns a list of iqr's
+            -> Replace "None" with any column number to get a specific column's iqr
         """
         
         try:
@@ -2089,95 +2138,159 @@ EXAMPLES:
         except Exception as err:
             print("Error getting iqr: ",err)
         else:
-            if as_quartiles:
-                return qmeds
-            return iqr
+            if asDict:
+                if as_quartiles:
+                    return qmeds
+                return iqr
+            
+            else:
+                if as_quartiles:
+                    items=list(qmeds.values())
+                    if len(items)==1:
+                        return items[0]
+                    
+                    if col==None:
+                        return items
+                    return items[col-1]
+                else:
+                    items=list(iqr.values())
+                    if len(items)==1:
+                        return items[0]
+                    
+                    if col==None:
+                        return items
+                    return items[col-1]
         
-    def variance(self,col=None,population=1):
+    def var(self,col=None,population=1,asDict=True):
         """
         Variance in the columns
         col:integer>=1 |None ; Number of the column, None to get all columns 
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-        Returns a dictionary
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys variance as values, if set to False:
+            1) If there is only 1 column returns the value as it is
+            2) If there are multiple columns returns the values in order in a list
         """
         s=self.sdev(col,population)
         vs={}
         for k,v in s.items():
             vs[k]=v**2
-        return vs
+        if asDict:
+            return vs
+            
+        items=list(vs.values())
+        if len(items)==1:
+            return items[0]
+        
+        if col==None:
+            return items
+        return items[col-1]
+        
+    def cov(self,col1=None,col2=None,population=1):
+        """
+        Covariance of two columns
+        col1,col2: integers>=1  ; column numbers
+        population: 0 or 1 ; 0 for samples, 1 for population
+        """
+        if not ( isinstance(col1,int) and isinstance(col2,int) ):
+            raise TypeError("col1 and col2 should be integers")
+            
+        if population not in [0,1]:
+            raise ValueError("population should be 0 for samples, 1 for population")
+        
+        if not ( col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1] ):
+            raise ValueError("col1 and col2 are not in the valid range")
+
+        c1,c2 = self.col(col1,0),self.col(col2,0)
+        m1,m2 = self.mean(col1,asDict=0),self.mean(col2,asDict=0)
+        s = sum([(c1[i]-m1)*(c2[i]-m2) for i in range(len(c1))])
+        
+        return s/(len(c1)-1+population)
     
-    def z(self,row=None,col=None):
+    def z(self,row=None,col=None,population=1):
         """
         z-scores of the elements
         row:integer>=1 |None ; z-score of the desired row
         column:integer>=1 |None ; z-score of the desired column
-        Give no arguments to get the whole scores in a matrix
-        Returns a matrix unless both arguments are passed correctly, returns the value if row and column given
-        """
-        try:
-            if col==None:
-                assert (isinstance(row,int) and row>=1 and row<=self.dim[1]) or row==None
-                dims=self.dim
-                feats=self.features
-                sub=self.copy
-            elif isinstance(col,int) and col>=1 and col<=self.dim[1] and row==None:
-                dims=[self.dim[0],1]
-                feats=self.features[col-1]
-                sub=self.subM(1,self.dim[0],col,col)
-                col=1
-            else:
-                assert isinstance(col,int) and col>=1 and col<=self.dim[1]
-                assert isinstance(row,int) and row>=1 and row<=self.dim[0]
-                return (self.matrix[row-1][col-1]-self.mean(col)[self.features[col-1]])/self.sdev(col)[self.features[col-1]]
-                
-        except Exception as e:
-            print("error getting z scores:",e)
-        else:
-            scores=FMatrix(dims,randomFill=0,features=feats)
-            m=sub.mean(col)
-            s=sub.sdev(col,1)
-            names=[n for n in m.keys()]
-
-            for c in range(scores.dim[1]):
-                key=names[c]
-                for r in range(scores.dim[0]):
-                    scores[r][c]=(sub.matrix[r][c]-m[key])/s[key]
-            if row!=None and col==None:
-                return scores.subM(row,row,1,self.dim[1])    
-            return scores
+        population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         
-    def corr(self,col1=None,col2=None):
+        Give no arguments to get the whole scores in a matrix
+        """
+        if population not in [0,1]:
+            raise ValueError("population should be 0 for samples, 1 for population")
+            
+        if col==None and ( (isinstance(row,int) and row>=1 and row<=self.dim[1]) or row==None ):
+            dims=self.dim
+            feats=self.features
+            sub=self.copy
+            
+        elif isinstance(col,int) and col>=1 and col<=self.dim[1] and row==None:
+            dims=[self.dim[0],1]
+            feats=self.features[col-1]
+            sub=self.subM(1,self.dim[0],col,col)
+            col=1
+            
+        elif (isinstance(col,int) and col>=1 and col<=self.dim[1]) and (isinstance(row,int) and row>=1 and row<=self.dim[0]):
+            return (self.matrix[row-1][col-1]-self.mean(col,asDict=0))/self.sdev(col,asDict=0)
+        
+        else:
+            if (col!=None and row!=None) and not ( isinstance(row,int) and isinstance(col,int) ):
+                raise TypeError("row and column parameters should be either integers or None types")
+            raise ValueError("row and/or column value(s) are out of range")
+            
+        scores = FMatrix(dims,randomFill=0,features=feats)
+        m = sub.mean(asDict=0)
+        s = sub.sdev(population=population,asDict=0)
+        
+        #Put single values in a list for calculation's favor
+        if not isinstance(m,list):
+            m = [m]
+        if not isinstance(s,list):
+            s = [s]
+            
+        for c in range(scores.dim[1]):
+            for r in range(scores.dim[0]):
+                scores[r][c]=(sub.matrix[r][c]-m[c])/s[c]
+        if row!=None and col==None:
+            return scores.subM(row,row,1,self.dim[1])    
+        return scores
+        
+    def corr(self,col1=None,col2=None,population=1):
         """
         Correlation of 2 columns
-        col1,col2: integers>=1  ; column numbers
-        Not optimal for big datasets yet
+        col1,col2: integers>=1 or both None; column numbers. For correlation matrix give None to both
+        population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         """
-        def calc(c1,c2):
-            z1=self.z(col=c1)
-            z2=self.z(col=c2)
-            prod=(z1*z2).col(1,as_matrix=False)
-            return sum(prod)/(self.dim[0]-1)
-        
-        try:
-            if self.dim[1]<2 or self.dim[0]<=1:
-                print("Not enough columns/rows")
-                return None            
-            if col1!=None and col2!=None:
-                assert isinstance(col1,int) and isinstance(col1,int)
-                assert col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1]
-                return calc(col1,col2)
+        if not (( isinstance(col1,int) and isinstance(col2,int) ) or (col1==None and col2==None)):
+            raise TypeError("col1 and col2 should be integers or both None")
             
-            elif col1==None and col2==None:
-                temp=FMatrix(self.dim[1],randomFill=0)+Identity(self.dim[1])
-                for i in range(self.dim[1]):
-                    for j in range(1+i,self.dim[1]):
-                        c=calc(i+1,j+1)
-                        temp[j][i]=c
-                        temp[i][j]=c
-                return temp
-        except Exception as err:
-            print("Error getting pearson correlation:",err)
-           
+        if population not in [0,1]:
+            raise ValueError("population should be 0 for samples, 1 for population")
+        
+        if not (col1==None and col2==None):
+            if not (col1>=1 and col1<=self.dim[1] and col2>=1 and col2<=self.dim[1]):
+                raise ValueError("col1 and col2 are not in the valid range")
+        
+        if col1==None and col2==None:
+            temp = FMatrix(self.dim[1],randomFill=0,features=self.features)
+            temp += Identity(self.dim[1])
+            sd = self.sdev(population=population,asDict=0)
+            for i in range(self.dim[1]):
+                for j in range(i+1,self.dim[1]):
+                    cv = self.cov(i+1,j+1,population=population)
+                    s = sd[i]*sd[j]
+                    if s == 0:
+                        raise ZeroDivisionError("Standard deviation of 0")
+                    val =  cv/s
+                    temp._matrix[i][j] = val
+                    temp._matrix[j][i] = val
+            return temp
+        
+        else:
+            sd = self.sdev(population=population,asDict=0)
+            if 0 in sd:
+                raise ZeroDivisionError("Standard deviation of 0")
+            return self.cov(col1,col2,population=population)/(sd[col1-1]*sd[col2-1])
+        
 # =============================================================================
     """Other magic methods """
 # =============================================================================
@@ -2312,11 +2425,11 @@ EXAMPLES:
              
             #Return proper the matrix
             if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                return CMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
+                return CMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=a)
             
             if isinstance(other,FMatrix) or isinstance(self,FMatrix):
-                return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,decimal=a)
-            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp)
+                return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=a)
+            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features)
 ################################################################################    
     def __add__(self,other):
         if isinstance(other,Matrix):
@@ -2334,11 +2447,11 @@ EXAMPLES:
                     
                 #--------------------------------------------------------------------------
                 if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2351,11 +2464,11 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -2367,11 +2480,11 @@ EXAMPLES:
                 
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         else:
             print("Can't add")
@@ -2392,11 +2505,11 @@ EXAMPLES:
                     a=other.decimal
                 #--------------------------------------------------------------------------
                 if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2409,11 +2522,11 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -2424,11 +2537,11 @@ EXAMPLES:
                 temp=[[self.matrix[rows][cols]-other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         else:
             print("Can't subtract")
@@ -2449,11 +2562,11 @@ EXAMPLES:
                     a=other.decimal
                 #--------------------------------------------------------------------------
                 if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2466,11 +2579,11 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
@@ -2481,11 +2594,11 @@ EXAMPLES:
                 temp=[[self.matrix[rows][cols]*other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         else:
             print("Can't multiply")
@@ -2508,8 +2621,8 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=1)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=1)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------   
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2524,8 +2637,8 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=1)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=1)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,list):
@@ -2544,8 +2657,8 @@ EXAMPLES:
                 else:
                     #--------------------------------------------------------------------------
                     if isinstance(self,FMatrix):                
-                        return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                    return Matrix(dim=self.dim,listed=temp)
+                        return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features)
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -2571,11 +2684,11 @@ EXAMPLES:
                     a=other.decimal
                 #--------------------------------------------------------------------------
                 if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2590,11 +2703,11 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -2612,11 +2725,11 @@ EXAMPLES:
                 else:
                     #--------------------------------------------------------------------------
                     if self._cMat:
-                        return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                        return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
     
                     if isinstance(self,FMatrix):                
-                        return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                    return Matrix(dim=self.dim,listed=temp)
+                        return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features)
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -2644,8 +2757,8 @@ EXAMPLES:
                     a=other.decimal
                 #--------------------------------------------------------------------------
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2660,8 +2773,8 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -2679,8 +2792,8 @@ EXAMPLES:
                 else:
                     #--------------------------------------------------------------------------
                     if isinstance(self,FMatrix):                
-                        return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                    return Matrix(dim=self.dim,listed=temp)
+                        return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features)
                     #--------------------------------------------------------------------------
         else:
             print("Can't get modular")
@@ -2701,11 +2814,11 @@ EXAMPLES:
                     a=other.decimal
                 #--------------------------------------------------------------------------
                 if isinstance(other,CMatrix) or isinstance(self,CMatrix):
-                    return CMatrix(dim=self.dim,listed=temp,decimal=a)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
                 if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
-                    return FMatrix(dim=self.dim,listed=temp,decimal=a)
-                return Matrix(dim=self.dim,listed=temp)    
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------  
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -2717,11 +2830,11 @@ EXAMPLES:
             else:
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
@@ -2733,11 +2846,11 @@ EXAMPLES:
                 temp=[[self.matrix[rows][cols]**other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
                 #--------------------------------------------------------------------------
                 if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
+                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
                 if isinstance(self,FMatrix):                
-                    return FMatrix(dim=self.dim,listed=temp,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp)
+                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
+                return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
         else:
             print("Can't raise to the given power")
@@ -3072,9 +3185,9 @@ decimal: digits to round up to
                  features = [],
                  decimal = 4):
         
-        self.__decimal=decimal
+        self.__decimal = decimal
         super().__init__(dim,listed,directory,ranged,randomFill,seed,header,features)
-
+        
     def __str__(self): 
         """ 
         Prints the matrix's attributes and itself as a grid of numbers
