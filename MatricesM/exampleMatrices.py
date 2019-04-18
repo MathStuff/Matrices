@@ -4,7 +4,7 @@ Created on Wed Oct 31 17:38:28 2018
 
 @author: Semih
 """
-from matrices import Matrix,FMatrix,Identity,CMatrix
+from MatricesM.matrices import Matrix,FMatrix,Identity,CMatrix
 
 try:
     plotting=bool(int(input("Enable plotting ?(0/1) (Requires matplotlib)")))
@@ -193,9 +193,9 @@ print('################')
       
 print("p:")
 print(p)
-print("p.remove(c=1) and p.remove(r=2)")
-p.remove(c=1)
-p.remove(r=2)
+print("p.remove(col=1) and p.remove(row=2)")
+p.remove(col=1)
+p.remove(row=2)
 print(p)
 print("p.add(col=2,lis=[55,55,55,55,55]):")
 p.add(col=2,lis=[55,55,55,55])
@@ -238,8 +238,8 @@ print("\nid4.addDim(10)):\n",id4.addDim(10))
 print("################")
 print("r=p.t")
 r=p.t
-print("r.remove(r=2):")
-r.remove(r=2)
+print("r.remove(row=2):")
+r.remove(row=2)
 print(r)
 print("r.rank:",r.rank)
 print("\nr[0]=r[1][:]")
@@ -357,20 +357,23 @@ print("Linear model for validStr4:")
 print("""
 validStr4.corr().p #First and second columns have strong positive correlation. Let's choose first column to be predicted
 
-var=validStr4.subM(1,validStr4.dim[0],2,2)
-var.add("bias",[1]*validStr4.dim[0],col=1)
+var = validStr4.subM(1,validStr4.dim[0],2,2)
+var.add([1]*validStr4.dim[0],col=1,feature="bias")
 
-out=validStr4.subM(1,validStr4.dim[0],1,1)
+out = validStr4.subM(1,validStr4.dim[0],1,1)
 
-coefs=(((var.t@var).inv)@var.t)@out
+coefs = (((var.t@var).inv)@var.t)@out
 
-preds=var@coefs
-err=out-preds
+preds = var@coefs
+err = out-preds
+err.features=["Difference"]
+
 """)
+
 validStr4.corr().p
 
 var = validStr4.subM(1,validStr4.dim[0],2,2)
-var.add("bias",[1]*validStr4.dim[0],col=1)
+var.add([1]*validStr4.dim[0],col=1,feature="bias")
 
 out = validStr4.subM(1,validStr4.dim[0],1,1)
 
@@ -935,7 +938,7 @@ Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4', 'Col 5']
  9 32 65 68 72 
 63 94 54 38 49 
 
-p.remove(c=1) and p.remove(r=2)
+p.remove(col=1) and p.remove(row=2)
 
 Square matrix
 Dimension: 4x4
@@ -1055,7 +1058,7 @@ Dimension: 10x10
 
 ################
 r=p.t
-r.remove(r=2):
+r.remove(row=2):
 
 Square matrix
 Dimension: 4x4
@@ -1355,7 +1358,7 @@ Linear model for validStr4:
 validStr4.corr().p #First and second columns have strong positive correlation. Let's choose first column to be predicted
 
 var=validStr4.subM(1,validStr4.dim[0],2,2)
-var.add("bias",[1]*validStr4.dim[0],col=1)
+var.add([1]*validStr4.dim[0],col=1,feature="bias")
 
 out=validStr4.subM(1,validStr4.dim[0],1,1)
 
