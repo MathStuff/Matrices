@@ -23,13 +23,19 @@
 
 IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
 
-                       listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the randomFill 
+                       listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
                        directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                       ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [-5,5]
+                       fill=distribution | number, #Optional,  'uniform'|'triangular'|'gauss' or integer | float | complex or None; fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
-                       randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
+                       ranged=[*args] | dict;
+                              ->To apply all the elements give a list | tuple
+                              ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
+                              ->Arguments should follow one of the following rules:
+                                   1)If 'fill' is 'uniform', interval to pick numbers from as [minimum,maximum]; 
+                                   2)If 'fill' is 'gauss', mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                                   3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]                       
 
                        header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
@@ -45,13 +51,7 @@ FloatMatrix = FMatrix(#Same parameters from the Matrix class
 IdentityMatrix = Identity(dim=dimension #Required, int
                          )
 
-ComplexMatrix = CMatrix(dim=dimension, #Required, int | list as [rows,cols]
-
-                        ranged=intervalToPickFrom, #Optional, list as [lowerBound,upperBound]. Default is [0,1]
-
-                        randomFill=fillRandomly, #Optional, boolean. Default is 1. Doesn't affect the matrix if "listed" or "directory" is given
-
-                        features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
+ComplexMatrix = CMatrix(#Same parameters as FMatrix
                         )
 ```         
    ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
@@ -64,46 +64,72 @@ Some examples:
 --------------
 ##### Create matrices filled with random integers
 ```python 
-A=Matrix(4) #Creates a 4x4 matrix filled with random integers from the default range which is [-5,5]
+#Creates a 4x4 matrix filled with random integers from the default range which is [-1,1]
+A=Matrix(4) 
 
-B=Matrix([3,5],ranged=[10,25]) #Creates a 3x5 matrix with elements ranged between 10 and 25
-``` 
+#Creates a 3x5 matrix with elements uniformly distributed in the range from 10 to 25
+B=Matrix([3,5],ranged=[10,25]) 
+```
 ----------------------------------------
 ##### Create matrices filled with random float numbers
 ```python 
-E=FMatrix(6) #Create a 6x6 square matrix filled with random float values in the default range
+#Create a 6x6 square matrix filled with random float values in the default range
+E=FMatrix(6) 
 
-F=FMatrix(dim=[2,5],randomFill=0) #Fill the matrix with zeros
+#Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
+F=FMatrix(dim=[200,5],fill='gauss',ranged=[50,10]) 
+
+#Create a 10x10 matrix filled with 1's
+G=FMatrix(10,fill=1)
 ```
 ----------------------------------------
 ##### Create identity matrices
 ```python 
-i=Identity(3) #3x3 identity matrix
+#3x3 identity matrix
+i=Identity(3) 
 
-i.addDim(2) #Add 2 dimensions to get a 5x5 identity matrix
+#Add 2 dimensions to get a 5x5 identity matrix
+i.addDim(2) 
 ``` 
 ----------------------------------------
 ##### Create matrices filled with random complex numbers (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
 ```python 
-Cm1=CMatrix(5) #Create a square matrix filled with random float values in the default range
+#Create a square matrix filled with random float values in the default range
+Cm1=CMatrix(5) 
 ```
 ----------------------------------------
 ##### Give list of numbers to create matrices
 ```python 
 filled_rows=[[1,2,3],[4,5,6],[7,8,9]]
 
-C=Matrix(3,filled_rows) #Creates a 3x3 matrix with the given list of numbers
+#Creates a 3x3 matrix with the given list of numbers
+C=Matrix(3,filled_rows) 
 
-C1=FMatrix(3,"1 0 -1 4 5 5 1 2 2") #Creates a 3x3 matrix from the given string
+#Creates a 3x3 matrix from the given string
+C1=FMatrix(3,"1 0 -1 4 5 5 1 2 2") 
 
-C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") #Creates a 2x4 matrix from the given string
+#Creates a 2x4 matrix from the given string
+C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") 
 ``` 
 ----------------------------------------
 ##### Generate randomly filled matrices
 ```python
-randomData1=FMatrix([10000,4],ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]})
+#Create a 10000x3 matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
+randomData1=FMatrix((10000,3),
+                    fill='triangular',
+                    ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
+                    seed=32141
+                   )
 
-randomData2=Matrix([10000,4],ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]})
+randomData2=FMatrix([10000,4],
+                    ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]}
+                   )
+
+randomData3=Matrix([10000,4],
+                   fill='gauss',
+                   ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]}
+                  )
+
 ```
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix
