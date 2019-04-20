@@ -1,4 +1,4 @@
-def subM(mat,rowS=None,rowE=None,colS=None,colE=None):
+def subM(mat,rowS=None,rowE=None,colS=None,colE=None,ob=None):
     """
     Get a sub matrix from the current matrix
     rowS:Desired matrix's starting row (starts from 1)
@@ -17,18 +17,8 @@ def subM(mat,rowS=None,rowE=None,colS=None,colE=None):
     ***Returns a new grid class/matrix***
     """
     try:
-        temp2=[]
-        if (rowS,rowE,colS,colE)==(None,None,None,None):
-            return None
-        #IF 2 ARGUMENTS ARE GIVEN, SET THEM AS ENDING POINTS
-        if (rowS,rowE)!=(None,None) and (colS,colE)==(None,None):
-            colE=rowE
-            rowE=rowS
-            rowS=1
-            colS=1
-        #IF MORE THAN 2 ARGUMENTS ARE GIVEN MAKE SURE IT IS 4 OF THEM AND THEY ARE VALID
-        else:
-            assert (rowS,rowE,colS,colE)!=(None,None,None,None) and (rowS,rowE,colS,colE)>(0,0,0,0)
+        assert (rowS,rowE,colS,colE)!=(None,None,None,None) 
+        assert (rowS,rowE,colS,colE)>(0,0,0,0)
         assert rowS<=mat.dim[0] and rowE<=mat.dim[0] and colS<=mat.dim[1] and colE<=mat.dim[1]
         
     except AssertionError:
@@ -40,8 +30,6 @@ def subM(mat,rowS=None,rowE=None,colS=None,colE=None):
     else:
         temp=mat._matrix[rowS-1:rowE]
         if len(temp):
-            temp2=[temp[c][colS-1:colE] for c in range(len(temp))]
-            cop = mat.copy
-            cop.setMatrix([rowE-rowS+1,colE-colS+1],None,temp2)
-            cop.features = mat.features[colS-1:colE]
-        return cop
+            ob._matrix = [temp[c][colS-1:colE] for c in range(len(temp))]
+            ob.features = mat.features[colS-1:colE]
+        return ob
