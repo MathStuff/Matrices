@@ -5,28 +5,28 @@ Created on Wed Oct 31 17:26:48 2018
 @author: Semih
 """
 
-# =============================================================================
-from random import random
-from random import uniform
-from random import seed
-# =============================================================================
 class Matrix:
     """
-    dim:integer | list; dimensions of the matrix. Giving integer values creates a square matrix
+    dim:integer | list | tuple; dimensions of the matrix. Giving integer values creates a square matrix
     
     listed:string | list of lists of numbers | list of numbers; Elements of the matrix. Can extract all the numbers from a string.
     
     directory:string; directory of a data file(e.g. 'directory/datafile' or r'directory\datafile')
     
-    ranged:list of 2 numbers; interval to pick numbers from
-    
-    randomFill:boolean; fills the matrix with random numbers
-    
+    fill: 'uniform'|'triangular'|'gauss' or integer | float | complex or None; fills the matrix with chosen distribution or number, None will force uniform distribution
+
+    ranged:->To apply all the elements give a list | tuple
+           ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
+           ->Arguments should follow one of the following rules:
+                1)If 'fill' is 'uniform', interval to pick numbers from as [minimum,maximum]; 
+                2)If 'fill' is 'gauss', mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]
+
     header:boolean; takes first row as header title
     
     features:list of strings; column names
     
-    seed:int|float|complex|str; seed to use while generating random numbers, not useful without randomFill==True
+    seed:int|float|complex|str; seed to use while generating random numbers, not useful without fill is one of ['uniform','triangular','gauss']
     
     Check exampleMatrices.py or https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
@@ -35,26 +35,25 @@ class Matrix:
                  dim = None,
                  listed = [],
                  directory = "",
-                 ranged = [-5,5],
-                 randomFill = True,
+                 fill = "uniform",
+                 ranged = [-1,1],
                  seed = None,
                  header = False,
                  features = []):  
         
-        self._matrix = []   
+        self._matrix = listed  
         self._string = ""
         self._dir = directory
         self._header = header
         
         self.__initRange = ranged
-        self.__randomFill = randomFill
+        self.__fill = fill
         self.__seed = seed
         self.__features = features
         
-        
         self._setDim(dim)
-        self.setInstance()                     
-        self.setMatrix(self.dim,self.initRange,listed,directory)
+        self.setInstance()
+        self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill)
         self.setFeatures()
 # =============================================================================
     """Attribute formatting and setting methods"""
@@ -91,119 +90,16 @@ class Matrix:
         """
         Set the dimension to be a list if it's an integer
         """
-        if isinstance(d,int):
-            if d>=1:
-                self.__dim=[d,d]
-            else:
-                self.__dim=[0,0]
-        elif isinstance(d,list) or isinstance(d,tuple):
-            if len(d)!=2:
-                self.__dim=[0,0]
-            else:
-                if isinstance(d[0],int) and isinstance(d[1],int):
-                    if d[0]>0 and d[1]>0:
-                        self.__dim=d[:]
-                    else:
-                        self.__dim=[0,0]
-        elif d==None:
-            self.__dim=[0,0]  
-            
-    def setMatrix(self,d=None,r=None,lis=[],direc=r""):
+        from MatricesM.setup.dims import setDim
+        setDim(self,d)
+        
+    def setMatrix(self,d=None,r=None,lis=[],direc=r"",f="uniform"):
         """
         Set the matrix based on the arguments given
         """
-        #Set new dimension
-        if d!=None:
-            self._setDim(d)
-        d=self.dim
-
-        #Set new range    
-        if r==None:
-            r=self.initRange
-        else:
-            self.initRange=r
+        from MatricesM.setup.matfill import setMatrix
         
-        #Save the seed for reproduction
-        if self.seed==None and self.randomFill and len(lis)==0 and len(direc)==0:
-            randseed=random()
-            seed(randseed)
-            self.__seed=randseed
-        elif self.randomFill and len(lis)==0 and len(direc)==0:
-            seed(self.seed)
-        else:
-            self.__seed=None
-        #Set the new matrix
-        if isinstance(lis,str):
-            self._matrix=self._listify(lis)
-
-        elif len(direc)>0:
-            lis=self.__fromFile(direc)
-            if not lis==None:
-                self._matrix=self._listify(lis)
-            else:
-                return None                      
-        else:
-            if len(lis)>0:
-                if isinstance(lis[0],list):                        
-                    self._matrix = [a[:] for a in lis[:]]
-                else:
-                    try:
-                        assert self.dim[0]*self.dim[1] == len(lis)
-                    except Exception as err:
-                        print(err)
-                    else:
-                        self._matrix=[]
-                        for j in range(0,len(lis),self.dim[1]):
-                                self._matrix.append(lis[j:j+self.dim[1]])
-            #Same range for all columns
-            elif len(lis)==0 and isinstance(r,list):
-                if self.randomFill:
-                    m,n=max(self.initRange),min(self.initRange)
-                    if self._cMat:
-                        self._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
-                    
-                    elif self._fMat:
-                        if self.initRange==[0,1]:
-                            self._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
-                        else:
-                            self._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
-                    
-                    else:
-                        if self.initRange==[0,1]:
-                            self._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
-                        else:
-                            m+=1
-                            self._matrix=[[uniform(n,m)//1 for a in range(d[1])] for b in range(d[0])]
-                
-                else:
-                    self._matrix=[[0 for a in range(d[1])] for b in range(d[0])]
-                    
-            #Different ranges over individual columns
-            elif len(lis)==0 and isinstance(r,dict):
-                try:
-                    assert len([i for i in r.keys()])==self.dim[1]
-                    vs=[len(i) for i in r.values()]
-                    assert vs.count(vs[0])==len(vs)
-                    feats=[i for i in r.keys()]
-                    self.__features=feats
-  
-                except Exception as err:
-                    print(err)
-                else:                        
-                    if self._cMat:
-                        temp=[[complex(uniform(min(r[feats[i]]),max(r[feats[i]])),uniform(min(r[feats[i]]),max(r[feats[i]]))) for _ in range(d[0])] for i in range(d[1])]
-                        self._matrix=CMatrix([self.dim[1],self.dim[0]],listed=temp).t.matrix
-                        
-                    elif self._fMat:
-                        temp=[[uniform(min(r[feats[i]]),max(r[feats[i]])) for _ in range(d[0])] for i in range(d[1])]                        
-                        self._matrix=FMatrix([self.dim[1],self.dim[0]],listed=temp).t.matrix 
-                        
-                    else:
-                        temp=[[uniform(min(r[feats[i]]),max(r[feats[i]])+1)//1 for _ in range(d[0])] for i in range(d[1])]
-                        self._matrix=Matrix([self.dim[1],self.dim[0]],listed=temp).t.matrix 
-                    
-            else:
-                return None
+        setMatrix(self,d,r,lis,direc,f)
 # =============================================================================
     """Attribute recalculation methods"""
 # =============================================================================    
@@ -271,136 +167,35 @@ class Matrix:
         """
         Finds all the numbers in the given string
         """
-        #Get the features from the first row if header exists
-        import re
-        string=stringold[:]
-        if self._header:
-            i=0
-            for ch in string:
-                if ch!="\n":
-                    i+=1
-                else:
-                    if len(self.__features)!=self.dim[1]:
-                        pattern=r"(?:\w+ ?[0-9]*)+"
-                        self.__features=re.findall(pattern,string[:i])
-                        if len(self.__features)!=self.dim[1]:
-                            print("Can't get enough column names from the header")
-                            self.setFeatures()
-                    string=string[i:]
-                    break
-                
-        #Get all integer and float values       
-        pattern=r"-?\d+\.?\d*"
-        found=re.findall(pattern,string)
-        
-        #String to number
-        try:
-            if not isinstance(self,FMatrix):
-                found=[int(a) for a in found]
-            elif isinstance(self,FMatrix):
-                found=[float(a) for a in found]
-        except ValueError as v:
-            print("If your matrix has float values, use FMatrix. If not use Matrix\n",v)
-            return []
-        #Fix dimensions to create a row matrix   
-        if self.__dim==[0,0]:
-            self.__dim=[1,len(found)]
-            self.setFeatures()
-        #Create the row matrix
-        temp=[]
-        e=0            
-        for rows in range(self.dim[0]):
-            temp.append(list())
-            for cols in range(self.dim[1]):
-                temp[rows].append(found[cols+e])
-            e+=self.dim[1]
-
-        return temp
+        from MatricesM.setup.listify import _listify
+        return _listify(self,stringold)
             
     def _stringfy(self):
         """
-        Turns a square matrix shaped list into a grid-like form that is printable
+        Turns a list into a grid-like form that is printable
         Returns a string
         """
-        import re
-        def __digits(num):
-            dig=0
-            if num==0:
-                return 1
-            if num<0:
-                dig+=1
-                num*=-1
-            while num!=0:
-                num=num//10
-                dig+=1
-            return dig
-
-        string=""
-        if self._cMat:
-            ns=""
-            for i in self._matrix:
-                for j in i:
-                    ns+=str(round(j.real,self.decimal))
-                    im=j.imag
-                    if im<0:
-                        ns+=str(round(im,self.decimal))+"j "
-                    else:
-                        ns+="+"+str(round(im,self.decimal))+"j "
-                        
-            pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
-            bound=max([len(a) for a in re.findall(pattern,ns)])-2
-        elif not self._isIdentity:
-            try:
-                i=min([min(a) for a in self._inRange.values()])
-                j=max([max(a) for a in self._inRange.values()])
-                b1=__digits(i)
-                b2=__digits(j)
-                bound=max([b1,b2])
-            except ValueError:
-                print("Dimension parameter is required")
-                return ""
-        else:
-            bound=2
-            
-        if self._fMat or self._cMat:
-            pre="0:.{}f".format(self.decimal)
-            st="{"+pre+"}"
-            interval=[float("-0."+"0"*(self.decimal-1)+"1"),float("0."+"0"*(self.decimal-1)+"1")] 
-            
-        for rows in range(self.dim[0]):
-            string+="\n"
-            for cols in range(self.dim[1]):
-                num=self._matrix[rows][cols]
-
-                if self._cMat:
-                    if num.imag>=0:
-                        item=str(round(num.real,self.decimal))+"+"+str(round(num.imag,self.decimal))+"j "
-                    else:
-                        item=str(round(num.real,self.decimal))+str(round(num.imag,self.decimal))+"j "
-                    s=len(item)-4
-                    
-                elif self._fMat:
-                    if num>interval[0] and num<interval[1]:
-                        num=0.0
-                    item=st.format(round(num,self.decimal))
-                    s=__digits(num)
-                    
-                else:
-                    item=str(num)
-                    s=__digits(num)
-                    
-                string += " "*(bound-s)+item+" "
-
-        return string
+        from MatricesM.setup.stringfy import _stringfy
+        return _stringfy(self)
 # =============================================================================
     """Row/Column methods"""
 # =============================================================================
     def head(self,rows=5):
+        """
+        First 'rows' amount of rows of the matrix
+        Returns a matrix
+        rows : integer>0 | How many rows to return
+        """
         if self.dim[0]>=rows:
             return self.subM(1,rows,1,self.dim[1])
         return self.subM(1,self.dim[0],1,self.dim[1])
 
     def tail(self,rows=5):
+        """
+        Last 'rows' amount of rows of the matrix
+        Returns a matrix
+        rows : integer>0 | How many rows to return
+        """
         if self.dim[0]>=rows:
             return self.subM(self.dim[0]-rows+1,self.dim[0],1,self.dim[1])
         return self.subM(1,self.dim[0],1,self.dim[1])
@@ -512,7 +307,22 @@ class Matrix:
         ***Returns a new grid class/matrix***
         """
         from MatricesM.matrixops.subM import subM
-        return subM(self,rowS,rowE,colS,colE)
+        if (rowS,rowE,colS,colE)==(None,None,None,None):
+            return None
+        if (rowS,rowE)!=(None,None) and (colS,colE)==(None,None):
+            colE=rowE
+            rowE=rowS
+            rowS=1
+            colS=1
+        if self._cMat:
+            typ="CMatrix"
+        elif self._fMat:
+            typ="FMatrix"
+        else:
+            typ="Matrix"
+        arg = "([{},{}],fill=0)".format(rowE-rowS+1,colE-colS+1)
+        ob = eval(typ+arg)
+        return subM(self,rowS,rowE,colS,colE,ob)
 
 # =============================================================================
     """Methods for special matrices and properties"""
@@ -621,7 +431,7 @@ class Matrix:
             if self.matrix==Identity(self.dim[0]).matrix:
                 return Identity(self.dim[0])
             else:
-                return FMatrix(dim=self.dim[:],listed=self.matrix,features=self.features)
+                return FMatrix(dim=self.dim)
         return eval(self.obj)
     @property
     def string(self):
@@ -649,7 +459,7 @@ class Matrix:
                 
     @property
     def dim(self):
-        return self.__dim
+        return list(self.__dim)
     @dim.setter
     def dim(self,val):
         try:
@@ -670,31 +480,40 @@ class Matrix:
             self.__init__(dim=list(val),listed=temp)
     
     @property
-    def randomFill(self):
-        return self.__randomFill
-    @randomFill.setter
-    def randomFill(self,value):
+    def fill(self):
+        return self.__fill
+    @fill.setter
+    def fill(self,value):
         try:
             assert isinstance(value,int) or isinstance(value,bool)
         except AssertionError:
-            raise TypeError("randomFill should be an integer or a boolean")
+            raise TypeError("fill should be an integer or a boolean")
         else:
-            self.__randomFill=bool(value)
+            self.__fill=bool(value)
             
     @property
     def initRange(self):
         return self.__initRange
     @initRange.setter
     def initRange(self,value):
-        try:
-            assert isinstance(value,list) or isinstance(value,tuple)
-            assert len(value)==2
-            assert isinstance(value[0],int) or isinstance(value[0],float)
-            assert isinstance(value[1],int) or isinstance(value[1],float)
-        except AssertionError:
+        if not (isinstance(value,list) or isinstance(value,tuple) or isinstance(value,dict)):
             raise TypeError("initRange should be a list or a tuple")
+        
+        if self.fill in ["uniform","gauss"] or ( isinstance(self.fill,int) or isinstance(self.fill,float) or isinstance(self.fill,complex) ):
+            if isinstance(value,list):
+                if len(value)!=2:
+                    return IndexError("initRange|ranged should be in the form of [mean,standard_deviation] or [minimum,maximum]")
+                if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)):
+                    return ValueError("list contains non integer and non float numbers")
+        elif self.fill in ["triangular"]:
+            if isinstance(value,list):
+                if len(value)!=3:
+                    return IndexError("initRange|ranged should be in the form of [minimum,maximum,mode]")
+                if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)) and not (isinstance(value[2],float) or isinstance(value[2],int)):
+                    return ValueError("list contains non integer and non float numbers")
         else:
-            self.__initRange=list(value)
+            raise TypeError("Invalid 'fill' attribute, change it first")
+        self.__initRange=list(value)
             
     @property
     def rank(self):
@@ -808,13 +627,13 @@ class Matrix:
         """
         Object call as a string to recreate the matrix
         """
-        #ranged and randomFill arguments are NOT required to create the same matrix
+        #ranged and fill arguments are NOT required to create the same matrix
         if self._cMat:
-            return "CMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.decimal,self.seed)
+            return "CMatrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.fill,self.features,self._header,self._dir,self.decimal,self.seed)
         elif self._fMat:
-            return "FMatrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.decimal,self.seed)
+            return "FMatrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.fill,self.features,self._header,self._dir,self.decimal,self.seed)
         elif not self._isIdentity:
-            return "Matrix(dim={0},listed={1},ranged={2},randomFill={3},features={4},header={5},directory='{6}',seed={7})".format(self.dim,self._matrix,self.initRange,self.randomFill,self.features,self._header,self._dir,self.seed)
+            return "Matrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',seed={7})".format(self.dim,self._matrix,self.initRange,self.fill,self.features,self._header,self._dir,self.seed)
         else:
             return None
         
@@ -1261,9 +1080,18 @@ class Matrix:
     
     def sortBy(self,column,order):
         pass
+    
+    def shuffle(self):
+        pass
+    
+    def same(self,matrix):
+        pass
 # =============================================================================
     """Statistical methods"""
-# =============================================================================         
+# =============================================================================      
+    def sample(self,size=1):
+        pass
+    
     def normalize(self,col=None,inplace=True,zerobound=12):
         """
         Original matrix should be an FMatrix or there will be printing issues when "inplace" is used.
@@ -1412,8 +1240,10 @@ class Matrix:
         col1,col2: integers>=1 or both None; column numbers. For correlation matrix give None to both
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         """     
-        from MatricesM.stats.corr import corr
-        return corr(self,col1,col2,population)
+        from MatricesM.stats.corr import _corr
+        temp = FMatrix(self.dim[1],fill=0,features=self.features)
+        temp += Identity(self.dim[1])
+        return _corr(self,col1,col2,population,temp)
     
     @property   
     def describe(self):
@@ -1498,16 +1328,16 @@ class Matrix:
                     else:
                         temp[r][rs]=round(total,12)
             #Get decimals after the decimal point
-            if isinstance(self,FMatrix) or isinstance(self,CMatrix):
+            if self._fMat:
                 a=self.decimal
-            if isinstance(other,FMatrix) or isinstance(self,CMatrix):
+            if other._fMat:
                 a=other.decimal
              
             #Return proper the matrix
-            if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+            if other._cMat or self._cMat:
                 return CMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=a)
             
-            if isinstance(other,FMatrix) or isinstance(self,FMatrix):
+            if other._fMat or self._fMat:
                 return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=a)
             return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features)
 ################################################################################    
@@ -1520,16 +1350,16 @@ class Matrix:
                 print("Can't add: ",err)
                 return self
             else:
-                if isinstance(self,FMatrix):
+                if self._fMat:
                     a=self.decimal
-                if isinstance(other,FMatrix):
+                if other._fMat:
                     a=other.decimal
                     
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                if other._cMat or self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
@@ -1546,7 +1376,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1562,7 +1392,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1579,15 +1409,15 @@ class Matrix:
                 print("Can't subtract: ",err)
                 return self
             else:
-                if isinstance(self,FMatrix):
+                if self._fMat:
                     a=self.decimal
-                if isinstance(other,FMatrix):
+                if other._fMat:
                     a=other.decimal
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                if other._cMat or self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
@@ -1604,7 +1434,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1619,7 +1449,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1636,15 +1466,15 @@ class Matrix:
                 print("Can't multiply: ",err)
                 return self
             else:
-                if isinstance(self,FMatrix):
+                if self._fMat:
                     a=self.decimal
-                if isinstance(other,FMatrix):
+                if other._fMat:
                     a=other.decimal
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                if other._cMat or self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
@@ -1661,7 +1491,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1676,7 +1506,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1685,10 +1515,10 @@ class Matrix:
             return self
 ################################################################################
     def __floordiv__(self,other):
-        if self._cMat or  isinstance(other,CMatrix):
-            print("CMatrix doesn't allow floor division")
-            return self
         if isinstance(other,Matrix):
+            if self._cMat or  other._cMat:
+                print("CMatrix doesn't allow floor division")
+            return self
             try:
                 assert self.dim==other.dim                
                 temp=[[self.matrix[rows][cols]//other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
@@ -1700,7 +1530,7 @@ class Matrix:
                 return self
             else:
                 #--------------------------------------------------------------------------
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=1)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------   
@@ -1716,7 +1546,7 @@ class Matrix:
                 return self
             else:
                 #--------------------------------------------------------------------------
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=1)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1736,7 +1566,7 @@ class Matrix:
                     return self
                 else:
                     #--------------------------------------------------------------------------
-                    if isinstance(self,FMatrix):                
+                    if self._fMat:                
                         return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp,features=self.features)
                     #--------------------------------------------------------------------------
@@ -1758,15 +1588,15 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
-                if isinstance(self,FMatrix):
+                if self._fMat:
                     a=self.decimal
-                if isinstance(other,FMatrix):
+                if other._fMat:
                     a=other.decimal
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                if other._cMat or self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
@@ -1785,7 +1615,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1807,7 +1637,7 @@ class Matrix:
                     if self._cMat:
                         return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
     
-                    if isinstance(self,FMatrix):                
+                    if self._fMat:                
                         return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp,features=self.features)
                     #--------------------------------------------------------------------------
@@ -1816,11 +1646,11 @@ class Matrix:
             return self
 ################################################################################
     def __mod__(self, other):
-        if self._cMat or  isinstance(other,CMatrix):
-            print("CMatrix doesn't allow floor division")
-            return self
         if isinstance(other,Matrix):
             try:
+                if self._cMat or  other._cMat:
+                    print("CMatrix doesn't allow floor division")
+                    return self
                 assert self.dim==other.dim                
                 temp=[[self.matrix[rows][cols]%other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
 
@@ -1831,12 +1661,12 @@ class Matrix:
                 print("Can't get modular: ",err)
                 return self
             else:
-                if isinstance(self,FMatrix):
+                if self._fMat:
                     a=self.decimal
-                if isinstance(other,FMatrix):
+                if other._fMat:
                     a=other.decimal
                 #--------------------------------------------------------------------------
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------
@@ -1852,7 +1682,7 @@ class Matrix:
                 return self
             else:
                 #--------------------------------------------------------------------------
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1871,7 +1701,7 @@ class Matrix:
                     return self
                 else:
                     #--------------------------------------------------------------------------
-                    if isinstance(self,FMatrix):                
+                    if self._fMat:                
                         return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                     return Matrix(dim=self.dim,listed=temp,features=self.features)
                     #--------------------------------------------------------------------------
@@ -1888,15 +1718,15 @@ class Matrix:
                 print("Can't raise to the given power: ",err)
                 return self
             else:
-                if isinstance(self,FMatrix):
+                if self._fMat:
                     a=self.decimal
-                if isinstance(other,FMatrix):
+                if other._fMat:
                     a=other.decimal
                 #--------------------------------------------------------------------------
-                if isinstance(other,CMatrix) or isinstance(self,CMatrix):
+                if other._cMat or self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
             
-                if isinstance(self,FMatrix) or isinstance(other,FMatrix):               
+                if self._fMat or other._fMat:               
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)    
                 #--------------------------------------------------------------------------  
@@ -1912,7 +1742,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -1928,7 +1758,7 @@ class Matrix:
                 if self._cMat:
                     return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
 
-                if isinstance(self,FMatrix):                
+                if self._fMat:                
                     return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
                 return Matrix(dim=self.dim,listed=temp,features=self.features)
                 #--------------------------------------------------------------------------
@@ -2183,7 +2013,7 @@ class Identity(Matrix):
             print("Give integer as the dimension")
             return None
         else:
-            super().__init__(dim,randomFill=0)
+            super().__init__(dim,fill=0)
             self._setMatrix()
 
                 
@@ -2225,15 +2055,15 @@ class FMatrix(Matrix):
                  dim = None,
                  listed = [],
                  directory = r"",
+                 fill = "uniform",
                  ranged = [0,1],
-                 randomFill = True,
                  seed = None,
                  header = False,
                  features = [],
                  decimal = 4):
         
         self.__decimal = decimal
-        super().__init__(dim,listed,directory,ranged,randomFill,seed,header,features)
+        super().__init__(dim,listed,directory,fill,ranged,seed,header,features)
         
     def __str__(self): 
         """ 
@@ -2255,7 +2085,7 @@ class FMatrix(Matrix):
     @decimal.setter
     def decimal(self,val):
         try:
-            assert isinstance(self,FMatrix) or isinstance(self,CMatrix)
+            assert self._fMat or self._cMat
             assert isinstance(val,int)
             assert val>=1
         except:
@@ -2271,15 +2101,15 @@ class CMatrix(FMatrix):
                  dim = None,
                  listed = [],
                  directory = r"",
-                 ranged = [0,1],
-                 randomFill = True,
+                 fill = "uniform",
+                 ranged = [-1,1],
                  seed = None,
                  header = False,
                  features = [],
                  decimal = 4):
         
         self.__decimal=decimal
-        super().__init__(dim,listed,directory,ranged,randomFill,seed,header,features,decimal)
+        super().__init__(dim,listed,directory,fill,ranged,seed,header,features,decimal)
 
     def __str__(self):
         print("\nComplex Matrix",end="")
