@@ -37,11 +37,11 @@ projectGrid="""08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
 # =============================================================================
 # Valid Matrices
 # =============================================================================
-o=Matrix(8,randomFill=0)
+o=Matrix(8,fill=0)
 b=Matrix(1)
 c=Matrix(dim=[2,4],ranged=[-50,50])
 d=FMatrix([4,3])
-e=Matrix(8,randomFill=0)
+e=Matrix(8,fill="gauss",ranged=[0,3])
 f=FMatrix(dim=6,ranged=[-1250,1250])
 g=Matrix(dim=[3,6],ranged=[2,10])
 p=Matrix(5,ranged=[0,100])
@@ -82,18 +82,6 @@ fr,159,40,29,k
 fr,164,66,32,k
 fr,166,56,42,k
 """,features=["Height","Weight","Age"])
-
-# =============================================================================
-# InvalidMatrices
-# =============================================================================
-#You have to give the matrix a valid dimension, or a list to get a dimension, or it won't be a valid matrix
-
-#a=Matrix(0)
-#v=Matrix()
-#k=Matrix(dim=-1)
-#l=Matrix(ranged=[0])
-#m=Matrix(randomFill=1)
-
 # =============================================================================
 # Identity Matrices
 # =============================================================================
@@ -866,9 +854,6 @@ Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4']
 6 8 6 1 
 2 5 1 5 
  
-
-j.obj:
- Matrix(dim=[2, 4],listed=[[6, 8, 6, 1], [2, 5, 1, 5]],ranged=[-5, 5],randomFill=True,features=['Col 1', 'Col 2', 'Col 3', 'Col 4'],header=False,directory='')
 
 ################
 proj=proj.subM(5,15).copy:
