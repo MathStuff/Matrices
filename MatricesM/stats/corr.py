@@ -1,6 +1,4 @@
-from MatricesM.matrices import Matrix,FMatrix,CMatrix,Identity
-
-def corr(mat,col1=None,col2=None,population=1):
+def _corr(mat,col1=None,col2=None,population=1,temp=None):
     """
     Correlation of 2 columns
     col1,col2: integers>=1 or both None; column numbers. For correlation matrix give None to both
@@ -17,8 +15,6 @@ def corr(mat,col1=None,col2=None,population=1):
             raise ValueError("col1 and col2 are not in the valid range")
     
     if col1==None and col2==None:
-        temp = FMatrix(mat.dim[1],randomFill=0,features=mat.features)
-        temp += Identity(mat.dim[1])
         sd = mat.sdev(population=population,asDict=0)
         for i in range(mat.dim[1]):
             for j in range(i+1,mat.dim[1]):
