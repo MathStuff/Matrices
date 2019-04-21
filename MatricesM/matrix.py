@@ -541,7 +541,14 @@ class Matrix:
                 qq=a1.Q
                 a1=qq.t@a1@qq
             
-            return a1.diags
+            from MatricesM.constructors.matrices import Identity
+            alleigs = a1.diags
+            eigs = []
+            i = Matrix(listed=Identity(self.dim[0]))
+            for eig in alleigs:
+                if round((self-i*eig).det,4) == 0:
+                    eigs.append(eig)
+            return eigs
         
     @property
     def eigenvectors(self):
@@ -905,7 +912,28 @@ class Matrix:
         if not self.isSquare:
             return False
         return self.isHermitian and self.isIdempotent
-       
+
+    @property
+    def isInvolutory(self):
+        """
+        A@A == Identity
+        """
+        if not self.isSquare:
+            return False
+        from MatricesM.constructors.matrices import Identity
+        return (self@self).roundForm(4).matrix == Matrix(listed=Identity(self.dim[0])).matrix
+    
+    @property
+    def isIncidence(self):
+        """
+        A(i)(j) == 0 | 1 for every i and j
+        """
+        for i in range(self.dim[0]):
+            for j in range(self.dim[1]):
+                if not self._matrix[i][j] in [0,1]:
+                    return False
+        return True
+    
 # =============================================================================
     """Get special formats"""
 # =============================================================================    
