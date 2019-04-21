@@ -7,11 +7,11 @@
    
 ### Import by using:
    ```python 
-   import MatricesM.matrices as mm #Use by calling : mm.MatrixName(arguments)
+   import MatricesM.matrix as mm #Use by calling : mm.Matrix(arguments)
    ```
    #### OR
    ```python 
-   from MatricesM.matrices import * #Use matrices directly : MatrixName(arguments)
+   from MatricesM.matrix import Matrix #Use matrices directly : Matrix(arguments)
    ```
 ### Import and print example matrices:
    ```python 
@@ -21,7 +21,7 @@
 ### Basic syntax:
 ```python 
 
-IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
+matrix_name = Matrix(dim=dimension,#Required(UNLESS listed is given), int | list as [rows,cols]
 
                        listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
@@ -42,93 +42,85 @@ IntegerMatrix = Matrix(dim=dimension,#Required, int | list as [rows,cols]
                        features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
                      
                        seed=randomSeed #Optional, int|float|complex|str . Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+                       
+                       dtype=dataType #Optional, 'integer'|'float'|'complex' . Data type the matrix will hold, default is 'float'.
                        )
 
-FloatMatrix = FMatrix(#Same parameters from the Matrix class
-                      decimal=decimalsToRoundOnPrinting, #Optional, default is 4.
-                      )
-
-IdentityMatrix = Identity(dim=dimension #Required, int
-                         )
-
-ComplexMatrix = CMatrix(#Same parameters as FMatrix
-                        )
 ```         
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrices.py>matrices.py</a> contains Matrix class and FMatrix, CMatrix and Identity sub-classes
-  
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py>exampleMatrices.py</a> contains example matrices
+   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py>matrix.py</a> contains the main Matrix class.
+   
+   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/constructors/matrices.py>matrices.py</a> contains functions to create special matrices.
+   
+   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py>exampleMatrices.py</a> contains example matrices.
    
    ##### -Check the <a href="https://github.com/semihM/Matrices/projects">project tab</a> to see the progress
 -------------- 
 Some examples:
 --------------
-##### Create matrices filled with random integers
+##### Create matrices filled with random numbers
 ```python 
-#Creates a 4x4 matrix filled with random integers from the default range which is [-1,1]
-A=Matrix(4) 
+#Creates a 4x4 matrix filled with random integers from the default range which is [0,1]
+A = Matrix(4) 
 
 #Creates a 3x5 matrix with elements uniformly distributed in the range from 10 to 25
-B=Matrix([3,5],ranged=[10,25]) 
-```
-----------------------------------------
-##### Create matrices filled with random float numbers
-```python 
+B = Matrix([3,5],ranged=[10,25]) 
+
 #Create a 6x6 square matrix filled with random float values in the default range
-E=FMatrix(6) 
+E = Matrix(6) 
 
 #Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
-F=FMatrix(dim=[200,5],fill='gauss',ranged=[50,10]) 
+F = Matrix(dim=[200,5],fill='gauss',ranged=[50,10]) 
 
 #Create a 10x10 matrix filled with 1's
-G=FMatrix(10,fill=1)
+G = Matrix(10,fill=1)
+
+#Create a square matrix filled with random float values in the default range (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
+Cm1 = Matrix(5,dtype="complex") 
 ```
 ----------------------------------------
 ##### Create identity matrices
 ```python 
-#3x3 identity matrix
-i=Identity(3) 
+from MatricesM.constructors.matrices import Identity
 
-#Add 2 dimensions to get a 5x5 identity matrix
-i.addDim(2) 
+#3x3 identity matrix
+id3 = Matrix(listed=Identity(3)) 
+
 ``` 
-----------------------------------------
-##### Create matrices filled with random complex numbers (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
-```python 
-#Create a square matrix filled with random float values in the default range
-Cm1=CMatrix(5) 
-```
 ----------------------------------------
 ##### Give list of numbers to create matrices
 ```python 
-filled_rows=[[1,2,3],[4,5,6],[7,8,9]]
+filled_rows = [[1,2,3],[4,5,6],[7,8,9]]
 
-#Creates a 3x3 matrix with the given list of numbers
-C=Matrix(3,filled_rows) 
+#Creates a matrix with the given list of numbers
+C = Matrix(listed=filled_rows) 
 
 #Creates a 3x3 matrix from the given string
-C1=FMatrix(3,"1 0 -1 4 5 5 1 2 2") 
+C1 = Matrix(3,"1 0 -1 4 5 5 1 2 2") 
 
 #Creates a 2x4 matrix from the given string
-C2=Matrix([2,4],"5 -2 -3 2 1 0 0 4") 
+C2 = Matrix([2,4],"5 -2 -3 2 1 0 0 4") 
 ``` 
 ----------------------------------------
 ##### Generate randomly filled matrices
 ```python
 #Create a 10000x3 matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
-randomData1=FMatrix((10000,3),
-                    fill='triangular',
-                    ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
-                    seed=32141
-                   )
+randomData1 = Matrix((10000,3),
+                     fill='triangular',
+                     ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
+                     seed=32141,
+                     dtype="integer"
+                    )
 
-randomData2=FMatrix([10000,4],
-                    ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]}
-                   )
+randomData2 = Matrix([10000,4],
+                     ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
+                     seed=39598
+                    )
 
-randomData3=Matrix([10000,4],
-                   fill='gauss',
-                   ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]}
-                  )
+randomData3 = Matrix([10000,4],
+                     fill='gauss',
+                     ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
+                     seed=4472142,
+                    )
 
 ```
 ----------------------------------------
@@ -145,11 +137,12 @@ data="""1,K,60,69900,6325
 9,K,33,13200,8325
 10,E,37,31800,5975"""
 
-#Create a matrix(FMatrix currently recommended) from the given string, dimension is *required* as [dataAmount,features]
+#Create a matrix from the given string, dimension is *required* as [dataAmount,features]
 
-D = FMatrix(dim=[10,4],
+D = Matrix(dim=[10,4],
            listed=data,
-           features=["id","age","num1","num2"]
+           features=["id","age","num1","num2"],
+           dtype="integer"
           ) 
 
 ```
@@ -160,11 +153,11 @@ D = FMatrix(dim=[10,4],
 
 ###### If bool(header) is True, feature names automatically get picked up from the first row
 ```python 
-data_directory="Example\Directory\DATAFILE"
+data_directory = "Example\Directory\DATAFILE"
 
-data_dim=[data_amount,feature_amount]
+data_dim = [data_amount,feature_amount]
 
-data_matrix=FMatrix(dim=data_dim,directory=data_directory,header=1) #Create a float matrix from a table of data
+data_matrix = Matrix(dim=data_dim,directory=data_directory,header=1,dtype="float") #Create a float matrix from a table of data
 ```
 ----------------------------------------
 
@@ -359,7 +352,14 @@ B @ B.t #Matrix multiplication example
 
 ```
 ----------------------------------------
+##### Use bitwise operators 
+```python
+#Filter out and print the correlation matrix depending on the desired conditions
+corrMat = (abs(data.corr())>0.5) & (data.corr()!=1)
 
+#Get a matrix filled with the data matrix's first column, where elements' values are higher than 5000, put 0 otherwise (Will be updated soon)
+limit = data.col(1) * (data.col(1)>5000)
+```
 
 ##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
 ```python 
@@ -369,7 +369,7 @@ B @ B.t #Matrix multiplication example
    
    A.t.t == A
    
-   A @ Identity(A.dim[0]) == A #A assumed to be a square matrix
+   A @ Matrix(listed=Identity(A.dim[0])) == A #A assumed to be a square matrix
    
    A.adj.t[1][2] == A.minor(2,3).det*-1 
    
@@ -381,7 +381,7 @@ B @ B.t #Matrix multiplication example
    
    (A.Q @ A.R).roundForm(4) == A.roundForm(4)
    
-   (A @ A.inv).roundForm() == Identity(A.dim[0])
+   (A @ A.inv).roundForm() == Matrix(listed=Identity(A.dim[0]))
 ``` 
 ----------------------------------------
 
