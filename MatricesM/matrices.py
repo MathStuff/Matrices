@@ -98,8 +98,8 @@ class Matrix:
         Set the matrix based on the arguments given
         """
         from MatricesM.setup.matfill import setMatrix
-        
         setMatrix(self,d,r,lis,direc,f)
+        
 # =============================================================================
     """Attribute recalculation methods"""
 # =============================================================================    
@@ -107,59 +107,27 @@ class Matrix:
         """
         Set new dimension 
         """
-        try:
-            rows=0
-            cols=0
-            for row in self._matrix:
-                rows+=1
-                cols=0
-                for ele in row:
-                    cols+=1
-        except Exception as err:
-            print("Error getting matrix")
-            return None
-        else:
-
-            return [rows,cols]
-        
+        from MatricesM.setup.declare import declareDim
+        return declareDim(self)
+    
     def _declareRange(self,lis):
         """
         Finds and returns the range of the elements in a given list
         """
-        c={}
-        self.setFeatures()
-        if self._cMat:
-            for i in range(self.dim[1]):
-                temp=[]
-                for rows in range(self.dim[0]):
-                    temp.append(lis[rows][i].real)
-                    temp.append(lis[rows][i].imag)
-                c[self.__features[i]]=[round(min(temp),4),round(max(temp),4)]
-        else:
-            for cols in range(self.dim[1]):
-                temp=[lis[rows][cols] for rows in range(self.dim[0])]
-                c[self.features[cols]]=[round(min(temp),4),round(max(temp),4)]
-        return c
+        from MatricesM.setup.declare import declareRange
+        return declareRange(self,lis)
+    
 # =============================================================================
     """Methods for rading from the files"""
 # =============================================================================
-    def __fromFile(self,d):
-        try:
-            data="" 
-            with open(d,"r",encoding="utf8") as f:
-                for lines in f:
-                    data+=lines
-        except FileNotFoundError:
-            try:
-                f.close()
-            except:
-                pass
-            print("No such file or directory")
-            return None
-        else:
-            f.close()
-
-            return data
+    @staticmethod
+    def __fromFile(d):
+        """
+        Read all the lines from a file
+        """
+        from MatricesM.setup.fileops import readAll
+        return readAll(d)
+    
 # =============================================================================
     """Element setting methods"""
 # =============================================================================
@@ -177,6 +145,7 @@ class Matrix:
         """
         from MatricesM.setup.stringfy import _stringfy
         return _stringfy(self)
+    
 # =============================================================================
     """Row/Column methods"""
 # =============================================================================
@@ -309,6 +278,7 @@ class Matrix:
         from MatricesM.matrixops.subM import subM
         if (rowS,rowE,colS,colE)==(None,None,None,None):
             return None
+        
         if (rowS,rowE)!=(None,None) and (colS,colE)==(None,None):
             colE=rowE
             rowE=rowS
@@ -320,6 +290,7 @@ class Matrix:
             typ="FMatrix"
         else:
             typ="Matrix"
+            
         arg = "([{},{}],fill=0)".format(rowE-rowS+1,colE-colS+1)
         ob = eval(typ+arg)
         return subM(self,rowS,rowE,colS,colE,ob)
@@ -375,6 +346,7 @@ class Matrix:
         """
         from MatricesM.linalg.nilpotency import nilpotency
         return nilpotency(self,limit)
+    
 # =============================================================================
     """Decomposition methods"""
 # ============================================================================= 
@@ -410,6 +382,7 @@ class Matrix:
     
     def _hessenberg(self):
         pass
+    
 # =============================================================================
     """Basic properties"""
 # =============================================================================  
@@ -1249,9 +1222,9 @@ class Matrix:
     def describe(self):
         from MatricesM.stats.describe import describe
         return describe(self)
-    
+
 # =============================================================================
-    """Other magic methods """
+    """Logical-bitwise magic methods """
 # =============================================================================
     def __bool__(self):
         """
@@ -1262,7 +1235,120 @@ class Matrix:
                 if self.matrix[i][j] != 1:
                     return False
         return True
+
+    def __invert__(self):
+        """
+        Returns a matrix filled with inverted elements, that is the 'not' bitwise operator
+        """
+        if self._fMat:
+            raise TypeError("~ operator can not be used for non-integer value matrices")
+        temp = self.intForm
+        temp._matrix = [[~temp._matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return temp
     
+    def __and__(self,other):
+        """
+        Can only be used with '&' operator not with 'and'
+        """
+        try:
+            if isinstance(other,Matrix):
+                if self.dim!=other.dim:
+                    raise ValueError("Dimensions of the matrices don't match")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other.matrix[j][i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,list):
+                if self.dim[1]!=len(other):
+                    raise ValueError("Length of the list doesn't match matrix's column amount")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other[i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,int) or isinstance(other,float):
+                if self._cMat:
+                    raise TypeError("Can't compare int/float to complex numbers")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,complex):
+                if not self._cMat:
+                    raise TypeError("Can't compare complex numbers to int/float")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            else:
+                raise TypeError("Invalid type to compare")
+                
+        except Exception as err:
+            raise err
+            
+        else:
+            return temp
+    
+    def __or__(self,other):
+        """
+        Can only be used with '|' operator not with 'or'
+        """
+        try:
+            if isinstance(other,Matrix):
+                if self.dim!=other.dim:
+                    raise ValueError("Dimensions of the matrices don't match")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other.matrix[j][i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,list):
+                if self.dim[1]!=len(other):
+                    raise ValueError("Length of the list doesn't match matrix's column amount")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other[i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,int) or isinstance(other,float):
+                if self._cMat:
+                    raise TypeError("Can't compare int/float to complex numbers")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,complex):
+                if not self._cMat:
+                    raise TypeError("Can't compare complex numbers to int/float")
+                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            else:
+                raise TypeError("Invalid type to compare")
+                
+        except Exception as err:
+            raise err
+            
+        else:
+            return temp
+        
+    def __xor__(self,other):
+        """
+        Can only be used with '^' operator 
+        """
+        try:
+            if isinstance(other,Matrix):
+                if self.dim!=other.dim:
+                    raise ValueError("Dimensions of the matrices don't match")
+                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other.matrix[j][i]) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,list):
+                if self.dim[1]!=len(other):
+                    raise ValueError("Length of the list doesn't match matrix's column amount")
+                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other[i]) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,int) or isinstance(other,float):
+                if self._cMat:
+                    raise TypeError("Can't compare int/float to complex numbers")
+                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,complex):
+                if not self._cMat:
+                    raise TypeError("Can't compare complex numbers to int/float")
+                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            else:
+                raise TypeError("Invalid type to compare")
+                
+        except Exception as err:
+            raise err
+            
+        else:
+            return temp
+    
+    
+# =============================================================================
+    """Other magic methods """
+# =============================================================================
     def __contains__(self,val):
         """
         val:value to search for in the whole matrix
