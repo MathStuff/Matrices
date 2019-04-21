@@ -78,7 +78,7 @@ G = Matrix(10,fill=1)
 Cm1 = Matrix(5,dtype="complex") 
 ```
 ----------------------------------------
-##### Create identity matrices
+##### Create special matrices
 ```python 
 from MatricesM.constructors.matrices import Identity
 
@@ -204,7 +204,7 @@ C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
-#Available comparison operators : "<" ,"<=", ">", ">=", "==", "!="
+#Available comparison operators : "<" ,"<=", ">", ">=", "==", "!=", "&", "|", "~"
 
 ```
 ##### Algebric properties
