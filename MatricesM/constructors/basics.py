@@ -1,3 +1,0 @@
-"""
-Create special matrices
-"""

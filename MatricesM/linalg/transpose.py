@@ -1,5 +1,5 @@
 def transpose(mat,hermitian=False):
-    if mat._isIdentity:
+    if mat.isIdentity:
         return mat
     
     temp=mat._matrix

@@ -17,13 +17,16 @@ def add(mat,lis=[],row=None,col=None,feature="Col"):
                     if mat.dim[1]>0:
                         assert len(lis)==mat.dim[1]
                 mat._matrix.append(lis)
-
-                    
+                
             elif col==None and row>0:
                 """Insert a row"""
+                if len(lis)!=mat.dim[1] and mat.dim[1]>0:
+                    raise Exception()
                 if row<=mat.dim[0]:
                     mat._matrix.insert(row-1,lis)
 
+                elif row-1==mat.dim[0]:
+                    mat._matrix.append(lis)
                 else:
                     print("Bad arguments")
                     return None

@@ -30,7 +30,7 @@ def _stringfy(mat):
                     
         pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
         bound=max([len(a) for a in re.findall(pattern,ns)])-2
-    elif not mat._isIdentity:
+    else:
         try:
             i=min([min(a) for a in mat._inRange.values()])
             j=max([max(a) for a in mat._inRange.values()])
@@ -40,8 +40,7 @@ def _stringfy(mat):
         except ValueError:
             print("Dimension parameter is required")
             return ""
-    else:
-        bound=2
+
         
     if mat._fMat or mat._cMat:
         pre="0:.{}f".format(mat.decimal)

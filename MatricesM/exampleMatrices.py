@@ -4,8 +4,8 @@ Created on Wed Oct 31 17:38:28 2018
 
 @author: Semih
 """
-from MatricesM.matrices import Matrix,FMatrix,Identity,CMatrix
-
+from MatricesM.matrix import Matrix
+from MatricesM.constructors.matrices import Identity
 try:
     plotting=bool(int(input("Enable plotting ?(0/1) (Requires matplotlib)")))
 except:
@@ -40,17 +40,17 @@ projectGrid="""08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
 o=Matrix(8,fill=0)
 b=Matrix(1)
 c=Matrix(dim=[2,4],ranged=[-50,50])
-d=FMatrix([4,3])
+d=Matrix([4,3],dtype="float")
 e=Matrix(8,fill="gauss",ranged=[0,3])
-f=FMatrix(dim=6,ranged=[-1250,1250])
+f=Matrix(dim=6,ranged=[-1250,1250],dtype="float")
 g=Matrix(dim=[3,6],ranged=[2,10])
 p=Matrix(5,ranged=[0,100])
-q=FMatrix(4)
-q1=FMatrix(9,decimal=2)
-q2=FMatrix(6,decimal=6)
+q=Matrix(4,dtype="float")
+q1=Matrix(9,decimal=2,dtype="float")
+q2=Matrix(6,decimal=6,dtype="float")
 y=Matrix(3,listed=[3,5,7,8,3,4,5,2,5])
-c1=CMatrix(5)
-c2=CMatrix([7,3],ranged=[-10,10])
+c1=Matrix(5,dtype="complex")
+c2=Matrix([7,3],ranged=[-10,10],dtype="complex")
 # =============================================================================
 # String inputs Matrices
 # =============================================================================
@@ -85,10 +85,10 @@ fr,166,56,42,k
 # =============================================================================
 # Identity Matrices
 # =============================================================================
-id1=Identity()
-id2=Identity(5)
+id1=Matrix(listed=Identity())
+id2=Matrix(listed=Identity(5))
 id3=id2.subM(3,3)
-id4=Identity(6)
+id4=Matrix(listed=Identity(6))
 
 # =============================================================================
 """PRINT THE MATRICES """
@@ -201,29 +201,7 @@ print("\nproj.find(111)")
 proj.find(111)
 
 print("################\n")
-      
-print("id2:\n",id2)
-print("\nid2.addDim(2):",id2.addDim(2))
-print("id2.matrix:\n",id2.matrix)
 
-print('################')
-      
-print("id3:\n")
-print(id3)
-
-print('################')
-      
-print("id4:\n")
-print(id4)
-print("\nid4.delDim(6):\n")
-print(id4.delDim(6))
-
-print('################')
-      
-print("id4:",id4)
-print("\nid4.addDim(10)):\n",id4.addDim(10))
-
-print("################")
 print("r=p.t")
 r=p.t
 print("r.remove(row=2):")
@@ -273,7 +251,7 @@ print("\ne-=33:")
 e-=33
 print(e)
 print("\ne+=FMatrix(e.dim):")
-e+=FMatrix(e.dim)
+e+=Matrix(e.dim,dtype="float")
 print(e)
 print("\ne*=[2,1,1,0.5,0.2,0.0003,1,3]:")
 e*=[2,1,1,0.5,0.2,0.0003,1,3]

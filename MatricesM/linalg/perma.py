@@ -5,7 +5,7 @@ def perma(mat):
     if not mat.isSquare:
         return None
     
-    if mat._isIdentity:
+    if mat.isIdentity:
         return 1
     
     if mat.dim[0]==2:

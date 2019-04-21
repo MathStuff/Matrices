@@ -36,10 +36,13 @@ class Matrix:
                  listed = [],
                  directory = "",
                  fill = "uniform",
-                 ranged = [-1,1],
+                 ranged = [0,1],
                  seed = None,
                  header = False,
-                 features = []):  
+                 features = [],
+                 decimal = 4,
+                 dtype = "float"
+                 ):  
         
         self._matrix = listed  
         self._string = ""
@@ -50,6 +53,8 @@ class Matrix:
         self.__fill = fill
         self.__seed = seed
         self.__features = features
+        self.__decimal = decimal
+        self.__dtype = dtype
         
         self._setDim(dim)
         self.setInstance()
@@ -62,22 +67,17 @@ class Matrix:
         """
         Set the type
         """
-        if isinstance(self,CMatrix):
-            self._isIdentity=0
+        if self.dtype=="complex":
             self._fMat=1
             self._cMat=1
-        elif isinstance(self,FMatrix):
-            self._isIdentity=0
+        elif self.dtype=="float":
             self._fMat=1
             self._cMat=0
-        elif isinstance(self,Identity):
-            self._isIdentity=1
+        elif self.dtype=="integer":
             self._fMat=0
             self._cMat=0
         else:
-            self._isIdentity=0
-            self._fMat=0
-            self._cMat=0
+            raise ValueError("dtype should be one of the following: 'integer', 'float', 'complex'")
             
     def setFeatures(self):
         """
@@ -247,7 +247,7 @@ class Matrix:
         """        
         from MatricesM.matrixops.matdelDim import delDim
         delDim(self,num)
-        
+
     def find(self,element,start=1):
         """
         element: Real number
@@ -255,7 +255,7 @@ class Matrix:
         Returns the indeces of the given elements, multiple occurances are returned in a list
         """
         from MatricesM.matrixops.find import find
-        find(self,element,start)
+        return find([a[:] for a in self.matrix],self.dim,element,start)
     
     def subM(self,rowS=None,rowE=None,colS=None,colE=None):
         """
@@ -283,16 +283,9 @@ class Matrix:
             colE=rowE
             rowE=rowS
             rowS=1
-            colS=1
-        if self._cMat:
-            typ="CMatrix"
-        elif self._fMat:
-            typ="FMatrix"
-        else:
-            typ="Matrix"
-            
-        arg = "([{},{}],fill=0)".format(rowE-rowS+1,colE-colS+1)
-        ob = eval(typ+arg)
+            colS=1           
+        arg = "Matrix([{0},{1}],fill=0,dtype='{2}')".format(rowE-rowS+1,colE-colS+1,self.dtype)
+        ob = eval(arg)
         return subM(self,rowS,rowE,colS,colE,ob)
 
 # =============================================================================
@@ -331,7 +324,8 @@ class Matrix:
         Returns the inversed matrix
         """
         from MatricesM.linalg.inverse import inverse
-        return inverse(self,Identity(self.dim[0]))
+        from MatricesM.constructors.matrices import Identity
+        return inverse(self,Matrix(listed=Identity(self.dim[0])))
 
     def _Rank(self):
         """
@@ -392,20 +386,15 @@ class Matrix:
    
     @property
     def grid(self):
-        if not self._isIdentity:
-            self.__dim=self._declareDim()
-            self._inRange=self._declareRange(self._matrix)
+        self.__dim=self._declareDim()
+        self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy()
         print(self._string)
     
     @property
     def copy(self):
-        if self._isIdentity:
-            if self.matrix==Identity(self.dim[0]).matrix:
-                return Identity(self.dim[0])
-            else:
-                return FMatrix(dim=self.dim)
         return eval(self.obj)
+    
     @property
     def string(self):
         self._inRange=self._declareRange(self._matrix)
@@ -561,13 +550,14 @@ class Matrix:
         *** CURRENTLY DOESN'T RETURN ANYTHIN ***
         Returns the eigenvectors
         """
+        from MatricesM.constructors.matrices import Identity
         if not self.isSquare or self.isSingular:
             return None
         eigs=self.eigenvalues
         vecs=[]
 
         for eigen in eigs:
-            temp = self-Identity(self.dim[0])*eigen
+            temp = self-Matrix(listed=Identity(self.dim[0]))*eigen
             temp.concat([0]*self.dim[0],"col")
             temp = temp.rrechelon
             diff=0
@@ -580,36 +570,33 @@ class Matrix:
         """
         Highest value in the matrix
         """
-        if not self._isIdentity:
-            return max([max(a) for a in self.ranged().values()])
-        else:
-            return 1
+        return max([max(a) for a in self.ranged().values()])
+
         
     @property
     def lowest(self):
         """
         Lowest value in the matrix
         """
-        if not self._isIdentity:
-            return min([min(a) for a in self.ranged().values()])  
-        else:
-            return 0
+        return min([min(a) for a in self.ranged().values()])  
+
         
     @property
     def obj(self):
         """
         Object call as a string to recreate the matrix
         """
-        #ranged and fill arguments are NOT required to create the same matrix
-        if self._cMat:
-            return "CMatrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.fill,self.features,self._header,self._dir,self.decimal,self.seed)
-        elif self._fMat:
-            return "FMatrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8})".format(self.dim,self._matrix,self.initRange,self.fill,self.features,self._header,self._dir,self.decimal,self.seed)
-        elif not self._isIdentity:
-            return "Matrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',seed={7})".format(self.dim,self._matrix,self.initRange,self.fill,self.features,self._header,self._dir,self.seed)
-        else:
-            return None
-        
+        return "Matrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8},dtype='{9}')".format(self.dim,
+                                                                                                                                                self._matrix,
+                                                                                                                                                self.initRange,
+                                                                                                                                                self.fill,
+                                                                                                                                                self.features,
+                                                                                                                                                self._header,
+                                                                                                                                                self._dir,
+                                                                                                                                                self.decimal,
+                                                                                                                                                self.seed,
+                                                                                                                                                self.dtype)
+ 
     @property
     def seed(self):
         return self.__seed
@@ -624,7 +611,24 @@ class Matrix:
             raise err
         else:
             self.setMatrix(self.dim,self.initRange)
-            
+
+    @property
+    def decimal(self):
+        return self.__decimal
+    @decimal.setter
+    def decimal(self,val):
+        try:
+            assert self._fMat or self._cMat
+            assert isinstance(val,int)
+            assert val>=1
+        except:
+            print("Invalid argument")
+        else:
+            self.__decimal=val     
+        
+    @property
+    def dtype(self):
+        return self.__dtype            
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -634,6 +638,13 @@ class Matrix:
         A.dim == (i,j) where i == j
         """
         return self.dim[0] == self.dim[1]
+    
+    @property
+    def isIdentity(self):
+        if not self.isSquare:
+            return False
+        from MatricesM.constructors.matrices import Identity
+        return self.matrix == Identity(self.dim[0])
     
     @property
     def isSingular(self):
@@ -891,6 +902,24 @@ class Matrix:
     """Get special formats"""
 # =============================================================================    
     @property
+    def realsigns(self):
+        """
+        Determine the signs of the elements' real parts
+        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
+        """
+        signs=[[1 if self._matrix[i][j].real>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return Matrix(self.dim,signs)
+    
+    @property
+    def imagsigns(self):
+        """
+        Determine the signs of the elements' imaginary parts
+        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
+        """
+        signs=[[1 if self._matrix[i][j].imag>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
+        return Matrix(self.dim,signs)
+    
+    @property
     def signs(self):
         """
         Determine the signs of the elements
@@ -1027,11 +1056,8 @@ class Matrix:
         
         t=[[float(self._matrix[a][b]) for b in range(self.dim[1])] for a in range(self.dim[0])]
         
-        if self._fMat:
-            a=self.decimal
-            return FMatrix(self.dim,listed=t,features=self.features,decimal=a,seed=self.seed,directory=self._dir)
-        
-        return FMatrix(self.dim,listed=t,features=self.features,seed=self.seed,directory=self._dir)
+        return Matrix(self.dim,listed=t,features=self.features,decimal=self.decimal,seed=self.seed,directory=self._dir)
+
     
     def roundForm(self,decimal=1):
         """
@@ -1067,8 +1093,7 @@ class Matrix:
     
     def normalize(self,col=None,inplace=True,zerobound=12):
         """
-        Original matrix should be an FMatrix or there will be printing issues when "inplace" is used.
-        Use name=name.floatForm to get better results
+        Use 'float' dtype for the best results
          
         Normalizes the data to be valued between 0 and 1
         col : int>=1 ; column number
@@ -1080,8 +1105,7 @@ class Matrix:
 
     def stdize(self,col=None,inplace=True,zerobound=12):
         """
-        Original matrix should be an FMatrix or there will be printing issues when "inplace" is used.
-        Use name=name.floatForm to get better results
+        Use 'float' dtype for the best results
         
         Standardization to get mean of 0 and standard deviation of 1
         col : int>=1 ; column number
@@ -1214,8 +1238,9 @@ class Matrix:
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         """     
         from MatricesM.stats.corr import _corr
-        temp = FMatrix(self.dim[1],fill=0,features=self.features)
-        temp += Identity(self.dim[1])
+        from MatricesM.constructors.matrices import Identity
+        temp = Matrix(self.dim[1],fill=0,features=self.features)
+        temp += Matrix(listed=Identity(self.dim[1]))
         return _corr(self,col1,col2,population,temp)
     
     @property   
@@ -1413,19 +1438,15 @@ class Matrix:
                         temp[r][rs]=complex(round(total.real,12),round(total.imag,12))
                     else:
                         temp[r][rs]=round(total,12)
-            #Get decimals after the decimal point
-            if self._fMat:
-                a=self.decimal
-            if other._fMat:
-                a=other.decimal
-             
+                        
             #Return proper the matrix
             if other._cMat or self._cMat:
-                return CMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=a)
-            
-            if other._fMat or self._fMat:
-                return FMatrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=a)
-            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features)
+                t = "complex"
+            elif other._fMat or self._fMat:
+                t = "float"
+            else:
+                t = "integer"
+            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=other.decimal,dtype=t)
 ################################################################################    
     def __add__(self,other):
         if isinstance(other,Matrix):
@@ -1436,18 +1457,13 @@ class Matrix:
                 print("Can't add: ",err)
                 return self
             else:
-                if self._fMat:
-                    a=self.decimal
-                if other._fMat:
-                    a=other.decimal
-                    
-                #--------------------------------------------------------------------------
                 if other._cMat or self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-            
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
+                    t = "complex"
+                elif other._fMat or self._fMat:
+                    t = "float"
+                else:
+                    t = "integer"
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t)    
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -1458,13 +1474,7 @@ class Matrix:
                 print("Can't add")
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -1473,14 +1483,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]+other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         else:
             print("Can't add")
@@ -1495,18 +1498,13 @@ class Matrix:
                 print("Can't subtract: ",err)
                 return self
             else:
-                if self._fMat:
-                    a=self.decimal
-                if other._fMat:
-                    a=other.decimal
-                #--------------------------------------------------------------------------
                 if other._cMat or self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-            
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
-                #--------------------------------------------------------------------------
+                    t = "complex"
+                elif other._fMat or self._fMat:
+                    t = "float"
+                else:
+                    t = "integer"
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t)
                 
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1516,13 +1514,7 @@ class Matrix:
                 print("Can't subtract")
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -1531,13 +1523,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]-other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         else:
             print("Can't subtract")
@@ -1552,18 +1538,13 @@ class Matrix:
                 print("Can't multiply: ",err)
                 return self
             else:
-                if self._fMat:
-                    a=self.decimal
-                if other._fMat:
-                    a=other.decimal
-                #--------------------------------------------------------------------------
                 if other._cMat or self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-            
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
-                #--------------------------------------------------------------------------
+                    t = "complex"
+                elif other._fMat or self._fMat:
+                    t = "float"
+                else:
+                    t = "integer"
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1573,13 +1554,7 @@ class Matrix:
                 print("Can't multiply: ",err)
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
@@ -1588,13 +1563,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]*other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         else:
             print("Can't multiply")
@@ -1603,7 +1572,7 @@ class Matrix:
     def __floordiv__(self,other):
         if isinstance(other,Matrix):
             if self._cMat or  other._cMat:
-                print("CMatrix doesn't allow floor division")
+                print("Complex numbers doesn't allow floor division")
             return self
             try:
                 assert self.dim==other.dim                
@@ -1615,11 +1584,7 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=1)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
-                #--------------------------------------------------------------------------   
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype="integer")   
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1631,10 +1596,7 @@ class Matrix:
                 print("Can't divide") 
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=1)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype="integer")
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,list):
@@ -1651,10 +1613,7 @@ class Matrix:
                     print("Can't divide") 
                     return self
                 else:
-                    #--------------------------------------------------------------------------
-                    if self._fMat:                
-                        return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                    return Matrix(dim=self.dim,listed=temp,features=self.features)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features,dtype="integer")
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -1674,18 +1633,13 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
-                if self._fMat:
-                    a=self.decimal
-                if other._fMat:
-                    a=other.decimal
-                #--------------------------------------------------------------------------
                 if other._cMat or self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-            
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
-                #--------------------------------------------------------------------------
+                    t = "complex"
+                elif other._fMat or self._fMat:
+                    t = "float"
+                else:
+                    t = "integer"
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1697,13 +1651,7 @@ class Matrix:
                 print("Can't divide") 
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -1719,13 +1667,7 @@ class Matrix:
                     print("Can't divide") 
                     return self
                 else:
-                    #--------------------------------------------------------------------------
-                    if self._cMat:
-                        return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-    
-                    if self._fMat:                
-                        return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                    return Matrix(dim=self.dim,listed=temp,features=self.features)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -1735,7 +1677,7 @@ class Matrix:
         if isinstance(other,Matrix):
             try:
                 if self._cMat or  other._cMat:
-                    print("CMatrix doesn't allow floor division")
+                    print("Complex numbers doesn't allow floor division")
                     return self
                 assert self.dim==other.dim                
                 temp=[[self.matrix[rows][cols]%other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
@@ -1747,15 +1689,11 @@ class Matrix:
                 print("Can't get modular: ",err)
                 return self
             else:
-                if self._fMat:
-                    a=self.decimal
-                if other._fMat:
-                    a=other.decimal
-                #--------------------------------------------------------------------------
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
-                #--------------------------------------------------------------------------
+                if other._fMat or self._fMat:
+                    t = "float"
+                else:
+                    t = "integer"
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1767,10 +1705,7 @@ class Matrix:
                 print("Can't get modular") 
                 return self
             else:
-                #--------------------------------------------------------------------------
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -1786,10 +1721,7 @@ class Matrix:
                     print("Can't get modular") 
                     return self
                 else:
-                    #--------------------------------------------------------------------------
-                    if self._fMat:                
-                        return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                    return Matrix(dim=self.dim,listed=temp,features=self.features)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                     #--------------------------------------------------------------------------
         else:
             print("Can't get modular")
@@ -1804,18 +1736,13 @@ class Matrix:
                 print("Can't raise to the given power: ",err)
                 return self
             else:
-                if self._fMat:
-                    a=self.decimal
-                if other._fMat:
-                    a=other.decimal
-                #--------------------------------------------------------------------------
                 if other._cMat or self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-            
-                if self._fMat or other._fMat:               
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=a)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)    
-                #--------------------------------------------------------------------------  
+                    t = "complex"
+                elif other._fMat or self._fMat:
+                    t = "float"
+                else:
+                    t = "integer"
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1824,13 +1751,7 @@ class Matrix:
             except:
                 print("Can't raise to the given power")            
             else:
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
@@ -1840,18 +1761,14 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]**other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                #--------------------------------------------------------------------------
-                if self._cMat:
-                    return CMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-
-                if self._fMat:                
-                    return FMatrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal)
-                return Matrix(dim=self.dim,listed=temp,features=self.features)
+                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype)
                 #--------------------------------------------------------------------------
         else:
             print("Can't raise to the given power")
             return self
-################################################################################                    
+# =============================================================================
+    """ Comparison operators """                    
+# =============================================================================
     def __le__(self,other):
         try:
             if isinstance(other,Matrix):
@@ -2039,15 +1956,15 @@ class Matrix:
             n=1
         if self._cMat:
             temp=[[complex(round(self.matrix[i][j].real,n),round(self.matrix[i][j].imag,n)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return CMatrix(self.dim[:],listed=temp)               
+            return Matrix(self.dim,listed=temp,dtype="complex")               
         else:
             temp=[[round(self.matrix[i][j],n) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return FMatrix(self.dim[:],listed=temp) 
+            return Matrix(self.dim[:],listed=temp,dtype="float") 
     
     def __floor__(self):
         if self._cMat:
             temp=[[complex(int(self.matrix[i][j].real),int(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return CMatrix(self.dim[:],listed=temp)               
+            return Matrix(self.dim,listed=temp,dtype="complex")              
         else:
             temp=[[int(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim[:],listed=temp)       
@@ -2057,7 +1974,7 @@ class Matrix:
         
         if self._cMat:
             temp=[[complex(ceil(self.matrix[i][j].real),ceil(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return CMatrix(self.dim[:],listed=temp)               
+            return Matrix(self.dim,listed=temp,dtype="complex")                  
         else:
             temp=[[ceil(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim[:],listed=temp)    
@@ -2065,11 +1982,12 @@ class Matrix:
     def __abs__(self):
         if self._cMat:
             temp=[[complex(abs(self.matrix[i][j].real),abs(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return CMatrix(self.dim[:],listed=temp)               
+            return Matrix(self.dim,listed=temp,dtype="complex")               
         else:
             temp=[[abs(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim[:],listed=temp)   
-    
+        
+# =============================================================================
     def __repr__(self):
         return str(self.matrix)
     
@@ -2085,151 +2003,4 @@ class Matrix:
         else:
             print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
         return self._string+"\n"
-
 # =============================================================================
-class Identity(Matrix):
-    """
-    Identity matrix
-    """
-    def __init__(self,dim=1):     
-        try:
-            assert isinstance(dim,int)
-            assert dim>0
-        except AssertionError:
-            print("Give integer as the dimension")
-            return None
-        else:
-            super().__init__(dim,fill=0)
-            self._setMatrix()
-
-                
-    def _setMatrix(self):
-        self._matrix=[[0 for a in range(self.dim[1])] for b in range(self.dim[0])]
-        for row in range(0,self.dim[0]):
-            self._matrix[row][row]=1          
-                
-    def addDim(self,num):
-        """
-        Add dimensions to identity matrix
-        """
-        from MatricesM.matrixops.idaddDim import addDim
-        addDim(self,num)
-        
-    def delDim(self,num):
-        """
-        Delete dimensions to identity matrix
-        """
-        from MatricesM.matrixops.iddelDim import delDim
-        delDim(self,num)
-        
-    @property
-    def obj(self):
-        return "Identity(dim={0})".format(self.dim)
-    
-    def __str__(self):
-        if self._isIdentity:
-            self._string=self._stringfy()
-            print("\nIdentity Matrix\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
-            return self._string+"\n"
-            
-class FMatrix(Matrix):
-    """
-    Matrix which contain float numbers
-    decimal: digits to round up to 
-    """
-    def __init__(self,
-                 dim = None,
-                 listed = [],
-                 directory = r"",
-                 fill = "uniform",
-                 ranged = [0,1],
-                 seed = None,
-                 header = False,
-                 features = [],
-                 decimal = 4):
-        
-        self.__decimal = decimal
-        super().__init__(dim,listed,directory,fill,ranged,seed,header,features)
-        
-    def __str__(self): 
-        """ 
-        Prints the matrix's attributes and itself as a grid of numbers
-        """
-        print("\nFloat Matrix",end="")
-        self.__dim=self._declareDim()
-        self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy()
-        if not self.isSquare:
-            print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
-        else:
-            print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
-        return self._string+"\n"
-    
-    @property
-    def decimal(self):
-        return self.__decimal
-    @decimal.setter
-    def decimal(self,val):
-        try:
-            assert self._fMat or self._cMat
-            assert isinstance(val,int)
-            assert val>=1
-        except:
-            print("Invalid argument")
-        else:
-            self.__decimal=val 
-
-class CMatrix(FMatrix):
-    """
-    Matrix which contain complex numbers
-    """
-    def __init__(self,
-                 dim = None,
-                 listed = [],
-                 directory = r"",
-                 fill = "uniform",
-                 ranged = [-1,1],
-                 seed = None,
-                 header = False,
-                 features = [],
-                 decimal = 4):
-        
-        self.__decimal=decimal
-        super().__init__(dim,listed,directory,fill,ranged,seed,header,features,decimal)
-
-    def __str__(self):
-        print("\nComplex Matrix",end="")
-        self.__dim=self._declareDim()
-        self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy()
-        if not self.isSquare:
-            print("\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
-        else:
-            print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))            
-            
-        return self._string+"\n"
-        
-    @property
-    def realsigns(self):
-        """
-        Determine the signs of the elements' real parts
-        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
-        """
-        signs=[[1 if self._matrix[i][j].real>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs)
-    
-    @property
-    def imagsigns(self):
-        """
-        Determine the signs of the elements' imaginary parts
-        Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
-        """
-        signs=[[1 if self._matrix[i][j].imag>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs)
-
-class SMatrix(Matrix):
-    """
-    Data frame matrix
-    """
-    def __init__(self,*args,**kwargs):
-        pass

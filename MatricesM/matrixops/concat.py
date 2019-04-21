@@ -27,7 +27,4 @@ def concat(mat,matrix,concat_as="row"):
                   
         mat._Matrix__dim=mat._declareDim()
         if concat_as=="col":
-            if matrix._isIdentity:
-                mat.features = mat.features+["Col {}".format(i+1) for i in range(mat.dim[1]-matrix.dim[1],mat.dim[1])]
-            else:
-                mat.features = mat.features+matrix.features
+            mat.features = mat.features+matrix.features

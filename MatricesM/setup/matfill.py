@@ -41,17 +41,22 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
     #Set the new matrix
     if isinstance(lis,str):
         mat._matrix=mat._listify(lis)
-
+        if mat.dim == [0,0]:
+            mat._Matrix__dim=mat._declareDim()
     elif len(direc)>0:
         lis=mat._Matrix__fromFile(direc)
         if not lis==None:
             mat._matrix=mat._listify(lis)
         else:
-            return None                      
+            return None
+        if mat.dim == [0,0]:
+            mat._Matrix__dim=mat._declareDim()          
     else:
         if len(lis)>0:
             if isinstance(lis[0],list):                        
                 mat._matrix = [a[:] for a in lis[:]]
+                if mat.dim == [0,0]:
+                    mat._Matrix__dim=mat._declareDim()
             else:
                 try:
                     assert mat.dim[0]*mat.dim[1] == len(lis)
@@ -61,9 +66,10 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                     mat._matrix=[]
                     for j in range(0,len(lis),mat.dim[1]):
                             mat._matrix.append(lis[j:j+mat.dim[1]])
+            
         # =============================================================================
         #Same range for all columns
-        elif len(lis)==0 and isinstance(r,list):
+        elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
             
             if mat.fill in ["uniform"]:
                 m,n=max(r),min(r)
