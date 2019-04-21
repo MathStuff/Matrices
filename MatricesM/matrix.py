@@ -628,7 +628,15 @@ class Matrix:
         
     @property
     def dtype(self):
-        return self.__dtype            
+        return self.__dtype
+    @dtype.setter
+    def dtype(self,val):
+        if val not in ['integer','float','complex']:
+            return ValueError("dtype can be one of the following types: integer | float | complex")
+        else:
+            self.__dtype = val
+            self.setInstance()
+
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
