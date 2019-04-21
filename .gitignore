@@ -1,0 +1,9 @@
+#Python cache stuff
+__pycache__/
+
+#Dist files
+*.egg-info/
+dist/
+build/
+
+
