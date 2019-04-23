@@ -155,9 +155,13 @@ class Matrix:
         Returns a matrix
         rows : integer>0 | How many rows to return
         """
+        if not isinstance(rows,int):
+            raise TypeError("rows should be a positive integer number")
+        if rows<=0:
+            raise ValueError("rows can't be less than or equal to 0")
         if self.dim[0]>=rows:
-            return self.subM(1,rows,1,self.dim[1])
-        return self.subM(1,self.dim[0],1,self.dim[1])
+            return self[:rows]
+        return self[:,:]
 
     def tail(self,rows=5):
         """
@@ -165,9 +169,13 @@ class Matrix:
         Returns a matrix
         rows : integer>0 | How many rows to return
         """
+        if not isinstance(rows,int):
+            raise TypeError("rows should be a positive integer number")
+        if rows<=0:
+            raise ValueError("rows can't be less than or equal to 0")
         if self.dim[0]>=rows:
-            return self.subM(self.dim[0]-rows+1,self.dim[0],1,self.dim[1])
-        return self.subM(1,self.dim[0],1,self.dim[1])
+            return self[self.dim[0]-rows:]
+        return self[:,:]
 
     def col(self,column=None,as_matrix=True):
         """
@@ -187,7 +195,7 @@ class Matrix:
                 temp.append(rows[column-1])
             
             if as_matrix:
-                return self.subM(1,self.dim[0],column,column)
+                return self[:,column-1:column]
             return temp
     
     def row(self,row=None,as_matrix=True):
@@ -204,7 +212,7 @@ class Matrix:
             return None
         else:
             if as_matrix:
-                return self.subM(row,row,1,self.dim[1])
+                return self[row-1:row]
             return self._matrix[row-1]
                     
     def add(self,lis=[],row=None,col=None,feature="Col"):
@@ -256,37 +264,6 @@ class Matrix:
         """
         from MatricesM.matrixops.find import find
         return find([a[:] for a in self.matrix],self.dim,element,start)
-    
-    def subM(self,rowS=None,rowE=None,colS=None,colE=None):
-        """
-        Get a sub matrix from the current matrix
-        rowS:Desired matrix's starting row (starts from 1)
-        rowE:Last row(included)
-        colS:First column
-        colE:Last column(included)
-            |col1 col2 col3
-            |---------------
-        row1|1,1  1,2  1,3
-        row2|2,1  2,2  2,3
-        row3|3,1  3,2  3,3
-        
-        EXAMPLES:
-            ->a.subM(1)==gets the first element of the first row
-            ->a.subM(2,2)==2by2 square matrix from top left as starting point
-        ***Returns a new grid class/matrix***
-        """
-        from MatricesM.matrixops.subM import subM
-        if (rowS,rowE,colS,colE)==(None,None,None,None):
-            return None
-        
-        if (rowS,rowE)!=(None,None) and (colS,colE)==(None,None):
-            colE=rowE
-            rowE=rowS
-            rowS=1
-            colS=1           
-        arg = "Matrix([{0},{1}],fill=0,dtype='{2}')".format(rowE-rowS+1,colE-colS+1,self.dtype)
-        ob = eval(arg)
-        return subM(self,rowS,rowE,colS,colE,ob)
 
 # =============================================================================
     """Methods for special matrices and properties"""
@@ -1420,12 +1397,29 @@ class Matrix:
         return bool(inds)
                   
     def __getitem__(self,pos):
-        try:
-            if isinstance(pos,slice) or isinstance(pos,int):
-                return self._matrix[pos]
-        except:
-            return None
+        if isinstance(pos,int):
+            return Matrix(listed=[self._matrix[pos]],features=self.features,decimal=self.decimal,dtype=self.dtype)
         
+        if isinstance(pos,slice):
+            return Matrix(listed=self._matrix[pos],features=self.features,decimal=self.decimal,dtype=self.dtype)
+        
+        if isinstance(pos,tuple):
+            if len(pos)==2:
+                # self[ slice, slice ] 
+                if isinstance(pos[0],slice) and isinstance(pos[1],slice):
+                    return Matrix(listed=[i[pos[1]] for i in self._matrix[pos[0]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype)
+                # self[ slice, int ] 
+                if isinstance(pos[0],slice) and isinstance(pos[1],int):
+                    return Matrix(listed=[[i[pos[1]]] for i in self._matrix[pos[0]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype)
+                # self[ int, slice ]
+                if isinstance(pos[0],int) and isinstance(pos[1],slice):
+                    return Matrix(listed=[self._matrix[pos[0]][pos[1]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype)
+                # self[ int, int]
+                if isinstance(pos[0],int) and isinstance(pos[1],int):
+                    return self._matrix[pos[0]][pos[1]]
+            else:
+                return None
+                
     def __setitem__(self,pos,item):
         try:
             if isinstance(pos,slice) and  isinstance(item,list):
