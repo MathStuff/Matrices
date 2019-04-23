@@ -22,7 +22,7 @@ def concat(mat,matrix,concat_as="row"):
             i=0
             for rows in mat._matrix:
                 for cols in range(b.dim[1]):
-                    rows.append(b[i][cols])
+                    rows.append(b[i,cols])
                 i+=1
                   
         mat._Matrix__dim=mat._declareDim()

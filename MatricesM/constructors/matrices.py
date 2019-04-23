@@ -12,5 +12,3 @@ def Identity(dim=1):
     for row in range(dim):
         matrix[row][row]=1
     return matrix
-
-

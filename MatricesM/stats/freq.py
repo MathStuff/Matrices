@@ -9,7 +9,7 @@ def freq(mat,col=None):
             feats=mat.features[:]
         else:
             assert col>=1 and col<=mat.dim[1]
-            temp=mat.subM(1,mat.dim[0],col,col).t
+            temp=mat[:,col-1].t
             feats=mat.features[col-1]
 
         res={}
@@ -20,7 +20,7 @@ def freq(mat,col=None):
 
         for rows in range(r):
             a={}
-            for els in temp[rows]:
+            for els in temp.matrix[rows]:
                 if els not in a.keys():
                     a[els]=1
                 else:

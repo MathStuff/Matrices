@@ -7,6 +7,5 @@ def inverse(mat,ident):
     else:
         temp=mat.copy
         temp.concat(ident,"col")
-        mat._inv=temp.rrechelon.subM(1,mat.dim[0],mat.dim[1]+1,mat.dim[1]*2)
-        mat._Matrix__invCalc=1
+        mat._inv=temp.rrechelon[:,mat.dim[1]:]
         return mat._inv
