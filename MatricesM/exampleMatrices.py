@@ -265,8 +265,8 @@ print("################")
 print("\nc%j")
 print(c%j)
 
-print("\n(f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)")
-print((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4))
+print("\nbool((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)):")
+print(bool((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)))
 # =============================================================================
 """ STRING MATRICES' OUTPUTS"""
 # =============================================================================
@@ -1120,19 +1120,8 @@ Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4']
 5.0738 0.6583 1.2597 3.6469 
 
 
-(f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)
-
-Square matrix
-Dimension: 6x6
-Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4', 'Col 5', 'Col 6']
-
-1.0000 1.0000 1.0000 1.0000 1.0000 1.0000 
-1.0000 1.0000 1.0000 1.0000 1.0000 1.0000 
-1.0000 1.0000 1.0000 1.0000 1.0000 1.0000 
-1.0000 1.0000 1.0000 1.0000 1.0000 1.0000 
-1.0000 1.0000 1.0000 1.0000 1.0000 1.0000 
-1.0000 1.0000 1.0000 1.0000 1.0000 1.0000 
-
+bool((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)):
+True
 
 ################################
 Strings' matrices:
