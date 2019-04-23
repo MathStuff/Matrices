@@ -29,13 +29,13 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS listed is given), int | list
 
                        fill=distribution | number, #Optional,  'uniform'|'triangular'|'gauss' or integer | float | complex or None; fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
-                       ranged=[*args] | dict;
+                       ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
                               ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
                               ->Arguments should follow one of the following rules:
                                    1)If 'fill' is 'uniform', interval to pick numbers from as [minimum,maximum]; 
                                    2)If 'fill' is 'gauss', mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                                   3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]                       
+                                   3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]  """                     
 
                        header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
@@ -160,7 +160,22 @@ data_dim = [data_amount,feature_amount]
 data_matrix = Matrix(dim=data_dim,directory=data_directory,header=1,dtype="float") #Create a float matrix from a table of data
 ```
 ----------------------------------------
+##### Get specific parts of the matrix
+```python
+#All rows' second to forth columns as a matrix
+C[:,1:4] == C.t[1:4,:].t
 
+#Nineth column of every even numbered row as a matrix
+C[::2,8] == C[::2,8:9] == C.col(9)[::2]
+
+#Forth to seventh rows as a matrix
+C[3:7] 
+
+#Fifth row's eigth element (returns the value as it is, not a new matrix)
+C[4,7] == C.matrix[4][7]
+
+```
+----------------------------------------
 #### Use your matrix's methods and properties
 ##### Basics
 ```python 
@@ -181,8 +196,6 @@ C.string #Returns the string form of the matrix's elements
 C.col(n,as_matrix) #Returns nth column of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
 C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
-
-C.subM(rowStart,rowEnd,columnStart,columnEnd) #Returns a sub-matrix by using the parameters as corners. Check exampleMatrices.py
 
 C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
