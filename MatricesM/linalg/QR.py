@@ -1,4 +1,4 @@
-def QR(mat):
+def QR(mat,obj):
         """
         Decompose the matrix into Q and R where Q is a orthogonal matrix and R is a upper triangular matrix
         """
@@ -32,11 +32,9 @@ def QR(mat):
                 
             U.append(u.copy())
         
-        matU = mat.floatForm
-        matU.setMatrix(min(mat.dim),None,U)
-        matU = matU.t
+        matU = obj(min(mat.dim),U).t
         #Orthonormalize by diving the columns by their norms
         Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
         #Get the upper-triangular part
-        R = (Q.t@mat).roundForm(8)
+        R = Q.t@mat
         return (Q,R)

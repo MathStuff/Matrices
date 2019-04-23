@@ -1,4 +1,4 @@
-def transpose(mat,hermitian=False):
+def transpose(mat,hermitian=False,obj=None):
     if mat.isIdentity:
         return mat
     
@@ -9,6 +9,4 @@ def transpose(mat,hermitian=False):
     else:
         transposed=[[temp[cols][rows] for cols in range(d0)] for rows in range(d1)]
     
-    t = mat.copy
-    t.setMatrix((d1,d0),None,transposed)
-    return t
+    return obj((d1,d0),transposed,dtype=mat.dtype)
