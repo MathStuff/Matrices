@@ -280,7 +280,7 @@ class Matrix:
         hermitian : True|False ; Wheter or not to use hermitian transpose method
         """
         from MatricesM.linalg.transpose import transpose
-        return transpose(self,hermitian)
+        return transpose(self,hermitian,obj=Matrix)
 
     def minor(self,row=None,col=None):
         """
@@ -326,14 +326,14 @@ class Matrix:
         Returns reduced row echelon form of the matrix
         """
         from MatricesM.linalg.rrechelon import rrechelon
-        return rrechelon(self)
+        return rrechelon(self,[a[:] for a in self._matrix],Matrix)
                     
     def _symDecomp(self):
         """
         Decompose the matrix into a symmetrical and an antisymmetrical matrix
         """
         from MatricesM.linalg.symmetry import symDecomp
-        return symDecomp(self)
+        return symDecomp(self,Matrix(self.dim,fill=0))
     
     def _LU(self):
         """
@@ -342,14 +342,15 @@ class Matrix:
         ***STILL NEEDS CLEAN UP***
         """
         from MatricesM.linalg.LU import LU
-        return LU(self)
+        from MatricesM.constructors.matrices import Identity
+        return LU(self,Matrix(listed=Identity(self.dim[0]),dtype=self.dtype),[a[:] for a in self.matrix],Matrix)
 
     def _QR(self):
         """
         Decompose the matrix into Q and R where Q is a orthogonal matrix and R is a upper triangular matrix
         """
         from MatricesM.linalg.QR import QR
-        return QR(self)
+        return QR(self,Matrix)
     
     def _hessenberg(self):
         pass
@@ -370,8 +371,8 @@ class Matrix:
     
     @property
     def copy(self):
-        return eval(self.obj)
-    
+        return Matrix(dim=self.dim,listed=self._matrix,ranged=self.initRange,fill=self.fill,features=self.features,header=self._header,directory=self._dir,decimal=self.decimal,seed=self.seed,dtype=self.dtype)
+
     @property
     def string(self):
         self._inRange=self._declareRange(self._matrix)
