@@ -1,12 +1,14 @@
 #Python cache stuff
 __pycache__/
 
-#Local tests
+#Local tests and enviroments
 tests/
+venv/
+env/
 
 #Dist files
 *.egg-info/
 dist/
 build/
-
+sdist/
 
