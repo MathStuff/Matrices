@@ -6,9 +6,12 @@ tests/
 venv/
 env/
 
-#Dist files
+#Dist files and vscode files
 *.egg-info/
 dist/
 build/
 sdist/
+.vscode/
 
+#C tests
+C_funcs/
