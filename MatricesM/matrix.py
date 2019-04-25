@@ -1383,8 +1383,7 @@ class Matrix:
             
         else:
             return temp
-    
-    
+     
 # =============================================================================
     """Other magic methods """
 # =============================================================================
@@ -1445,7 +1444,23 @@ class Matrix:
     
     def __len__(self):
         return self.dim[0]*self.dim[1]
+
+    def __repr__(self):
+        return str(self.matrix)
     
+    def __str__(self): 
+        """ 
+        Prints the matrix's attributes and itself as a grid of numbers
+        """
+        self.__dim=self._declareDim()
+        self._inRange=self._declareRange(self._matrix)
+        self._string=self._stringfy()
+        if not self.isSquare:
+            print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
+        else:
+            print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
+        return self._string+"\n"   
+
 # =============================================================================
     """Arithmetic methods"""        
 # =============================================================================
@@ -1478,7 +1493,7 @@ class Matrix:
             else:
                 t = "integer"
             return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=other.decimal,dtype=t)
-################################################################################    
+    
     def __add__(self,other):
         if isinstance(other,Matrix):
             try:
@@ -1519,7 +1534,7 @@ class Matrix:
         else:
             print("Can't add")
             return self
-################################################################################            
+            
     def __sub__(self,other):
         if isinstance(other,Matrix):
             try:
@@ -1559,7 +1574,7 @@ class Matrix:
         else:
             print("Can't subtract")
             return self
-################################################################################     
+     
     def __mul__(self,other):
         if isinstance(other,Matrix):
             try:
@@ -1599,7 +1614,7 @@ class Matrix:
         else:
             print("Can't multiply")
             return self
-################################################################################
+
     def __floordiv__(self,other):
         if isinstance(other,Matrix):
             if self._cMat or  other._cMat:
@@ -1649,7 +1664,7 @@ class Matrix:
         else:
             print("Can't divide")
             return self
-################################################################################            
+            
     def __truediv__(self,other):
 
         if isinstance(other,Matrix):
@@ -1703,7 +1718,7 @@ class Matrix:
         else:
             print("Can't divide")
             return self
-################################################################################
+
     def __mod__(self, other):
         if isinstance(other,Matrix):
             try:
@@ -1757,7 +1772,7 @@ class Matrix:
         else:
             print("Can't get modular")
             return self
-################################################################################         
+         
     def __pow__(self,other):
         if isinstance(other,Matrix):
             try:
@@ -1797,6 +1812,7 @@ class Matrix:
         else:
             print("Can't raise to the given power")
             return self
+
 # =============================================================================
     """ Comparison operators """                    
 # =============================================================================
@@ -1980,7 +1996,6 @@ class Matrix:
         else:
             return temp
         
-# =============================================================================
     
     def __round__(self,n=-1):
         if self._fMat and n<0:
@@ -2017,21 +2032,6 @@ class Matrix:
         else:
             temp=[[abs(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim[:],listed=temp)   
-        
+
 # =============================================================================
-    def __repr__(self):
-        return str(self.matrix)
-    
-    def __str__(self): 
-        """ 
-        Prints the matrix's attributes and itself as a grid of numbers
-        """
-        self.__dim=self._declareDim()
-        self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy()
-        if not self.isSquare:
-            print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
-        else:
-            print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
-        return self._string+"\n"
-# =============================================================================
+
