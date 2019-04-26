@@ -15,13 +15,13 @@ setuptools.setup(
     url="https://github.com/MathStuff/Matrices",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.5",
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Mathematics",
     ],
-	python_requires='>=3',
+	python_requires='>=3.5',
 	include_package_data=True,
 )
