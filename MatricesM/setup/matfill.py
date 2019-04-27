@@ -79,7 +79,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                 elif mat._fMat:
                     if r==[0,1]:
                         try:
-                            from MatricesM.C_funcs.lib.python.fillModule import pyfill
+                            from MatricesM.C_funcs.fillModule import pyfill
                         except:
                             pass
                         else:
