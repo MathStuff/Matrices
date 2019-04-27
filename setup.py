@@ -6,11 +6,11 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="MatricesM",
-    version="0.9.a12",
+    version="0.9.a13",
     author="semihM",
     author_email="info@semihmumcu.com",
 	license="MIT",
-    description="A Python 3 library of matrices",
+    description="Python 3.5 library for creating and using matrices",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/MathStuff/Matrices",
