@@ -78,6 +78,13 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                 
                 elif mat._fMat:
                     if r==[0,1]:
+                        try:
+                            from MatricesM.C_funcs.lib.python.fillModule import pyfill
+                        except:
+                            pass
+                        else:
+                            mat._matrix=pyfill(d[0],d[1])
+                            return None
                         mat._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
                     else:
                         mat._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
