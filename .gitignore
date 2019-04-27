@@ -14,6 +14,6 @@ sdist/
 .vscode/
 
 #Compiled .pyd files
-C_funcs/lib/
-C_funcs/build/
+*/C_funcs/lib/
+*/C_funcs/build/
 *.pyd
