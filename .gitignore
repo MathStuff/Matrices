@@ -7,13 +7,15 @@ venv/
 env/
 
 #Dist files and vscode files
+.eggs/
 *.egg-info/
 dist/
 build/
 sdist/
 .vscode/
 
-#Compiled .pyd files
+#Compiled .pyd files and generated C files
 */C_funcs/lib/
 */C_funcs/build/
 *.pyd
+*.c
