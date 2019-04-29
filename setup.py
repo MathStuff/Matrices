@@ -1,12 +1,15 @@
-import setuptools
+from setuptools import Extension,setup,find_packages
 
-module = setuptools.Extension("MatricesM.C_funcs.fillModule",sources=["MatricesM/C_funcs/fill.c"])
+modules = [Extension("MatricesM.C_funcs.zerone",sources=["MatricesM/C_funcs/zerone.c"]),
+Extension("MatricesM.C_funcs.randgen",sources=["MatricesM/C_funcs/randgen.c"]),
+Extension("MatricesM.C_funcs.linalg",sources=["MatricesM/C_funcs/linalg.c"])
+]
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name="MatricesM",
-    version="0.9.a13",
+    version="0.9.a14",
     author="semihM",
     author_email="info@semihmumcu.com",
 	license="MIT",
@@ -14,8 +17,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/MathStuff/Matrices",
-    packages=setuptools.find_packages(),
-    ext_modules=[module],
+    packages=find_packages(),
+    ext_modules=modules,
     classifiers=[
         "Programming Language :: Python :: 3.5",
         "Development Status :: 3 - Alpha",
