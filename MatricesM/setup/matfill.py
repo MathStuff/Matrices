@@ -4,7 +4,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
     """
     from random import random,uniform,triangular,gauss,seed
     from MatricesM.C_funcs.randgen import getuni,getfill,igetuni,igetrand
-    from MatricesM.C_funcs.zerone import zerone
+    from MatricesM.C_funcs.zerone import pyfill
     from MatricesM.C_funcs.linalg import Ctranspose
     # =============================================================================
     # Argument check
@@ -81,7 +81,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                 
                 elif mat._fMat:
                     if r==[0,1]:
-                        mat._matrix=zerone(d[0],d[1])
+                        mat._matrix=pyfill(d[0],d[1])
                     else:
                         mat._matrix=getuni(d[0],d[1],n,m)
                 
