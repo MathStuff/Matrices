@@ -3,6 +3,9 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
     Set the matrix based on the arguments given
     """
     from random import random,uniform,triangular,gauss,seed
+    from MatricesM.C_funcs.randgen import getuni,getfill,igetuni,igetrand
+    from MatricesM.C_funcs.zerone import zerone
+    from MatricesM.C_funcs.linalg import Ctranspose
     # =============================================================================
     # Argument check
     if len(direc)==0 and len(lis)==0:
@@ -78,23 +81,16 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                 
                 elif mat._fMat:
                     if r==[0,1]:
-                        try:
-                            from MatricesM.C_funcs.fillModule import pyfill
-                        except:
-                            pass
-                        else:
-                            mat._matrix=pyfill(d[0],d[1])
-                            return None
-                        mat._matrix=[[random() for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=zerone(d[0],d[1])
                     else:
-                        mat._matrix=[[uniform(n,m) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=getuni(d[0],d[1],n,m)
                 
                 else:
                     if r==[0,1]:
-                        mat._matrix=[[round(random()) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=getrand(d[0],d[1])
                     else:
                         m+=1
-                        mat._matrix=[[uniform(n,m)//1 for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=igetuni(d[0],d[1],n,m)
                         
             elif mat.fill in ["gauss"]:
                 m,s=r[0],r[1]
@@ -118,7 +114,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                     mat._matrix=[[round(triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]   
                     
             else:
-                mat._matrix=[[fill for a in range(d[1])] for b in range(d[0])]
+                mat._matrix=getfill(d[0],d[1],fill)
         # =============================================================================               
         #Different ranges over individual columns
         elif len(lis)==0 and isinstance(r,dict):
@@ -166,9 +162,6 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                 else:
                     mat._matrix=[[lis[b] for a in range(d[1])] for b in range(d[0])]
                 
-                mat._matrix=temp 
-                mat._Matrix__dim = (mat.dim[1],mat.dim[0])
-                mat._matrix=mat.t._matrix
-                mat._Matrix__dim = (mat.dim[1],mat.dim[0])
+                mat._matrix=Ctranspose(d[1],d[0],temp)
         else:
             return None
