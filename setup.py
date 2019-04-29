@@ -1,9 +1,10 @@
 from setuptools import Extension,setup,find_packages
 
 modules = [Extension("MatricesM.C_funcs.zerone",sources=["MatricesM/C_funcs/zerone.c"]),
-Extension("MatricesM.C_funcs.randgen",sources=["MatricesM/C_funcs/randgen.c"]),
-Extension("MatricesM.C_funcs.linalg",sources=["MatricesM/C_funcs/linalg.c"])
+Extension("MatricesM.C_funcs.randgen",sources=["MatricesM/C_funcs/randgen.pyx"]),
+Extension("MatricesM.C_funcs.linalg",sources=["MatricesM/C_funcs/linalg.pyx"])
 ]
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -18,6 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/MathStuff/Matrices",
     packages=find_packages(),
+    setup_requires=['setuptools>=18.0','cython'],
     ext_modules=modules,
     classifiers=[
         "Programming Language :: Python :: 3.5",
