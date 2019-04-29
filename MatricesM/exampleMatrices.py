@@ -244,13 +244,13 @@ print(f3)
 
 print("################")
       
-print("e+=Identity(e.dim[0])*99")
-e+=Identity(e.dim[0])*99
+print("e+=Matrix(listed=Identity(e.dim[0]))*99")
+e+=Matrix(listed=Identity(e.dim[0]))*99
 print(e)
 print("\ne-=33:")
 e-=33
 print(e)
-print("\ne+=FMatrix(e.dim):")
+print("\ne+=Matrix(e.dim):")
 e+=Matrix(e.dim,dtype="float")
 print(e)
 print("\ne*=[2,1,1,0.5,0.2,0.0003,1,3]:")
@@ -1030,8 +1030,7 @@ Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4', 'Col 5', 'Col 6']
 -0.6600 -0.0700  0.0200  0.0800 -0.6300 -0.8400 
 
 ################
-e+=Identity(e.dim[0])*99
-Can't add
+e+=Matrix(listed=Identity(e.dim[0]))*99
 
 Square matrix
 Dimension: 8x8
@@ -1063,7 +1062,7 @@ Features: ['Col 1', 'Col 2', 'Col 3', 'Col 4', 'Col 5', 'Col 6', 'Col 7', 'Col 8
 -29.6287 -30.6865 -35.3140 -27.6330 -33.0021 -31.7633 -31.3787 -35.0576 
 
 
-e+=FMatrix(e.dim):
+e+=Matrix(e.dim):
 
 Square matrix
 Dimension: 8x8
