@@ -38,17 +38,17 @@ static PyMethodDef allMethods[] = {
 };
 
 //Create a module
-static struct PyModuleDef fillModule = {
+static struct PyModuleDef zerone = {
   PyModuleDef_HEAD_INIT,
-  "fillModule",
-  "Filling a 2D array randomly",
+  "zerone",
+  "Fill a 2D list with float numbers ranged from 0 to 1",
   -1,
   allMethods
 };
 
 //Return the module
-PyMODINIT_FUNC PyInit_fillModule(void)
+PyMODINIT_FUNC PyInit_zerone(void)
 {
-  return PyModule_Create(&fillModule);
+  return PyModule_Create(&zerone);
 }
 // */
