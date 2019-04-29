@@ -7,6 +7,7 @@ def transpose(mat,hermitian=False,obj=None):
     if hermitian:
         transposed=[[temp[cols][rows].conjugate() for cols in range(d0)] for rows in range(d1)]
     else:
-        transposed=[[temp[cols][rows] for cols in range(d0)] for rows in range(d1)]
+        from MatricesM.C_funcs.linalg import Ctranspose
+        transposed = Ctranspose(d0,d1,temp)
     
     return obj((d1,d0),transposed,dtype=mat.dtype)
