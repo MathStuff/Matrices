@@ -240,7 +240,7 @@ C.ht #Returns the hermitian-transpose of the matrix
 
 C.conj #Returns the conjugated forms of the elements in a matrix
 
-C.minor(m,n) #Returns the mth row's nth element's minor matrix
+C.minor(m,n) #Returns the mth row's nth element's minor matrix's determinant
 
 C.adj #Returns the adjoint matrix
 
@@ -382,19 +382,19 @@ limit = data.col(1) * (data.col(1)>5000)
    
    A.t.t == A
    
-   A @ Matrix(listed=Identity(A.dim[0])) == A #A assumed to be a square matrix
+   A.adj.matrix[2][0] == A.minor(1,3)
    
-   A.adj.t[1][2] == A.minor(2,3).det*-1 
+   #round call is currently required for the next examples due to ~%1e-5 error rate on some calculations
    
-   #roundForm() call is currently required for the next examples due to ~%1e-5 error rate on some calculations 
+   round(A @ Matrix(listed=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
    
-   (A.lowtri @ A.uptri).roundForm(4) == A.roundForm(4) 
+   round(A.lowtri @ A.uptri, 4) == round(A, 4)
    
-   (A.inv.inv).roundForm(4) == A.roundForm(4) 
+   round(A.inv.inv,4) == round(A, 4)
    
-   (A.Q @ A.R).roundForm(4) == A.roundForm(4)
+   round(A.Q @ A.R, 4) == round(A, 4)
    
-   (A @ A.inv).roundForm() == Matrix(listed=Identity(A.dim[0]))
+   round(A @ A.inv)== Matrix(listed=Identity(A.dim[0]))
 ``` 
 ----------------------------------------
 
