@@ -54,4 +54,8 @@ def rrechelon(mat,copy,obj):
         temp=[[temp[i][j] if not (temp[i][j]<boundary and temp[i][j]>-boundary) else 0 for j in range(mat.dim[1])] for i in range(mat.dim[0])]
 
     z = temp.count(zeros)
-    return (obj(mat.dim,temp,dtype=mat.dtype),mat.dim[0]-z)
+    if mat.dtype == "complex":
+        dt = "complex"
+    else:
+        dt = "float"
+    return (obj(mat.dim,temp,dtype=dt),mat.dim[0]-z)
