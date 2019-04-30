@@ -294,7 +294,11 @@ class Matrix:
         Returns the adjoint matrix
         """
         from MatricesM.linalg.adjoint import adjoint
-        return adjoint(self)
+        if self.dtype=="complex":
+            dt = "complex"
+        else:
+            dt = "float"
+        return Matrix(self.dim,adjoint(self),dtype=dt)
     
     def _inverse(self):
         """
@@ -343,7 +347,7 @@ class Matrix:
         """
         from MatricesM.linalg.LU import LU
         from MatricesM.constructors.matrices import Identity
-        return LU(self,Matrix(listed=Identity(self.dim[0]),dtype=self.dtype),[a[:] for a in self.matrix],Matrix)
+        return LU(self,Identity(self.dim[0]),[a[:] for a in self.matrix],Matrix)
 
     def _QR(self):
         """
@@ -371,7 +375,7 @@ class Matrix:
     
     @property
     def copy(self):
-        return Matrix(dim=self.dim,listed=self._matrix,ranged=self.initRange,fill=self.fill,features=self.features,header=self._header,directory=self._dir,decimal=self.decimal,seed=self.seed,dtype=self.dtype)
+        return Matrix(dim=self.dim[:],listed=[a[:] for a in self._matrix],ranged=self.initRange,fill=self.fill,features=self.features[:],header=self._header,directory=self._dir,decimal=self.decimal,seed=self.seed,dtype=self.dtype[:])
 
     @property
     def string(self):
