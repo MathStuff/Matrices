@@ -8,5 +8,6 @@ extensions = [
 ]
 setup(
  name='test',
- ext_modules = cythonize(extensions)
+ ext_modules = cythonize(extensions,compiler_directives = {'language_level': 3}),
+
  )
