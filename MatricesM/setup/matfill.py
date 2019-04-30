@@ -8,6 +8,8 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
     from MatricesM.C_funcs.linalg import Ctranspose
     # =============================================================================
     # Argument check
+    if lis is None:
+        lis = []
     if len(direc)==0 and len(lis)==0:
         if fill == None:
             fill = "uniform"
@@ -87,7 +89,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                 
                 else:
                     if r==[0,1]:
-                        mat._matrix=getrand(d[0],d[1])
+                        mat._matrix=igetrand(d[0],d[1])
                     else:
                         m+=1
                         mat._matrix=igetuni(d[0],d[1],n,m)
