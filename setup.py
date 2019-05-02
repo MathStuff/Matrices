@@ -1,6 +1,7 @@
 from setuptools import Extension,setup,find_packages
 
 modules = [Extension("MatricesM.C_funcs.zerone",sources=["MatricesM/C_funcs/zerone.c"]),
+Extension("MatricesM.C_funcs.constructors",sources=["MatricesM/C_funcs/constructors.c"]),
 Extension("MatricesM.C_funcs.randgen",sources=["MatricesM/C_funcs/randgen.pyx"]),
 Extension("MatricesM.C_funcs.linalg",sources=["MatricesM/C_funcs/linalg.pyx"])
 ]
