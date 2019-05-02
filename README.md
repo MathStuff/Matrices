@@ -83,7 +83,12 @@ Cm1 = Matrix(5,dtype="complex")
 from MatricesM.constructors.matrices import Identity
 
 #3x3 identity matrix
-id3 = Matrix(listed=Identity(3)) 
+id3 = Matrix(listed=Identity(3))
+
+from MatricesM.constructors.matrices import Symmetrical
+
+#A 8x8 symmetrical matrix filled with numbers in range from 0 to 1 with uniform distribution 
+sym1 = Matrix(listed=Symmetrical(8))
 
 ``` 
 ----------------------------------------
