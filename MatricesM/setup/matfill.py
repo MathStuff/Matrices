@@ -1,4 +1,4 @@
-def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
+def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=True):
     """
     Set the matrix based on the arguments given
     """
@@ -23,7 +23,8 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                     raise ValueError("fill should be one of ['uniform','triangular','gauss'] or an integer | a float | a complex number")
                 else:
                     break
-    mat._setDim(d)
+    if isinstance(d,int):
+        mat._setDim(d)
     #Set new range    
     if r==None:
         r=mat.initRange
@@ -78,10 +79,10 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
             
             if mat.fill in ["uniform"]:
                 m,n=max(r),min(r)
-                if mat._cMat:
+                if cmat:
                     mat._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
-                elif mat._fMat:
+                elif fmat:
                     if r==[0,1]:
                         mat._matrix=pyfill(d[0],d[1])
                     else:
@@ -96,10 +97,10 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                         
             elif mat.fill in ["gauss"]:
                 m,s=r[0],r[1]
-                if mat._cMat:
+                if cmat:
                     mat._matrix=[[complex(gauss(m,s),gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
                 
-                elif mat._fMat:
+                elif fmat:
                         mat._matrix=[[gauss(m,s) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
@@ -107,10 +108,10 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
                     
             elif mat.fill in ["triangular"]:
                 n,m,o = r[0],r[1],r[2]
-                if mat._cMat:
+                if cmat:
                     mat._matrix=[[complex(triangular(n,m,o),triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]
                 
-                elif mat._fMat:
+                elif fmat:
                         mat._matrix=[[triangular(n,m,o) for a in range(d[1])] for b in range(d[0])]
                 else:
                     mat._matrix=[[round(triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]   
@@ -132,30 +133,30 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform"):
             else:
                 lis=list(r.values())
                 if mat.fill in ["uniform"]:                    
-                    if mat._cMat:
+                    if cmat:
                         temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
-                    elif mat._fMat:
+                    elif fmat:
                         temp=[[uniform(min(lis[i]),max(lis[i])) for _ in range(d[0])] for i in range(d[1])]                        
                     
                     else:
                         temp=[[round(uniform(min(lis[i]),max(lis[i])+1))//1 for _ in range(d[0])] for i in range(d[1])]
                 
                 elif mat.fill in ["gauss"]:                    
-                    if mat._cMat:
+                    if cmat:
                         temp=[[complex(gauss(lis[i][0],lis[i][1]),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
-                    elif mat._fMat:
+                    elif fmat:
                         temp=[[gauss(lis[i][0],lis[i][1]) for _ in range(d[0])] for i in range(d[1])]                        
                     
                     else:
                         temp=[[round(gauss(lis[i][0],lis[i][1]+1))//1 for _ in range(d[0])] for i in range(d[1])]
                         
                 elif mat.fill in ["triangular"]:                    
-                    if mat._cMat:
+                    if cmat:
                         temp=[[complex(triangular(lis[i][0],lis[i][1],lis[i][2]),triangular(lis[i][0],lis[i][1],lis[i][2])) for _ in range(d[0])] for i in range(d[1])]
                         
-                    elif mat._fMat:
+                    elif fmat:
                         
                         temp=[[triangular(lis[i][0],lis[i][1],lis[i][2]) for _ in range(d[0])] for i in range(d[1])]                                                
                     else:
