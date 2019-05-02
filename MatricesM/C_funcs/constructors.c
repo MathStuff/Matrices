@@ -22,11 +22,12 @@ static PyObject* symzerone(PyObject* self, PyObject* args)
   }
   for(i=0;i < dim; i++) {
     //Unique diagonal
-    PyList_SET_ITEM(PyList_GET_ITEM(arr,i), i, PyFloat_FromDouble((double)rand()/RAND_MAX));
+    PyObject* row = PyList_GET_ITEM(arr,i);
+    PyList_SET_ITEM(row, i, PyFloat_FromDouble((double)rand()/RAND_MAX));
     for(j=i+1;j < dim; j++){
       double num = (double)rand()/RAND_MAX;
       //Repeat the same number for arr[i,j] and arr[j,i]
-      PyList_SET_ITEM(PyList_GET_ITEM(arr,i), j, PyFloat_FromDouble(num));
+      PyList_SET_ITEM(row, j, PyFloat_FromDouble(num));
       PyList_SET_ITEM(PyList_GET_ITEM(arr,j), i, PyFloat_FromDouble(num));
     }
   }
