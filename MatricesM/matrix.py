@@ -58,7 +58,7 @@ class Matrix:
         
         self._setDim(dim)
         self.setInstance()
-        self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill)
+        self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill,self._cMat,self._fMat)
         self.setFeatures()
 # =============================================================================
     """Attribute formatting and setting methods"""
@@ -93,12 +93,12 @@ class Matrix:
         from MatricesM.setup.dims import setDim
         setDim(self,d)
         
-    def setMatrix(self,d=None,r=None,lis=[],direc=r"",f="uniform"):
+    def setMatrix(self,d=None,r=None,lis=[],direc=r"",f="uniform",cmat=False,fmat=True):
         """
         Set the matrix based on the arguments given
         """
         from MatricesM.setup.matfill import setMatrix
-        setMatrix(self,d,r,lis,direc,f)
+        setMatrix(self,d,r,lis,direc,f,cmat,fmat)
         
 # =============================================================================
     """Attribute recalculation methods"""
