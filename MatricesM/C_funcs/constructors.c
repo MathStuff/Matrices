@@ -11,7 +11,7 @@ static PyObject* symzerone(PyObject* self, PyObject* args)
   if (!PyArg_ParseTuple(args, "i", &dim))
     return NULL;
 
-  srand((unsigned int)time(NULL));
+  srand((unsigned int)rand());
 
   Py_ssize_t d = dim;
   int i,j;
