@@ -20,8 +20,7 @@ cpdef list CLU(list dim,list z,list copy,int isComp ):
   cdef int d1 = dim[1]
   cdef complex cprod = 1
   cdef double prod = 1
-  cdef int i2
-  cpdef k,k0,m,j
+  cdef int i2,k,k0,m,j
 
   cdef list temp = copy
   cdef list L = z
