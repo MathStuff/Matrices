@@ -6,12 +6,12 @@
 //Actual method to return values
 static PyObject* pyfill(PyObject* self, PyObject* args)
 { 
-  int row,col;
+  int row,col,seed;
   
-  if (!PyArg_ParseTuple(args, "ii", &row,&col))
+  if (!PyArg_ParseTuple(args, "iii", &row,&col,&seed))
     return NULL;
 
-  srand((unsigned int)time(NULL));
+  srand(seed);
 
   Py_ssize_t r = row;
   Py_ssize_t c = col;
