@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="MatricesM",
-    version="0.9.a14.post2",
+    version="0.9.a14.post3",
     author="semihM",
     author_email="info@semihmumcu.com",
 	license="MIT",
