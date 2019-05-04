@@ -41,7 +41,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS listed is given), int | list
 
                        features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
                      
-                       seed=randomSeed #Optional, int|float|complex|str . Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+                       seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
                        dtype=dataType #Optional, 'integer'|'float'|'complex' . Data type the matrix will hold, default is 'float'.
                        )
