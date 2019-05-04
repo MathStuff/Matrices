@@ -2,7 +2,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
     """
     Set the matrix based on the arguments given
     """
-    from random import random,uniform,triangular,gauss,seed
+    from random import random,randint,uniform,triangular,gauss,seed
     from MatricesM.C_funcs.randgen import getuni,getfill,igetuni,igetrand
     from MatricesM.C_funcs.zerone import pyfill
     from MatricesM.C_funcs.linalg import Ctranspose
@@ -23,6 +23,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     raise ValueError("fill should be one of ['uniform','triangular','gauss'] or an integer | a float | a complex number")
                 else:
                     break
+    #Check dimension given
     if isinstance(d,int):
         mat._setDim(d)
     #Set new range    
@@ -33,15 +34,14 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         
     # =============================================================================
     #Save the seed for reproduction
-    if mat.seed==None and mat.fill in ["random","uniform","gauss","triangular"] and len(lis)==0 and len(direc)==0:
-        randseed=random()
-        seed(randseed)
-        mat._Matrix_seed=randseed
-        
-    elif mat.fill in ["random","uniform","gauss","triangular"] and len(lis)==0 and len(direc)==0:
+    if mat.seed==None and (mat.fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
+        randseed = randint(-100000,100000)
+        mat._Matrix__seed = randseed
+    
+    elif (mat.fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
         seed(mat.seed)
     else:
-        mat._Matrix_seed=None
+        mat.seed=None
         
     # =============================================================================
     #Set the new matrix
@@ -80,22 +80,24 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
             if mat.fill in ["uniform"]:
                 m,n=max(r),min(r)
                 if cmat:
+                    seed(mat.seed)
                     mat._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
                 
                 elif fmat:
                     if r==[0,1]:
-                        mat._matrix=pyfill(d[0],d[1])
+                        mat._matrix=pyfill(d[0],d[1],mat.seed)
                     else:
-                        mat._matrix=getuni(d[0],d[1],n,m)
+                        mat._matrix=getuni(d[0],d[1],n,m,mat.seed)
                 
                 else:
                     if r==[0,1]:
-                        mat._matrix=igetrand(d[0],d[1])
+                        mat._matrix=igetrand(d[0],d[1],mat.seed)
                     else:
                         m+=1
-                        mat._matrix=igetuni(d[0],d[1],n,m)
+                        mat._matrix=igetuni(d[0],d[1],n,m,mat.seed)
                         
             elif mat.fill in ["gauss"]:
+                seed(mat.seed)
                 m,s=r[0],r[1]
                 if cmat:
                     mat._matrix=[[complex(gauss(m,s),gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
@@ -107,6 +109,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     mat._matrix=[[round(gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
                     
             elif mat.fill in ["triangular"]:
+                seed(mat.seed)
                 n,m,o = r[0],r[1],r[2]
                 if cmat:
                     mat._matrix=[[complex(triangular(n,m,o),triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]
@@ -127,11 +130,12 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                 assert vs.count(vs[0])==len(vs)
                 feats=[i for i in r.keys()]
                 mat.features=feats
-  
+
             except Exception as err:
                 print(err)
             else:
                 lis=list(r.values())
+                seed(mat.seed)
                 if mat.fill in ["uniform"]:                    
                     if cmat:
                         temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
