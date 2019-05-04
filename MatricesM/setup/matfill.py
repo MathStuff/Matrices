@@ -41,7 +41,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
     elif (mat.fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
         seed(mat.seed)
     else:
-        mat.seed=None
+        mat._Matrix__seed=None
         
     # =============================================================================
     #Set the new matrix
