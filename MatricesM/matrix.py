@@ -592,10 +592,10 @@ class Matrix:
     @seed.setter
     def seed(self,value):
         try:
-            if isinstance(value,int) or isinstance(value,float) or isinstance(value,complex) or isinstance(value,str):
+            if isinstance(value,int):
                 self.__seed=value
             else:
-                raise TypeError("Seed must be one of the following types:\n1.An integer\n2.A float number\n3.A complex number\n4.A string")
+                raise TypeError("Seed must be an integer")
         except Exception as err:
             raise err
         else:
