@@ -18,5 +18,4 @@ def find(mat,dims,element,start=1):
     else:
         if len(indeces):
             return indeces
-        print("Value not in the matrix")
         return None
