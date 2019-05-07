@@ -70,13 +70,16 @@ B = Matrix([3,5],ranged=[10,25])
 E = Matrix(6) 
 
 #Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
-F = Matrix(dim=[200,5],fill='gauss',ranged=[50,10]) 
+F = Matrix([200,5],fill='gauss',ranged=[50,10]) 
 
 #Create a 10x10 matrix filled with 1's
 G = Matrix(10,fill=1)
 
-#Create a square matrix filled with random float values in the default range (Not 100% functional, check https://github.com/MathStuff/MatricesM/issues )
-Cm1 = Matrix(5,dtype="complex") 
+#Create a 200x4 matrix filled with integer numbers using triangular distribution where the range is [0,20] and mode is around if not 18
+H = Matrix((200,4),fill='triangular',ranged=[0,20,18],dtype="integer") 
+
+#Create a 9x9 matrix filled with complex numbers using gauss distribution for both real and imaginary parts with mean=5 and sdev=2
+C1 = Matrix(9,fill="gauss",ranged=[5,2],dtype="complex")
 ```
 ----------------------------------------
 ##### Create special matrices
@@ -390,7 +393,7 @@ limit = data.col(1) * (data.col(1)>5000)
    
    A.adj.matrix[2][0] == A.minor(1,3)
    
-   #round call is currently required for the next examples due to ~%1e-5 error rate on some calculations
+   #round call is currently required for the next examples due to <~%1e-5 error rate on some calculations
    
    round(A @ Matrix(listed=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
    
