@@ -67,17 +67,8 @@ class Matrix:
         """
         Set the type
         """
-        if self.dtype=="complex":
-            self._fMat=1
-            self._cMat=1
-        elif self.dtype=="float":
-            self._fMat=1
-            self._cMat=0
-        elif self.dtype=="integer":
-            self._fMat=0
-            self._cMat=0
-        else:
-            raise ValueError("dtype should be one of the following: 'integer', 'float', 'complex'")
+        from MatricesM.setup.instances import _setInstance
+        _setInstance(self)
             
     def setFeatures(self):
         """
@@ -237,7 +228,7 @@ class Matrix:
         If no parameter name given, takes it as row
         """
         from MatricesM.matrixops.remove import remove
-        remove(self,row,col)
+        remove(self,self.dim[0],self.dim[1],row,col)
             
     def concat(self,matrix,concat_as="row"):
         """
