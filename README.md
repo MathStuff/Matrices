@@ -22,15 +22,15 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimension,#Required(UNLESS listed is given), int | list as [rows,cols]
+matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | list as [rows,cols]
 
-                       listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
+                     listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
-                       directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
+                     directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
                        fill=distribution | number, #Optional,  'uniform'|'triangular'|'gauss' or integer | float | complex or None; fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
-                       ranged=[*args] | dict;"""
+                     ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
                               ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
                               ->Arguments should follow one of the following rules:
@@ -38,14 +38,14 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS listed is given), int | list
                                    2)If 'fill' is 'gauss', mean and standard deviation are picked from this attribute as [mean,standard_deviation];
                                    3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]  """                     
 
-                       header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
+                     header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
-                       features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
+                     features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
                      
-                       seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+                     seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
-                       dtype=dataType #Optional, 'integer'|'float'|'complex' . Data type the matrix will hold, default is 'float'.
-                       )
+                     dtype=dataType #Optional, 'integer'|'float'|'complex' . Data type the matrix will hold, default is 'float'.
+                     )
 
 ```         
    ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py>matrix.py</a> contains the main Matrix class.
