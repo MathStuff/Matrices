@@ -93,8 +93,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     if r==[0,1]:
                         mat._matrix=igetrand(d[0],d[1],mat.seed)
                     else:
-                        m+=1
-                        mat._matrix=igetuni(d[0],d[1],n,m,mat.seed)
+                        mat._matrix=igetuni(d[0],d[1],n-1,m+1,mat.seed)
                         
             elif mat.fill in ["gauss"]:
                 seed(mat.seed)
