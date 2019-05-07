@@ -19,3 +19,6 @@ sdist/
 */C_funcs/build/
 *.pyd
 *.c
+
+#Scripts etc.
+*.vbs
