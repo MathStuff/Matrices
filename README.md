@@ -28,7 +28,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | li
 
                      directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                       fill=distribution | number, #Optional,  'uniform'|'triangular'|'gauss' or integer | float | complex or None; fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
+                     fill=distribution | number, #Optional,  'uniform'|'triangular'|'gauss' or integer | float | complex or None; fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
                      ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
