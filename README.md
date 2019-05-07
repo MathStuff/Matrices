@@ -1,5 +1,5 @@
 # <a href="https://pypi.org/project/MatricesM/">MatricesM (Alpha)</a>
-#### Python(>=3.5) library for creating matrices and doing matrix operations related to statistics and algebra mathematics
+#### Python(>=3.6) library for creating matrices and doing matrix operations related to statistics and algebra mathematics
 #### [Join MathStuff's Slack](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) workspace for questions and discussions.
  
 ### Install using pip:
