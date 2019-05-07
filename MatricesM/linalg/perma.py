@@ -21,12 +21,11 @@ def perma(mat):
                 m[0][1]*m[1][0]*m[2][2] +
                 m[0][0]*m[1][2]*m[2][1]
                 )
+
     total=0
     for i in range(mat.dim[0]):
         temp = mat.copy
-        temp.remove(col=1)
-        temp.remove(row=i+1)
-
+        temp.remove(i+1,1)
         co = mat.matrix[i][0]
 
         total += co*perma(temp)
