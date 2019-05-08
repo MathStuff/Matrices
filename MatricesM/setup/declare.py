@@ -27,9 +27,9 @@ def declareRange(mat,lis):
             for rows in range(mat.dim[0]):
                 temp.append(lis[rows][i].real)
                 temp.append(lis[rows][i].imag)
-            c[mat.features[i]]=[round(min(temp),4),round(max(temp),4)]
+            c[mat.features[i]]=[min(temp),max(temp)]
     else:
         for cols in range(mat.dim[1]):
             temp=[lis[rows][cols] for rows in range(mat.dim[0])]
-            c[mat.features[cols]]=[round(min(temp),4),round(max(temp),4)]
+            c[mat.features[cols]]=[min(temp),max(temp)]
     return c
