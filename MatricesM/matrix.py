@@ -1196,7 +1196,7 @@ class Matrix:
         Give no arguments to get the whole scores in a matrix
         """
         from MatricesM.stats.z import z
-        return z(self,row,col,population)        
+        return z(self,row,col,population,Matrix(self.dim,fill=0,features=self.__features))        
     
     def iqr(self,col=None,as_quartiles=False,asDict=True):
         """

@@ -9,7 +9,7 @@ def median(mat,col=None):
             feats=mat.features
         else:
             assert col>=1 and col<=mat.dim[1]
-            temp=mat.subM(1,mat.dim[0],col,col).t
+            temp=mat[:,col-1].t
             feats=mat.features[col-1]
                 
         meds={}

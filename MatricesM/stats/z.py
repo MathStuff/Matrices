@@ -1,4 +1,4 @@
-def z(mat,row=None,col=None,population=1):
+def z(mat,row=None,col=None,population=1,empty=None):
     """
     z-scores of the elements
     row:integer>=1 |None ; z-score of the desired row
@@ -18,7 +18,7 @@ def z(mat,row=None,col=None,population=1):
     elif isinstance(col,int) and col>=1 and col<=mat.dim[1] and row==None:
         dims=[mat.dim[0],1]
         feats=mat.features[col-1]
-        sub=mat.subM(1,mat.dim[0],col,col)
+        sub=mat[:,col-1]
         col=1
         
     elif (isinstance(col,int) and col>=1 and col<=mat.dim[1]) and (isinstance(row,int) and row>=1 and row<=mat.dim[0]):
@@ -29,10 +29,7 @@ def z(mat,row=None,col=None,population=1):
             raise TypeError("row and column parameters should be either integers or None types")
         raise ValueError("row and/or column value(s) are out of range")
         
-    scores = mat.copy
-    scores._Matrix__randomFill=0
-    scores._Matrix__features=feats
-    scores.setMatrix(dims)
+    scores = empty
     m = sub.mean(asDict=0)
     s = sub.sdev(population=population,asDict=0)
     
@@ -41,10 +38,9 @@ def z(mat,row=None,col=None,population=1):
         m = [m]
     if not isinstance(s,list):
         s = [s]
-        
-    for c in range(scores.dim[1]):
-        for r in range(scores.dim[0]):
-            scores[r][c]=(sub.matrix[r][c]-m[c])/s[c]
+
+    scores._matrix=[[(sub.matrix[r][c]-m[c])/s[c] for c in range(scores.dim[1])] for r in range(scores.dim[0])]   
+
     if row!=None and col==None:
-        return scores.subM(row,row,1,mat.dim[1])    
+        return scores[row-1:,:]    
     return scores
