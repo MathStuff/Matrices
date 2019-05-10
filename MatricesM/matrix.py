@@ -273,12 +273,14 @@ class Matrix:
         from MatricesM.linalg.transpose import transpose
         return transpose(self,hermitian,obj=Matrix)
 
-    def minor(self,row=None,col=None):
+    def minor(self,row=None,col=None,returndet=True):
         """
         Returns the minor of the element in the desired position
+        row,col : row and column indeces of the element, 1<=row and col
+        returndet : True if the determinant is wanted, False to return a matrix with the desired row and column removed 
         """
         from MatricesM.linalg.minor import minor
-        return minor(self,row,col)
+        return minor(self,row,col,returndet)
 
     def _adjoint(self):
         """

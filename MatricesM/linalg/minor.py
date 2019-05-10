@@ -1,4 +1,4 @@
-def minor(mat,row=None,col=None):
+def minor(mat,row=None,col=None,returndet=True):
     if not isinstance(row,int) or not isinstance(col,int):
         raise ValueError("Both row and col should be integers")
     if not (row>0 and row<=mat.dim[0]) or not (col>0 and col<=mat.dim[1]):
@@ -14,4 +14,6 @@ def minor(mat,row=None,col=None):
     if temp.dim[0]>1:   
         temp.remove(row=row)
         temp.remove(col=col)
-    return temp.det
+    if returndet:
+        return temp.det
+    return temp
