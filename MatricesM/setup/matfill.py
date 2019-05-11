@@ -45,18 +45,24 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         
     # =============================================================================
     #Set the new matrix
+    #Matrix from given string
     if isinstance(lis,str):
         mat._matrix=mat._listify(lis)
         if mat.dim == [0,0]:
             mat._Matrix__dim=mat._declareDim()
+    #Matrix from a directory
     elif len(direc)>0:
-        lis=mat._Matrix__fromFile(direc)
-        if not lis==None:
-            mat._matrix=mat._listify(lis)
+        [lis,mat._Matrix__features] = mat._Matrix__fromFile(direc,mat._header,mat.coldtypes)
+        if isinstance(lis,str):
+            mat._matrix = mat._listify(lis)
+        elif isinstance(lis,list):
+            mat._matrix = lis
         else:
             return None
+        
         if mat.dim == [0,0]:
             mat._Matrix__dim=mat._declareDim()          
+    #Matrix from a list or other filling methods
     else:
         if len(lis)>0:
             if isinstance(lis[0],list):                        

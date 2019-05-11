@@ -10,26 +10,34 @@ def mean(mat,col=None,asDict=True):
         assert (isinstance(col,int) and col>=1 and col<=mat.dim[1]) or col==None
         avg={}
         feats=mat.features[:]
-        if len(feats)==0:
-            for nn in range(mat.dim[1]):
-                feats.append("Col "+str(nn+1))
-  
-        if col==None:
-            cLow=0
-            cUp=mat.dim[1]
+        inds = []
+        if mat._dfMat:
+            dts = mat.coldtypes
+            if col==None:
+                for i in range(len(dts)):
+                    if dts[i] == str:
+                        continue
+                    else:
+                        inds.append(i)
+            else:
+                if dts[col-1] == str:
+                    raise TypeError(f"Can't use str dtype (column{col}) to calculate the mean")
+                else:
+                    inds = [col-1]
         else:
-            cLow=col-1
-            cUp=col        
+            if col==None:
+                inds = range(0,mat.dim[1])
+            else:
+                inds = [col-1]  
                 
-        for c in range(cLow,cUp):
+        for c in inds:
             t=sum([mat.matrix[r][c] for r in range(mat.dim[0])])
             avg[feats[c]]=t/mat.dim[0]
    
     except AssertionError:
         print("Col parameter should be in range [1,amount of columns]")
     except Exception as err:
-        print("Bad matrix and/or dimension")
-        print(err)
+        print("Error in 'mean':\n\t",err)
         return None
     
     else:

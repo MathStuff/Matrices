@@ -8,6 +8,8 @@ def var(mat,col=None,population=1,asDict=True):
         2) If there are multiple columns returns the values in order in a list
     """
     s=mat.sdev(col,population)
+    if s == None:
+        raise ValueError("Can't get standard deviations")
     vs={}
     for k,v in s.items():
         vs[k]=v**2

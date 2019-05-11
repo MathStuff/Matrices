@@ -13,9 +13,13 @@ def sdev(mat,col=None,population=1,asDict=True):
         if col==None:
             sd={}
             avgs=mat.mean()
-            for i in range(mat.dim[1]):
-                e=sum([(mat._matrix[j][i]-avgs[mat.features[i]])**2 for j in range(mat.dim[0])])
+            feats = list(avgs.keys())
+            d = [i for i in range(mat.dim[1]) if mat.features[i] in feats]
+            fi = 0
+            for i in d:
+                e=sum([(mat._matrix[j][i]-avgs[feats[fi]])**2 for j in range(mat.dim[0])])
                 sd[mat.features[i]]=(e/(mat.dim[0]-1+population))**(1/2)
+                fi+=1
                 
         else:
             try:
@@ -24,14 +28,16 @@ def sdev(mat,col=None,population=1,asDict=True):
                 print("Col parameter is not valid")
             else:
                 sd={}
-                a=list(mat.mean(col).values())[0]
-    
+                mn = mat.mean(col)
+                if mn == None:
+                    raise ValueError(f"Can't get the mean of column{col}")
+                a=list(mn.values())[0]
+
                 e=sum([(mat.matrix[i][col-1]-a)**2 for i in range(mat.dim[0])])
                 sd[mat.features[col-1]] = (e/(mat.dim[0]-1+population))**(1/2)
-    except:
-        print("Can't get standard deviation")
-        
-    else: 
+    except Exception as err:
+        print("Error in sdev:\n\t",err)
+    else:
         if asDict:
             return sd
         

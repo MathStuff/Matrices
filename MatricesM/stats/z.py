@@ -1,7 +1,6 @@
-def z(mat,row=None,col=None,population=1,empty=None):
+def z(mat,col=None,population=1,empty=None):
     """
     z-scores of the elements
-    row:integer>=1 |None ; z-score of the desired row
     column:integer>=1 |None ; z-score of the desired column
     population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
     
@@ -10,37 +9,30 @@ def z(mat,row=None,col=None,population=1,empty=None):
     if population not in [0,1]:
         raise ValueError("population should be 0 for samples, 1 for population")
         
-    if col==None and ( (isinstance(row,int) and row>=1 and row<=mat.dim[1]) or row==None ):
+    if col==None:
         dims=mat.dim
-        feats=mat.features
-        sub=mat.copy
         
-    elif isinstance(col,int) and col>=1 and col<=mat.dim[1] and row==None:
+    elif isinstance(col,int) and col>=1 and col<=mat.dim[1]:
         dims=[mat.dim[0],1]
-        feats=mat.features[col-1]
-        sub=mat[:,col-1]
-        col=1
-        
-    elif (isinstance(col,int) and col>=1 and col<=mat.dim[1]) and (isinstance(row,int) and row>=1 and row<=mat.dim[0]):
-        return (mat.matrix[row-1][col-1]-mat.mean(col,asDict=0))/mat.sdev(col,asDict=0)
     
     else:
-        if (col!=None and row!=None) and not ( isinstance(row,int) and isinstance(col,int) ):
-            raise TypeError("row and column parameters should be either integers or None types")
-        raise ValueError("row and/or column value(s) are out of range")
+        if col!=None and not isinstance(col,int):
+            raise TypeError("column parameter should be either an integer or None type")
+        raise ValueError("column value is out of range")
         
     scores = empty
-    m = sub.mean(asDict=0)
-    s = sub.sdev(population=population,asDict=0)
-    
-    #Put single values in a list for calculation's favor
-    if not isinstance(m,list):
-        m = [m]
-    if not isinstance(s,list):
-        s = [s]
+    m = mat.mean(col)
+    s = mat.sdev(col,population=population)
 
-    scores._matrix=[[(sub.matrix[r][c]-m[c])/s[c] for c in range(scores.dim[1])] for r in range(scores.dim[0])]   
-
-    if row!=None and col==None:
-        return scores[row-1:,:]    
+    if m == None or s == None:
+        raise ValueError("Can't get mean and standard deviation")
+        
+    feats = mat.features
+    availablecols = list(m.keys())
+    d = [i for i in range(mat.dim[1]) if feats[i] in availablecols]
+ 
+    scores._matrix=[[(mat.matrix[r][c]-m[feats[c]])/s[feats[c]] for c in d] for r in range(scores.dim[0])]   
+    scores._Matrix__dim=[dims[0],len(d)]
+    scores.features = availablecols
+   
     return scores

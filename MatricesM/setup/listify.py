@@ -8,17 +8,17 @@ def _listify(mat,stringold):
     if mat._header:
         i=0
         for ch in string:
-            if ch!="\n":
-                i+=1
-            else:
-                if len(mat.features)!=mat.dim[1]:
-                    pattern=r"(?:\w+ ?[0-9]*)+"
-                    mat.features=re.findall(pattern,string[:i])
-                    if len(mat.features)!=mat.dim[1]:
-                        print("Can't get enough column names from the header")
-                        mat.setFeatures()
-                string=string[i:]
+            if ch=="\n":
                 break
+            else:
+                i+=1
+        if len(mat.features)!=mat.dim[1]:
+            pattern="\w+"
+            mat._Matrix__features=re.findall(pattern,string[:i])
+            if len(mat.features)!=mat.dim[1]:
+                print("Can't get enough column names from the header")
+                mat.setFeatures()
+            string=string[i:]
             
     #Get all integer and float values
     if not mat._cMat:       

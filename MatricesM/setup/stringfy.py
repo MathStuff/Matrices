@@ -1,4 +1,4 @@
-def _stringfy(mat):
+def _stringfy(mat,dtyps=None):
     """
     Turns a square matrix shaped list into a grid-like form that is printable
     Returns a string
@@ -17,7 +17,18 @@ def _stringfy(mat):
         return dig
 
     string=""
-    if mat._cMat:
+    if mat._dfMat:
+        bounds=[]
+        for dt in range(len(dtyps)):
+            colbounds=[]
+            if dtyps[dt]!=str:
+                colbounds.append(len(str(min(mat.col(dt+1,0)))))
+                colbounds.append(len(str(max(mat.col(dt+1,0)))))
+            else:
+                colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
+            bounds.append(max(colbounds))
+
+    elif mat._cMat:
         ns=""
         for i in mat._matrix:
             for j in i:
@@ -46,29 +57,39 @@ def _stringfy(mat):
         pre="0:.{}f".format(mat.decimal)
         st="{"+pre+"}"
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
-        
-    for rows in range(mat.dim[0]):
-        string+="\n"
-        for cols in range(mat.dim[1]):
-            num=mat._matrix[rows][cols]
 
-            if mat._cMat:
-                if num.imag>=0:
-                    item=str(round(num.real,mat.decimal))+"+"+str(round(num.imag,mat.decimal))+"j "
-                else:
-                    item=str(round(num.real,mat.decimal))+str(round(num.imag,mat.decimal))+"j "
-                s=len(item)-4
-                
-            elif mat._fMat:
-                if num>interval[0] and num<interval[1]:
-                    num=0.0
-                item=st.format(round(num,mat.decimal))
-                s=__digits(num)
-                
-            else:
+    if mat._dfMat:
+        for rows in range(mat.dim[0]):
+            string+="\n"
+            for cols in range(mat.dim[1]):
+                num=mat._matrix[rows][cols]
                 item=str(num)
-                s=__digits(num)
-                
-            string += " "*(bound-s)+item+" "
+                s=len(str(num))
+                string += " "*(bounds[cols]-s)+item+"  "
+    else:
+        for rows in range(mat.dim[0]):
+            string+="\n"
+            for cols in range(mat.dim[1]):
+                num=mat._matrix[rows][cols]
+
+                if mat._cMat:
+                    if num.imag>=0:
+                        item=str(round(num.real,mat.decimal))+"+"+str(round(num.imag,mat.decimal))+"j "
+                    else:
+                        item=str(round(num.real,mat.decimal))+str(round(num.imag,mat.decimal))+"j "
+                    s=len(item)-4
+                    
+                elif mat._fMat:
+                    if num>interval[0] and num<interval[1]:
+                        num=0.0
+                    
+                    item=st.format(num)
+                    s=__digits(num)
+
+                else:
+                    item=str(num)
+                    s=__digits(num)
+                    
+                string += " "*(bound-s)+item+" "
 
     return string
