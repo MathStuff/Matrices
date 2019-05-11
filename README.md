@@ -44,7 +44,9 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | li
                      
                      seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
-                     dtype=dataType #Optional, 'integer'|'float'|'complex' . Data type the matrix will hold, default is 'float'.
+                     dtype=dataType #Optional, 'integer'|'float'|'complex'|'dataframe' . Data type the matrix will hold, default is 'float'.
+                     
+                     coldtypes=listOfTypes #Requires dtype=="dataframe" to work. Contains the data types each column will hold.
                      )
 
 ```         
@@ -148,25 +150,33 @@ data="""1,K,60,69900,6325
 
 #Create a matrix from the given string, dimension is *required* as [dataAmount,features]
 
-D = Matrix(dim=[10,4],
+intMat = Matrix(dim=[10,4],
            listed=data,
            features=["id","age","num1","num2"],
            dtype="integer"
           ) 
 
+#Alternative, will be updated to work better with given strings, currently intended to work csv files
+df = Matrix(dim=[10,4],
+           listed=data,
+           features=["id","age","num1","num2"],
+           dtype="dataFrame",
+           coldtypes=[float]*4
+          )
 ```
-##### OR
 
 ##### Read data from files (Only tested on CSV and TXT files)
-###### header: boolean value, **True** if data file has a header as the **first** row, default is **False**
-
-###### If bool(header) is True, feature names automatically get picked up from the first row
+###### If there is a header, set header to any boolean value == True . Float numbers considered to be using dot(.) to separate decimal places and cammas(,) are used to separate columns. Will be updated in the future for more options
 ```python 
-data_directory = "Example\Directory\DATAFILE"
+data_directory = r"Example\Directory\DATAFILE"
 
-data_dim = [data_amount,feature_amount]
+data_matrix = Matrix(directory=data_directory,header=1,dtype="dataframe",coldtypes=[str,float,...]) #Create a dataframe matrix from a csv file
 
-data_matrix = Matrix(dim=data_dim,directory=data_directory,header=1,dtype="float") #Create a float matrix from a table of data
+#If you're having issues with setting the dimension, try explicitly providing it as dim=[data_amount,feature_amount]
+#More options for reading the file will be added in the future
+
+#Example dataset: https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009
+winedata=Matrix(directory="...\Data\winequality-red.csv",header=1,dtype="dataframe",coldtypes=[float]*12)
 ```
 ----------------------------------------
 ##### Get specific parts of the matrix
