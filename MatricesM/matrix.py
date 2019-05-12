@@ -1157,17 +1157,46 @@ class Matrix:
             return applyop(self,expressions,columns,conditions,self.features[:])
         applyop(self,expressions,columns,conditions,self.features[:])
         
-    def indexSet(self,name="Index",start=0):
-        pass
-    
-    def sortBy(self,column=1,order="inc"):
-        pass
-    
-    def shuffle(self,iterations=10):
-        pass
-    
+    def indexSet(self,name="Index",start=0,returnmat=True):
+        """
+        Add a column with values corresponding to the row number
+
+        name: str. Name of the index column
+        start: int. Starting index
+        """
+        self.add(list(range(start,self.dim[0]+start)),col=1,feature=name)
+        if returnmat:
+            return self
+
+    def sortBy(self,column=None,reverse=False,returnmat=True):
+        """
+        Sort the rows by the desired column
+        """
+        self._matrix=sorted(self.matrix,key=lambda c,i=0:c[i+self.features.index(column)],reverse=reverse)
+        if returnmat:
+            return self
+
+    def shuffle(self,iterations=1,returnmat=True):
+        """
+        Shuffle the rows of the matrix
+        iterations : int. Times to shuffle
+        """
+        from random import shuffle
+        for i in range(iterations):
+            self._matrix = shuffle(self.matrix)
+        if returnmat:
+            return self
+
     def sample(self,size=10,condition=None):
-        pass
+        """
+        Get a sample of the matrix
+
+        size:int. How many samples to take
+        condition:str. Conditionas to set as a base for sampling, uses 'where' method to filter 
+        """
+        from MatricesM.filter.sample import samples
+        return Matrix(listed=samples(self,size,condition),dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes)
+
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
