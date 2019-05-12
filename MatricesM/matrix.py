@@ -1088,6 +1088,19 @@ class Matrix:
 # =============================================================================
     """Filtering methods"""
 # =============================================================================     
+    def select(self,columns=None):
+        """
+        Returns a matrix with chosen columns
+        
+        columns: tuple|list of strings; Desired column names as strings in a tuple or list
+        """
+        if columns == None:
+            return None
+        temp = self.col(self.features.index(columns[0])+1)
+        for col in columns[1:]:
+            temp.concat(self.col(self.features.index(col)+1),"col")
+        return temp
+
     def find(self,element,start=1):
         """
         element: Real number
@@ -1100,29 +1113,51 @@ class Matrix:
     def joint(self,matrix):
         """
         Returns the rows of self which are also in the compared matrix
+        
         matrix: matrix object
         """
         if not isinstance(matrix,Matrix):
             raise TypeError("Not a matrix")
-        return [i for i in self.matrix if i in matrix.matrix]
+        return Matrix(listed=[i[:] for i in self.matrix if i in matrix.matrix],features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
 
     def where(self,conditions=None):
         """
         Returns a matrix where the conditions are True for the desired columns.
+        
         conditions:tuple/list of strings; Desired conditions to apply as a filter
+        
         Syntax:
             Matrix.where((" ('Column_Name' (<|>|==|...) obj (and|or|...) 'Column_Name' ...") and ("'Other_column' (<|...) ..."), ...)
+        
         Example:
             #Get the rows with scores in range [0,10) or Hours is higher than mean, where the DateOfBirth is higher than 1985
             data.where( " ( (Score>=0 and Score<10) or Hours>={mean} ) and DateOfBirth>1985 ".format(mean=self.mean()["Hours"]) )
         """
         from MatricesM.filter.where import wheres
-        return Matrix(listed=wheres(self,conditions,self.features[:]),features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+        return Matrix(listed=wheres(self,conditions,self.features[:])[0],features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
     
-    def apply(self,columns=None,expression=(None,)):
-        pass
-    
-    def indexSet(self,start=0):
+    def apply(self,expressions,columns=(None,),conditions=None,returnmat=True):
+        """
+        Apply arithmetic operations to every column individually
+        
+        expressions: tuple|list of strings . Operations to do for each column given. Multiple operations can be applied if given in a single string. 
+            ->One white space required between each operation and no space should be given between operator and operand
+        
+        columns: tuple|list . Column names to apply the given expression
+        
+        returnmat: boolean. True to return self after evaluation, False to return None
+        Example:
+            #Multiply all columns with 3 and then add 10
+                Matrix.apply( ("*3 +10") ) 
+            #Multiply Prices with 0.9 and subtract 5 also add 10 to Discounts where Price is higher than 100 and Discount is lower than 5
+                Matrix.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
+        """
+        from MatricesM.filter.apply import applyop
+        if returnmat:
+            return applyop(self,expressions,columns,conditions,self.features[:])
+        applyop(self,expressions,columns,conditions,self.features[:])
+        
+    def indexSet(self,name="Index",start=0):
         pass
     
     def sortBy(self,column=1,order="inc"):
@@ -1136,8 +1171,6 @@ class Matrix:
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
-    def sample(self,size=1):
-        pass
     
     def normalize(self,col=None,inplace=True,zerobound=12):
         """

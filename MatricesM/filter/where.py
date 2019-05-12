@@ -18,5 +18,5 @@ def wheres(mat,conds,feats):
         
     inds = [i[0] for i in eval(conds).find(1,0)]
     filtered = [mat.matrix[i][:] for i in inds]
-    return filtered
+    return (filtered,inds)
 
