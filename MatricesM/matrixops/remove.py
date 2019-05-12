@@ -13,5 +13,6 @@ def remove(mat,m,n,r=None,c=None):
         for rows in range(m):
             del mat._matrix[rows][c-1]
         del mat._Matrix__features[c-1]
+        del mat._Matrix__coldtypes[c-1]
         n-=1
     mat._Matrix__dim=[m,n]

@@ -65,3 +65,4 @@ def add(mat,lis=[],row=None,col=None,feature="Col"):
             row = 1
             col = 0
         mat._Matrix__dim = [mat.dim[0]+row,mat.dim[1]+col]
+        mat.setcoldtypes()

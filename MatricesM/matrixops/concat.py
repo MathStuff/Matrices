@@ -31,3 +31,4 @@ def concat(mat,matrix,concat_as="row"):
         mat._Matrix__dim=mat._declareDim()
         if concat_as=="col":
             mat.features = mat.features+matrix.features
+            mat.setcoldtypes()
