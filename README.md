@@ -200,8 +200,19 @@ C[4,7] == C.matrix[4][7]
 #Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
 #All statements should be properly closed with parentheses
 wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
-```
+
+#Select the columns of pH and quality and assign them to another matrix
+filtered = winedata.select(("pH","quality"))
+
 #More examples using different datasets will be added soon.
+```
+----------------------------------------
+##### Apply arithmetic operations to individual rows and columns.
+```python
+#Multiply Prices with 0.9 and subtract 5 also add 10 to Discounts under the conditions: Price>100 and Discount<5
+marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
+
+```
 ----------------------------------------
 #### Use your matrix's methods and properties
 ##### Basics
@@ -346,7 +357,13 @@ C.tail(n) #Returns the last n rows (if there are less than n rows it returns all
 
 C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
+C.select(columns) #Returns a matrix where the desired columns are concatenated in order. Only works if 'columns' is a tuple or a list
+
 C.where(condition) #Returns a matrix where the given condition(s) are True. Example: C.where("(Col 1>=0.5) and (Col 2!=0)") 
+
+C.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
+
+C.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
 C.mean(n,asDict) #Returns the nth column's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
 
