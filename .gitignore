@@ -6,13 +6,14 @@ tests/
 venv/
 env/
 
-#Dist files and vscode files
+#Dist files and config files
 .eggs/
 *.egg-info/
 dist/
 build/
 sdist/
 .vscode/
+.idea/
 
 #Compiled .pyd files and generated C files
 */C_funcs/lib/
