@@ -204,7 +204,7 @@ wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
 #Select the columns of pH and quality and assign them to another matrix
 filtered = winedata.select(("pH","quality"))
 
-#Sort and shuffle the data by given column
+#Sort by given column and shuffle the data 
 winedata.indexSet() #Set index column to reverse further actions
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
 winedata.shuffle() #Shuffle the rows
@@ -413,7 +413,7 @@ C.coldtypes #Returns what type of data each column carries, can be used to set t
 
 C.setFeatures() #Can be used to fix column naming issues, sets the column names to defaults
 
-C.setcoldtypes() #Can be used to fix column type related issues, sets the column names to what first row carries
+C.setcoldtypes() #Can be used to fix column type related issues, sets the column types to what first row carries
 
 ```
 
