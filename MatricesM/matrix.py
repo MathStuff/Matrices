@@ -51,7 +51,7 @@ class Matrix:
                  features = [],
                  decimal = 4,
                  dtype = "float",
-                 coldtypes = None
+                 coldtypes = []
                  ):  
         
         self._matrix = listed  
@@ -59,7 +59,7 @@ class Matrix:
         self._dir = directory
         self._header = header
 
-        self._coldtypes = coldtypes
+        self.__coldtypes = coldtypes
         self.__initRange = ranged
         self.__fill = fill
         self.__seed = seed
@@ -71,6 +71,7 @@ class Matrix:
         self.setInstance()
         self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill,self._cMat,self._fMat)
         self.setFeatures()
+        self.setcoldtypes()
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
@@ -86,8 +87,14 @@ class Matrix:
         Set default feature names
         """
         if len(self.__features)!=self.dim[1]:
-            self.__features=["Col {}".format(i+1) for i in range(self.dim[1])]    
-            
+            self.__features=["Col {}".format(i+1) for i in range(self.dim[1])]
+
+    def setcoldtypes(self):
+        """
+        Set default feature names
+        """
+        if len(self.coldtypes)!=self.dim[1]:
+            self.__coldtypes=[type(self.matrix[0][i]) for i in range(self.dim[1])]        
     def _setDim(self,d):
         """
         Set the dimension to be a list if it's an integer
@@ -146,7 +153,6 @@ class Matrix:
         Returns a string
         """
         from MatricesM.setup.stringfy import _stringfy
-
         return _stringfy(self,coldtypes)
     
 # =============================================================================
@@ -381,13 +387,13 @@ class Matrix:
                       decimal=self.decimal,
                       seed=self.seed,
                       dtype=self.dtype[:],
-                      coldtypes=self.coldtypes
+                      coldtypes=self.coldtypes[:]
                       )
 
     @property
     def string(self):
         self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy(coldtypes=self.coldtypes)
+        self._string=self._stringfy(coldtypes=self.coldtypes[:])
         return " ".join(self.__features)+self._string
     
     @property
@@ -626,9 +632,19 @@ class Matrix:
 
     @property
     def coldtypes(self):
-        if self._coldtypes != None:
-            return self._coldtypes[:]
-        return None
+        return self.__coldtypes
+    @coldtypes.setter
+    def coldtypes(self,val):
+        try:
+            assert isinstance(val,list)
+            assert len(val)==self.dim[1]
+        except AssertionError:
+            print("Give the col dtypes as a list of types with the right amount")
+        else:
+            for i in val:
+                if type(val)!=type:
+                    raise ValueError("coldtypes should be all 'type' objects")
+            self.__coldtypes=val
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -1118,7 +1134,7 @@ class Matrix:
         """
         if not isinstance(matrix,Matrix):
             raise TypeError("Not a matrix")
-        return Matrix(listed=[i[:] for i in self.matrix if i in matrix.matrix],features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+        return Matrix(listed=[i[:] for i in self.matrix if i in matrix.matrix],features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
 
     def where(self,conditions=None):
         """
@@ -1134,9 +1150,9 @@ class Matrix:
             data.where( " ( (Score>=0 and Score<10) or Hours>={mean} ) and DateOfBirth>1985 ".format(mean=self.mean()["Hours"]) )
         """
         from MatricesM.filter.where import wheres
-        return Matrix(listed=wheres(self,conditions,self.features[:])[0],features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+        return Matrix(listed=wheres(self,conditions,self.features[:])[0],features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
     
-    def apply(self,expressions,columns=(None,),conditions=None,returnmat=True):
+    def apply(self,expressions,columns=(None,),conditions=None,returnmat=False):
         """
         Apply arithmetic operations to every column individually
         
@@ -1157,7 +1173,7 @@ class Matrix:
             return applyop(self,expressions,columns,conditions,self.features[:])
         applyop(self,expressions,columns,conditions,self.features[:])
         
-    def indexSet(self,name="Index",start=0,returnmat=True):
+    def indexSet(self,name="Index",start=0,returnmat=False):
         """
         Add a column with values corresponding to the row number
 
@@ -1168,7 +1184,7 @@ class Matrix:
         if returnmat:
             return self
 
-    def sortBy(self,column=None,reverse=False,returnmat=True):
+    def sortBy(self,column=None,reverse=False,returnmat=False):
         """
         Sort the rows by the desired column
         """
@@ -1176,14 +1192,14 @@ class Matrix:
         if returnmat:
             return self
 
-    def shuffle(self,iterations=1,returnmat=True):
+    def shuffle(self,iterations=1,returnmat=False):
         """
         Shuffle the rows of the matrix
         iterations : int. Times to shuffle
         """
         from random import shuffle
         for i in range(iterations):
-            self._matrix = shuffle(self.matrix)
+            shuffle(self.matrix)
         if returnmat:
             return self
 
@@ -1195,7 +1211,7 @@ class Matrix:
         condition:str. Conditionas to set as a base for sampling, uses 'where' method to filter 
         """
         from MatricesM.filter.sample import samples
-        return Matrix(listed=samples(self,size,condition),dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes)
+        return Matrix(listed=samples(self,size,condition),dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:])
 
 # =============================================================================
     """Statistical methods"""
@@ -1494,10 +1510,10 @@ class Matrix:
                   
     def __getitem__(self,pos):
         if isinstance(pos,int):
-            return Matrix(listed=[self._matrix[pos]],features=self.features,decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes)
+            return Matrix(listed=[self._matrix[pos]],features=self.features[:],decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes[:])
         
         if isinstance(pos,slice):
-            return Matrix(listed=self._matrix[pos],features=self.features,decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes)
+            return Matrix(listed=self._matrix[pos],features=self.features[:],decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes[:])
         
         if isinstance(pos,tuple):
             if len(pos)==2:
@@ -1554,7 +1570,7 @@ class Matrix:
         """
         self.__dim=self._declareDim()
         self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy(coldtypes=self.coldtypes)
+        self._string=self._stringfy(coldtypes=self.coldtypes[:])
         if not self.isSquare:
             print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
         else:
@@ -1592,7 +1608,7 @@ class Matrix:
                 t = "float"
             else:
                 t = "integer"
-            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features,decimal=other.decimal,dtype=t,coldtypes=self.coldtypes)
+            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features[:],decimal=other.decimal,dtype=t,coldtypes=self.coldtypes[:])
     
     def __add__(self,other):
         if isinstance(other,Matrix):
@@ -1609,7 +1625,7 @@ class Matrix:
                     t = "float"
                 else:
                     t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t,coldtypes=self.coldtypes)    
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:])    
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -1620,7 +1636,7 @@ class Matrix:
                 print("Can't add")
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -1629,7 +1645,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]+other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         else:
             print("Can't add")
@@ -1650,7 +1666,7 @@ class Matrix:
                     t = "float"
                 else:
                     t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:])
                 
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1660,7 +1676,7 @@ class Matrix:
                 print("Can't subtract")
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -1669,7 +1685,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]-other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         else:
             print("Can't subtract")
@@ -1690,7 +1706,7 @@ class Matrix:
                     t = "float"
                 else:
                     t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t,coldtypes=self.coldtypes) 
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:]) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1700,7 +1716,7 @@ class Matrix:
                 print("Can't multiply: ",err)
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
@@ -1709,7 +1725,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]*other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         else:
             print("Can't multiply")
@@ -1730,7 +1746,7 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype="integer",coldtypes=self.coldtypes)   
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype="integer",coldtypes=self.coldtypes[:])   
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1742,7 +1758,7 @@ class Matrix:
                 print("Can't divide") 
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype="integer",coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype="integer",coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,list):
@@ -1759,7 +1775,7 @@ class Matrix:
                     print("Can't divide") 
                     return self
                 else:
-                    return Matrix(dim=self.dim,listed=temp,features=self.features,dtype="integer",coldtypes=self.coldtypes)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype="integer",coldtypes=self.coldtypes[:])
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -1785,7 +1801,7 @@ class Matrix:
                     t = "float"
                 else:
                     t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t,coldtypes=self.coldtypes) 
+                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal[:],dtype=t,coldtypes=self.coldtypes[:]) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1797,7 +1813,7 @@ class Matrix:
                 print("Can't divide") 
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -1813,7 +1829,7 @@ class Matrix:
                     print("Can't divide") 
                     return self
                 else:
-                    return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -1839,7 +1855,7 @@ class Matrix:
                     t = "float"
                 else:
                     t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t,coldtypes=self.coldtypes) 
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:]) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1851,7 +1867,7 @@ class Matrix:
                 print("Can't get modular") 
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
             if len(other)!=self.dim[1]:
@@ -1867,7 +1883,7 @@ class Matrix:
                     print("Can't get modular") 
                     return self
                 else:
-                    return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                     #--------------------------------------------------------------------------
         else:
             print("Can't get modular")
@@ -1888,7 +1904,7 @@ class Matrix:
                     t = "float"
                 else:
                     t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal,dtype=t,coldtypes=self.coldtypes) 
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:]) 
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1897,7 +1913,7 @@ class Matrix:
             except:
                 print("Can't raise to the given power")            
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
 
         elif isinstance(other,list):
@@ -1907,7 +1923,7 @@ class Matrix:
                 return self
             else:
                 temp=[[self.matrix[rows][cols]**other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
                 #--------------------------------------------------------------------------
         else:
             print("Can't raise to the given power")
@@ -2126,36 +2142,36 @@ class Matrix:
             n=1
         if self._cMat:
             temp=[[complex(round(self.matrix[i][j].real,n),round(self.matrix[i][j].imag,n)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,dtype="complex",coldtypes=self.coldtypes)               
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex")               
         else:
             temp=[[round(self.matrix[i][j],n) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim[:],listed=temp,dtype="float",coldtypes=self.coldtypes) 
+            return Matrix(self.dim[:],listed=temp,features=self.features[:],dtype="float") 
     
     def __floor__(self):
         if self._cMat:
             temp=[[complex(int(self.matrix[i][j].real),int(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,dtype="complex",coldtypes=self.coldtypes)              
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex")              
         else:
             temp=[[int(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim[:],listed=temp)       
+            return Matrix(self.dim[:],listed=temp,features=self.features[:],dtype="integer")       
     
     def __ceil__(self):
         from math import ceil
         
         if self._cMat:
             temp=[[complex(ceil(self.matrix[i][j].real),ceil(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,dtype="complex",coldtypes=self.coldtypes)                  
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex")                  
         else:
             temp=[[ceil(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim[:],listed=temp)    
+            return Matrix(self.dim[:],listed=temp,features=self.features[:],dtype="integer")    
     
     def __abs__(self):
         if self._cMat:
             temp=[[complex(abs(self.matrix[i][j].real),abs(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,dtype="complex",coldtypes=self.coldtypes)               
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",coldtypes=self.coldtypes[:])               
         else:
             temp=[[abs(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim[:],listed=temp)   
+            return Matrix(self.dim[:],listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])   
 
 # =============================================================================
 
