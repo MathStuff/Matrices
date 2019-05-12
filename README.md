@@ -346,6 +346,8 @@ C.tail(n) #Returns the last n rows (if there are less than n rows it returns all
 
 C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
+C.where(condition) #Returns a matrix where the given condition(s) are True. Example: C.where("(Col 1>=0.5) and (Col 2!=0)") 
+
 C.mean(n,asDict) #Returns the nth column's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
 
 C.ranged(n,asDict) #Returns the nth column's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
