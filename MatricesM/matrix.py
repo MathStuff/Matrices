@@ -259,15 +259,6 @@ class Matrix:
         from MatricesM.matrixops.matdelDim import delDim
         delDim(self,num)
 
-    def find(self,element,start=1):
-        """
-        element: Real number
-        start: 0 or 1. Index to start from 
-        Returns the indeces of the given elements, multiple occurances are returned in a list
-        """
-        from MatricesM.matrixops.find import find
-        return find([a[:] for a in self.matrix],self.dim,element,start)
-
 # =============================================================================
     """Methods for special matrices and properties"""
 # =============================================================================     
@@ -1094,26 +1085,53 @@ class Matrix:
         Elements rounded to the desired decimal after dot
         """
         return round(self,decimal)
-    
 # =============================================================================
     """Filtering methods"""
 # =============================================================================     
-    def where(self,column,condition):
+    def find(self,element,start=1):
+        """
+        element: Real number
+        start: 0 or 1. Index to start from 
+        Returns the indeces of the given elements, multiple occurances are returned in a list
+        """
+        from MatricesM.filter.find import find
+        return find([a[:] for a in self.matrix],self.dim,element,start)
+
+    def joint(self,matrix):
+        """
+        Returns the rows of self which are also in the compared matrix
+        matrix: matrix object
+        """
+        if not isinstance(matrix,Matrix):
+            raise TypeError("Not a matrix")
+        return [i for i in self.matrix if i in matrix.matrix]
+
+    def where(self,conditions=None):
+        """
+        Returns a matrix where the conditions are True for the desired columns.
+        conditions:tuple/list of strings; Desired conditions to apply as a filter
+        Syntax:
+            Matrix.where((" ('Column_Name' (<|>|==|...) obj (and|or|...) 'Column_Name' ...") and ("'Other_column' (<|...) ..."), ...)
+        Example:
+            #Get the rows with scores in range [0,10) or Hours is higher than mean, where the DateOfBirth is higher than 1985
+            data.where( " ( (Score>=0 and Score<10) or Hours>={mean} ) and DateOfBirth>1985 ".format(mean=self.mean()["Hours"]) )
+        """
+        from MatricesM.filter.where import wheres
+        return Matrix(listed=wheres(self,conditions,self.features[:]),features=self.features,dtype=self.dtype,coldtypes=self.coldtypes)
+    
+    def apply(self,columns=None,expression=(None,)):
         pass
     
-    def apply(self,operator,value):
+    def indexSet(self,start=0):
         pass
     
-    def indexSet(self):
+    def sortBy(self,column=1,order="inc"):
         pass
     
-    def sortBy(self,column,order):
+    def shuffle(self,iterations=10):
         pass
     
-    def shuffle(self):
-        pass
-    
-    def same(self,matrix):
+    def sample(self,size=10,condition=None):
         pass
 # =============================================================================
     """Statistical methods"""
@@ -1857,6 +1875,10 @@ class Matrix:
                 if not self._cMat:
                     raise TypeError("Can't compare complex numbers to int/float")
                 temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                        
+            elif isinstance(other,str):
+                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                
             else:
                 raise TypeError("Invalid type to compare")
                 
@@ -1887,6 +1909,10 @@ class Matrix:
                 if not self._cMat:
                     raise TypeError("Can't compare complex numbers to int/float")
                 temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                        
+            elif isinstance(other,str):
+                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                
             else:
                 raise TypeError("Invalid type to compare")
                 
@@ -1917,6 +1943,10 @@ class Matrix:
                 if not self._cMat:
                     raise TypeError("Can't compare complex numbers to int/float")
                 temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+            
+            elif isinstance(other,str):
+                temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+
             else:
                 raise TypeError("Invalid type to compare")
                 
@@ -1947,6 +1977,10 @@ class Matrix:
                 if not self._cMat:
                     raise TypeError("Can't compare complex numbers to int/float")
                 temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                        
+            elif isinstance(other,str):
+                temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                
             else:
                 raise TypeError("Invalid type to compare")
                 
@@ -1977,6 +2011,10 @@ class Matrix:
                 if not self._cMat:
                     raise TypeError("Can't compare complex numbers to int/float")
                 temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                        
+            elif isinstance(other,str):
+                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                
             else:
                 raise TypeError("Invalid type to compare")
                 
@@ -2007,6 +2045,10 @@ class Matrix:
                 if not self._cMat:
                     raise TypeError("Can't compare complex numbers to int/float")
                 temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                        
+            elif isinstance(other,str):
+                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
+                
             else:
                 raise TypeError("Invalid type to compare")
                 
