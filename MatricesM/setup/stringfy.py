@@ -22,8 +22,8 @@ def _stringfy(mat,dtyps=None):
         for dt in range(len(dtyps)):
             colbounds=[]
             if dtyps[dt]!=str:
-                colbounds.append(len(str(min(mat.col(dt+1,0)))))
-                colbounds.append(len(str(max(mat.col(dt+1,0)))))
+                colbounds.append(len(str(round(min(mat.col(dt+1,0)),mat.decimal))))
+                colbounds.append(len(str(round(max(mat.col(dt+1,0)),mat.decimal))))
             else:
                 colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
             bounds.append(max(colbounds))
@@ -59,13 +59,20 @@ def _stringfy(mat,dtyps=None):
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
 
     if mat._dfMat:
+        pre="0:.{}f".format(mat.decimal)
+        st="{"+pre+"}"
         for rows in range(mat.dim[0]):
             string+="\n"
             for cols in range(mat.dim[1]):
                 num=mat._matrix[rows][cols]
-                item=str(num)
-                s=len(str(num))
-                string += " "*(bounds[cols]-s)+item+"  "
+                if dtyps[dt]!=str:
+                    item=st.format(num)
+                    s=__digits(round(num,mat.decimal))
+                    string += " "*(bounds[cols]-s)+item+"  "
+                else:
+                    item=str(num)
+                    s=len(str(num))
+                    string += " "*(bounds[cols]-s)+item+"  "
     else:
         for rows in range(mat.dim[0]):
             string+="\n"
