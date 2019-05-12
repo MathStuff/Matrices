@@ -195,6 +195,14 @@ C[4,7] == C.matrix[4][7]
 
 ```
 ----------------------------------------
+##### Filter out depending on what you need
+
+#Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
+#All statements should be properly closed with parentheses
+wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
+
+#More examples using different datasets will be added soon.
+----------------------------------------
 #### Use your matrix's methods and properties
 ##### Basics
 ```python 
