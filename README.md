@@ -204,6 +204,14 @@ wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
 #Select the columns of pH and quality and assign them to another matrix
 filtered = winedata.select(("pH","quality"))
 
+#Sort and shuffle the data by given column
+winedata.indexSet() #Set index column to reverse further actions
+winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
+winedata.shuffle() #Shuffle the rows
+
+#Get 20 samples from the data under desired conditions
+winedata.sample(20,"(quality>5) and ((alcohol<11) or (density>0.95))")
+
 #More examples using different datasets will be added soon.
 ```
 ----------------------------------------
@@ -363,6 +371,14 @@ C.where(condition) #Returns a matrix where the given condition(s) are True. Exam
 
 C.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
 
+C.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
+
+C.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
+
+C.shuffle(iterations,returnmat) #Shuffle the rows 'iterations' times and return self if 'returnmat'==True
+
+C.sample(size,condition) #Get a sample sized 'size' where the 'condition' is True
+
 C.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
 C.mean(n,asDict) #Returns the nth column's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
@@ -393,7 +409,11 @@ C.stdize(column,inplace) #Standardize the data in the desired column, None to st
 
 C.features #Returns the column names if given, can also be used to set column names
 
+C.coldtypes #Returns what type of data each column carries, can be used to set the values.
+
 C.setFeatures() #Can be used to fix column naming issues, sets the column names to defaults
+
+C.setcoldtypes() #Can be used to fix column type related issues, sets the column names to what first row carries
 
 ```
 
@@ -411,14 +431,6 @@ B @ B.t #Matrix multiplication example
 
 ```
 ----------------------------------------
-##### Use bitwise operators 
-```python
-#Filter out and print the correlation matrix depending on the desired conditions
-corrMat = (abs(data.corr())>0.5) & (data.corr()!=1)
-
-#Get a matrix filled with the data matrix's first column, where elements' values are higher than 5000, put 0 otherwise (Will be updated soon)
-limit = data.col(1) * (data.col(1)>5000)
-```
 
 ##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
 ```python 
