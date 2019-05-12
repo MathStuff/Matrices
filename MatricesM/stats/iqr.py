@@ -23,7 +23,7 @@ def iqr(mat,col=None,as_quartiles=False,asDict=True):
     
     if mat._dfMat:
         temp = mat.copy
-        dts = temp.coldtypes
+        dts = mat.coldtypes[:]
         feats = temp.features[:]
         j=0
         if col==None:
