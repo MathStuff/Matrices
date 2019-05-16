@@ -62,14 +62,14 @@ Some examples:
 --------------
 ##### Create matrices filled with random numbers
 ```python 
-#Creates a 4x4 matrix filled with random integers from the default range which is [0,1]
+#Creates a 4x4 matrix filled with random float numbers
 A = Matrix(4) 
 
 #Creates a 3x5 matrix with elements uniformly distributed in the range from 10 to 25
 B = Matrix([3,5],ranged=[10,25]) 
 
-#Create a 6x6 square matrix filled with random float values in the default range
-E = Matrix(6) 
+#Create a 6x6 square matrix filled with random integer number in the default range: [0,1]
+E = Matrix(6,dtype="integer") 
 
 #Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
 F = Matrix([200,5],fill='gauss',ranged=[50,10]) 
@@ -136,9 +136,11 @@ data = [["James",180.4,85],
         ["Sophia",168.25,65]]
         
 df = Matrix(listed=data,
-            dtype="dataframe",coldtypes=[str,float,int],
+            dtype="dataframe",
             features=["Name","Height","Weight"],
             decimal=1)
+
+#coldtypes parameter may be required in cases where the data given doesn't represnt the desired data types
 ``` 
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix
@@ -190,7 +192,7 @@ data_matrix = Matrix(directory=data_directory,header=1,dtype="dataframe",coldtyp
 #More options for reading the file will be added in the future
 
 #Example dataset: https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009
-winedata=Matrix(directory="...\Data\winequality-red.csv",header=1,dtype="dataframe",coldtypes=[float]*12)
+winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype="dataframe",coldtypes=[float]*12)
 ```
 ----------------------------------------
 ##### Get specific parts of the matrix
