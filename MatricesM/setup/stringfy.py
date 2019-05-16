@@ -59,16 +59,25 @@ def _stringfy(mat,dtyps=None):
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
 
     if mat._dfMat:
-        pre="0:.{}f".format(mat.decimal)
-        st="{"+pre+"}"
+        pre = "0:.{}f".format(mat.decimal)
+        st = "{"+pre+"}"
         for rows in range(mat.dim[0]):
-            string+="\n"
+            string += "\n"
             for cols in range(mat.dim[1]):
-                num=mat._matrix[rows][cols]
-                if dtyps[dt]!=str:
-                    item=st.format(num)
-                    s=__digits(round(num,mat.decimal))
+
+                num = mat._matrix[rows][cols]
+                if dtyps[cols]!=str:
+
+                    if dtyps[cols] == int:
+                        num = int(num)
+                        item = str(num)
+                        s = __digits(num)
+                    else:
+                        item=st.format(num)
+                        s=__digits(round(num,mat.decimal))
+            
                     string += " "*(bounds[cols]-s)+item+"  "
+
                 else:
                     item=str(num)
                     s=len(str(num))
