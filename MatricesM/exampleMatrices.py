@@ -370,6 +370,7 @@ if plotting:
         plt.ylabel(validStr4.features[0])
         plt.legend(["Linear model","Data points"],loc=4)
         model.suptitle("Height prediction")
+        plt.show()
 
 # =============================================================================
 """ Expected Outputs """

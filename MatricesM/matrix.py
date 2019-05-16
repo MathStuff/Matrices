@@ -91,9 +91,9 @@ class Matrix:
 
     def setcoldtypes(self):
         """
-        Set default feature names
+        Set column dtypes
         """
-        if len(self.coldtypes)!=self.dim[1]:
+        if len(list(self.coldtypes))!=self.dim[1]:
             self.__coldtypes=[type(self.matrix[0][i]) for i in range(self.dim[1])]        
     def _setDim(self,d):
         """
@@ -611,7 +611,6 @@ class Matrix:
     @decimal.setter
     def decimal(self,val):
         try:
-            assert self._fMat or self._cMat
             assert isinstance(val,int)
             assert val>=1
         except:
@@ -1518,7 +1517,7 @@ class Matrix:
         if isinstance(pos,tuple):
             if len(pos)==2:
                 if self.coldtypes != None:
-                    t = self.coldtypes[pos[1]]
+                    t = [self.coldtypes[pos[1]]]
                 else:
                     t= None
                 # self[ slice, slice ] 
