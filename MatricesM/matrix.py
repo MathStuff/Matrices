@@ -578,6 +578,8 @@ class Matrix:
         """
         Object call as a string to recreate the matrix
         """
+        import re
+        cdtype_str = str(re.findall(r"'(?P<inner>\w+)'","{}".format(self.coldtypes))).replace("'","")
         return "Matrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8},dtype='{9}',coldtypes={10})".format(self.dim,
                                                                                                                                                                  self._matrix,
                                                                                                                                                                  self.initRange,
@@ -588,7 +590,7 @@ class Matrix:
                                                                                                                                                                  self.decimal,
                                                                                                                                                                  self.seed,
                                                                                                                                                                  self.dtype,
-                                                                                                                                                                 self.coldtypes)
+                                                                                                                                                                 cdtype_str)
  
     @property
     def seed(self):
