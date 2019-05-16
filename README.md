@@ -46,7 +46,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | li
                        
                      dtype=dataType #Optional, 'integer'|'float'|'complex'|'dataframe' . Data type the matrix will hold, default is 'float'.
                      
-                     coldtypes=listOfTypes #Requires dtype=="dataframe" to work. Contains the data types each column will hold.
+                     coldtypes=listOfTypes #Requires dtype=="dataframe" to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
                      )
 
 ```         
