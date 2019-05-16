@@ -68,7 +68,7 @@ A = Matrix(4)
 #Creates a 3x5 matrix with elements uniformly distributed in the range from 10 to 25
 B = Matrix([3,5],ranged=[10,25]) 
 
-#Create a 6x6 square matrix filled with random integer number in the default range: [0,1]
+#Create a 6x6 square matrix filled with random integer numbers in the default range: [0,1]
 E = Matrix(6,dtype="integer") 
 
 #Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
@@ -86,7 +86,7 @@ C1 = Matrix(9,fill="gauss",ranged=[5,2],dtype="complex")
 ----------------------------------------
 ##### Generate randomly filled matrices using special distributions
 ```python
-#Create a 10000x3 matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
+#Create a 10000x3 integer numbers matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
 randomData1 = Matrix((10000,3),
                      fill='triangular',
                      ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
@@ -94,17 +94,17 @@ randomData1 = Matrix((10000,3),
                      dtype="integer"
                     )
 
-#Create a 10000x4 matrix using uniform distribution where columns' ranges are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
+#Create a 10000x4 float numbers matrix using uniform distribution where columns' ranges are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
 randomData2 = Matrix([10000,4],
                      ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
                      seed=39598
                     )
 
-#Create a 10000x4 matrix using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
+#Create a 10000x4 matrix float numbers using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
 randomData3 = Matrix([10000,4],
                      fill='gauss',
                      ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
-                     seed=4472142,
+                     seed=4472142
                     )
 
 ```
@@ -302,7 +302,7 @@ C.ht #Returns the hermitian-transpose of the matrix
 
 C.conj #Returns the conjugated forms of the elements in a matrix
 
-C.minor(m,n) #Returns the mth row's nth element's minor matrix's determinant
+C.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
 
 C.adj #Returns the adjoint matrix
 
@@ -435,19 +435,6 @@ C.setcoldtypes() #Can be used to fix column type related issues, sets the column
 
 ----------------------------------------
 
-##### Add or remove rows/columns and operate on them
-```python 
-E.add(r=3,lis=[1.0 ,2.5 ,52,242 ,-9883,212, 0.000001, -555,554]) #Make the list given the 3rd row
-
-A.remove(c=2) #Remove the second column 
-
-F*=[2]+[1]*F.dim[1]-1 #Multiplies the first column with 2 and the rest with 1 
-
-B @ B.t #Matrix multiplication example
-
-```
-----------------------------------------
-
 ##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
 ```python 
    A**2 == A*A
@@ -458,8 +445,10 @@ B @ B.t #Matrix multiplication example
    
    A.adj.matrix[2][0] == A.minor(1,3)
    
+   #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
+   bool(Matrix(10,fill=1)) == True
+
    #round call is currently required for the next examples due to <~%1e-5 error rate on some calculations
-   
    round(A @ Matrix(listed=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
    
    round(A.lowtri @ A.uptri, 4) == round(A, 4)
