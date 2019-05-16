@@ -14,7 +14,7 @@ def readAll(d,head,dtyps):
                         del i
                         break
                 
-                if dtyps!=None:
+                if dtyps!=[]:
                     data = [[dtyps[i](row[i]) for i in range(len(row))] for row in fread]
                 else:
                     data = [[row[i] for i in range(len(row))] for row in fread]
@@ -24,10 +24,11 @@ def readAll(d,head,dtyps):
             with open(d,"r",encoding="utf8") as f:
                 for lines in f:
                     data+=lines
-    except FileNotFoundError:
-        raise FileNotFoundError("No such file or directory")
-    except IndexError:
-        raise IndexError("Directory is not valid")
+    except FileNotFoundError as err:
+        raise FileNotFoundError("No such file or directory :"+",".join(list(err.args)))
+    except IndexError as err:
+        f.close()
+        raise IndexError("Directory is not valid :"+",".join(list(err.args)))
     else:
         f.close()
         return (data,feats)
