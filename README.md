@@ -84,6 +84,31 @@ H = Matrix((200,4),fill='triangular',ranged=[0,20,18],dtype="integer")
 C1 = Matrix(9,fill="gauss",ranged=[5,2],dtype="complex")
 ```
 ----------------------------------------
+##### Generate randomly filled matrices using special distributions
+```python
+#Create a 10000x3 matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
+randomData1 = Matrix((10000,3),
+                     fill='triangular',
+                     ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
+                     seed=32141,
+                     dtype="integer"
+                    )
+
+#Create a 10000x4 matrix using uniform distribution where columns' ranges are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
+randomData2 = Matrix([10000,4],
+                     ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
+                     seed=39598
+                    )
+
+#Create a 10000x4 matrix using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
+randomData3 = Matrix([10000,4],
+                     fill='gauss',
+                     ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
+                     seed=4472142,
+                    )
+
+```
+----------------------------------------
 ##### Create special matrices
 ```python 
 from MatricesM.constructors.matrices import Identity
@@ -100,43 +125,31 @@ sym1 = Matrix(listed=Symmetrical(8))
 ----------------------------------------
 ##### Give list of numbers to create matrices
 ```python 
+#Creates a matrix with the given list of numbers
 filled_rows = [[1,2,3],[4,5,6],[7,8,9]]
 
-#Creates a matrix with the given list of numbers
 C = Matrix(listed=filled_rows) 
 
+#Create a dataframe from a list
+data = [["James",180.4,85],
+        ["Tom",172,73],
+        ["Sophia",168.25,65]]
+        
+df = Matrix(listed=data,
+            dtype="dataframe",coldtypes=[str,float,int],
+            features=["Name","Height","Weight"],
+            decimal=1)
+``` 
+----------------------------------------
+##### Give a string filled with data and use the numbers in it to create a matrix
+```python 
 #Creates a 3x3 matrix from the given string
 C1 = Matrix(3,"1 0 -1 4 5 5 1 2 2") 
 
 #Creates a 2x4 matrix from the given string
-C2 = Matrix([2,4],"5 -2 -3 2 1 0 0 4") 
-``` 
-----------------------------------------
-##### Generate randomly filled matrices
-```python
-#Create a 10000x3 matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
-randomData1 = Matrix((10000,3),
-                     fill='triangular',
-                     ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
-                     seed=32141,
-                     dtype="integer"
-                    )
+C2 = Matrix([2,4],"5 -2 -3 2 1 0 0 4")
 
-randomData2 = Matrix([10000,4],
-                     ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
-                     seed=39598
-                    )
-
-randomData3 = Matrix([10000,4],
-                     fill='gauss',
-                     ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
-                     seed=4472142,
-                    )
-
-```
-----------------------------------------
-##### Give a string filled with data and use the numbers in it to create a matrix
-```python 
+#Create a matrix from the given string, dimension is *required* as [dataAmount,features]. Only numbers are picked up
 data="""1,K,60,69900,6325
 2,K,30,79000,5200
 3,E,52,85500,7825
@@ -148,22 +161,23 @@ data="""1,K,60,69900,6325
 9,K,33,13200,8325
 10,E,37,31800,5975"""
 
-#Create a matrix from the given string, dimension is *required* as [dataAmount,features]
-
+#As an integer matrix
 intMat = Matrix(dim=[10,4],
            listed=data,
            features=["id","age","num1","num2"],
            dtype="integer"
           ) 
 
-#Alternative, will be updated to work better with given strings, currently intended to work csv files
+#Or as a dataframe
 df = Matrix(dim=[10,4],
            listed=data,
            features=["id","age","num1","num2"],
-           dtype="dataFrame",
-           coldtypes=[float]*4
+           dtype="dataframe",
+           coldtypes=[int]*4
           )
+
 ```
+----------------------------------------
 
 ##### Read data from files (Only tested on CSV and TXT files)
 ###### If there is a header, set header to any boolean value == True . Float numbers considered to be using dot(.) to separate decimal places and cammas(,) are used to separate columns. Will be updated in the future for more options
