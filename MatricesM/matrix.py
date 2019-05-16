@@ -643,9 +643,20 @@ class Matrix:
             print("Give the col dtypes as a list of types with the right amount")
         else:
             for i in val:
-                if type(val)!=type:
+                if type(i)!=type:
                     raise ValueError("coldtypes should be all 'type' objects")
             self.__coldtypes=val
+            self.__init__(dim=self.dim,
+                          listed=self._matrix,
+                          ranged=self.initRange,
+                          fill=self.fill,
+                          features=self.features,
+                          header=self._header,
+                          directory=self._dir,
+                          decimal=self.decimal,
+                          seed=self.seed,
+                          dtype=self.dtype,
+                          coldtypes=self.__coldtypes)
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
