@@ -1,10 +1,10 @@
 def wheres(mat,conds,feats):
 
     #Replace comparison operators with proper symbols
-    if "and" in conds:
-        conds = conds.replace("and","&")
-    if "or" in conds:
-        conds = conds.replace("or","|")
+    if " and " in conds:
+        conds = conds.replace(" and ","&")
+    if " or " in conds:
+        conds = conds.replace(" or ","|")
 
     #Replace feature names with column matrices
     for f in feats:

@@ -31,9 +31,10 @@ def applyop(mat,e,cols,conds,feats=None):
         
     #Execute the operations
     for i in inds:
-        for j in featinds:
+        for j in range(len(featinds)):
             for op in ops[j]:
-                exec(f"filtered[i][j]=eval('filtered[i][j]'+op)")
+                ind = featinds[j]
+                exec(f"filtered[i][ind]=eval('filtered[i][ind]'+op)")
     
     return mat
 
