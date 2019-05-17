@@ -1,11 +1,14 @@
-def add(mat,lis=[],row=None,col=None,feature="Col"):
+def add(mat,lis=[],row=None,col=None,feature="Col",dtype=str):
     """
     Add a row or a column of numbers
     lis: list of numbers desired to be added to the matrix
     row: natural number
     col: natural number 
     row>=1 and col>=1
-    
+
+    feature: new column's name
+    dtype: type of data the new column will hold, doesn't work if a row is inserted
+
     To append a row, only give the list of numbers, no other arguments
     To append a column, you need to use col = self.dim[1]
     """
@@ -58,6 +61,7 @@ def add(mat,lis=[],row=None,col=None,feature="Col"):
     else:
         if col!=None and mat.features!=[]:
             mat.features.insert(col-1,feature)
+            mat.coldtypes.insert(col-1,dtype)
         if row == None:
             row = 0
             col = 1
@@ -65,4 +69,3 @@ def add(mat,lis=[],row=None,col=None,feature="Col"):
             row = 1
             col = 0
         mat._Matrix__dim = [mat.dim[0]+row,mat.dim[1]+col]
-        mat.setcoldtypes()
