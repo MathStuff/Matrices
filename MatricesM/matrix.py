@@ -224,7 +224,7 @@ class Matrix:
                 return self[row-1:row]
             return self._matrix[row-1]
                     
-    def add(self,lis=[],row=None,col=None,feature="Col"):
+    def add(self,lis=[],row=None,col=None,feature="Col",dtype=str):
         """
         Add a row or a column of numbers
         lis: list of numbers desired to be added to the matrix
@@ -236,14 +236,13 @@ class Matrix:
         To append a column, you need to use col = self.dim[1]
         """
         from MatricesM.matrixops.add import add
-        add(self,lis,row,col,feature)
+        add(self,lis,row,col,feature,dtype)
         
     def remove(self,row=None,col=None):
         """
-        Deletes the given row or column
-        Changes the matrix
-        Give only 1 parameter, r for row, c for column. (Starts from 1)
-        If no parameter name given, takes it as row
+        Deletes the given row and/or column
+        row:int>=1
+        col:int>=1
         """
         from MatricesM.matrixops.remove import remove
         remove(self,self.dim[0],self.dim[1],row,col)
