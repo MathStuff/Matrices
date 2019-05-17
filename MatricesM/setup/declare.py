@@ -21,7 +21,13 @@ def declareRange(mat,lis):
     """
     c={}
     mat.setFeatures()
-    if mat._cMat:
+    mat.setcoldtypes()
+    if mat._dfMat:
+        valid_feats_inds = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
+        for cols in valid_feats_inds:
+            temp=[lis[rows][cols] for rows in range(mat.dim[0])]
+            c[mat.features[cols]]=[min(temp),max(temp)]
+    elif mat._cMat:
         for i in range(mat.dim[1]):
             temp=[]
             for rows in range(mat.dim[0]):
