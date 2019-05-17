@@ -37,28 +37,31 @@ class Matrix:
 
     coldtypes:tuple|list (Contains the objects, not names of them); data types for each column individually. Only works if dtype is set to 'dataframe'
 
+    copy:boolean; Skip most of the begining process if matrix is copied from another matrix, shouldn't be changed.
+
     Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
 
     def __init__(self,
-                 dim = None,
-                 listed = [],
-                 directory = "",
-                 fill = "uniform",
-                 ranged = [0,1],
-                 seed = None,
-                 header = False,
-                 features = [],
-                 decimal = 4,
-                 dtype = "float",
-                 coldtypes = []
-                 ):  
+                 dim=None,
+                 listed=[],
+                 directory="",
+                 fill="uniform",
+                 ranged=[0,1],
+                 seed=None,
+                 header=False,
+                 features=[],
+                 decimal=4,
+                 dtype="float",
+                 coldtypes=[],
+                 copy=False):  
         
         self._matrix = listed  
         self._string = ""
         self._dir = directory
         self._header = header
 
+        self.__dim = dim
         self.__coldtypes = coldtypes
         self.__initRange = ranged
         self.__fill = fill
@@ -69,9 +72,10 @@ class Matrix:
         
         self._setDim(dim)
         self.setInstance()
-        self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill,self._cMat,self._fMat)
+        if not copy:
+            self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill,self._cMat,self._fMat)
         self.setFeatures()
-        self.setcoldtypes()
+        self.setcoldtypes()     
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
@@ -386,7 +390,8 @@ class Matrix:
                       decimal=self.decimal,
                       seed=self.seed,
                       dtype=self.dtype[:],
-                      coldtypes=self.coldtypes[:]
+                      coldtypes=self.coldtypes[:],
+                      copy=True
                       )
 
     @property
@@ -1201,7 +1206,7 @@ class Matrix:
         name: str. Name of the index column
         start: int. Starting index
         """
-        self.add(list(range(start,self.dim[0]+start)),col=1,feature=name)
+        self.add(list(range(start,self.dim[0]+start)),col=1,feature=name,dtype=int)
         if returnmat:
             return self
 
