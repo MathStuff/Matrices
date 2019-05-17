@@ -22,7 +22,7 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | list as [rows,cols]
+matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is given), int | list/tuple as [rows,cols]
 
                      listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
@@ -50,13 +50,13 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | li
                      )
 
 ```         
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py>matrix.py</a> contains the main Matrix class.
+   ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
    
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/constructors/matrices.py>matrices.py</a> contains functions to create special matrices.
+   ##### -[matrices.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/constructors/matrices.py) contains functions to create special matrices.
    
-   ##### -<a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py>exampleMatrices.py</a> contains example matrices.
+   ##### -[exampleMatrices.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py) contains example matrices.
    
-   ##### -Check the <a href="https://github.com/semihM/Matrices/projects">project tab</a> to see the progress
+   ##### -Check the [project tab](https://github.com/semihM/Matrices/projects) to see the progress
 -------------- 
 Some examples:
 --------------
@@ -91,21 +91,18 @@ randomData1 = Matrix((10000,3),
                      fill='triangular',
                      ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
                      seed=32141,
-                     dtype="integer"
-                    )
+                     dtype="integer")
 
 #Create a 10000x4 float numbers matrix using uniform distribution where columns' ranges are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
 randomData2 = Matrix([10000,4],
                      ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
-                     seed=39598
-                    )
+                     seed=39598)
 
 #Create a 10000x4 matrix float numbers using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
 randomData3 = Matrix([10000,4],
                      fill='gauss',
                      ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
-                     seed=4472142
-                    )
+                     seed=4472142)
 
 ```
 ----------------------------------------
@@ -140,7 +137,7 @@ df = Matrix(listed=data,
             features=["Name","Height","Weight"],
             decimal=1)
 
-#coldtypes parameter may be required in cases where the data given doesn't represnt the desired data types
+#coldtypes parameter may be required in cases where the data given doesn't represent the desired data types
 ``` 
 ----------------------------------------
 ##### Give a string filled with data and use the numbers in it to create a matrix
@@ -165,18 +162,16 @@ data="""1,K,60,69900,6325
 
 #As an integer matrix
 intMat = Matrix(dim=[10,4],
-           listed=data,
-           features=["id","age","num1","num2"],
-           dtype="integer"
-          ) 
+                listed=data,
+                features=["id","age","num1","num2"],
+                dtype="integer") 
 
 #Or as a dataframe
 df = Matrix(dim=[10,4],
-           listed=data,
-           features=["id","age","num1","num2"],
-           dtype="dataframe",
-           coldtypes=[int]*4
-          )
+            listed=data,
+            features=["id","age","num1","num2"],
+            dtype="dataframe",
+            coldtypes=[int]*4)
 
 ```
 ----------------------------------------
@@ -243,7 +238,7 @@ marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Dis
 ```python 
 C.grid #Prints the matrix's elements as a grid
 
-C.p #Print the type, dimension, column names and the grid
+C.p #Print the dimensions, column names and the grid
 
 C.decimal #Returns the chosen amount of decimals while printing. Can be used to set it's value
 
@@ -275,7 +270,7 @@ C.ceilForm #Returns a matrix of all the elements' ceiling value
 
 C.floorForm #Returns the same matrix as "intForm"
 
-C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits
+C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(C,n)
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -461,4 +456,4 @@ C.setcoldtypes() #Can be used to fix column type related issues, sets the column
 ``` 
 ----------------------------------------
 
-#### More examples can be found in <a href=https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py>exampleMatrices.py</a>
+#### More examples can be found in [exampleMatrices.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/exampleMatrices.py)
