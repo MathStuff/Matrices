@@ -196,7 +196,7 @@ winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype="dataf
 C[:,1:4] == C.t[1:4,:].t
 
 #Nineth column of every even numbered row as a matrix
-C[::2,8] == C[::2,8:9] == C.col(9)[::2]
+C[::2,8] == C[::2,8:9] == C.col(9)[::2] == C["Col 9"][::2] == C.select(("Col 9"))[::2]
 
 #Forth to seventh rows as a matrix
 C[3:7] 
@@ -204,6 +204,8 @@ C[3:7]
 #Fifth row's eigth element (returns the value as it is, not a new matrix)
 C[4,7] == C.matrix[4][7]
 
+#Use column names
+C["Col 3","Col 1","Col 2"] == C.select(("Col 3","Col 1","Col 2"))
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
