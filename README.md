@@ -256,6 +256,10 @@ C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_ma
 
 C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
+C.add(list,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
+
+C.remove(row,col) #Removes the desired row and/or column
+
 C.copy #Returns a copy of the matrix
 
 C.obj #Returns the string form of the object
