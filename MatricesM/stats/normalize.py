@@ -11,11 +11,10 @@ def normalize(mat,col=None,inplace=True,zerobound=12):
     if not inplace:
         if col==None:
             temp = mat.copy
-            r = list(mat.ranged().values())
+            r = mat.ranged()
             valid_col_indeces = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
-
             for i in valid_col_indeces:
-                mn,mx = r[i][0],r[i][1]
+                mn,mx = r[mat.features[i]][0],r[mat.features[i]][1]
                 
                 if round(mx-mn,zerobound) == 0:
                     raise ZeroDivisionError("Max and min values are the same")
@@ -41,7 +40,7 @@ def normalize(mat,col=None,inplace=True,zerobound=12):
                 raise TypeError("Can't normalize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
             temp = mat.col(col)
-            r = list(temp.ranged().values())[0]
+            r = mat.ranged(col-1,asDict=False)
             mn,mx = r[0],r[1]
             
             if round(mx-mn,zerobound) == 0:
@@ -54,10 +53,10 @@ def normalize(mat,col=None,inplace=True,zerobound=12):
         
     else:
         if col==None:
-            r = list(mat.ranged().values())
+            r = mat.ranged()
             valid_col_indeces = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
             for i in valid_col_indeces:
-                mn,mx = r[i][0],r[i][1]
+                mn,mx = r[mat.features[i]][0],r[mat.features[i]][1]
                 
                 if round(mx-mn,zerobound) == 0:
                     raise ZeroDivisionError("Max and min values are the same")
@@ -82,7 +81,7 @@ def normalize(mat,col=None,inplace=True,zerobound=12):
             if not mat.coldtypes[col-1] in [float,int]:
                 raise TypeError("Can't normalize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
-            r = list(mat.ranged().values())[col-1]
+            r = mat.ranged(col-1,asDict=False)
             mn,mx = r[0],r[1]
             
             if round(mx-mn,zerobound) == 0:
