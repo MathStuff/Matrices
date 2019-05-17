@@ -24,11 +24,11 @@ def readAll(d,head,dtyps):
             with open(d,"r",encoding="utf8") as f:
                 for lines in f:
                     data+=lines
-    except FileNotFoundError as err:
-        raise FileNotFoundError("No such file or directory :"+",".join(list(err.args)))
-    except IndexError as err:
+    except FileNotFoundError:
+        raise FileNotFoundError("No such file or directory")
+    except IndexError:
         f.close()
-        raise IndexError("Directory is not valid :"+",".join(list(err.args)))
+        raise IndexError("Directory is not valid")
     else:
         f.close()
         return (data,feats)
