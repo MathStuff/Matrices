@@ -1544,12 +1544,17 @@ class Matrix:
         if isinstance(pos,slice):
             return Matrix(listed=self._matrix[pos],features=self.features[:],decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes[:])
         
+        if isinstance(pos,str):
+            if pos not in self.features:
+                raise ValueError(f"{pos} is not in column names")
+            return self.col(self.features.index(pos)+1)
+
         if isinstance(pos,tuple):
+            if all([1 if isinstance(i,str) else 0 for i in pos]):
+                return self.select(pos)
+
             if len(pos)==2:
-                if self.coldtypes != None:
-                    t = self.coldtypes[pos[1]]
-                else:
-                    t= None
+                t = self.coldtypes[pos[1]]
                 # self[ slice, slice ] 
                 if isinstance(pos[0],slice) and isinstance(pos[1],slice):
                     return Matrix(listed=[i[pos[1]] for i in self._matrix[pos[0]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype,coldtypes=t)
@@ -1563,7 +1568,7 @@ class Matrix:
                 if isinstance(pos[0],int) and isinstance(pos[1],int):
                     return self._matrix[pos[0]][pos[1]]
             else:
-                return None
+                raise IndexError(f"{pos} can't be used as indeces")
                 
     def __setitem__(self,pos,item):
         if isinstance(pos,slice) and  isinstance(item,list):
