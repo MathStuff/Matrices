@@ -5,6 +5,8 @@ def _stringfy(mat,dtyps=None):
     """
     import re
     def __digits(num):
+        if num>1e+9:
+            return len(str(num))
         dig=0
         if num==0:
             return 1
@@ -15,17 +17,18 @@ def _stringfy(mat,dtyps=None):
             num=num//10
             dig+=1
         return dig
-
+        
     string=""
     if mat._dfMat:
         bounds=[]
         for dt in range(len(dtyps)):
             colbounds=[]
-            if dtyps[dt]!=str:
+            if dtyps[dt] in [float,int]:
                 colbounds.append(len(str(round(min(mat.col(dt+1,0)),mat.decimal))))
                 colbounds.append(len(str(round(max(mat.col(dt+1,0)),mat.decimal))))
             else:
                 colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
+            colbounds.append(len(mat.features[dt]))
             bounds.append(max(colbounds))
 
     elif mat._cMat:
@@ -59,29 +62,38 @@ def _stringfy(mat,dtyps=None):
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
 
     if mat._dfMat:
+        #String format
         pre = "0:.{}f".format(mat.decimal)
         st = "{"+pre+"}"
+
+        #Add features
+        string += "\n"
+        for cols in range(mat.dim[1]):
+            name = mat.features[cols]
+            s = len(name)
+            if dtyps[cols] in [float,int]:
+                s -= mat.decimal+1 
+            string += " "*(bounds[cols]-s)+name+"  "
+        
+        #Add elements
         for rows in range(mat.dim[0]):
             string += "\n"
             for cols in range(mat.dim[1]):
-
                 num = mat._matrix[rows][cols]
-                if dtyps[cols]!=str:
+                if dtyps[cols] == int:
+                    num = int(num)
+                    item = str(num)
+                    s = __digits(num)
+                    s -= mat.decimal+1
 
-                    if dtyps[cols] == int:
-                        num = int(num)
-                        item = str(num)
-                        s = __digits(num)
-                    else:
-                        item=st.format(num)
-                        s=__digits(round(num,mat.decimal))
-            
-                    string += " "*(bounds[cols]-s)+item+"  "
+                elif dtyps[cols] == float:
+                    item=st.format(num)
+                    s=__digits(round(num,mat.decimal))
 
                 else:
                     item=str(num)
                     s=len(str(num))
-                    string += " "*(bounds[cols]-s)+item+"  "
+                string += " "*(bounds[cols]-s)+item+"  "
     else:
         for rows in range(mat.dim[0]):
             string+="\n"
