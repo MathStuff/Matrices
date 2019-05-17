@@ -625,11 +625,21 @@ class Matrix:
         return self.__dtype
     @dtype.setter
     def dtype(self,val):
-        if val not in ['integer','float','complex']:
-            return ValueError("dtype can be one of the following types: integer | float | complex")
+        if not val in ['integer','float','complex','dataframe']:
+            return ValueError("dtype can be one of the followings: 'integer' | 'float' | 'complex' | 'dataframe'")
         else:
             self.__dtype = val
-            self.setInstance()
+            self.__init__(dim=self.dim,
+                          listed=self._matrix,
+                          ranged=self.initRange,
+                          fill=self.fill,
+                          features=self.features,
+                          header=self._header,
+                          directory=self._dir,
+                          decimal=self.decimal,
+                          seed=self.seed,
+                          dtype=self.dtype,
+                          coldtypes=self.__coldtypes)
 
     @property
     def coldtypes(self):
@@ -1384,8 +1394,11 @@ class Matrix:
     @property   
     def describe(self):
         from MatricesM.stats.describe import describe
-        return describe(self)
+        return describe(self,Matrix)
 
+    @property
+    def info(self):
+        pass
 # =============================================================================
     """Logical-bitwise magic methods """
 # =============================================================================
@@ -1530,7 +1543,7 @@ class Matrix:
         if isinstance(pos,tuple):
             if len(pos)==2:
                 if self.coldtypes != None:
-                    t = [self.coldtypes[pos[1]]]
+                    t = self.coldtypes[pos[1]]
                 else:
                     t= None
                 # self[ slice, slice ] 
@@ -1549,26 +1562,25 @@ class Matrix:
                 return None
                 
     def __setitem__(self,pos,item):
-        try:
-            if isinstance(pos,slice) and  isinstance(item,list):
-                if len(item)>0:
-                    if isinstance(item[0],list):
-                        self._matrix[pos]=item
-                    else:
-                        self._matrix[pos]=[item]
-                
-            elif isinstance(pos,int) and isinstance(item,list):
-                if len(item)==self.dim[1]: 
-                    row=pos
-                    self._matrix[row]=item[:]
-                    self.__dim=self._declareDim()
+        if isinstance(pos,slice) and  isinstance(item,list):
+            if len(item)>0:
+                if isinstance(item[0],list):
+                    self._matrix[pos]=item
                 else:
-                    print("Check the dimension of the given list")
-        except:
-            print(pos,item)
-            return None
+                    self._matrix[pos]=[item]
+            else:
+                raise ValueError("Given list can't be empty")
+        elif isinstance(pos,int) and isinstance(item,list):
+            if len(item)==self.dim[1]: 
+                row=pos
+                self._matrix[row]=item[:]
+                self.__dim=self._declareDim()
+            else:
+               raise AssertionError("Dimensions don't match with the given list")
         else:
-            return self
+            raise AssertionError(f"item:{item} can't be set to index:{pos}.\n\tUse ._matrix property to change individual elements")
+
+        return self
     
     def __len__(self):
         return self.dim[0]*self.dim[1]
@@ -1584,9 +1596,9 @@ class Matrix:
         self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy(coldtypes=self.coldtypes[:])
         if not self.isSquare:
-            print("\nDimension: {0}x{1}\nFeatures: {2}".format(self.dim[0],self.dim[1],self.features))
+            print("\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
         else:
-            print("\nSquare matrix\nDimension: {0}x{0}\nFeatures: {1}".format(self.dim[0],self.features))
+            print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))
         return self._string+"\n"   
 
 # =============================================================================
