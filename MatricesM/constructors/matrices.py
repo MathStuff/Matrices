@@ -10,7 +10,7 @@ def Identity(dim=1):
     if not isinstance(dim,int):
         dim = dim[0]
 
-    matrix=[[0 if a!=b else 1 for a in range(dim)] for b in range(dim)]
+    matrix=[[0 for a in range(dim)] for b in range(dim)]
     for row in range(dim):
         matrix[row][row]=1
     return matrix
