@@ -8,8 +8,10 @@ def sdev(mat,col=None,population=1,asDict=True):
         2) If there are multiple columns returns the values in order in a list
     """
     try:
-        assert mat.dim[0]>1
-        assert population in [0,1]
+        if not mat.dim[0]>1:
+            raise ValueError("Not enough rows")
+        if not population in [0,1]:
+            raise ValueError("'population' should be either 0 or 1")
         if col==None:
             sd={}
             avgs=mat.mean()
@@ -36,7 +38,7 @@ def sdev(mat,col=None,population=1,asDict=True):
                 e=sum([(mat.matrix[i][col-1]-a)**2 for i in range(mat.dim[0])])
                 sd[mat.features[col-1]] = (e/(mat.dim[0]-1+population))**(1/2)
     except Exception as err:
-        print("Error in sdev:\n\t",err)
+        raise Exception("Error in sdev",err)
     else:
         if asDict:
             return sd
