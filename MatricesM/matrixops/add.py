@@ -1,4 +1,4 @@
-def add(mat,lis=[],row=None,col=None,feature="Col",dtype=str):
+def add(mat,lis=[],row=None,col=None,feature="Col",dtype=None):
     """
     Add a row or a column of numbers
     lis: list of numbers desired to be added to the matrix
@@ -60,6 +60,8 @@ def add(mat,lis=[],row=None,col=None,feature="Col",dtype=str):
         return None
     else:
         if col!=None and mat.features!=[]:
+            if dtype==None:
+                dtype=type(lis[0])
             mat.features.insert(col-1,feature)
             mat.coldtypes.insert(col-1,dtype)
         if row == None:
