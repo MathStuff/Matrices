@@ -13,16 +13,10 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
     if len(direc)==0 and len(lis)==0:
         if fill == None:
             fill = "uniform"
-        if not fill in ["uniform","gauss","triangular"]:
-            while True:
-                try:
-                    fill=complex(fill)
-                    if fill.imag==0:
-                        fill = fill.real
-                except:
-                    raise ValueError("fill should be one of ['uniform','triangular','gauss'] or an integer | a float | a complex number")
-                else:
-                    break
+        elif isinstance(fill,str):
+            if fill.lower() not in ["uniform","gauss","triangular"]:
+                if mat.dtype != "dataframe":
+                    raise TypeError("Can't fill matrix with strings if dtype isn't set to 'dataframe'")
     #Check dimension given
     if isinstance(d,int):
         mat._setDim(d)
@@ -77,7 +71,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                 else:
                     mat._matrix=[]
                     for j in range(0,len(lis),mat.dim[1]):
-                            mat._matrix.append(lis[j:j+mat.dim[1]])
+                        mat._matrix.append(lis[j:j+mat.dim[1]])
             
         # =============================================================================
         #Same range for all columns
@@ -108,7 +102,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     mat._matrix=[[complex(gauss(m,s),gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
                 
                 elif fmat:
-                        mat._matrix=[[gauss(m,s) for a in range(d[1])] for b in range(d[0])]
+                    mat._matrix=[[gauss(m,s) for a in range(d[1])] for b in range(d[0])]
                 
                 else:
                     mat._matrix=[[round(gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
@@ -120,7 +114,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     mat._matrix=[[complex(triangular(n,m,o),triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]
                 
                 elif fmat:
-                        mat._matrix=[[triangular(n,m,o) for a in range(d[1])] for b in range(d[0])]
+                    mat._matrix=[[triangular(n,m,o) for a in range(d[1])] for b in range(d[0])]
                 else:
                     mat._matrix=[[round(triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]   
                     
