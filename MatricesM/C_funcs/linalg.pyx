@@ -1,4 +1,4 @@
-cpdef list Crrechelon(list copy,obj,int cm,list dim):
+cpdef list Crrechelon(list copy,int cm,list dim):
   """
   Returns reduced row echelon form of the matrix
   """
@@ -98,7 +98,7 @@ cpdef list Crrechelon(list copy,obj,int cm,list dim):
     dt = "complex"
   else:
     dt = "float"
-  return [obj((d0,d1),temp,dtype=dt),d0-z]
+  return [temp,d0-z]
 
 cpdef list Ctranspose(int m,int n,list arr):			
   cdef int i
