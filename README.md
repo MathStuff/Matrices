@@ -47,6 +47,8 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
                      dtype=dataType #Optional, 'integer'|'float'|'complex'|'dataframe' . Data type the matrix will hold, default is 'float'.
                      
                      coldtypes=listOfTypes #Requires dtype=="dataframe" to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+                     
+                     implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
                      )
 
 ```         
@@ -82,6 +84,9 @@ H = Matrix((200,4),fill='triangular',ranged=[0,20,18],dtype="integer")
 
 #Create a 9x9 matrix filled with complex numbers using gauss distribution for both real and imaginary parts with mean=5 and sdev=2
 C1 = Matrix(9,fill="gauss",ranged=[5,2],dtype="complex")
+
+#Create a matrix filled with given the string
+S = Matrix(4,fill="hello",dtype="dataframe")
 ```
 ----------------------------------------
 ##### Generate randomly filled matrices using special distributions
@@ -258,7 +263,7 @@ C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_ma
 
 C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
-C.add(list,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
+C.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
 
 C.remove(row,col) #Removes the desired row and/or column
 
