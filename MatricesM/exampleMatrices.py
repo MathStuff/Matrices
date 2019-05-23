@@ -322,25 +322,29 @@ print("Linear model for validStr4:")
 print("""
 validStr4.corr().p #First and second columns have strong positive correlation. Let's choose first column to be predicted
 
-var = validStr4[:,1:2]
-var.add([1]*validStr4.dim[0],col=1,feature="bias")
+var = validStr4["Weight"]
+var.add([1]*22,col=1,feature="bias")
 
-out = validStr4[:,:1]
+out = validStr4["Height"]
 
 coefs = (((var.t@var).inv)@var.t)@out
 
 preds = var@coefs
 err = out-preds
 err.features=["Difference"]
+
+print("Height={0} + {1}*{2}".format(coefs[0,0],coefs[1,0],"Weight"))
+print("Model range:",var.ranged()["Weight"])
+print("Average error:",err.mean()["Difference"])
 
 """)
 
 validStr4.corr().p
 
-var = validStr4[:,1:2]
-var.add([1]*validStr4.dim[0],col=1,feature="bias")
+var = validStr4["Weight"]
+var.add([1]*22,col=1,feature="bias")
 
-out = validStr4[:,:1]
+out = validStr4["Height"]
 
 coefs = (((var.t@var).inv)@var.t)@out
 
@@ -348,9 +352,9 @@ preds = var@coefs
 err = out-preds
 err.features=["Difference"]
 
-print("Height={0} + {1}*{2}".format(coefs[0,0],coefs[1,0],validStr4.features[1]))
-print("\nModel range:",var.ranged(2))
-print("\nAverage error:",err.mean(1)[err.features[0]])
+print("Height={0} + {1}*{2}".format(coefs[0,0],coefs[1,0],"Weight"))
+print("\nModel range:",var.ranged()["Weight"])
+print("\nAverage error:",err.mean()["Difference"])
 
 if plotting:
     try:
