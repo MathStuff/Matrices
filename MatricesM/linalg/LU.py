@@ -10,4 +10,4 @@ def LU(mat,z,copy,obj):
     from MatricesM.C_funcs.linalg import CLU
     calcs = CLU(mat.dim,z,copy,mat._cMat)
     
-    return (obj(mat.dim,calcs[0],dtype=mat.dtype),calcs[1],obj(mat.dim,calcs[2],dtype=mat.dtype))
+    return (obj(mat.dim,calcs[0],dtype=mat.dtype,implicit=True),calcs[1],obj(mat.dim,calcs[2],dtype=mat.dtype,implicit=True))

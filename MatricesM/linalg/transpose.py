@@ -10,4 +10,4 @@ def transpose(mat,hermitian=False,obj=None):
         from MatricesM.C_funcs.linalg import Ctranspose
         transposed = Ctranspose(d0,d1,temp)
     
-    return obj((d1,d0),transposed,dtype=mat.dtype)
+    return obj((d1,d0),transposed,dtype=mat.dtype,implicit=True)
