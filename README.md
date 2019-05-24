@@ -62,7 +62,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
 -------------- 
 Some examples:
 --------------
-##### Create matrices filled with random numbers
+##### Create matrices filled with random numbers or given values
 ```python 
 #Creates a 4x4 matrix filled with random float numbers
 A = Matrix(4) 
@@ -85,8 +85,8 @@ H = Matrix((200,4),fill='triangular',ranged=[0,20,18],dtype="integer")
 #Create a 9x9 matrix filled with complex numbers using gauss distribution for both real and imaginary parts with mean=5 and sdev=2
 C1 = Matrix(9,fill="gauss",ranged=[5,2],dtype="complex")
 
-#Create a matrix filled with given the string
-S = Matrix(4,fill="hello",dtype="dataframe")
+#Create a 10x1 matrix filled with the given string
+S = Matrix((10,1),fill="hello",dtype="dataframe")
 ```
 ----------------------------------------
 ##### Generate randomly filled matrices using special distributions
@@ -206,7 +206,7 @@ C[::2,8] == C[::2,8:9] == C.col(9)[::2] == C["Col 9"][::2] == C.select(("Col 9")
 #Forth to seventh rows as a matrix
 C[3:7] 
 
-#Fifth row's eigth element (returns the value as it is, not a new matrix)
+#Fifth row's eigtht element (returns the value as it is, not a new matrix)
 C[4,7] == C.matrix[4][7]
 
 #Use column names
