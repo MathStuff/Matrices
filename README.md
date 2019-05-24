@@ -206,7 +206,7 @@ C[::2,8] == C[::2,8:9] == C.col(9)[::2] == C["Col 9"][::2] == C.select(("Col 9")
 #Forth to seventh rows as a matrix
 C[3:7] 
 
-#Fifth row's eigtht element (returns the value as it is, not a new matrix)
+#Fifth row's eighth element (returns the value as it is, not a new matrix)
 C[4,7] == C.matrix[4][7]
 
 #Use column names
@@ -243,11 +243,11 @@ marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Dis
 #### Use your matrix's methods and properties
 ##### Basics
 ```python 
-C.grid #Prints the matrix's elements as a grid
+C.grid #Prints the matrix's elements as a grid, if dtype is 'dataframe', column names also get printed
 
-C.p #Print the dimensions, column names and the grid
+C.p #Print the dimensions, wheter or not the matrix is square and the grid. If dtype is 'dataframe', column names are also printed
 
-C.decimal #Returns the chosen amount of decimals while printing. Can be used to set it's value
+C.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
 C.directory #Returns the directory of the matrix if there is any given
 
@@ -255,7 +255,7 @@ C.matrix #Returns the matrix's rows as lists in a list
 
 C.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
-C.string #Returns the string form of the matrix's elements
+C.string #Returns the string form of the matrix's elements, this is the string the 'grid' property prints
 
 C.col(n,as_matrix) #Returns nth column of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
@@ -269,7 +269,7 @@ C.remove(row,col) #Removes the desired row and/or column
 
 C.copy #Returns a copy of the matrix
 
-C.obj #Returns the string form of the object
+C.obj #Returns the string form of the Matrix object which can be evaluated to create the same matrix
 
 C.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Seed can be changed to refill the matrix in-place
 
@@ -437,7 +437,7 @@ C.coldtypes #Returns what type of data each column carries, can be used to set t
 
 C.setFeatures() #Can be used to fix column naming issues, sets the column names to defaults
 
-C.setcoldtypes() #Can be used to fix column type related issues, sets the column types to what first row carries
+C.setcoldtypes(declare) #Can be used to fix column type related issues, sets the column types to what first row carries. If declare is True, individual dtypes are applied to every element in the matrix
 
 ```
 
