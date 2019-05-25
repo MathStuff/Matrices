@@ -77,7 +77,10 @@ class Matrix:
         if not implicit:
             self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill,self._cMat,self._fMat)
         self.setFeatures()
-        self.setcoldtypes(declare=bool(not implicit))    
+        self.setcoldtypes(declare=bool(not implicit))
+
+        self.ROW_LIMIT = 60
+        self.COL_LIMIT = 12   
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
@@ -1602,7 +1605,85 @@ class Matrix:
         return self.dim[0]*self.dim[1]
 
     def __repr__(self):
-        return str(self.matrix)
+        rowlimit,collimit = self.ROW_LIMIT,self.COL_LIMIT
+        rawstr = self._stringfy(coldtypes=self.coldtypes[:])
+        #Not too many rows or columns
+        if self.dim[0]<rowlimit*2 and self.dim[1]<collimit*2:
+            return rawstr
+        
+        matstr = rawstr.split("\n")[1:]
+        if not self._dfMat:
+            matstr = matstr[1:]
+        
+        newstr = ""
+        #Get values rounded for printing purposes
+        roundform = self.roundForm(self.decimal)
+        #Too many rows
+        if self.dim[0]>=rowlimit*2:
+            #Too many columns
+            if self.dim[1]>=collimit*2:
+                #Divide matrix into 4 parts
+                
+                topLeft = roundform[:rowlimit//2,:collimit//2]
+                topRight = roundform[:rowlimit//2,-collimit//2:]
+                bottomLeft = roundform[-rowlimit//2:,:collimit//2]
+                bottomRight = roundform[-rowlimit//2:,-collimit//2:]
+
+                #Change dtypes to dataframes filled with strings
+                for i in [topLeft,topRight,bottomLeft,bottomRight]:
+                    i.dtype = "dataframe"
+                    i.coldtypes = [str]*(collimit//2)
+                
+                #Add . . . to represent missing column's existence
+                topLeft.add([". . ."]*(rowlimit//2),col=collimit//2 + 1,dtype=str,feature="")
+                bottomLeft.add([". . ."]*(rowlimit//2 +1),col=collimit//2 + 1,dtype=str,feature="")
+                
+                #Concat left part with right, dots in the middle
+                topLeft.concat(topRight,concat_as="col")
+                bottomLeft.concat(bottomRight,concat_as="col")
+                topLeft.concat(bottomLeft,concat_as="row")
+                
+                #Add dots as middle row and spaces below and above it
+                topLeft.add([""]*(collimit+1),row=(rowlimit//2))
+                topLeft.add([". . ."]*(collimit+1),row=(rowlimit//2))
+                topLeft.add([""]*(collimit+1),row=(rowlimit//2))
+                return topLeft._stringfy(coldtypes=topLeft.coldtypes)
+
+            #Just too many rows
+            else:
+                #Get needed parts
+                top = roundform[:rowlimit//2,:]
+                bottom = roundform[-rowlimit//2:,:]
+                #Set new dtypes
+                for i in [top,bottom]:
+                    i.dtype = "dataframe"
+                    i.coldtypes = [str]*(self.dim[1])
+                #Concat last items
+                top.concat(bottom,concat_as="row")
+                #Add middle part
+                top.add([""]*self.dim[1],row=(rowlimit//2))
+                top.add([". . ."]*self.dim[1],row=(rowlimit//2))
+                top.add([""]*self.dim[1],row=(rowlimit//2))
+
+                return top._stringfy(coldtypes=top.coldtypes)
+                
+        #Just too many columns
+        elif self.dim[1]>=collimit*2:
+            #Get needed parts
+            left = roundform[:,:collimit//2]
+            right = roundform[:,-collimit//2:]
+            #Set new dtypes
+            for i in [left,right]:
+                    i.dtype = "dataframe"
+                    i.coldtypes = [str]*(collimit//2)
+            #Add and concat rest of the stuff
+            left.add([". . ."]*self.dim[0],col=collimit//2 + 1,dtype=str,feature="")
+            left.concat(right,concat_as="col")
+
+            return left._stringfy(coldtypes=left.coldtypes)
+        #Should't go here
+        else:
+            raise ValueError("Something is wrong with the matrix, check dimensions and values")
     
     def __str__(self): 
         """ 
@@ -1616,7 +1697,10 @@ class Matrix:
         else:
             print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))
         return self._string+"\n"   
-
+    
+    def __call__(self):
+        return self.__str__()
+                
 # =============================================================================
     """Arithmetic methods"""        
 # =============================================================================
@@ -2178,7 +2262,11 @@ class Matrix:
         
     
     def __round__(self,n=-1):
-        if self._fMat and n<0:
+        if self._dfMat:
+            dts = self.coldtypes[:]
+            temp=[[round(self.matrix[i][j],n) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
+        if (self._fMat or self._dfMat) and n<0:
             n=1
         if self._cMat:
             temp=[[complex(round(self.matrix[i][j].real,n),round(self.matrix[i][j].imag,n)) for j in range(self.dim[1])] for i in range(self.dim[0])]
@@ -2188,6 +2276,10 @@ class Matrix:
             return Matrix(self.dim,listed=temp,features=self.features[:],dtype="float",implicit=True) 
     
     def __floor__(self):
+        if self._dfMat:
+            dts = self.coldtypes[:]
+            temp=[[int(self.matrix[i][j]) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
         if self._cMat:
             temp=[[complex(int(self.matrix[i][j].real),int(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",implicit=True)              
@@ -2197,7 +2289,10 @@ class Matrix:
     
     def __ceil__(self):
         from math import ceil
-        
+        if self._dfMat:
+            dts = self.coldtypes[:]
+            temp=[[ceil(self.matrix[i][j]) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
         if self._cMat:
             temp=[[complex(ceil(self.matrix[i][j].real),ceil(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",implicit=True)                  
@@ -2206,6 +2301,10 @@ class Matrix:
             return Matrix(self.dim,listed=temp,features=self.features[:],dtype="integer",implicit=True)    
     
     def __abs__(self):
+        if self._dfMat:
+            dts = self.coldtypes[:]
+            temp=[[abs(self.matrix[i][j]) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
+            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
         if self._cMat:
             temp=[[complex(abs(self.matrix[i][j].real),abs(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
             return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",coldtypes=self.coldtypes[:],implicit=True)               
