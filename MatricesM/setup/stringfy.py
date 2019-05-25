@@ -46,8 +46,8 @@ def _stringfy(mat,dtyps=None):
         bound=max([len(a) for a in re.findall(pattern,ns)])-2
     else:
         try:
-            i=min([min(a) for a in mat._inRange.values()])
-            j=max([max(a) for a in mat._inRange.values()])
+            i=min([min(a) for a in mat.ranged().values()])
+            j=max([max(a) for a in mat.ranged().values()])
             b1=__digits(i)
             b2=__digits(j)
             bound=max([b1,b2])
@@ -71,8 +71,8 @@ def _stringfy(mat,dtyps=None):
         for cols in range(mat.dim[1]):
             name = mat.features[cols]
             s = len(name)
-            if dtyps[cols] in [float,int]:
-                s -= mat.decimal+1 
+            # if dtyps[cols] in [float,int]:
+            s -= mat.decimal-2
             string += " "*(bounds[cols]-s)+name+"  "
         
         #Add elements
@@ -84,15 +84,15 @@ def _stringfy(mat,dtyps=None):
                     num = int(num)
                     item = str(num)
                     s = __digits(num)
-                    s -= mat.decimal+1
+                    s -= mat.decimal-2
 
                 elif dtyps[cols] == float:
                     item=st.format(num)
-                    s=__digits(round(num,mat.decimal))
+                    s=__digits(round(num,mat.decimal))+3
 
                 else:
                     item=str(num)
-                    s=len(str(num))
+                    s=len(str(num))-2
                 string += " "*(bounds[cols]-s)+item+"  "
     else:
         for rows in range(mat.dim[0]):
