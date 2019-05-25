@@ -180,7 +180,6 @@ df = Matrix(dim=[10,4],
 
 ```
 ----------------------------------------
-
 ##### Read data from files (Only tested on CSV and TXT files)
 ###### If there is a header, set header to any boolean value == True . Float numbers considered to be using dot(.) to separate decimal places and cammas(,) are used to separate columns. Will be updated in the future for more options
 ```python 
@@ -243,9 +242,9 @@ marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Dis
 #### Use your matrix's methods and properties
 ##### Basics
 ```python 
-C.grid #Prints the matrix's elements as a grid, if dtype is 'dataframe', column names also get printed
+C.grid #Prints ALL of the matrix's elements as a grid, if dtype is 'dataframe', column names also get printed
 
-C.p #Print the dimensions, wheter or not the matrix is square and the grid. If dtype is 'dataframe', column names are also printed
+C.p #Prints the dimensions, wheter or not the matrix is square and the grid. If dtype is 'dataframe', column names are also printed
 
 C.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
@@ -282,6 +281,10 @@ C.ceilForm #Returns a matrix of all the elements' ceiling value
 C.floorForm #Returns the same matrix as "intForm"
 
 C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(C,n)
+
+C.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
+
+C.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -442,7 +445,21 @@ C.setcoldtypes(declare) #Can be used to fix column type related issues, sets the
 ```
 
 ----------------------------------------
+##### Printing options
+```python
+#All the values + column names if it's a dataframe
 
+myMatrix.grid 
+
+#Dimensions + wheter its square or not + the string printed in 'grid' property
+
+myMatrix.p #Same as print(myMatrix)
+
+#Similar to 'grid' but rows and columns are limited by myMatrix.ROW_LIMIT and myMatrix.COL_LIMIT
+
+myMatrix
+```
+----------------------------------------
 ##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
 ```python 
    A**2 == A*A
