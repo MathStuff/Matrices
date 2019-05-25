@@ -79,7 +79,7 @@ class Matrix:
         self.setFeatures()
         self.setcoldtypes(declare=bool(not implicit))
 
-        self.ROW_LIMIT = 60
+        self.ROW_LIMIT = 30
         self.COL_LIMIT = 12   
 # =============================================================================
     """Attribute formatting and setting methods"""
@@ -1606,9 +1606,16 @@ class Matrix:
 
     def __repr__(self):
         rowlimit,collimit = self.ROW_LIMIT,self.COL_LIMIT
+        for i in [rowlimit,collimit]:
+            if not isinstance(i,int):
+                raise TypeError("ROW/COL limit can't be non-integer values")
+            else:
+                if i<=1:
+                    raise ValueError("ROW/COL limir should be higher than 1")
+                    
         rawstr = self._stringfy(coldtypes=self.coldtypes[:])
         #Not too many rows or columns
-        if self.dim[0]<rowlimit*2 and self.dim[1]<collimit*2:
+        if self.dim[0]<rowlimit and self.dim[1]<collimit:
             return rawstr
         
         matstr = rawstr.split("\n")[1:]
@@ -1619,9 +1626,9 @@ class Matrix:
         #Get values rounded for printing purposes
         roundform = self.roundForm(self.decimal)
         #Too many rows
-        if self.dim[0]>=rowlimit*2:
+        if self.dim[0]>=rowlimit:
             #Too many columns
-            if self.dim[1]>=collimit*2:
+            if self.dim[1]>=collimit:
                 #Divide matrix into 4 parts
                 
                 topLeft = roundform[:rowlimit//2,:collimit//2]
@@ -1636,7 +1643,7 @@ class Matrix:
                 
                 #Add . . . to represent missing column's existence
                 topLeft.add([". . ."]*(rowlimit//2),col=collimit//2 + 1,dtype=str,feature="")
-                bottomLeft.add([". . ."]*(rowlimit//2 +1),col=collimit//2 + 1,dtype=str,feature="")
+                bottomLeft.add([". . ."]*(rowlimit//2),col=collimit//2 + 1,dtype=str,feature="")
                 
                 #Concat left part with right, dots in the middle
                 topLeft.concat(topRight,concat_as="col")
@@ -1668,7 +1675,7 @@ class Matrix:
                 return top._stringfy(coldtypes=top.coldtypes)
                 
         #Just too many columns
-        elif self.dim[1]>=collimit*2:
+        elif self.dim[1]>=collimit:
             #Get needed parts
             left = roundform[:,:collimit//2]
             right = roundform[:,-collimit//2:]
