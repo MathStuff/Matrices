@@ -1889,10 +1889,6 @@ class Matrix:
             return self
 
     def __floordiv__(self,other):
-        if self._dfMat or other._dfMat:
-            t = "dataframe"
-        else:
-            t = "integer"
         if isinstance(other,Matrix):
             if self._cMat or  other._cMat:
                 print("Complex numbers doesn't allow floor division")
@@ -1907,6 +1903,10 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                else:
+                    t = "integer"
                 return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True)   
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -1919,6 +1919,10 @@ class Matrix:
                 print("Can't divide") 
                 return self
             else:
+                if self._dfMat:
+                    t = "dataframe"
+                else:
+                    t = "integer"
                 return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True)
                 #--------------------------------------------------------------------------
                 
@@ -1936,6 +1940,10 @@ class Matrix:
                     print("Can't divide") 
                     return self
                 else:
+                    if self._dfMat:
+                        t = "dataframe"
+                    else:
+                        t = "integer"
                     return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True)
                     #--------------------------------------------------------------------------
         else:
