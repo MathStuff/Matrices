@@ -29,7 +29,7 @@ def _corr(mat,col1=None,col2=None,population=1,temp=None):
         feats = mat.features
         availablecols = temp.features
         d = [i for i in range(mat.dim[1]) if feats[i] in availablecols]
-
+        availablefeats = [feats[i] for i in d]
         m = 0
         for i in d[:]:
             d.remove(i)
@@ -44,6 +44,9 @@ def _corr(mat,col1=None,col2=None,population=1,temp=None):
                 temp._matrix[n][m] = val
                 n+=1
             m+=1
+        
+        temp.add(availablefeats,col=1,feature="Feature",dtype=str)
+
         return temp
     
     else:
