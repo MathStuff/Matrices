@@ -408,7 +408,7 @@ class Matrix:
     def string(self):
         self._inRange=self._declareRange(self._matrix)
         self._string=self._stringfy(coldtypes=self.coldtypes[:])
-        return " ".join(self.__features)+self._string
+        return self._string
     
     @property
     def directory(self):
