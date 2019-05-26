@@ -28,8 +28,11 @@ def QR(mat,obj):
                 u=[u[i]-p[i] for i in range(len(u))]
                 
             U.append(u.copy())
-        
-        matU = obj(min(mat.dim),U,dtype=mat.dtype,implicit=True).t
+        if mat.dtype in ["float","integer","dataframe"]:
+            dt = "float"
+        else:
+            dt = "complex"
+        matU = obj(min(mat.dim),U,dtype=dt,implicit=True).t
         #Orthonormalize by diving the columns by their norms
         Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
         #Get the upper-triangular part

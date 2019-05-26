@@ -4,4 +4,8 @@ def rrechelon(mat,copy,obj):
     """
     from MatricesM.C_funcs.linalg import Crrechelon
     res = Crrechelon(copy,mat._cMat,mat.dim)
-    return (obj(mat.dim[:],res[0],dtype=mat.dtype,implicit=True),res[1])
+    if mat.dtype in ["float","integer","dataframe"]:
+        dt = "float"
+    else:
+        dt = "complex"
+    return (obj(mat.dim[:],res[0],dtype=dt,implicit=True),res[1])
