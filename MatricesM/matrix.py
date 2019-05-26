@@ -653,7 +653,8 @@ class Matrix:
                           decimal=self.decimal,
                           seed=self.seed,
                           dtype=self.dtype,
-                          coldtypes=self.__coldtypes)
+                          coldtypes=self.__coldtypes,
+                          )
 
     @property
     def coldtypes(self):
@@ -1411,7 +1412,7 @@ class Matrix:
         """     
         from MatricesM.stats.corr import _corr
         from MatricesM.constructors.matrices import Identity
-        temp = Matrix(self.dim[1],fill=0,features=self.features[:])
+        temp = Matrix(self.dim[1],fill=0,features=self.features[:],dtype="dataframe",coldtypes=[float for _ in range(self.dim[1])])
         temp += Matrix(listed=Identity(self.dim[1]))
         return _corr(self,col1,col2,population,temp)
     
@@ -1769,7 +1770,9 @@ class Matrix:
                 print("Can't add: ",err)
                 return self
             else:
-                if other._cMat or self._cMat:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                elif other._cMat or self._cMat:
                     t = "complex"
                 elif other._fMat or self._fMat:
                     t = "float"
@@ -1810,7 +1813,9 @@ class Matrix:
                 print("Can't subtract: ",err)
                 return self
             else:
-                if other._cMat or self._cMat:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                elif other._cMat or self._cMat:
                     t = "complex"
                 elif other._fMat or self._fMat:
                     t = "float"
@@ -1850,7 +1855,9 @@ class Matrix:
                 print("Can't multiply: ",err)
                 return self
             else:
-                if other._cMat or self._cMat:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                elif other._cMat or self._cMat:
                     t = "complex"
                 elif other._fMat or self._fMat:
                     t = "float"
@@ -1882,6 +1889,10 @@ class Matrix:
             return self
 
     def __floordiv__(self,other):
+        if self._dfMat or other._dfMat:
+            t = "dataframe"
+        else:
+            t = "integer"
         if isinstance(other,Matrix):
             if self._cMat or  other._cMat:
                 print("Complex numbers doesn't allow floor division")
@@ -1896,7 +1907,7 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype="integer",coldtypes=self.coldtypes[:],implicit=True)   
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True)   
             
         elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
             try:
@@ -1908,7 +1919,7 @@ class Matrix:
                 print("Can't divide") 
                 return self
             else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype="integer",coldtypes=self.coldtypes[:],implicit=True)
+                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True)
                 #--------------------------------------------------------------------------
                 
         elif isinstance(other,list):
@@ -1925,7 +1936,7 @@ class Matrix:
                     print("Can't divide") 
                     return self
                 else:
-                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype="integer",coldtypes=self.coldtypes[:],implicit=True)
+                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True)
                     #--------------------------------------------------------------------------
         else:
             print("Can't divide")
@@ -1945,7 +1956,9 @@ class Matrix:
                 print("Can't divide: ",err)
                 return self
             else:
-                if other._cMat or self._cMat:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                elif other._cMat or self._cMat:
                     t = "complex"
                 elif other._fMat or self._fMat:
                     t = "float"
@@ -2001,7 +2014,9 @@ class Matrix:
                 print("Can't get modular: ",err)
                 return self
             else:
-                if other._fMat or self._fMat:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                elif other._fMat or self._fMat:
                     t = "float"
                 else:
                     t = "integer"
@@ -2048,7 +2063,9 @@ class Matrix:
                 print("Can't raise to the given power: ",err)
                 return self
             else:
-                if other._cMat or self._cMat:
+                if self._dfMat or other._dfMat:
+                    t = "dataframe"
+                elif other._cMat or self._cMat:
                     t = "complex"
                 elif other._fMat or self._fMat:
                     t = "float"
