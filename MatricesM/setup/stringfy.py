@@ -4,33 +4,24 @@ def _stringfy(mat,dtyps=None):
     Returns a string
     """
     import re
-    def __digits(num):
-        if num>1e+9:
-            return len(str(num))
-        dig=0
-        if num==0:
-            return 1
-        if num<0:
-            dig+=1
-            num*=-1
-        while num!=0:
-            num=num//10
-            dig+=1
-        return dig
-        
+    pre = "0:.{}f".format(mat.decimal)
+    st = "{"+pre+"}"    
     string=""
+    #Tab sizes
+    #Dataframe
     if mat._dfMat:
         bounds=[]
         for dt in range(len(dtyps)):
             colbounds=[]
+            col = mat.col(dt+1,0)
             if dtyps[dt] in [float,int]:
-                colbounds.append(len(str(round(min(mat.col(dt+1,0)),mat.decimal))))
-                colbounds.append(len(str(round(max(mat.col(dt+1,0)),mat.decimal))))
+                colbounds.append(len(st.format(round(min(col),mat.decimal))))
+                colbounds.append(len(st.format(round(max(col),mat.decimal))))
             else:
-                colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
+                colbounds.append(max([len(str(a)) for a in col]))
             colbounds.append(len(mat.features[dt]))
             bounds.append(max(colbounds))
-
+    #Complex
     elif mat._cMat:
         ns=""
         for i in mat._matrix:
@@ -44,35 +35,35 @@ def _stringfy(mat,dtyps=None):
                     
         pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
         bound=max([len(a) for a in re.findall(pattern,ns)])-2
+    #Float
+    elif mat._fMat:
+        bounds=[]
+        for c in range(mat.dim[1]):
+            colbounds=[]
+            col = mat.col(c+1,0)
+            colbounds.append(len(st.format(round(min(col),mat.decimal))))
+            colbounds.append(len(st.format(round(max(col),mat.decimal))))
+            bounds.append(max(colbounds))
+    #Integer
     else:
-        try:
-            i=min([min(a) for a in mat.ranged().values()])
-            j=max([max(a) for a in mat.ranged().values()])
-            b1=__digits(i)
-            b2=__digits(j)
-            bound=max([b1,b2])
-        except ValueError:
-            print("Dimension parameter is required")
-            return ""
-
-        
+        bounds=[]
+        for c in range(mat.dim[1]):
+            colbounds=[]
+            col = mat.col(c+1,0)
+            colbounds.append(len(str(min(col))))
+            colbounds.append(len(str(max(col))))
+            bounds.append(max(colbounds))
+    #-0.0 error interval set    
     if mat._fMat or mat._cMat:
-        pre="0:.{}f".format(mat.decimal)
-        st="{"+pre+"}"
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
 
+    #Dataframe
     if mat._dfMat:
-        #String format
-        pre = "0:.{}f".format(mat.decimal)
-        st = "{"+pre+"}"
-
         #Add features
         string += "\n"
         for cols in range(mat.dim[1]):
             name = mat.features[cols]
             s = len(name)
-            # if dtyps[cols] in [float,int]:
-            s -= mat.decimal-2
             string += " "*(bounds[cols]-s)+name+"  "
         
         #Add elements
@@ -80,44 +71,48 @@ def _stringfy(mat,dtyps=None):
             string += "\n"
             for cols in range(mat.dim[1]):
                 num = mat._matrix[rows][cols]
-                if dtyps[cols] == int:
-                    num = int(num)
-                    item = str(num)
-                    s = __digits(num)
-                    s -= mat.decimal-2
-
-                elif dtyps[cols] == float:
-                    item=st.format(num)
-                    s=__digits(round(num,mat.decimal))+3
-
+                #float column
+                if dtyps[cols] == float:
+                    item = st.format(num)
+                    s = len(item)
+                #integer column
+                elif dtyps[cols] == int:
+                    item = str(int(num))
+                    s = len(item)
+                #Any other type column
                 else:
-                    item=str(num)
-                    s=len(str(num))-2
+                    item = str(num)
+                    s = len(item)
                 string += " "*(bounds[cols]-s)+item+"  "
+    #int/float/complex
     else:
         for rows in range(mat.dim[0]):
             string+="\n"
             for cols in range(mat.dim[1]):
                 num=mat._matrix[rows][cols]
 
+                #complex
                 if mat._cMat:
                     if num.imag>=0:
                         item=str(round(num.real,mat.decimal))+"+"+str(round(num.imag,mat.decimal))+"j "
                     else:
                         item=str(round(num.real,mat.decimal))+str(round(num.imag,mat.decimal))+"j "
                     s=len(item)-4
-                    
+                    string += " "*(bound-s)+item+" "
+                    continue
+
+                #float
                 elif mat._fMat:
                     if num>interval[0] and num<interval[1]:
                         num=0.0
-                    
-                    item=st.format(num)
-                    s=__digits(num)
+                    item = st.format(num)
+                    s = len(item)
 
+                #integer
                 else:
-                    item=str(num)
-                    s=__digits(num)
-                    
-                string += " "*(bound-s)+item+" "
+                    item = str(int(num))
+                    s = len(item)
+                
+                string += " "*(bounds[cols]-s)+item+" "
 
     return string
