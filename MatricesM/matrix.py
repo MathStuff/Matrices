@@ -1059,6 +1059,11 @@ class Matrix:
         return None
     
     @property
+    def LU(self):
+        lu = self._LU()
+        return (lu[2],lu[0])
+        
+    @property
     def uptri(self):
         """
         Upper triangular part of the matrix
@@ -1090,6 +1095,11 @@ class Matrix:
             return self._symDecomp()[1]
         return []    
     
+    @property
+    def QR(self):
+        qr = self._QR()
+        return (qr[0],qr[1])
+
     @property
     def Q(self):
         return self._QR()[0]
