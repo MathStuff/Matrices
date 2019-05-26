@@ -1611,11 +1611,11 @@ class Matrix:
                 raise TypeError("ROW/COL limit can't be non-integer values")
             else:
                 if i<=1:
-                    raise ValueError("ROW/COL limir should be higher than 1")
+                    raise ValueError("ROW/COL limit should be higher than 1")
                     
         rawstr = self._stringfy(coldtypes=self.coldtypes[:])
         #Not too many rows or columns
-        if self.dim[0]<rowlimit and self.dim[1]<collimit:
+        if self.dim[0]<=rowlimit and self.dim[1]<=collimit:
             return rawstr
         
         matstr = rawstr.split("\n")[1:]
@@ -1623,27 +1623,35 @@ class Matrix:
             matstr = matstr[1:]
         
         newstr = ""
+        halfrow = rowlimit//2
+        halfcol = collimit//2
+        if collimit%2 != 0:
+            halfcol = collimit//2 + 1
+        if rowlimit%2 != 0:
+            halfrow = rowlimit//2 + 1
         #Get values rounded for printing purposes
         roundform = self.roundForm(self.decimal)
         #Too many rows
-        if self.dim[0]>=rowlimit:
+        if self.dim[0]>rowlimit:
             #Too many columns
-            if self.dim[1]>=collimit:
+            if self.dim[1]>collimit:
                 #Divide matrix into 4 parts
-                
-                topLeft = roundform[:rowlimit//2,:collimit//2]
-                topRight = roundform[:rowlimit//2,-collimit//2:]
-                bottomLeft = roundform[-rowlimit//2:,:collimit//2]
-                bottomRight = roundform[-rowlimit//2:,-collimit//2:]
+                topLeft = roundform[:halfrow,:halfcol]
+                topRight = roundform[:halfrow,-(collimit//2):]
+                bottomLeft = roundform[-(rowlimit//2):,:halfcol]
+                bottomRight = roundform[-(rowlimit//2):,-(collimit//2):]
 
                 #Change dtypes to dataframes filled with strings
                 for i in [topLeft,topRight,bottomLeft,bottomRight]:
                     i.dtype = "dataframe"
-                    i.coldtypes = [str]*(collimit//2)
-                
+                topLeft.coldtypes = [str]*(halfcol)
+                topRight.coldtypes = [str]*(collimit//2)
+                bottomLeft.coldtypes = [str]*(halfcol)
+                bottomRight.coldtypes = [str]*(collimit//2)
+
                 #Add . . . to represent missing column's existence
-                topLeft.add([". . ."]*(rowlimit//2),col=collimit//2 + 1,dtype=str,feature="")
-                bottomLeft.add([". . ."]*(rowlimit//2),col=collimit//2 + 1,dtype=str,feature="")
+                topLeft.add([". . ."]*(halfrow),col=halfcol + 1,dtype=str,feature="")
+                bottomLeft.add([". . ."]*(rowlimit//2),col=halfcol + 1,dtype=str,feature="")
                 
                 #Concat left part with right, dots in the middle
                 topLeft.concat(topRight,concat_as="col")
@@ -1651,16 +1659,16 @@ class Matrix:
                 topLeft.concat(bottomLeft,concat_as="row")
                 
                 #Add dots as middle row and spaces below and above it
-                topLeft.add([""]*(collimit+1),row=(rowlimit//2))
-                topLeft.add([". . ."]*(collimit+1),row=(rowlimit//2))
-                topLeft.add([""]*(collimit+1),row=(rowlimit//2))
+                topLeft.add([""]*(collimit+1),row=halfrow+1)
+                topLeft.add([". . ."]*(collimit+1),row=halfrow+1)
+                topLeft.add([""]*(collimit+1),row=halfrow+1)
                 return topLeft._stringfy(coldtypes=topLeft.coldtypes)
 
             #Just too many rows
             else:
                 #Get needed parts
-                top = roundform[:rowlimit//2,:]
-                bottom = roundform[-rowlimit//2:,:]
+                top = roundform[:halfrow,:]
+                bottom = roundform[-(rowlimit//2):,:]
                 #Set new dtypes
                 for i in [top,bottom]:
                     i.dtype = "dataframe"
@@ -1668,23 +1676,24 @@ class Matrix:
                 #Concat last items
                 top.concat(bottom,concat_as="row")
                 #Add middle part
-                top.add([""]*self.dim[1],row=(rowlimit//2))
-                top.add([". . ."]*self.dim[1],row=(rowlimit//2))
-                top.add([""]*self.dim[1],row=(rowlimit//2))
+                top.add([""]*self.dim[1],row=halfrow+1)
+                top.add([". . ."]*self.dim[1],row=halfrow+1)
+                top.add([""]*self.dim[1],row=halfrow+1)
 
                 return top._stringfy(coldtypes=top.coldtypes)
                 
         #Just too many columns
-        elif self.dim[1]>=collimit:
+        elif self.dim[1]>collimit:
             #Get needed parts
-            left = roundform[:,:collimit//2]
-            right = roundform[:,-collimit//2:]
+            left = roundform[:,:halfcol]
+            right = roundform[:,-(collimit//2):]
             #Set new dtypes
             for i in [left,right]:
-                    i.dtype = "dataframe"
-                    i.coldtypes = [str]*(collimit//2)
+                i.dtype = "dataframe"
+            left.coldtypes = [str]*(halfcol)
+            right.coldtypes = [str]*(collimit//2)
             #Add and concat rest of the stuff
-            left.add([". . ."]*self.dim[0],col=collimit//2 + 1,dtype=str,feature="")
+            left.add([". . ."]*self.dim[0],col=halfcol + 1,dtype=str,feature="")
             left.concat(right,concat_as="col")
 
             return left._stringfy(coldtypes=left.coldtypes)
