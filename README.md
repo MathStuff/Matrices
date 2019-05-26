@@ -292,32 +292,40 @@ C.COL_LIMIT #Attribute to determine the amount of columns to print while represe
 
 ```
 ##### Algebric properties
-```python 
-C.uptri #Returns the upper triangular form of the matrix
-
-C.lowtri #Returns the lower triangular form of the matrix
-
-C.sym #Returns the symmetric part of the matrix 
-
-C.anti #Returns the antisymmetric part of the matrix
-
+```python
 C.det #Returns the determinant of the matrix
-
-C.perma #Returns the permanent of the matrix
 
 C.t #Returns the transposed matrix
 
 C.ht #Returns the hermitian-transpose of the matrix
-
-C.conj #Returns the conjugated forms of the elements in a matrix
-
-C.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
 
 C.adj #Returns the adjoint matrix
 
 C.inv #Returns the inversed matrix
 
 C.pseudoinv #Returns the pseudo inverse of the matrix
+
+C.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
+
+C.rank #Returns the rank of the matrix
+
+C.rrechelon #Returns the reduced row echelon form of the matrix
+
+C.LU #Returns both L and U matrices from LU decomposition in a tuple
+
+C.lowtri #Returns the lower triangular form (L matrix from LU decomposition) of the matrix
+
+C.uptri #Returns the upper triangular form (U matrix from LU decomposition) of the matrix
+
+C.sym #Returns the symmetric part of the matrix 
+
+C.anti #Returns the antisymmetric part of the matrix
+
+C.perma #Returns the permanent of the matrix
+
+C.conj #Returns the conjugated forms of the elements in a matrix
+
+C.QR #Returns both Q and R matrices from QR decomposition in a tuple
 
 C.Q #Returns the orthonormal matrix from the QR decomposition
 
@@ -326,10 +334,6 @@ C.R #Returns the upper-triangular matrix from the QR decomposition
 C.trace #Returns the trace of the matrix
 
 C.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
-
-C.rank #Returns the rank of the matrix
-
-C.rrechelon #Returns the reduced row echelon form of the matrix
 
 C.eigenvalues #Returns the eigenvalues (CAN'T FIND COMPLEX EIGENS,CHECK ISSUE#32 : https://github.com/MathStuff/MatricesM/issues/32)
 
