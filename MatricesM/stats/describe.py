@@ -8,7 +8,7 @@ def describe(mat,obj):
     valid_feats_names = [mat.features[i] for i in valid_feats_inds]
 
     desc_mat = obj((len(valid_feats_inds),9),fill=0,
-                  features=["Column","dtype","mean","sdev","min","max","%25","%50","%75"],
+                  features=["Column","dtype","mean","sdev","min","max","25%","50%","75%"],
                   dtype="dataframe",coldtypes=[str,type]+[float]*7)
 
     #Gather the data
