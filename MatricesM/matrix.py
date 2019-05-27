@@ -982,7 +982,7 @@ class Matrix:
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
         signs=[[1 if self._matrix[i][j].real>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs,implicit=True)
+        return Matrix(self.dim,signs,dtype="integer",implicit=True)
     
     @property
     def imagsigns(self):
@@ -991,7 +991,7 @@ class Matrix:
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
         signs=[[1 if self._matrix[i][j].imag>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs,implicit=True)
+        return Matrix(self.dim,signs,dtype="integer",implicit=True)
     
     @property
     def signs(self):
@@ -1002,7 +1002,7 @@ class Matrix:
         if self._cMat:
             return {"Real":self.realsigns,"Imag":self.imagsigns}
         signs=[[1 if self._matrix[i][j]>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs,implicit=True)
+        return Matrix(self.dim,signs,dtype="integer",implicit=True)
     
     @property
     def rrechelon(self):
@@ -1418,6 +1418,9 @@ class Matrix:
     
     @property   
     def describe(self):
+        """
+        Returns a matrix describing the matrix with features: Column, dtype, mean, sdev, min, max, 25%, 50%, 75%
+        """
         from MatricesM.stats.describe import describe
         return describe(self,Matrix)
 
@@ -1441,110 +1444,29 @@ class Matrix:
         """
         Returns a matrix filled with inverted elements, that is the 'not' bitwise operator
         """
-        if self._fMat:
-            raise TypeError("~ operator can not be used for non-integer value matrices")
-        temp = self.intForm
-        temp._matrix = [[~temp._matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return temp
+        from MatricesM.matrixops.bitwise import _invert
+        return _invert(self)
     
     def __and__(self,other):
         """
         Can only be used with '&' operator not with 'and'
-        """
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other.matrix[j][i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other[i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) and bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        """        
+        from MatricesM.matrixops.bitwise import _and
+        return _and(self,other,Matrix)
     
     def __or__(self,other):
         """
         Can only be used with '|' operator not with 'or'
         """
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other.matrix[j][i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other[i])) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if (bool(self.matrix[j][i]) or bool(other)) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.bitwise import _or
+        return _or(self,other,Matrix)
         
     def __xor__(self,other):
         """
         Can only be used with '^' operator 
         """
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other.matrix[j][i]) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other[i]) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if bool(self.matrix[j][i])!=bool(other) else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.bitwise import _xor
+        return _xor(self,other,Matrix)
      
 # =============================================================================
     """Other magic methods """
@@ -1732,636 +1654,82 @@ class Matrix:
     """Arithmetic methods"""        
 # =============================================================================
     def __matmul__(self,other):
-        try:
-            assert self.dim[1]==other.dim[0]
-        except:
-            print("Can't multiply")
-        else:
-            temp=[]
-            
-            for r in range(self.dim[0]):
-                temp.append(list())
-                for rs in range(other.dim[1]):
-                    temp[r].append(0)
-                    total=0
-                    for cs in range(other.dim[0]):
-                        num=self.matrix[r][cs]*other.matrix[cs][rs]
-                        total+=num
-                    if self._cMat:
-                        temp[r][rs]=complex(round(total.real,12),round(total.imag,12))
-                    else:
-                        temp[r][rs]=round(total,12)
-                        
-            #Return proper the matrix
-            if other._cMat or self._cMat:
-                t = "complex"
-            elif other._fMat or self._fMat:
-                t = "float"
-            else:
-                t = "integer"
-            return Matrix(dim=[self.dim[0],other.dim[1]],listed=temp,features=other.features[:],decimal=other.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True)
+        from MatricesM.matrixops.arithmetic import matmul
+        return matmul(self,other,Matrix)
     
     def __add__(self,other):
-        if isinstance(other,Matrix):
-            try:
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]+other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except Exception as err:
-                print("Can't add: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                elif other._cMat or self._cMat:
-                    t = "complex"
-                elif other._fMat or self._fMat:
-                    t = "float"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True)    
-                #--------------------------------------------------------------------------
-                
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]+other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-
-            except:
-                print("Can't add")
-                return self
-            else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        elif isinstance(other,list):
-
-            if len(other)!=self.dim[1]:
-                print("Can't add")
-                return self
-            else:
-                temp=[[self.matrix[rows][cols]+other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        else:
-            print("Can't add")
-            return self
+        from MatricesM.matrixops.arithmetic import add
+        return add(self,other,Matrix)
             
     def __sub__(self,other):
-        if isinstance(other,Matrix):
-            try:
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]-other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except Exception as err:
-                print("Can't subtract: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                elif other._cMat or self._cMat:
-                    t = "complex"
-                elif other._fMat or self._fMat:
-                    t = "float"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True)
-                
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]-other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-
-            except:
-                print("Can't subtract")
-                return self
-            else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        elif isinstance(other,list):
-
-            if len(other)!=self.dim[1]:
-                print("Can't subtract")
-                return self
-            else:
-                temp=[[self.matrix[rows][cols]-other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        else:
-            print("Can't subtract")
-            return self
+        from MatricesM.matrixops.arithmetic import sub
+        return sub(self,other,Matrix)
      
     def __mul__(self,other):
-        if isinstance(other,Matrix):
-            try:
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]*other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except Exception as err:
-                print("Can't multiply: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                elif other._cMat or self._cMat:
-                    t = "complex"
-                elif other._fMat or self._fMat:
-                    t = "float"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True) 
-            
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]*other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-
-            except Exception as err:
-                print("Can't multiply: ",err)
-                return self
-            else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-
-        elif isinstance(other,list):
-            if len(other)!=self.dim[1]:
-                print("Can't multiply")
-                return self
-            else:
-                temp=[[self.matrix[rows][cols]*other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        else:
-            print("Can't multiply")
-            return self
+        from MatricesM.matrixops.arithmetic import mul
+        return mul(self,other,Matrix)
 
     def __floordiv__(self,other):
-        if isinstance(other,Matrix):
-            if self._cMat or  other._cMat:
-                print("Complex numbers doesn't allow floor division")
-            return self
-            try:
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]//other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except ZeroDivisionError:
-                print("Division by 0")
-                return self
-            except Exception as err:
-                print("Can't divide: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True)   
-            
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]//other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except ZeroDivisionError:
-                print("Division by 0")
-                return self
-            except:
-                print("Can't divide") 
-                return self
-            else:
-                if self._dfMat:
-                    t = "dataframe"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-                
-        elif isinstance(other,list):
-            if len(other)!=self.dim[1]:
-                print("Can't divide")
-                return self
-            else:
-                try:
-                    temp=[[self.matrix[rows][cols]//other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                except ZeroDivisionError:
-                    print("Division by 0")
-                    return self
-                except:
-                    print("Can't divide") 
-                    return self
-                else:
-                    if self._dfMat:
-                        t = "dataframe"
-                    else:
-                        t = "integer"
-                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True)
-                    #--------------------------------------------------------------------------
-        else:
-            print("Can't divide")
-            return self
+        from MatricesM.matrixops.arithmetic import fdiv
+        return fdiv(self,other,Matrix)
             
     def __truediv__(self,other):
-
-        if isinstance(other,Matrix):
-            try:
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]/other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-
-            except ZeroDivisionError:
-                print("Division by 0")
-                return self
-            except Exception as err:
-                print("Can't divide: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                elif other._cMat or self._cMat:
-                    t = "complex"
-                elif other._fMat or self._fMat:
-                    t = "float"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features,decimal=self.decimal[:],dtype=t,coldtypes=self.coldtypes[:],implicit=True) 
-            
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]/other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except ZeroDivisionError:
-                print("Division by 0")
-                return self
-            except:
-                print("Can't divide") 
-                return self
-            else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        elif isinstance(other,list):
-            if len(other)!=self.dim[1]:
-                print("Can't divide")
-                return self
-            else:
-                try:
-                    temp=[[self.matrix[rows][cols]/other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                except ZeroDivisionError:
-                    print("Division by 0")
-                    return self
-                except:
-                    print("Can't divide") 
-                    return self
-                else:
-                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                    #--------------------------------------------------------------------------
-        else:
-            print("Can't divide")
-            return self
+        from MatricesM.matrixops.arithmetic import tdiv
+        return tdiv(self,other,Matrix)
 
     def __mod__(self, other):
-        if isinstance(other,Matrix):
-            try:
-                if self._cMat or  other._cMat:
-                    print("Complex numbers doesn't allow floor division")
-                    return self
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]%other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-
-            except ZeroDivisionError:
-                print("Division by 0")
-                return self
-            except Exception as err:
-                print("Can't get modular: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                elif other._fMat or self._fMat:
-                    t = "float"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True) 
-            
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]%other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except ZeroDivisionError:
-                print("Division by 0")
-                return self
-            except:
-                print("Can't get modular") 
-                return self
-            else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        elif isinstance(other,list):
-            if len(other)!=self.dim[1]:
-                print("Can't get modular")
-                return self
-            else:
-                try:
-                    temp=[[self.matrix[rows][cols]%other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                except ZeroDivisionError:
-                    print("Division by 0")
-                    return self
-                except:
-                    print("Can't get modular") 
-                    return self
-                else:
-                    return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                    #--------------------------------------------------------------------------
-        else:
-            print("Can't get modular")
-            return self
+        from MatricesM.matrixops.arithmetic import mod
+        return mod(self,other,Matrix)
          
     def __pow__(self,other):
-        if isinstance(other,Matrix):
-            try:
-                assert self.dim==other.dim                
-                temp=[[self.matrix[rows][cols]**other.matrix[rows][cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-            except Exception as err:
-                print("Can't raise to the given power: ",err)
-                return self
-            else:
-                if self._dfMat or other._dfMat:
-                    t = "dataframe"
-                elif other._cMat or self._cMat:
-                    t = "complex"
-                elif other._fMat or self._fMat:
-                    t = "float"
-                else:
-                    t = "integer"
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],decimal=self.decimal,dtype=t,coldtypes=self.coldtypes[:],implicit=True) 
-            
-        elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
-            try:
-                temp=[[self.matrix[rows][cols]**other for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-
-            except:
-                print("Can't raise to the given power")            
-            else:
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-
-        elif isinstance(other,list):
-
-            if len(other)!=self.dim[1]:
-                print("Can't raise to the given power")                
-                return self
-            else:
-                temp=[[self.matrix[rows][cols]**other[cols] for cols in range(self.dim[1])] for rows in range(self.dim[0])]
-                return Matrix(dim=self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)
-                #--------------------------------------------------------------------------
-        else:
-            print("Can't raise to the given power")
-            return self
+        from MatricesM.matrixops.arithmetic import pwr
+        return pwr(self,other,Matrix)
 
 # =============================================================================
     """ Comparison operators """                    
 # =============================================================================
     def __le__(self,other):
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other.matrix[j][i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other[i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                        
-            elif isinstance(other,str):
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.comparison import le
+        return le(self,other,Matrix)
         
     def __lt__(self,other):
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other.matrix[j][i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other[i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                        
-            elif isinstance(other,str):
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]<other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.comparison import lt
+        return lt(self,other,Matrix)
         
     def __eq__(self,other):
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other.matrix[j][i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other[i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,str):
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]==other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])])
-
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.comparison import eq
+        return eq(self,other,Matrix)
         
     def __ne__(self,other):
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other.matrix[j][i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other[i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                        
-            elif isinstance(other,str):
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]!=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.comparison import ne
+        return ne(self,other,Matrix)
                 
     def __ge__(self,other):
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other.matrix[j][i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other[i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                        
-            elif isinstance(other,str):
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>=other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.comparison import ge
+        return ge(self,other,Matrix)
         
     def __gt__(self,other):
-        try:
-            if isinstance(other,Matrix):
-                if self.dim!=other.dim:
-                    raise ValueError("Dimensions of the matrices don't match")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other.matrix[j][i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,list):
-                if self.dim[1]!=len(other):
-                    raise ValueError("Length of the list doesn't match matrix's column amount")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other[i] else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,int) or isinstance(other,float):
-                if self._cMat:
-                    raise TypeError("Can't compare int/float to complex numbers")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-            
-            elif isinstance(other,complex):
-                if not self._cMat:
-                    raise TypeError("Can't compare complex numbers to int/float")
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                        
-            elif isinstance(other,str):
-                temp=Matrix(self.dim,[[1 if self.matrix[j][i]>other else 0 for i in range(self.dim[1])] for j in range(self.dim[0])],implicit=True)
-                
-            else:
-                raise TypeError("Invalid type to compare")
-                
-        except Exception as err:
-            raise err
-            
-        else:
-            return temp
+        from MatricesM.matrixops.comparison import gt
+        return gt(self,other,Matrix)
         
-    
+# =============================================================================
+    """ Rounding etc. """                    
+# =============================================================================   
     def __round__(self,n=-1):
-        if self._dfMat:
-            dts = self.coldtypes[:]
-            temp=[[round(self.matrix[i][j],n) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
-        if (self._fMat or self._dfMat) and n<0:
-            n=1
-        if self._cMat:
-            temp=[[complex(round(self.matrix[i][j].real,n),round(self.matrix[i][j].imag,n)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",implicit=True)               
-        else:
-            temp=[[round(self.matrix[i][j],n) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="float",implicit=True) 
+        from MatricesM.matrixops.rounding import rnd
+        return rnd(self,n,Matrix)
     
     def __floor__(self):
-        if self._dfMat:
-            dts = self.coldtypes[:]
-            temp=[[int(self.matrix[i][j]) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
-        if self._cMat:
-            temp=[[complex(int(self.matrix[i][j].real),int(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",implicit=True)              
-        else:
-            temp=[[int(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="integer",implicit=True)       
+        from MatricesM.matrixops.rounding import flr
+        return flr(self,Matrix)     
     
     def __ceil__(self):
-        from math import ceil
-        if self._dfMat:
-            dts = self.coldtypes[:]
-            temp=[[ceil(self.matrix[i][j]) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
-        if self._cMat:
-            temp=[[complex(ceil(self.matrix[i][j].real),ceil(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",implicit=True)                  
-        else:
-            temp=[[ceil(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="integer",implicit=True)    
+        from MatricesM.matrixops.rounding import ceil
+        return ceil(self,Matrix)
     
     def __abs__(self):
-        if self._dfMat:
-            dts = self.coldtypes[:]
-            temp=[[abs(self.matrix[i][j]) if (dts[j] in [int,float,complex]) else self.matrix[i][j] for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="dataframe",implicit=True) 
-        if self._cMat:
-            temp=[[complex(abs(self.matrix[i][j].real),abs(self.matrix[i][j].imag)) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype="complex",coldtypes=self.coldtypes[:],implicit=True)               
-        else:
-            temp=[[abs(self.matrix[i][j]) for j in range(self.dim[1])] for i in range(self.dim[0])]
-            return Matrix(self.dim,listed=temp,features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:],implicit=True)   
+        from MatricesM.matrixops.rounding import _abs
+        return _abs(self,Matrix)
 
 # =============================================================================
 
