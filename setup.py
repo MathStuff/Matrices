@@ -1,6 +1,6 @@
 from setuptools import Extension,setup,find_packages
 
-version="0.9a17"
+version="0.9a18"
 
 modules = [Extension("MatricesM.C_funcs.zerone",sources=["MatricesM/C_funcs/zerone.c"]),
 Extension("MatricesM.C_funcs.constructors",sources=["MatricesM/C_funcs/constructors.c"]),
