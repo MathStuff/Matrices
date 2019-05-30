@@ -2,7 +2,13 @@ def applyop(mat,e,cols,conds,feats=None):
     #If no expression is given, raise an exception
     if e == None:
         raise ValueError("Expression parameter can't be left as None")
-
+    
+    #Get arguments into tuples if they are given as strings 
+    if type(e) not in [tuple,list]:
+        e = (e,)
+    if type(cols) not in [tuple,list]:
+        cols = (cols,)
+        
     #If no column names given, assume all columns
     if cols == (None,) or cols == None:
         cols = feats
@@ -10,12 +16,9 @@ def applyop(mat,e,cols,conds,feats=None):
     #Matrix and dimension base
     [filtered,inds] = (mat._matrix,list(range(mat.dim[0])))
 
-    #Fix expression to be a tuple
-    if isinstance(e,str):
-        e=(e,)
-
     #Split the given operators and duplicate if necessary
     ops = [op.split(" ") for op in e]
+    
     if len(ops)==1 and len(ops) != len(cols):
         ops = ops*len(cols)
     elif len(ops) != len(cols):
