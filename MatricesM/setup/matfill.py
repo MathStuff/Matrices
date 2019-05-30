@@ -28,11 +28,11 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         
     # =============================================================================
     #Save the seed for reproduction
-    if mat.seed==None and (mat.fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
-        randseed = randint(-100000,100000)
+    if mat.seed==None and (fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
+        randseed = randint(-2**24,2**24)
         mat._Matrix__seed = randseed
     
-    elif (mat.fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
+    elif (fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
         seed(mat.seed)
     else:
         mat._Matrix__seed=None
@@ -77,7 +77,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         #Same range for all columns
         elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
             
-            if mat.fill in ["uniform"]:
+            if fill in ["uniform"]:
                 m,n=max(r),min(r)
                 if cmat:
                     seed(mat.seed)
@@ -95,7 +95,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     else:
                         mat._matrix=igetuni(d[0],d[1],n-1,m+1,mat.seed)
                         
-            elif mat.fill in ["gauss"]:
+            elif fill in ["gauss"]:
                 seed(mat.seed)
                 m,s=r[0],r[1]
                 if cmat:
@@ -107,7 +107,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                 else:
                     mat._matrix=[[round(gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
                     
-            elif mat.fill in ["triangular"]:
+            elif fill in ["triangular"]:
                 seed(mat.seed)
                 n,m,o = r[0],r[1],r[2]
                 if cmat:
@@ -117,7 +117,20 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     mat._matrix=[[triangular(n,m,o) for a in range(d[1])] for b in range(d[0])]
                 else:
                     mat._matrix=[[round(triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]   
-                    
+            #Ranged has no affect after this point
+            elif type(fill) == list:
+                if len(fill)!=d[0]:
+                    raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                else:
+                    mat._matrix = [fill for _ in range(d[0])]
+
+            elif type(fill) == range:
+                l = list(fill)
+                if len(l)!=d[0]:
+                    raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                else:
+                    mat._matrix = [fill for _ in range(d[0])]
+            
             else:
                 mat._matrix=getfill(d[0],d[1],fill)
         # =============================================================================               
@@ -135,7 +148,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
             else:
                 lis=list(r.values())
                 seed(mat.seed)
-                if mat.fill in ["uniform"]:                    
+                if fill in ["uniform"]:                    
                     if cmat:
                         temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
@@ -145,7 +158,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     else:
                         temp=[[round(uniform(min(lis[i]),max(lis[i])+1))//1 for _ in range(d[0])] for i in range(d[1])]
                 
-                elif mat.fill in ["gauss"]:                    
+                elif fill in ["gauss"]:                    
                     if cmat:
                         temp=[[complex(gauss(lis[i][0],lis[i][1]),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
@@ -155,7 +168,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     else:
                         temp=[[round(gauss(lis[i][0],lis[i][1]+1))//1 for _ in range(d[0])] for i in range(d[1])]
                         
-                elif mat.fill in ["triangular"]:                    
+                elif fill in ["triangular"]:                    
                     if cmat:
                         temp=[[complex(triangular(lis[i][0],lis[i][1],lis[i][2]),triangular(lis[i][0],lis[i][1],lis[i][2])) for _ in range(d[0])] for i in range(d[1])]
                         
@@ -164,10 +177,25 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                         temp=[[triangular(lis[i][0],lis[i][1],lis[i][2]) for _ in range(d[0])] for i in range(d[1])]                                                
                     else:
                         temp=[[round(triangular(lis[i][0],lis[i][1]+1,lis[i][2]))//1 for _ in range(d[0])] for i in range(d[1])]
-                
+                #Ranged has no affect after this point
+                elif type(fill) == list:
+                    if len(fill)!=d[0]:
+                        raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                    else:
+                        mat._matrix = [fill for _ in range(d[0])]
+                        return None
+
+                elif type(fill) == range:
+                    l = list(fill)
+                    if len(l)!=d[0]:
+                        raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                    else:
+                        mat._matrix = [fill for _ in range(d[0])]
+                        return None
                 else:
-                    mat._matrix=[[lis[b] for a in range(d[1])] for b in range(d[0])]
-                
+                    mat._matrix=getfill(d[0],d[1],fill)
+                    return None
+
                 mat._matrix=Ctranspose(d[1],d[0],temp)
         else:
             return None
