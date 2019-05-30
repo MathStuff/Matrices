@@ -28,7 +28,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
 
                      directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                     fill=value, #Optional,Available distributions: 'uniform'|'triangular'|'gauss'; also accepts int|float|complex|str, fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
+                     fill=value, #Optional,Available distributions: 'uniform'|'triangular'|'gauss'; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
                      ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
@@ -217,7 +217,8 @@ C["Col 3","Col 1","Col 2"] == C.select(("Col 3","Col 1","Col 2"))
 #Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
 #All statements should be properly closed with parentheses
 wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
-
+#Alternative way
+wineOverSix = winedata[(winedata["quality"]>6) & ((winedata["pH"]<3.3) & (winedata["pH"]>3))]
 #Select the columns of pH and quality and assign them to another matrix
 filtered = winedata.select(("pH","quality"))
 
@@ -229,13 +230,31 @@ winedata.shuffle() #Shuffle the rows
 #Get 20 samples from the data under desired conditions
 winedata.sample(20,"(quality>5) and ((alcohol<11) or (density>0.95))")
 
-#More examples using different datasets will be added soon.
+#Alternative 
+#Return all the rows and select 'alcohol' and 'quality' columns where quality is higher than 6
+winedata[winedata["quality"]>6]
+
 ```
 ----------------------------------------
 ##### Apply arithmetic operations to individual rows and columns.
 ```python
 #Multiply Prices with 0.9 and subtract 5 also add 10 to Discounts under the conditions: Price>100 and Discount<5
 marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
+
+#Change values in the matrix where the desired conditions are True
+data[data["Feature1"]<0] = 0
+
+#Create a matrix with a square filled with 0's in the middle, 5's outside
+s = Matrix(10,fill=5,dtype="integer")
+s[3:7,3:7] = 0
+```
+----------------------------------------
+##### Concatenate a matrix to your matrix.
+```python
+#Concatenate a new column named 'discounted' containing the product of the 'Price' and 'Discount' columns
+newcol = marketData["Price"]*marketData["Discount"]
+newcol.features = ["discounted"]
+marketData.concat(newcol,"col")
 
 ```
 ----------------------------------------
@@ -316,6 +335,8 @@ C.LU #Returns both L and U matrices from LU decomposition in a tuple
 C.lowtri #Returns the lower triangular form (L matrix from LU decomposition) of the matrix
 
 C.uptri #Returns the upper triangular form (U matrix from LU decomposition) of the matrix
+
+C.symdec #Returns both symmetrical and anti-symmetrical parts of the matrix
 
 C.sym #Returns the symmetric part of the matrix 
 
@@ -474,6 +495,7 @@ myMatrix
    
    A.adj.matrix[2][0] == A.minor(1,3)
    
+   A == A.sym + A.anti
    #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
    bool(Matrix(10,fill=1)) == True
 
