@@ -217,8 +217,10 @@ C["Col 3","Col 1","Col 2"] == C.select(("Col 3","Col 1","Col 2"))
 #Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
 #All statements should be properly closed with parentheses
 wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
+
 #Alternative way
 wineOverSix = winedata[(winedata["quality"]>6) & ((winedata["pH"]<3.3) & (winedata["pH"]>3))]
+
 #Select the columns of pH and quality and assign them to another matrix
 filtered = winedata.select(("pH","quality"))
 
@@ -232,7 +234,7 @@ winedata.sample(20,"(quality>5) and ((alcohol<11) or (density>0.95))")
 
 #Alternative 
 #Return all the rows and select 'alcohol' and 'quality' columns where quality is higher than 6
-winedata[winedata["quality"]>6]
+winedata[winedata["quality"]>6,("alcohol", "quality")]
 
 ```
 ----------------------------------------
@@ -241,12 +243,14 @@ winedata[winedata["quality"]>6]
 #Multiply Prices with 0.9 and subtract 5 also add 10 to Discounts under the conditions: Price>100 and Discount<5
 marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
 
-#Change values in the matrix where the desired conditions are True
-data[data["Feature1"]<0] = 0
+#Change value of 'Feature5' tio 0 n the rows where the 'Feature1' is lower than 0
+data[data["Feature1"]<0,"Feature5"] = 0
 
 #Create a matrix with a square filled with 0's in the middle, 5's outside
 s = Matrix(10,fill=5,dtype="integer")
 s[3:7,3:7] = 0
+#Matrices can also be used
+s[3:7,3:7] = Matrix(4,fill=0)
 ```
 ----------------------------------------
 ##### Concatenate a matrix to your matrix.
