@@ -217,12 +217,13 @@ C["Col 3","Col 1","Col 2"] == C.select(("Col 3","Col 1","Col 2"))
 #Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
 #All statements should be properly closed with parentheses
 wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
-
 #Alternative way
 wineOverSix = winedata[(winedata["quality"]>6) & ((winedata["pH"]<3.3) & (winedata["pH"]>3))]
 
 #Select the columns of pH and quality and assign them to another matrix
 filtered = winedata.select(("pH","quality"))
+#Alternatively
+filtered = winedata["pH","quality"] 
 
 #Sort by given column and shuffle the data 
 winedata.indexSet() #Set index column to reverse further actions
@@ -256,7 +257,7 @@ s[3:7,3:7] = Matrix(4,fill=0)
 ##### Concatenate a matrix to your matrix.
 ```python
 #Concatenate a new column named 'discounted' containing the product of the 'Price' and 'Discount' columns
-newcol = marketData["Price"]*marketData["Discount"]
+newcol = marketData["Price"] - marketData["Price"]*(marketData["Discount"]/100)
 newcol.features = ["discounted"]
 marketData.concat(newcol,"col")
 
@@ -279,7 +280,7 @@ C.dim #Returns the dimension of the matrix; can be used to change the dimensions
 
 C.string #Returns the string form of the matrix's elements, this is the string the 'grid' property prints
 
-C.col(n,as_matrix) #Returns nth column of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
+C.col(n,as_matrix) #Returns the nth column if n is an integer or returns the column named n, as a list or matrix, set as_matrix to True to get the list as a matrix
 
 C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
