@@ -14,7 +14,7 @@ class Matrix:
     
     directory:str; directory of a data file(e.g. 'directory/datafile' or r'directory\datafile')
     
-    fill: 'uniform'|'triangular'|'gauss' or int|float|complex|str| or None; fills the matrix with chosen distribution or the value, default is uniform distribution
+    fill: 'uniform'|'triangular'|'gauss' or int|float|complex|str|range or None; fills the matrix with chosen distribution or the value, default is uniform distribution
 
     ranged:->To apply all the elements give a list | tuple
            ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
@@ -207,10 +207,15 @@ class Matrix:
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
         """
         try:
-            assert isinstance(column,int)
-            assert column>0 and column<=self.dim[1]
+            if isinstance(column,int):
+                if not (column<=self.dim[1] and column>0):
+                    raise IndexError("Column index out of range")
+            elif isinstance(column,str):
+                if not column in self.features:
+                    raise ValueError(f"{column} is not in column names")
+                column = self.features.index(column)
         except:
-            print("Bad arguments")
+            print("Bad arguments in 'col' method")
             return None
         else:
             temp=[]
@@ -228,10 +233,11 @@ class Matrix:
         as_matrix:False to get the row as a list, True to get a row matrix (default) 
         """
         try:
-            assert isinstance(row,int)
-            assert row>0 and row<=self.dim[0]
+            if isinstance(row,int):
+                if not (row<=self.dim[0] and row>0):
+                    raise IndexError("Row index out of range")
         except:
-            print("Bad arguments")
+            print("Bad arguments in 'row' method")
             return None
         else:
             if as_matrix:
@@ -298,7 +304,7 @@ class Matrix:
     def minor(self,row=None,col=None,returndet=True):
         """
         Returns the minor of the element in the desired position
-        row,col : row and column indeces of the element, 1<=row and col
+        row,col : row and column indices of the element, 1<=row and col
         returndet : True if the determinant is wanted, False to return a matrix with the desired row and column removed 
         """
         from MatricesM.linalg.minor import minor
@@ -456,12 +462,13 @@ class Matrix:
     @fill.setter
     def fill(self,value):
         try:
-            assert isinstance(value,int) or isinstance(value,bool)
+            assert (value in ["uniform","triangular","gauss"]) or (type(value) in [int,str,float,complex,range,list]) or value==None
         except AssertionError:
-            raise TypeError("fill should be an integer or a boolean")
+            raise TypeError("fill: 'uniform'|'triangular'|'gauss' or int|float|complex|str| or None; fills the matrix with chosen distribution or the value, default is uniform distribution")
         else:
-            self.__fill=bool(value)
-            
+            self.__fill=value
+            self.setMatrix(self.__dim,self.__initRange,[],self._dir,self.__fill,self._cMat,self._fMat)
+
     @property
     def initRange(self):
         return self.__initRange
@@ -489,7 +496,7 @@ class Matrix:
     @property
     def rank(self):
         """
-        Rank of the matrix ***HAVE ISSUES WORKING WITH SOME MATRICES***
+        Rank of the matrix
         """
         return self._Rank() 
     
@@ -1079,6 +1086,11 @@ class Matrix:
         return self._LU()[2]
     
     @property
+    def symdec(self):
+        ant_sym = self._symDecomp()
+        return (ant_sym[0],ant_sym[1])
+
+    @property
     def sym(self):
         """
         Symmetrical part of the matrix
@@ -1103,10 +1115,16 @@ class Matrix:
 
     @property
     def Q(self):
+        """
+        Q matrix from QR decomposition
+        """
         return self._QR()[0]
     
     @property
     def R(self):
+        """
+        R matrix from QR decomposition
+        """
         return self._QR()[1]    
     
     @property
@@ -1168,7 +1186,7 @@ class Matrix:
         """
         element: Real number
         start: 0 or 1. Index to start from 
-        Returns the indeces of the given elements, multiple occurances are returned in a list
+        Returns the indices of the given elements, multiple occurances are returned in a list
         """
         from MatricesM.filter.find import find
         return find([a[:] for a in self.matrix],self.dim,element,start)
@@ -1201,7 +1219,7 @@ class Matrix:
     
     def apply(self,expressions,columns=(None,),conditions=None,returnmat=False):
         """
-        Apply arithmetic operations to every column individually
+        Apply arithmetic or logical operations to every column individually inplace
         
         expressions: tuple|list of strings . Operations to do for each column given. Multiple operations can be applied if given in a single string. 
             ->One white space required between each operation and no space should be given between operator and operand
@@ -1219,6 +1237,12 @@ class Matrix:
         if returnmat:
             return applyop(self,expressions,columns,conditions,self.features[:])
         applyop(self,expressions,columns,conditions,self.features[:])
+
+    def replace(self,replace,new,cols,rows,condition):
+        """
+        Replace single values,rows and/or columns
+        """
+        pass
         
     def indexSet(self,name="Index",start=0,returnmat=False):
         """
@@ -1481,56 +1505,351 @@ class Matrix:
         return bool(inds)
                   
     def __getitem__(self,pos):
+        #Get 1 row
         if isinstance(pos,int):
             return Matrix(listed=[self._matrix[pos]],features=self.features[:],decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes[:])
-        
-        if isinstance(pos,slice):
+        #Get multiple rows
+        elif isinstance(pos,slice):
             return Matrix(listed=self._matrix[pos],features=self.features[:],decimal=self.decimal,dtype=self.dtype,coldtypes=self.coldtypes[:])
-        
-        if isinstance(pos,str):
+        #Get 1 column
+        elif isinstance(pos,str):
             if pos not in self.features:
                 raise ValueError(f"{pos} is not in column names")
             return self.col(self.features.index(pos)+1)
 
-        if isinstance(pos,tuple):
+        #Get certain parts of the matrix
+        elif isinstance(pos,tuple):
+            #Column names given
             if all([1 if isinstance(i,str) else 0 for i in pos]):
-                return self.select(pos)
-
+                colinds = [self.features.index(i) for i in pos]
+                temp = Matrix((self.dim[0],len(pos)),fill=0,features=list(pos),dtype=self.dtype,coldtypes=[self.coldtypes[i] for i in colinds])
+                for row in range(self.dim[0]):
+                    c = 0
+                    for col in colinds:
+                        temp._matrix[row][c] = self._matrix[row][col]
+                        c+=1
+                return temp
+            
+            #Tuple given    
             if len(pos)==2:
+                # (row_index,column_name)
+                if isinstance(pos[1],str):
+                    pos = list(pos)
+                    pos[1] = self.features.index(pos[1])
+                # (row_index,tuple_of_column_names)
+                elif isinstance(pos[1],tuple):
+                    if all([1 if isinstance(i,str) else 0 for i in pos[1]]):
+                        colinds = [self.features.index(i) for i in pos[1]]
+
+                        if isinstance(pos[0],slice):
+                            rowrange = range(pos[0].start,min(pos[0].stop,self.dim[0]),pos[0].step)
+                        if isinstance(pos[0],int):
+                            rowrange = [pos[0]]
+                        if isinstance(pos[0],Matrix):
+                            rowrange = [i[0] for i in pos[0].find(1,0)]
+
+                        temp = Matrix((len(rowrange),len(pos[1])),fill=0,features=list(pos[1]),dtype=self.dtype,coldtypes=[self.coldtypes[i] for i in colinds])
+                        for row in rowrange:
+                            c = 0
+                            for col in colinds:
+                                temp._matrix[row][c] = self._matrix[row][col]
+                                c+=1
+                        return temp
+                    else:
+                        raise ValueError(f"{pos[1]} has non-string values")
+                
                 t = self.coldtypes[pos[1]]
+                if type(t) != list:
+                    t = [t]
                 # self[ slice, slice ] 
                 if isinstance(pos[0],slice) and isinstance(pos[1],slice):
                     return Matrix(listed=[i[pos[1]] for i in self._matrix[pos[0]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype,coldtypes=t)
                 # self[ slice, int ] 
-                if isinstance(pos[0],slice) and isinstance(pos[1],int):
-                    return Matrix(listed=[[i[pos[1]]] for i in self._matrix[pos[0]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype,coldtypes=t)
+                elif isinstance(pos[0],slice) and isinstance(pos[1],int):
+                    return Matrix(listed=[[i[pos[1]]] for i in self._matrix[pos[0]]],features=[self.features[pos[1]]],decimal=self.decimal,dtype=self.dtype,coldtypes=t)
                 # self[ int, slice ]
-                if isinstance(pos[0],int) and isinstance(pos[1],slice):
+                elif isinstance(pos[0],int) and isinstance(pos[1],slice):
                     return Matrix(listed=[self._matrix[pos[0]][pos[1]]],features=self.features[pos[1]],decimal=self.decimal,dtype=self.dtype,coldtypes=t)
                 # self[ int, int]
-                if isinstance(pos[0],int) and isinstance(pos[1],int):
+                elif isinstance(pos[0],int) and isinstance(pos[1],int):
                     return self._matrix[pos[0]][pos[1]]
+                elif isinstance(pos[0],Matrix):
+                    temp = []
+                    if isinstance(pos[1],int):
+                        pos[1] = slice(pos[1],pos[1]+1)
+
+                    for i in range(self.dim[0]):
+                        if pos[0]._matrix[i][0]==1:
+                            temp.append(self._matrix[i][pos[1]])
+
+                    return Matrix(listed=temp,features=self.features[pos[1]],dtype=self.dtype,decimal=self.decimal,coldtypes=self.coldtypes[pos[1]])
             else:
-                raise IndexError(f"{pos} can't be used as indeces")
-                
+                raise IndexError(f"{pos} can't be used as indices")
+
+        #0-1 filled matrix given as indeces
+        elif isinstance(pos,Matrix):
+            temp = [self._matrix[i] for i in range(self.dim[0]) if pos._matrix[i][0]==1]
+            return Matrix(listed=temp,features=self.features,dtype=self.dtype,decimal=self.decimal,coldtypes=self.coldtypes)
+
     def __setitem__(self,pos,item):
-        if isinstance(pos,slice) and  isinstance(item,list):
-            if len(item)>0:
-                if isinstance(item[0],list):
-                    self._matrix[pos]=item
+        #Change rows
+        #Lists should be given as [[1,2,...],[3,4,...],...]
+        if isinstance(pos,slice):
+            try:
+                if isinstance(item,Matrix):
+                    item = item.matrix
+
+                elif isinstance(item,list):
+                    for i in item:
+                        if type(i)!=list:
+                            raise TypeError(f"Given list contains non-list element: {i}")
+
+                elif isinstance(item,(int,float,complex,str,type,tuple)):
+                    #Fix slice
+                    s,e,t = 0,self.dim[0],1
+                    if pos.start!=None:
+                        s = pos.start
+                    if pos.stop!=None:
+                        e = pos.stop
+                    if pos.step!=None:
+                        t = pos.step
+                    pos = slice(s,e,t)
+                    item = [[item for i in range(self.dim[1])] for j in range(s,min(self.dim[0],e),t)]
+
+                self._matrix[pos] = item 
+            except:
+                raise ValueError(f"Dimensions of the given list/Matrix can't work with {pos}")
+
+        #Change a row
+        #Lists should be given as [1,2,...]
+        elif isinstance(pos,int):
+            if pos not in range(self.dim[0]):
+                raise IndexError(f"{pos} index is out of range")
+
+            if isinstance(item,Matrix):
+                if item.dim[0] != 1:
+                    raise ValueError("Given matrix should have 1 row")
+                item = item.matrix[0]
+
+            elif isinstance(item,list):
+                if len(item)!=self.dim[1]: 
+                    raise AssertionError(f"Expected length of the list to be :{self.dim[1]}, but got {len(item)}")
+            
+            #If given 'item' is not in a list or a matrix
+            elif isinstance(item,(int,float,complex,str,type,tuple)):
+                item = [item for j in range(self.dim[1])]
+
+            self._matrix[pos] = item
+
+        #Change a column
+        elif isinstance(pos,str):
+            if not pos in self.features:
+                raise ValueError(f"{pos} is not a column name")
+           
+            if isinstance(item,Matrix):
+                if item.dim[1] == 1  ^ item.dim[0] == 1:
+                    raise ValueError("Given matrix should have 1 column or row")
+                if item.dim[0] == 1:
+                    item = item.matrix[0]
                 else:
-                    self._matrix[pos]=[item]
+                    item = item.col(1,0)
+
+            elif isinstance(item,list):
+                if len(item)!=self.dim[0]: 
+                    raise AssertionError(f"Expected length of the list to be :{self.dim[0]}, but got {len(item)}")
+            
+            #If given 'item' is not in a list or a matrix
+            elif isinstance(item,(int,float,complex,str,type,tuple)):
+                item = [item for j in range(self.dim[0])]
+
+            ind = self.features.index(pos)
+            for i in range(self.dim[0]):
+                self._matrix[i][ind] = item[i]
+
+        #Change certain parts of the matrix
+        elif isinstance(pos,tuple):
+            #Change given columns
+            if all([1 if isinstance(i,str) else 0 for i in pos]):
+                if isinstance(item,list):
+                    for i in item:
+                        if type(i)!=list:
+                            raise TypeError(f"Given list contains non-list element: {i}")
+                        elif len(i)!=self.dim[0]:
+                            raise IndexError(f"Expected {self.dim[0]}x{len(pos)} dimensions, but got at least one {len(i)} length list")
+
+                elif isinstance(item,Matrix):
+                    if item.dim[0] != self.dim[0] or item.dim[1] != len(pos):
+                        raise IndexError(f"Expected {self.dim[0]}x{len(pos)} dimensions, but got {item.dim[0]}x{item.dim[1]}")
+                    item = item.matrix
+                
+                colrange = [self.features.index(v) for v in pos]   
+                
+                #If given 'item' is not in a list or a matrix
+                if isinstance(item,(int,float,complex,str,type,tuple)):
+                    item = [[item for i in range(len(colrange))] for j in range(self.dim[0])]
+                
+                for r in range(self.dim[0]):
+                    i = 0
+                    for c in colrange:
+                        self._matrix[r][c] = item[r][i]
+                        i+=1
+            #Tuple with row indices first, column indices/names second
+            elif len(pos)==2:
+                pos = list(pos)
+                newpos = []
+                ind = 0
+                for p in pos:
+                    if type(p) == slice:
+                        s,e,t = 0,self.dim[ind],1
+                        if p.start!=None:
+                            s = p.start
+                        if p.stop!=None:
+                            e = p.stop
+                        if p.step!=None:
+                            t = p.step
+                        newpos.append(slice(s,e,t))
+                    else:
+                        newpos.append(p)
+                    ind += 1
+                pos = newpos
+
+                # (row_index,column_name)
+                if isinstance(pos[1],str):
+                    pos[1] = self.features.index(pos[1])
+
+                # (row_index,tuple_of_column_names)
+                elif isinstance(pos[1],tuple):
+                    if all([1 if isinstance(i,str) else 0 for i in pos[1]]):
+                        if isinstance(item,list):
+                            for i in item:
+                                if type(i)!=list:
+                                    raise TypeError(f"Given list contains non-list element: {i}")
+                        elif isinstance(item,Matrix):
+                            item = item.matrix
+                        #If given 'item' is not in a list or a matrix
+                        elif isinstance(item,(int,float,complex,str,type,tuple)):
+                            rowrange = range(1)
+                            if isinstance(pos[0],slice):
+                                rowrange = range(pos[0].start,min(pos[0].stop,self.dim[0]),pos[0].step)
+
+                            item = [[item for i in range(len(pos[1]))] for j in rowrange]
+                    else:
+                        raise ValueError(f"{pos[1]} has non-string values")
+                    
+                    rowrange = range(pos[0].start,min(pos[0].stop,self.dim[0]),pos[0].step)
+                    colinds = [self.features.index(i) for i in pos[1]]
+                    r1=0
+                    for r in rowrange:
+                        c1=0
+                        for c in colinds:
+                            self._matrix[r][c] = item[r1][c1]
+                            c1+=1
+                        r1+=1
+                    return None
+
+                #Get the list of items
+                if isinstance(item,Matrix):
+                    item = item.matrix
+
+                # self[ slice, slice ]
+                if isinstance(pos[0],slice) and isinstance(pos[1],slice):
+                    #Get indices
+                    rowrange = range(pos[0].start,min(pos[0].stop,self.dim[0]),pos[0].step)
+                    colrange = range(pos[1].start,min(pos[1].stop,self.dim[1]),pos[1].step)
+
+                    #If given 'item' is not in a list or a matrix
+                    if isinstance(item,(int,float,complex,str,type,tuple)):
+                        item = [[item for i in colrange] for j in rowrange]
+
+                    row=0
+                    for r in rowrange:
+                        col=0
+                        for c in colrange:
+                            self._matrix[r][c] = item[row][col]
+                            col+=1
+                        row+=1
+                # self[ slice, int ] 
+                elif isinstance(pos[0],slice) and isinstance(pos[1],int):
+                    #Get indices
+                    rowrange = range(pos[0].start,min(pos[0].stop,self.dim[0]),pos[0].step)
+                    #If given 'item' is not in a list or a matrix
+                    if isinstance(item,(int,float,complex,str,type,tuple)):
+                        item = [[item] for j in rowrange]
+
+                    row=0
+                    for r in rowrange:
+                        self._matrix[r][pos[1]] = item[row][0]
+                        row+=1
+
+                # self[ int, slice ]
+                elif isinstance(pos[0],int) and isinstance(pos[1],slice):
+                    #Get indices
+                    colrange = range(pos[1].start,min(pos[1].stop,self.dim[1]),pos[1].step)
+                    #If given 'item' is not in a list or a matrix
+                    if isinstance(item,(int,float,complex,str,type,tuple)):
+                        item = [[item for i in colrange]]
+
+                    col=0
+                    for c in colrange:
+                        self._matrix[pos[0]][c] = item[0][col]
+                        col+=1
+
+                # self[ int, int]
+                elif isinstance(pos[0],int) and isinstance(pos[1],int):
+                    self._matrix[pos[0]][pos[1]] = item
+
+                #0-1 filled matrix given as indeces
+                elif isinstance(pos[0],Matrix):
+                    inds = [i[0] for i in pos[0].find(1,0)]
+                    #[bool_matrix,int]
+                    if isinstance(pos[1],int):
+                        cols = [pos[1]]
+                    #[bool_matrix,tuple_of_column_names]
+                    elif isinstance(pos[1],tuple):
+                        cols = [self.features.index(i) for i in pos[1]]
+
+                    #Given item is list of lists   
+                    if isinstance(item,list):
+                        for i in item:
+                            if type(i)!=list:
+                                raise TypeError(f"Given list contains non-list element: {i}")
+                    
+                    #Given item is a matrix
+                    elif isinstance(item,Matrix):
+                        item = item.matrix
+
+                    #Given item should be repeated in a list
+                    elif isinstance(item,(int,float,complex,str,type,tuple)):
+                        item = [[item for j in cols] for _ in range(len(inds))]
+                    r=0
+                    for row in inds:
+                        c=0
+                        for col in cols:
+                            self._matrix[row][col] = item[r][c]
+                            c+=1
+                        r+=1
+                else:
+                    raise AssertionError(f"item: {item} can't be set to index: {pos}.\n\tUse ._matrix property to change individual elements")
             else:
-                raise ValueError("Given list can't be empty")
-        elif isinstance(pos,int) and isinstance(item,list):
-            if len(item)==self.dim[1]: 
-                row=pos
-                self._matrix[row]=item[:]
-                self.__dim=self._declareDim()
-            else:
-               raise AssertionError("Dimensions don't match with the given list")
+                raise IndexError(f"{pos} can't be used as indices")
+
+        #0-1 filled matrix given as indeces
+        elif isinstance(pos,Matrix):
+            inds = [i[0] for i in pos.find(1,0)]
+            if isinstance(item,list):
+                for i in item:
+                    if type(i)!=list:
+                        raise TypeError(f"Given list contains non-list element: {i}")
+
+            elif isinstance(item,Matrix):
+                item = item.matrix
+
+            elif isinstance(item,(int,float,complex,str,type,tuple)):
+                item = [item for j in range(self.dim[1])]
+            for row in inds:
+                self._matrix[row] = item
         else:
-            raise AssertionError(f"item:{item} can't be set to index:{pos}.\n\tUse ._matrix property to change individual elements")
+            raise AssertionError(f"item: {item} can't be set to index: {pos}.\n\tUse ._matrix property to change individual elements")
 
         return self
     
