@@ -7,15 +7,24 @@ def readAll(d,head,dtyps):
             data=[]
             r=0
             with open(d) as f:
-                fread  = csv.reader(f,delimiter=",")
+                fread  = list(csv.reader(f,delimiter=","))
                 if head:
-                    for i in fread:
-                        feats = i[:]
-                        del i
-                        break
+                    feats = fread[0]
+                    fread = fread[1:]
                 
                 if dtyps!=[]:
-                    data = [[dtyps[i](row[i]) for i in range(len(row))] for row in fread]
+                    for i in range(len(fread)):
+                        j=0
+                        data.append([])
+                        while j<len(fread[i]):
+                            try:
+                                if dtyps[j] != type: 
+                                    data[i].append(dtyps[j](fread[i][j]))
+                                j+=1
+                            except:
+                                data[i].append(fread[i][j])
+                                j+=1
+                                continue
                 else:
                     data = [[row[i] for i in range(len(row))] for row in fread]
 

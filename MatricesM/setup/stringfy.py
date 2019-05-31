@@ -10,49 +10,66 @@ def _stringfy(mat,dtyps=None):
     #Tab sizes
     #Dataframe
     if mat._dfMat:
-        bounds=[]
-        for dt in range(len(dtyps)):
-            colbounds=[]
-            col = mat.col(dt+1,0)
-            if dtyps[dt] in [float,int]:
-                colbounds.append(len(st.format(round(min(col),mat.decimal))))
-                colbounds.append(len(st.format(round(max(col),mat.decimal))))
-            else:
-                colbounds.append(max([len(str(a)) for a in col]))
-            colbounds.append(len(mat.features[dt]))
-            bounds.append(max(colbounds))
+        try:
+            bounds=[]
+            for dt in range(len(dtyps)):
+                colbounds=[]
+                col = mat.col(dt+1,0)
+                if dtyps[dt] in [float,int]:
+                    colbounds.append(len(st.format(round(min(col),mat.decimal))))
+                    colbounds.append(len(st.format(round(max(col),mat.decimal))))
+                else:
+                    colbounds.append(max([len(str(a)) for a in col]))
+                colbounds.append(len(mat.features[dt]))
+                bounds.append(max(colbounds))
+        except TypeError:
+            msg = f"Replace invalid values in column: '{mat.features[dt]}'"
+            raise TypeError(msg)
     #Complex
     elif mat._cMat:
-        ns=""
-        for i in mat._matrix:
-            for j in i:
-                ns+=str(round(j.real,mat.decimal))
-                im=j.imag
-                if im<0:
-                    ns+=str(round(im,mat.decimal))+"j "
-                else:
-                    ns+="+"+str(round(im,mat.decimal))+"j "
-                    
-        pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
-        bound=max([len(a) for a in re.findall(pattern,ns)])-2
+        try:
+            ns=""
+            for i in mat._matrix:
+                for j in i:
+                    ns+=str(round(j.real,mat.decimal))
+                    im=j.imag
+                    if im<0:
+                        ns+=str(round(im,mat.decimal))+"j "
+                    else:
+                        ns+="+"+str(round(im,mat.decimal))+"j "
+                        
+            pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
+            bound=max([len(a) for a in re.findall(pattern,ns)])-2
+
+        except TypeError:
+            msg = f"Invalid value for complex dtype matrix: '{j}'"
+            raise TypeError(msg)
     #Float
     elif mat._fMat:
-        bounds=[]
-        for c in range(mat.dim[1]):
-            colbounds=[]
-            col = mat.col(c+1,0)
-            colbounds.append(len(st.format(round(min(col),mat.decimal))))
-            colbounds.append(len(st.format(round(max(col),mat.decimal))))
-            bounds.append(max(colbounds))
+        try:
+            bounds=[]
+            for c in range(mat.dim[1]):
+                colbounds=[]
+                col = mat.col(c+1,0)
+                colbounds.append(len(st.format(round(min(col),mat.decimal))))
+                colbounds.append(len(st.format(round(max(col),mat.decimal))))
+                bounds.append(max(colbounds))
+        except TypeError:
+            msg = f"Invalid values for float dtype in column: '{mat.features[c]}'"
+            raise TypeError(msg)
     #Integer
     else:
-        bounds=[]
-        for c in range(mat.dim[1]):
-            colbounds=[]
-            col = mat.col(c+1,0)
-            colbounds.append(len(str(min(col))))
-            colbounds.append(len(str(max(col))))
-            bounds.append(max(colbounds))
+        try:
+            bounds=[]
+            for c in range(mat.dim[1]):
+                colbounds=[]
+                col = mat.col(c+1,0)
+                colbounds.append(len(str(min(col))))
+                colbounds.append(len(str(max(col))))
+                bounds.append(max(colbounds))
+        except TypeError:
+            msg = f"Invalid values for integer dtype in column: '{mat.features[c]}'"
+            raise TypeError(msg)
     #-0.0 error interval set    
     if mat._fMat or mat._cMat:
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
