@@ -225,7 +225,7 @@ filtered = winedata.select(("pH","quality"))
 #Alternative way (2x faster)
 filtered = winedata["pH","quality"] 
 
- 
+
 #Set index column to reverse further actions
 winedata.indexSet()
 
@@ -258,8 +258,40 @@ marketData.describe
 
 #Multiply 'Price' with 0.9 and subtract 5 also add 10 to 'Discount' under the conditions: Price>100 and Discount<5
 marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
+```
+----------------------------------------
+##### Replace values in the matrix
+```python
+#Replace all 0's with 1's
+data.replace(old=0,new=1)
 
-#Change value of 'Feature5' tio 0 n the rows where the 'Feature1' is lower than 0
+#Replace all "Pending" values to "Done" in "Order1" and "Order2" columns
+data.replace(old="Pending", #(data["Order1"]=="Pending") & (data["Order2"]=="Pending") can also be used
+             new="Done",
+             column=("Order1","Order2")
+             )
+
+#Replace all '' values in the column "Length" with the mean of the "Length" column
+data.replace=(old='', #data["Length"]=="" can also be used
+              new=data.mean("Length",asDict=False),
+              column="Length"
+              )
+
+#Replace all "FF" values in "Grade" column with "AA" in the column "Grade" where "Year" is less than 2019
+data.replace(old="FF", #data["Grade"]=="FF" can also be used
+             new="AA",
+             column="Grade",
+             condition=data["Year"]<=2019
+             )
+
+#Replace all numbers below 0 in with 0's in column named "F5" where "Score1" is less than "Score2"
+data.replace(old=data["F5"]<0,
+             new=0,
+             column="F5",
+             condition=data["Score1"]<data["Score2"]
+             )
+             
+#Change value of 'Feature5' to 0 in the rows where the 'Feature1' is lower than 0
 data[data["Feature1"]<0,"Feature5"] = 0
 
 #Create a matrix with a square filled with 0's in the middle, 5's outside
@@ -443,6 +475,8 @@ C.where(condition) #Returns a matrix where the given condition(s) are True. Exam
 
 C.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
 
+C.replace(old,new,columns,conditions) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True
+
 C.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
 
 C.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
@@ -453,25 +487,25 @@ C.sample(size,condition) #Get a sample sized 'size' where the 'condition' is Tru
 
 C.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
-C.mean(n,asDict) #Returns the nth column's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
+C.mean(n,asDict) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
 
-C.ranged(n,asDict) #Returns the nth column's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
+C.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
 
-C.median(n) #Returns the nth column's median, give None to get all columns' medians
+C.median(n) #Returns the nth column or column named n's median, give None to get all columns' medians
 
-C.freq(n) #Returns the nth column's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies 
+C.freq(n) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies 
 
-C.mode(n) #Returns the nth column's mode, give None to get all columns' modes
+C.mode(n) #Returns the nth column or column named n's mode, give None to get all columns' modes
 
-C.iqr(n,as_quartiles,asDict) #Returns the nth column's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
+C.iqr(n,as_quartiles,asDict) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
 
-C.sdev(n,population,asDict) #Returns the nth column's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
+C.sdev(n,population,asDict) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
 
-C.var(n,population,asDict) #Returns the nth column's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
+C.var(n,population,asDict) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
 
 C.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give population parameter True if calculation is not for samples
 
-C.z(row,col,population) #Returns the z-scores of the desired row and/or column, call without arguments to get the all z-scores as a matrix. If both row and column given, returns a number. Give population parameter 1 if calculation is not for samples, 0 otherwise.
+C.z(col,population) #Returns the z-scores of the desired  column, call without arguments to get the all z-scores as a matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise.
 
 C.corr(column_1,column_2,population) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise
 
@@ -503,6 +537,8 @@ myMatrix.p #Same as print(myMatrix)
 #Similar to 'grid' but rows and columns are limited by myMatrix.ROW_LIMIT and myMatrix.COL_LIMIT
 
 myMatrix
+
+#Issues about dtypes not matching and/or missing data can be solved by using 'replace' method
 ```
 ----------------------------------------
 ##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
