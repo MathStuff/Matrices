@@ -12,7 +12,7 @@ def find(mat,dims,element,start=1):
             while element in mat[row]:
                 n=mat[row].index(element)
                 indeces.append((row+start,n+start))
-                mat[row][n]=""
+                mat[row][n]=None
     except AssertionError:
         print("Invalid arguments")
     else:
