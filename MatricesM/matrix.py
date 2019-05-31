@@ -1261,7 +1261,7 @@ class Matrix:
 
                 #Replace all '' values in the column "Length" with the mean of the "Length" column
                 data.replace=(old='', #data["Length"]=="" can also be used
-                              new=data.mean("Length"),
+                              new=data.mean("Length",asDict=False),
                               column="Length"
                               )
 
