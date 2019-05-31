@@ -1,9 +1,8 @@
 def find(mat,dims,element,start=1):
-    """
-    element: Real number
-    start: 0 or 1. Index to start from 
-    Returns the indeces of the given elements, multiple occurances are returned in a list
-    """
+    class empty:
+        def __init__(self):
+            self.empty=True
+        
     indeces=[]
     try:
         assert start==0 or start==1
@@ -12,7 +11,7 @@ def find(mat,dims,element,start=1):
             while element in mat[row]:
                 n=mat[row].index(element)
                 indeces.append((row+start,n+start))
-                mat[row][n]=None
+                mat[row][n]=empty
     except AssertionError:
         print("Invalid arguments")
     else:
