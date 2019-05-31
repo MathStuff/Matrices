@@ -217,23 +217,29 @@ C["Col 3","Col 1","Col 2"] == C.select(("Col 3","Col 1","Col 2"))
 #Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
 #All statements should be properly closed with parentheses
 wineOverSix = winedata.where("(quality>6) and ((pH<3.3) and (pH>3))")
-#Alternative way
+#Alternative way (2x faster)
 wineOverSix = winedata[(winedata["quality"]>6) & ((winedata["pH"]<3.3) & (winedata["pH"]>3))]
 
 #Select the columns of pH and quality and assign them to another matrix
 filtered = winedata.select(("pH","quality"))
-#Alternatively
+#Alternative way (2x faster)
 filtered = winedata["pH","quality"] 
 
-#Sort by given column and shuffle the data 
-winedata.indexSet() #Set index column to reverse further actions
+ 
+#Set index column to reverse further actions
+winedata.indexSet()
+
+#Sort by given column and shuffle the data
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
-winedata.shuffle() #Shuffle the rows
+
+#Shuffle the rows
+winedata.shuffle()
 
 #Get 20 samples from the data under desired conditions
 winedata.sample(20,"(quality>5) and ((alcohol<11) or (density>0.95))")
+#Alternative way (1.5x faster)
+winedata[(winedata["quality"]>5) & ((winedata["alcohol"]<11) | (winedata["density"]>0.95))].sample(20)
 
-#Alternative 
 #Return all the rows and select 'alcohol' and 'quality' columns where quality is higher than 6
 winedata[winedata["quality"]>6,("alcohol", "quality")]
 
@@ -241,7 +247,16 @@ winedata[winedata["quality"]>6,("alcohol", "quality")]
 ----------------------------------------
 ##### Apply arithmetic operations to individual rows and columns.
 ```python
-#Multiply Prices with 0.9 and subtract 5 also add 10 to Discounts under the conditions: Price>100 and Discount<5
+#Create a 1000x2 dataframe filled using normal distribution with given arguments
+marketData = Matrix((1000,2),fill="gauss",ranged={"Price":(250,60),"Discount":(8,2)},dtype="dataframe")
+
+#Change invalid values in "Discount" column where it's less than 0 to 0
+marketData[marketData["Discount"]<0,"Discount"] = 0
+
+#Explore the data
+marketData.describe
+
+#Multiply 'Price' with 0.9 and subtract 5 also add 10 to 'Discount' under the conditions: Price>100 and Discount<5
 marketData.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
 
 #Change value of 'Feature5' tio 0 n the rows where the 'Feature1' is lower than 0
@@ -250,7 +265,7 @@ data[data["Feature1"]<0,"Feature5"] = 0
 #Create a matrix with a square filled with 0's in the middle, 5's outside
 s = Matrix(10,fill=5,dtype="integer")
 s[3:7,3:7] = 0
-#Matrices can also be used
+#Matrices can also be used to do the same
 s[3:7,3:7] = Matrix(4,fill=0)
 ```
 ----------------------------------------
