@@ -22,7 +22,7 @@ def le(mat,other,obj):
                     
         elif isinstance(other,str):
             temp=obj(mat.dim,[[1 if mat.matrix[j][i]<=other else 0 for i in range(mat.dim[1])] for j in range(mat.dim[0])],implicit=True)
-            
+          
         else:
             raise TypeError("Invalid type to compare")
             
@@ -91,6 +91,9 @@ def eq(mat,other,obj):
         elif isinstance(other,str):
             temp=obj(mat.dim,[[1 if mat.matrix[j][i]==other else 0 for i in range(mat.dim[1])] for j in range(mat.dim[0])])
 
+        elif other is None:
+            return False
+          
         else:
             raise TypeError("Invalid type to compare")
             
@@ -124,7 +127,10 @@ def ne(mat,other,obj):
                     
         elif isinstance(other,str):
             temp=obj(mat.dim,[[1 if mat.matrix[j][i]!=other else 0 for i in range(mat.dim[1])] for j in range(mat.dim[0])],implicit=True)
-            
+ 
+        elif other is None:
+            return True
+                     
         else:
             raise TypeError("Invalid type to compare")
             
