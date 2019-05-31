@@ -107,7 +107,16 @@ class Matrix:
         if len(list(self.coldtypes))!=self.dim[1]:
             self.__coldtypes=[type(self.matrix[0][i]) for i in range(self.dim[1])]
         if declare and self.dtype=="dataframe":
-            self._matrix = [[self.coldtypes[col](self._matrix[row][col]) if self.coldtypes[col] != type else self._matrix[row][col] for col in range(self.dim[1])] for row in range(self.dim[0])]
+            for i in range(self.dim[0]):
+                j=0
+                while j<self.dim[1]:
+                    try:
+                        if self.coldtypes[j] != type: 
+                            self._matrix[i][j] = self.coldtypes[j](self._matrix[i][j])
+                        j+=1
+                    except:
+                        j+=1
+                        continue
            
     def _setDim(self,d):
         """
@@ -203,7 +212,7 @@ class Matrix:
     def col(self,column=None,as_matrix=True):
         """
         Get a specific column of the matrix
-        column:integer>=1 and <=column_amount
+        column:integer>=1 and <=column_amount | column name
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
         """
         try:
@@ -213,7 +222,7 @@ class Matrix:
             elif isinstance(column,str):
                 if not column in self.features:
                     raise ValueError(f"{column} is not in column names")
-                column = self.features.index(column)
+                column = self.features.index(column)+1
         except:
             print("Bad arguments in 'col' method")
             return None
@@ -678,17 +687,7 @@ class Matrix:
                 if type(i)!=type:
                     raise ValueError("coldtypes should be all 'type' objects")
             self.__coldtypes=val
-            self.__init__(dim=self.dim,
-                          listed=self._matrix,
-                          ranged=self.initRange,
-                          fill=self.fill,
-                          features=self.features,
-                          header=self._header,
-                          directory=self._dir,
-                          decimal=self.decimal,
-                          seed=self.seed,
-                          dtype=self.dtype,
-                          coldtypes=self.__coldtypes)
+            self.setcoldtypes(True)
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -1221,12 +1220,14 @@ class Matrix:
         """
         Apply arithmetic or logical operations to every column individually inplace
         
-        expressions: tuple|list of strings . Operations to do for each column given. Multiple operations can be applied if given in a single string. 
+        expressions: str(1 column only)|tuple|list of strings; Operations to do for each column given. Multiple operations can be applied if given in a single string. 
             ->One white space required between each operation and no space should be given between operator and operand
         
-        columns: tuple|list . Column names to apply the given expression
+        columns: str(1 column only)|tuple|list|None; Column names to apply the given expression
         
-        returnmat: boolean. True to return self after evaluation, False to return None
+        conditions: str|None; Conditions of rows to apply changes to
+
+        returnmat: boolean; True to return self after evaluation, False to return None
         Example:
             #Multiply all columns with 3 and then add 10
                 Matrix.apply( ("*3 +10") ) 
@@ -1238,11 +1239,49 @@ class Matrix:
             return applyop(self,expressions,columns,conditions,self.features[:])
         applyop(self,expressions,columns,conditions,self.features[:])
 
-    def replace(self,replace,new,cols,rows,condition):
+    def replace(self,old,new,column=None,condition=None):
         """
         Replace single values,rows and/or columns
+
+        #Required parameters:
+        old: all available types|boolean *column* matrix; value(s) to be replaced
+        new:all available types; value(s) to replace old ones with
+        column: str|tuple of strings|None;  which column(s) to apply replacements, None for all columns
+        #Optional parameters:
+        condition: boolean *column* matrix|None; row(s) to apply replacements, None for all rows
+            Example:
+                #Replace all 0's with 1's
+                data.replace(old=0,new=1)
+
+                #Replace all "Pending" values to "Done" in "Order1" and "Order2" columns
+                data.replace(old="Pending", #(data["Order1"]=="Pending") & (data["Order2"]=="Pending") can also be used
+                             new="Done",
+                             column=("Order1","Order2")
+                             )
+
+                #Replace all '' values in the column "Length" with the mean of the "Length" column
+                data.replace=(old='', #data["Length"]=="" can also be used
+                              new=data.mean("Length"),
+                              column="Length"
+                              )
+
+                #Replace all "FF" values in "Grade" column with "AA" in the column "Grade" where "Year" is less than 2019
+                data.replace(old="FF", #data["Grade"]=="FF" can also be used
+                             new="AA",
+                             column="Grade",
+                             condition=data["Year"]<=2019
+                             )
+
+                #Replace all numbers below 0 in with 0's in column named "F5" where "Score1" is less than "Score2"
+                data.replace(old=data["F5"]<0,
+                             new=0,
+                             column="F5",
+                             condition=data["Score1"]<data["Score2"]
+                             )
+
         """
-        pass
+        from MatricesM.filter.replace import _replace
+        _replace(self,old,new,column,condition)
         
     def indexSet(self,name="Index",start=0,returnmat=False):
         """
@@ -1258,6 +1297,9 @@ class Matrix:
     def sortBy(self,column=None,reverse=False,returnmat=False):
         """
         Sort the rows by the desired column
+        column:column name as string
+        reverse:boolean; wheter or not to sort the matrix in reversed order
+        returnmat:boolean; wheter or not to return self
         """
         self._matrix=sorted(self.matrix,key=lambda c,i=0:c[i+self.features.index(column)],reverse=reverse)
         if returnmat:
@@ -1266,7 +1308,8 @@ class Matrix:
     def shuffle(self,iterations=1,returnmat=False):
         """
         Shuffle the rows of the matrix
-        iterations : int. Times to shuffle
+        iterations : int; Times to shuffle
+        returnmat:boolean; wheter or not to return self        
         """
         from random import shuffle
         for i in range(iterations):
@@ -1293,7 +1336,7 @@ class Matrix:
         Use 'float' dtype for the best results
          
         Normalizes the data to be valued between 0 and 1
-        col : int>=1 ; column number
+        col:integer>=1 | column name as string
         inplace : boolean ; True to apply changes to matrix, False to return a new matrix
         zerobound : integer ; limit of the decimals after dot to round the max-min of the columns to be considered 0
         """
@@ -1305,7 +1348,7 @@ class Matrix:
         Use 'float' dtype for the best results
         
         Standardization to get mean of 0 and standard deviation of 1
-        col : int>=1 ; column number
+        col:integer>=1 | column name as string
         inplace : boolean ; True to apply changes to matrix, False to return a new matrix
         zerobound : integer ; limit of the decimals after dot to round the sdev to be considered 0
         """ 
@@ -1314,7 +1357,7 @@ class Matrix:
 
     def ranged(self,col=None,asDict=True):
         """
-        col:integer|None ; column number
+        col:integer>=1 | column name as string
         Range of the columns
         asDict: True|False ; Wheter or not to return a dictionary with features as keys ranges as lists, if set to False:
             1) If there is only 1 column returns the list as it is
@@ -1325,7 +1368,7 @@ class Matrix:
 
     def mean(self,col=None,asDict=True):
         """
-        col:integer|None ; column number
+        col:integer>=1 | column name as string
         Mean of the columns
         asDict: True|False ; Wheter or not to return a dictionary with features as keys means as values, if set to False:
             1) If there is only 1 column returns the value as it is
@@ -1337,7 +1380,7 @@ class Matrix:
     def mode(self,col=None):
         """
         Returns the columns' most repeated elements in a dictionary
-        col:integer>=1 and <=amount of columns
+        col:integer>=1 | column name as string
         """
         from MatricesM.stats.mode import mode
         return mode(self,col)
@@ -1345,7 +1388,7 @@ class Matrix:
     def median(self,col=None):
         """
         Returns the median of the columns
-        col:integer>=1 and <=column amount
+        col:integer>=1 | column name as string
         """ 
         from MatricesM.stats.median import median
         return median(self,col)
@@ -1353,7 +1396,7 @@ class Matrix:
     def sdev(self,col=None,population=1,asDict=True):
         """
         Standard deviation of the columns
-        col:integer>=1
+        col:integer>=1 | column name as string
         population: 1 for σ, 0 for s value (default 1)
         asDict: True|False ; Wheter or not to return a dictionary with features as keys standard deviations as values, if set to False:
             1) If there is only 1 column returns the value as it is
@@ -1365,7 +1408,7 @@ class Matrix:
     def var(self,col=None,population=1,asDict=True):
         """
         Variance in the columns
-        col:integer>=1 |None ; Number of the column, None to get all columns 
+        col:integer>=1 |None|column name as string ; Index/name of the column, None to get all columns 
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         asDict: True|False ; Wheter or not to return a dictionary with features as keys variance as values, if set to False:
             1) If there is only 1 column returns the value as it is
@@ -1377,8 +1420,7 @@ class Matrix:
     def z(self,col=None,population=1):
         """
         z-scores of the elements
-        row:integer>=1 |None ; z-score of the desired row
-        column:integer>=1 |None ; z-score of the desired column
+        column:integer>=1 |None|column name as string ; z-scores of the desired column
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         
         Give no arguments to get the whole scores in a matrix
@@ -1389,7 +1431,7 @@ class Matrix:
     def iqr(self,col=None,as_quartiles=False,asDict=True):
         """
         Returns the interquartile range(IQR)
-        col:integer>=1 and <=column amount
+        col:integer>=1 and <=column amount | column name
         
         as_quartiles:
             True to return dictionary as:
@@ -1414,7 +1456,7 @@ class Matrix:
     def freq(self,col=None):
         """
         Returns the frequency of every element on desired column(s)
-        col:column
+        col:column index>=1 or column name
         """
         from MatricesM.stats.freq import freq
         return freq(self,col)   
@@ -1422,7 +1464,7 @@ class Matrix:
     def cov(self,col1=None,col2=None,population=1):
         """
         Covariance of two columns
-        col1,col2: integers>=1  ; column numbers
+        col1,col2: integers>=1 |str|None; column numbers/names.
         population: 0 or 1 ; 0 for samples, 1 for population
         """
         from MatricesM.stats.cov import cov
@@ -1431,13 +1473,12 @@ class Matrix:
     def corr(self,col1=None,col2=None,population=1):
         """
         Correlation of 2 columns
-        col1,col2: integers>=1 or both None; column numbers. For correlation matrix give None to both
+        col1,col2: integers>=1 |str|None; column numbers/names. For correlation matrix give None to both
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-        """     
+        """
         from MatricesM.stats.corr import _corr
         from MatricesM.constructors.matrices import Identity
-        temp = Matrix(self.dim[1],fill=0,features=self.features[:],dtype="dataframe",coldtypes=[float for _ in range(self.dim[1])])
-        temp += Matrix(listed=Identity(self.dim[1]))
+        temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype="dataframe",coldtypes=[float for _ in range(self.dim[1])])
         return _corr(self,col1,col2,population,temp)
     
     @property   
