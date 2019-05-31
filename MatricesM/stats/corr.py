@@ -1,11 +1,10 @@
 def _corr(mat,col1=None,col2=None,population=1,temp=None):
-    """
-    Correlation of 2 columns
-    col1,col2: integers>=1 or both None; column numbers. For correlation matrix give None to both
-    population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-    """
+    for i in [col1,col2]:
+        if isinstance(i,str):
+            i=mat.features.index(i)+1
+    
     if not (( isinstance(col1,int) and isinstance(col2,int) ) or (col1==None and col2==None)):
-        raise TypeError("col1 and col2 should be integers or both None")
+        raise TypeError("col1 and col2 should be integers | both None or column names")
         
     if population not in [0,1]:
         raise ValueError("population should be 0 for samples, 1 for population")

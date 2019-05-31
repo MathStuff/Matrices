@@ -1,11 +1,7 @@
 def z(mat,col=None,population=1,empty=None):
-    """
-    z-scores of the elements
-    column:integer>=1 |None ; z-score of the desired column
-    population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-    
-    Give no arguments to get the whole scores in a matrix
-    """
+    if isinstance(col,str):
+        col=mat.features.index(col)+1
+        
     if population not in [0,1]:
         raise ValueError("population should be 0 for samples, 1 for population")
         
@@ -29,10 +25,22 @@ def z(mat,col=None,population=1,empty=None):
         
     feats = mat.features
     availablecols = list(m.keys())
-    d = [i for i in range(mat.dim[1]) if feats[i] in availablecols]
- 
-    scores._matrix=[[(mat.matrix[r][c]-m[feats[c]])/s[feats[c]] for c in d] for r in range(scores.dim[0])]   
-    scores._Matrix__dim=[dims[0],len(d)]
+    all_inds = [i for i in range(mat.dim[1]) if feats[i] in availablecols]
+    l = len(all_inds)
+    for i in range(mat.dim[0]):
+        j=0 #Index
+        while True:#Loop through the column
+            try:
+                while j<l:
+                    ind = all_inds[j]
+                    scores._matrix[i][ind] = (mat.matrix[i][ind]-m[feats[ind]])/s[feats[ind]]
+                    j+=1
+            except:#Value was invalid
+                j+=1
+                continue
+            else:
+                break  
+
+    scores._Matrix__dim=[dims[0],l]
     scores.features = availablecols
-   
     return scores

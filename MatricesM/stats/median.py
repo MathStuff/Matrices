@@ -1,8 +1,6 @@
 def median(mat,col=None):
-    """
-    Returns the median of the columns
-    col:integer>=1 and <=column amount
-    """
+    if isinstance(col,str):
+        col=mat.features.index(col)+1
     try:
         if col==None:
             temp=mat.t
@@ -15,8 +13,8 @@ def median(mat,col=None):
         meds={}
         i=1
         for rows in temp.matrix:
-            
-            n=sorted(rows)[mat.dim[0]//2]
+            r = [j for j in rows if isinstance(j,(int,float))]
+            n=sorted(r)[mat.dim[0]//2]
             
             if len(feats)!=0 and isinstance(feats,list):
                 meds[feats[i-1]]=n
@@ -25,7 +23,7 @@ def median(mat,col=None):
             else:
                 meds[feats]=n
             i+=1
-    except:
-        print("Error getting median")
+    except Exception as err:
+        print("Error getting median:\n\t\t",err)
     else:
         return meds

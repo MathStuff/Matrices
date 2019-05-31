@@ -1,26 +1,7 @@
 def iqr(mat,col=None,as_quartiles=False,asDict=True):
-    """
-    Returns the interquartile range(IQR)
-    col:integer>=1 and <=column amount
-    
-    as_quartiles:
-        True to return dictionary as:
-            {Column1=[First_Quartile,Median,Third_Quartile],Column2=[First_Quartile,Median,Third_Quartile],...}
-        False to get iqr values(default):
-            {Column1=IQR_1,Column2=IQR_2,...}
-            
-    asDict: True|False ; Wheter or not to return a dictionary with features as keys iqr's as values, if set to False:
-        1) If there is only 1 column returns the value as it is
-        2) If there are multiple columns returns the values in order in a list
-            
-    Usage:
-        self.iqr() : Returns a dictionary with iqr's as values
-        self.iqr(None,True) : Returns a dictionary where the values are quartile medians in lists
-        self.iqr(None,True,False) : Returns a list of quartile medians in lists
-        self.iqr(None,False,False) : Returns a list of iqr's
-        -> Replace "None" with any column number to get a specific column's iqr
-    """
-    
+    if isinstance(col,str):
+        col=mat.features.index(col)+1
+        
     if mat._dfMat:
         temp = mat.copy
         dts = mat.coldtypes[:]
@@ -53,10 +34,11 @@ def iqr(mat,col=None,as_quartiles=False,asDict=True):
     qmeds={}
     i=1
     for rows in temp.matrix:
-        low=sorted(rows)[:temp.dim[1]//2]
+        r = [i for i in rows if isinstance(i,(int,float))]
+        low=sorted(r)[:temp.dim[1]//2]
         low=low[len(low)//2]
         
-        up=sorted(rows)[temp.dim[1]//2:]
+        up=sorted(r)[temp.dim[1]//2:]
         up=up[len(up)//2]
         
         if len(feats)!=0 and isinstance(feats,list):

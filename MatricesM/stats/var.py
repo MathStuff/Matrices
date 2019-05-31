@@ -1,12 +1,6 @@
 def var(mat,col=None,population=1,asDict=True):
-    """
-    Variance in the columns
-    col:integer>=1 |None ; Number of the column, None to get all columns 
-    population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-    asDict: True|False ; Wheter or not to return a dictionary with features as keys variance as values, if set to False:
-        1) If there is only 1 column returns the value as it is
-        2) If there are multiple columns returns the values in order in a list
-    """
+    if isinstance(col,str):
+        col=mat.features.index(col)+1
     s=mat.sdev(col,population)
     if s == None:
         raise ValueError("Can't get standard deviations")

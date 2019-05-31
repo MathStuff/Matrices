@@ -1,13 +1,11 @@
 def freq(mat,col=None):
-    """
-    Returns the frequency of every element on desired column(s)
-    col:column
-    """
     try:
         if col==None:
             temp=mat.t
             feats=mat.features[:]
         else:
+            if isinstance(col,str):
+                col=mat.features.index(col)+1
             assert col>=1 and col<=mat.dim[1]
             temp=mat[:,col-1].t
             feats=mat.features[col-1]

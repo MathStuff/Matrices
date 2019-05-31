@@ -1,13 +1,9 @@
 def mean(mat,col=None,asDict=True):
-    """
-    col:integer|None ; column number
-    Mean of the columns
-    asDict: True|False ; Wheter or not to return a dictionary with features as keys means as values, if set to False:
-        1) If there is only 1 column returns the value as it is
-        2) If there are multiple columns returns the values in order in a list
-    """
-    try:
+    try:    
+        if isinstance(col,str):
+            col=mat.features.index(col)+1
         assert (isinstance(col,int) and col>=1 and col<=mat.dim[1]) or col==None
+        
         avg={}
         feats=mat.features[:]
         inds = []
@@ -31,8 +27,25 @@ def mean(mat,col=None,asDict=True):
                 inds = [col-1]  
                 
         for c in inds:
-            t=sum([mat.matrix[r][c] for r in range(mat.dim[0])])
-            avg[feats[c]]=t/mat.dim[0]
+            t=0 #Total
+            i=0 #Index
+            vals=0 #How many valid elements were in the column
+            while True:#Loop through the column
+                try:
+                    while i<mat.dim[0]:
+                        t+=mat.matrix[i][c]
+                        i+=1
+                        vals+=1
+                except:#Value was invalid
+                    i+=1
+                    continue
+                else:
+                    if vals!=0:
+                        avg[feats[c]]=t/vals
+                    else:#No valid values found
+                        avg[feats[c]]=None
+                    break
+            
    
     except AssertionError:
         print("Col parameter should be in range [1,amount of columns]")

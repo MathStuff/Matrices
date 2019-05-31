@@ -1,13 +1,7 @@
 def stdize(mat,col=None,inplace=True,zerobound=12):
-    """
-    Standardization to get mean of 0 and standard deviation of 1
-
-    col : int>=1|str ; column number or column name
-    inplace : boolean ; True to apply changes to matrix, False to return a new matrix
-    zerobound : integer ; limit of the decimals after dot to round the sdev to be considered 0
-    
-    float dtype is recommended for better printing results
-    """
+    if isinstance(col,str):
+        col=mat.features.index(col)+1
+        
     if not inplace:
         if col==None:
             temp = mat.copy
@@ -22,38 +16,47 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
             statind = 0
             for i in valid_col_indeces:
                 m,s = mean[statind],sd[statind]
-
-                for j in range(mat.dim[0]):
-                    temp._matrix[j][i] = (temp._matrix[j][i]-m)/s
-
+                j=0 #Index
+                while True:#Loop through the column
+                    try:
+                        while j<mat.dim[0]:
+                            temp._matrix[j][i] = (temp._matrix[j][i]-m)/s
+                            j+=1
+                    except:#Value was invalid
+                        j+=1
+                        continue
+                    else:
+                        break
                 statind += 1
 
             return temp
         
         else:
-            if isinstance(col,str):
-                if col not in mat.features:
-                    raise ValueError("No column named {name}".format(name=col))
-                else:
-                    col = mat.features.index(col)+1
-            elif isinstance(col,int):
+            if isinstance(col,int):
                 if not col>=1 and col<=mat.dim[1]:
                     raise IndexError("Not a valid column number")
-            else:
-                raise TypeError("col parameter only accepts column number as an integer or column name as a string")
 
             if not mat.coldtypes[col-1] in [float,int]:
                 raise TypeError("Can't normalize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
             temp = mat.col(col)
-            mean = list(mat.mean(col).values())[0]
-            sd = list(mat.sdev(col).values())[0]
+            mean = mat.mean(col,0)
+            sd = mat.sdev(col,asDict=0)
             
             if round(sd,zerobound)==0:
                 raise ZeroDivisionError("Standard deviation of 0")
-            col-=1    
-            for i in range(temp.dim[0]):
-                temp._matrix[i][col] = (temp._matrix[i][col]-mean)/sd
+
+            j=0 #Index
+            while True:#Loop through the column
+                try:
+                    while j<mat.dim[0]:
+                        temp._matrix[j][0] = (temp._matrix[j][0]-mean)/sd
+                        j+=1
+                except:#Value was invalid
+                    j+=1
+                    continue
+                else:
+                    break               
                         
             return temp
 
@@ -70,33 +73,43 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
             statind = 0
             for i in valid_col_indeces:
                 m,s = mean[statind],sd[statind]
-                for j in range(mat.dim[0]):
-                    mat._matrix[j][i] = (mat._matrix[j][i]-m)/s
+                j=0 #Index
+                while True:#Loop through the column
+                    try:
+                        while j<mat.dim[0]:
+                            mat._matrix[j][i] = (mat._matrix[j][i]-m)/s
+                            j+=1
+                    except:#Value was invalid
+                        j+=1
+                        continue
+                    else:
+                        break  
                 statind += 1
 
         else:
-            if isinstance(col,str):
-                if col not in mat.features:
-                    raise ValueError("No column named {name}".format(name=col))
-                else:
-                    col = mat.features.index(col)+1
-
-            elif isinstance(col,int):
+            if isinstance(col,int):
                 if not col>=1 and col<=mat.dim[1]:
                     raise IndexError("Not a valid column number")
-
-            else:
-                raise TypeError("col parameter only accepts column number as an integer or column name as a string")
 
             if not mat.coldtypes[col-1] in [float,int]:
                 raise TypeError("Can't standardize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
-            mean = list(mat.mean(col).values())[0]
-            sd = list(mat.sdev(col).values())[0]
+            mean = mat.mean(col,0)
+            sd = mat.sdev(col,asDict=0)
             
             if round(sd,zerobound)==0:
                 raise ZeroDivisionError("Standard deviation of 0")
 
-            col-=1  
-            for i in range(mat.dim[0]):
-                mat._matrix[i][col] = (mat._matrix[i][col]-mean)/sd
+            col-=1
+            j=0 #Index
+            while True:#Loop through the column
+                try:
+                    while j<mat.dim[0]:
+                        mat._matrix[j][col] = (mat._matrix[j][col]-mean)/sd
+                        j+=1
+                except:#Value was invalid
+                    j+=1
+                    continue
+                else:
+                    break
+                    

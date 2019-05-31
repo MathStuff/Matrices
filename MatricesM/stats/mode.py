@@ -1,9 +1,7 @@
 def mode(mat,col=None):
-    """
-    Returns the columns' most repeated elements in a dictionary
-    col:integer>=1 and <=amount of columns
-    """
     try:
+        if isinstance(col,str):
+            col=mat.features.index(col)+1
         #Set feature name and the matrix to use dependent on the column desired
         if col==None:
             feats=mat.features[:]
