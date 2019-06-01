@@ -1,20 +1,8 @@
 def matmul(mat,other,obj):
     if not mat.dim[1]==other.dim[0]:
         raise ValueError("Dimensions don't match for matrix multiplication")
-    temp=[]    
-    for r in range(mat.dim[0]):
-        temp.append(list())
-        for rs in range(other.dim[1]):
-            temp[r].append(0)
-            total=0
-            for cs in range(other.dim[0]):
-                num=mat.matrix[r][cs]*other.matrix[cs][rs]
-                total+=num
-            if mat._cMat:
-                temp[r][rs]=complex(round(total.real,12),round(total.imag,12))
-            else:
-                temp[r][rs]=round(total,12)
-                
+
+    temp = [[sum([mat.matrix[r][cs]*other.matrix[cs][rs] for cs in range(other.dim[0])]) for rs in range(other.dim[1])] for r in range(mat.dim[0])]           
     #Return proper the matrix
     if other._cMat or mat._cMat:
         t = "complex"
@@ -52,7 +40,15 @@ def add(mat,other,obj):
                 print("Can't add")
                 return mat
             else:
-                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+                if mat._dfMat:
+                    t = "dataframe"
+                elif  mat._cMat or isinstance(other,complex):
+                    t = "complex"
+                elif  mat._fMat or isinstance(other,float):
+                    t = "float"
+                else:
+                    t = "integer"
+                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
                 #--------------------------------------------------------------------------
         elif isinstance(other,list):
 
@@ -60,8 +56,16 @@ def add(mat,other,obj):
                 print("Can't add")
                 return mat
             else:
+                if mat._dfMat:
+                    t = "dataframe"
+                elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+                    t = "complex"
+                elif  mat._fMat or any([1 for i in other if type(i)==float]):
+                    t = "float"
+                else:
+                    t = "integer"
                 temp=[[mat.matrix[rows][cols]+other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
                 #--------------------------------------------------------------------------
         else:
             print("Can't add")
@@ -94,7 +98,15 @@ def sub(mat,other,obj):
             print("Can't subtract")
             return mat
         else:
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or isinstance(other,complex):
+                t = "complex"
+            elif  mat._fMat or isinstance(other,float):
+                t = "float"
+            else:
+                t = "integer"
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
 
@@ -102,8 +114,16 @@ def sub(mat,other,obj):
             print("Can't subtract")
             return mat
         else:
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+                t = "complex"
+            elif  mat._fMat or any([1 for i in other if type(i)==float]):
+                t = "float"
+            else:
+                t = "integer"
             temp=[[mat.matrix[rows][cols]-other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
         print("Can't subtract")
@@ -136,7 +156,15 @@ def mul(mat,other,obj):
             print("Can't multiply: ",err)
             return mat
         else:
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or isinstance(other,complex):
+                t = "complex"
+            elif  mat._fMat or isinstance(other,float):
+                t = "float"
+            else:
+                t = "integer"
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
 
     elif isinstance(other,list):
@@ -144,8 +172,16 @@ def mul(mat,other,obj):
             print("Can't multiply")
             return mat
         else:
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+                t = "complex"
+            elif  mat._fMat or any([1 for i in other if type(i)==float]):
+                t = "float"
+            else:
+                t = "integer"
             temp=[[mat.matrix[rows][cols]*other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
         print("Can't multiply")
@@ -172,7 +208,7 @@ def fdiv(mat,other,obj):
                 t = "integer"
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,coldtypes=mat.coldtypes[:],implicit=True)   
         
-    elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
+    elif isinstance(other,int) or isinstance(other,float):
         try:
             temp=[[mat.matrix[rows][cols]//other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
@@ -190,6 +226,14 @@ def fdiv(mat,other,obj):
             #--------------------------------------------------------------------------
             
     elif isinstance(other,list):
+        if mat._dfMat:
+            t = "dataframe"
+        elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+            raise TypeError("Complex numbers can't be used with floordiv operator")
+        elif  mat._fMat or any([1 for i in other if type(i)==float]):
+            t = "float"
+        else:
+            t = "integer"
         if len(other)!=mat.dim[1]:
             print("Can't divide")
             return mat
@@ -247,9 +291,25 @@ def tdiv(mat,other,obj):
             print("Can't divide") 
             return mat
         else:
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or isinstance(other,complex):
+                t = "complex"
+            elif  mat._fMat or isinstance(other,float):
+                t = "float"
+            else:
+                t = "integer"
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
+        if mat._dfMat:
+            t = "dataframe"
+        elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+            t = "complex"
+        elif  mat._fMat or any([1 for i in other if type(i)==float]):
+            t = "float"
+        else:
+            t = "integer"
         if len(other)!=mat.dim[1]:
             print("Can't divide")
             return mat
@@ -263,7 +323,7 @@ def tdiv(mat,other,obj):
                 print("Can't divide") 
                 return mat
             else:
-                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
                 #--------------------------------------------------------------------------
     else:
         print("Can't divide")
@@ -293,7 +353,7 @@ def mod(mat,other,obj):
                 t = "integer"
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,coldtypes=mat.coldtypes[:],implicit=True) 
         
-    elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
+    elif isinstance(other,int) or isinstance(other,float):
         try:
             temp=[[mat.matrix[rows][cols]%other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
@@ -303,9 +363,24 @@ def mod(mat,other,obj):
             print("Can't get modular") 
             return mat
         else:
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._fMat or isinstance(other,float):
+                t = "float"
+            else:
+                t = "integer"
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
+        if mat._dfMat:
+            t = "dataframe"
+        elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+            raise TypeError("Complex numbers can't be used with modular operator")
+        elif  mat._fMat or any([1 for i in other if type(i)==float]):
+            t = "float"
+        else:
+            t = "integer"
+
         if len(other)!=mat.dim[1]:
             print("Can't get modular")
             return mat
@@ -351,7 +426,15 @@ def pwr(mat,other,obj):
         except:
             print("Can't raise to the given power")            
         else:
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or isinstance(other,complex):
+                t = "complex"
+            elif  mat._fMat or isinstance(other,float):
+                t = "float"
+            else:
+                t = "integer"
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
 
     elif isinstance(other,list):
@@ -360,8 +443,16 @@ def pwr(mat,other,obj):
             print("Can't raise to the given power")                
             return mat
         else:
+            if mat._dfMat:
+                t = "dataframe"
+            elif  mat._cMat or any([1 for i in other if type(i)==complex]):
+                t = "complex"
+            elif  mat._fMat or any([1 for i in other if type(i)==float]):
+                t = "float"
+            else:
+                t = "integer"
             temp=[[mat.matrix[rows][cols]**other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,coldtypes=mat.coldtypes[:],implicit=True)
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
         print("Can't raise to the given power")
