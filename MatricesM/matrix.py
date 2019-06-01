@@ -572,7 +572,8 @@ class Matrix:
             subdiag_colinds = []
             diags = a1.diags
             for i in range(1,a1.dim[0]):
-                if round(a1.matrix[i][i-1],5)!=0:
+                num = a1.matrix[i][i-1]
+                if round(num.real,5)!=0 or round(num.imag,5)!=0:
                     subdiag_colinds.append(i-1)
                     subdiag_colinds.append(i)
             #Get real eigenvalues
