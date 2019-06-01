@@ -357,6 +357,8 @@ C.ROW_LIMIT #Attribute to determine the amount of rows to print while representi
 
 C.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
+C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 125.
+
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
 #Available comparison operators : "<" ,"<=", ">", ">=", "==", "!=", "&", "|", "~"
@@ -408,7 +410,7 @@ C.trace #Returns the trace of the matrix
 
 C.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
 
-C.eigenvalues #Returns the eigenvalues (CAN'T FIND COMPLEX EIGENS,CHECK ISSUE#32 : https://github.com/MathStuff/MatricesM/issues/32)
+C.eigenvalues #Returns the eigenvalues
 
 C.isSquare #Returns True if the matrix is a square matrix
 
