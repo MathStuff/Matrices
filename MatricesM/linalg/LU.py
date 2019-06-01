@@ -13,4 +13,4 @@ def LU(mat,z,copy,obj):
         dt = "float"
     else:
         dt = "complex"
-    return (obj(mat.dim,calcs[0],dtype=dt,implicit=True),calcs[1],obj(mat.dim,calcs[2],dtype=mat.dtype,implicit=True))
+    return (obj(mat.dim,calcs[0],dtype=dt,implicit=True),calcs[1],obj(mat.dim,calcs[2],dtype=dt,implicit=True))
