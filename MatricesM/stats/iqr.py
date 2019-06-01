@@ -9,14 +9,14 @@ def iqr(mat,col=None,as_quartiles=False,asDict=True):
         j=0
         if col==None:
             for i in range(len(dts)):
-                if dts[i] == str:
+                if not dts[i] in [float,int]:
                     temp.remove(col=i+1-j)
                     del feats[i-j]
                     j+=1
         else:
             assert col>=1 and col<=temp.dim[1]
-            if dts[col-1] == str:
-                raise TypeError(f"Can't use str dtype (column{col}) to calculate interquartile range")
+            if dts[col-1] not in [float,int]:
+                raise TypeError(f"Can't use {dts[col-1]} dtype of column:{mat.features[col-1]} to calculate interquartile range")
             else:
                 temp = temp[:,col-1]
                 feats = feats[col-1]
@@ -32,9 +32,8 @@ def iqr(mat,col=None,as_quartiles=False,asDict=True):
             
     iqr={}
     qmeds={}
-    i=1
-    for rows in temp.matrix:
-        r = [i for i in rows if isinstance(i,(int,float))]
+    for rows in range(temp.dim[0]):
+        r = [i for i in temp.matrix[rows] if isinstance(i,(int,float))]
         low=sorted(r)[:temp.dim[1]//2]
         low=low[len(low)//2]
         
@@ -42,15 +41,12 @@ def iqr(mat,col=None,as_quartiles=False,asDict=True):
         up=up[len(up)//2]
         
         if len(feats)!=0 and isinstance(feats,list):
-            iqr[feats[i-1]]=up-low
-            qmeds[feats[i-1]]=[low,mat.median(col)[feats[i-1]],up]
-        elif len(feats)==0:
-            iqr["Col "+str(i)]=up-low
-            qmeds["Col "+str(i)]=[low,mat.median(col)["Col "+str(i)],up]
+            iqr[feats[rows]]=up-low
+            qmeds[feats[rows]]=[low,mat.median(col)[feats[rows]],up]
+            
         else:
             iqr[feats]=up-low
             qmeds[feats]=[low,mat.median(col)[feats],up]
-        i+=1
 
 
     if asDict:
