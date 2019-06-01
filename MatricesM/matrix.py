@@ -80,7 +80,8 @@ class Matrix:
         self.setcoldtypes(declare=bool(not implicit))
 
         self.ROW_LIMIT = 30
-        self.COL_LIMIT = 12   
+        self.COL_LIMIT = 12
+        self.EIGEN_ITERS = 125
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
@@ -546,8 +547,7 @@ class Matrix:
     @property
     def eigenvalues(self):
         """
-        *** CAN NOT FIND THE COMPLEX EIGENVALUES *** 
-        Returns the eigenvalues
+        Returns the eigenvalues using QR algorithm
         """
         try:
             assert self.isSquare and not self.isSingular and self.dim[0]>=2
@@ -558,34 +558,60 @@ class Matrix:
         except:
             return None
         else:
+            eigens = []
             q=self.Q
             a1=q.t@self@q
-            for i in range(50):
+            for i in range(self.EIGEN_ITERS):#Iterations start
                 qq=a1.Q
                 a1=qq.t@a1@qq
-            return a1.diags                        
-        
+            #Determine which values are real and which are complex eigenvalues
+            if self.isSymmetric:#Symmetrical matrices always have real eigenvalues
+                return a1.diags
+            
+            #For non-symmetric matrices check subdiagonals
+            subdiag_colinds = []
+            diags = a1.diags
+            for i in range(1,a1.dim[0]):
+                if round(a1.matrix[i][i-1],5)!=0:
+                    subdiag_colinds.append(i-1)
+                    subdiag_colinds.append(i)
+            #Get real eigenvalues
+            for i in range(a1.dim[0]):
+                if not (i in subdiag_colinds):
+                    eigens.append(diags[i])
+ 
+            #Create complex eigenvalues from 2x2 matrices
+            for ind in range(0,len(subdiag_colinds),2):
+                i = subdiag_colinds[ind]
+                mat = a1[i:i+2,i:i+2]
+                r = mat.trace/2
+                v = (mat.det - r**2)**(1/2)
+
+                r = complex(complex(round(r.real.real,12),round(r.real.imag,12)),complex(round(r.imag.real,12),round(r.imag.imag,12)))
+                v = complex(complex(round(v.real.real,12),round(v.real.imag,12)),complex(round(v.imag.real,12),round(v.imag.imag,12)))                
+                
+                c1 = complex(r,v)
+                c2 = complex(r,v*(-1))
+                
+                if c1.imag==0:
+                    c1 = c1.real
+                if c2.imag==0:
+                    c2 = c2.real
+                
+                eigens.append(c1)
+                eigens.append(c2)
+            
+            return eigens
+
     @property
     def eigenvectors(self):
         """
-        *** CAN NOT FIND THE EIGENVECTORS RESPONDING TO THE COMPLEX EIGENVALUES ***
-        *** CURRENTLY DOESN'T RETURN ANYTHIN ***
         Returns the eigenvectors
         """
         from MatricesM.constructors.matrices import Identity
         if not self.isSquare or self.isSingular:
             return None
-        eigs=self.eigenvalues
-        vecs=[]
-
-        for eigen in eigs:
-            temp = self-Matrix(listed=Identity(self.dim[0]))*eigen
-            temp.concat([0]*self.dim[0],"col")
-            temp = temp.rrechelon
-            diff=0
-            for i in range(self.dim[0]-temp.rank):
-                diff+=1
-            pass
+        pass
         
     @property
     def highest(self):
