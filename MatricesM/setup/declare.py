@@ -25,7 +25,7 @@ def declareRange(mat,lis):
     if mat._dfMat:
         valid_feats_inds = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
         for cols in valid_feats_inds:
-            temp=[lis[rows][cols] for rows in range(mat.dim[0])]
+            temp=[lis[rows][cols] for rows in range(mat.dim[0]) if isinstance(lis[rows][cols],(int,float))]
             c[mat.features[cols]]=[min(temp),max(temp)]
     elif mat._cMat:
         for i in range(mat.dim[1]):
