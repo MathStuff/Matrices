@@ -467,7 +467,7 @@ C.head(n) #Returns the first n rows (if there are less than n rows it returns al
 
 C.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
 
-C.describe #Returns a description matrix with columns describing the matrix holding column_name, dtype, mean, sdev, min, max, %25, %50, %75.
+C.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, max, 25%, 50%, 75%.
 
 C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
