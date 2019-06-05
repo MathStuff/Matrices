@@ -1348,7 +1348,7 @@ class Matrix:
         condition:str. Conditionas to set as a base for sampling, uses 'where' method to filter 
         """
         from MatricesM.filter.sample import samples
-        return Matrix(listed=samples(self,size,condition),dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:])
+        return Matrix(listed=samples(self,size,condition),decimal=self.decimal,dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:])
 
 # =============================================================================
     """Statistical methods"""
@@ -1624,23 +1624,18 @@ class Matrix:
         delitem(self,val,Matrix)
 
     def __repr__(self):
-        rowlimit,collimit = self.ROW_LIMIT,self.COL_LIMIT
+        rowlimit,collimit = min(self.dim[0],self.ROW_LIMIT),min(self.dim[1],self.COL_LIMIT)
         for i in [rowlimit,collimit]:
             if not isinstance(i,int):
                 raise TypeError("ROW/COL limit can't be non-integer values")
             else:
-                if i<=1:
-                    raise ValueError("ROW/COL limit should be higher than 1")
+                if i<1:
+                    raise ValueError("ROW/COL limit should be >=1")
                     
-        rawstr = self._stringfy(coldtypes=self.coldtypes[:])
         #Not too many rows or columns
         if self.dim[0]<=rowlimit and self.dim[1]<=collimit:
-            return rawstr
-        
-        matstr = rawstr.split("\n")[1:]
-        if not self._dfMat:
-            matstr = matstr[1:]
-        
+            return self._stringfy(coldtypes=self.coldtypes[:])
+
         newstr = ""
         halfrow = rowlimit//2
         halfcol = collimit//2
@@ -1649,20 +1644,21 @@ class Matrix:
         if rowlimit%2 != 0:
             halfrow = rowlimit//2 + 1
         #Get values rounded for printing purposes
-        roundform = self.roundForm(self.decimal)
+        # roundform = self.roundForm(self.decimal)
         #Too many rows
         if self.dim[0]>rowlimit:
             #Too many columns
             if self.dim[1]>collimit:
                 #Divide matrix into 4 parts
-                topLeft = roundform[:halfrow,:halfcol]
-                topRight = roundform[:halfrow,-(collimit//2):]
-                bottomLeft = roundform[-(rowlimit//2):,:halfcol]
-                bottomRight = roundform[-(rowlimit//2):,-(collimit//2):]
+                topLeft = self[:halfrow,:halfcol].roundForm(self.decimal)
+                topRight = self[:halfrow,-(collimit//2):].roundForm(self.decimal)
+                bottomLeft = self[-(rowlimit//2):,:halfcol].roundForm(self.decimal)
+                bottomRight = self[-(rowlimit//2):,-(collimit//2):].roundForm(self.decimal)
 
                 #Change dtypes to dataframes filled with strings
                 for i in [topLeft,topRight,bottomLeft,bottomRight]:
-                    i.dtype = "dataframe"
+                    if i.dtype != "dataframe":
+                        i.dtype = "dataframe"
                 topLeft.coldtypes = [str]*(halfcol)
                 topRight.coldtypes = [str]*(collimit//2)
                 bottomLeft.coldtypes = [str]*(halfcol)
@@ -1686,12 +1682,13 @@ class Matrix:
             #Just too many rows
             else:
                 #Get needed parts
-                top = roundform[:halfrow,:]
-                bottom = roundform[-(rowlimit//2):,:]
+                top = self[:halfrow,:].roundForm(self.decimal)
+                bottom = self[-(rowlimit//2):,:].roundForm(self.decimal)
                 #Set new dtypes
                 for i in [top,bottom]:
-                    i.dtype = "dataframe"
-                    i.coldtypes = [str]*(self.dim[1])
+                    if i.dtype != "dataframe":
+                        i.dtype = "dataframe"
+                    i.coldtypes = [str]*(collimit)
                 #Concat last items
                 top.concat(bottom,concat_as="row")
                 #Add middle part
@@ -1704,11 +1701,12 @@ class Matrix:
         #Just too many columns
         elif self.dim[1]>collimit:
             #Get needed parts
-            left = roundform[:,:halfcol]
-            right = roundform[:,-(collimit//2):]
+            left = self[:,:halfcol].roundForm(self.decimal)
+            right = self[:,-(collimit//2):].roundForm(self.decimal)
             #Set new dtypes
             for i in [left,right]:
-                i.dtype = "dataframe"
+                if i.dtype != "dataframe":
+                    i.dtype = "dataframe"
             left.coldtypes = [str]*(halfcol)
             right.coldtypes = [str]*(collimit//2)
             #Add and concat rest of the stuff
