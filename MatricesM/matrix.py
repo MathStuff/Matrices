@@ -27,7 +27,7 @@ class Matrix:
     
     features:list of strings; column names
     
-    seed:int|float|complex|str; seed to use while generating random numbers, not useful without fill is one of ['uniform','triangular','gauss']
+    seed:int; seed to use while generating random numbers, not useful when fill isn't one of ['uniform','triangular','gauss']
     
     decimal:int; Digits to round to and print
 
@@ -1507,13 +1507,58 @@ class Matrix:
     @property   
     def describe(self):
         """
-        Returns a matrix describing the matrix with features: Column, dtype, mean, sdev, min, max, 25%, 50%, 75%
+        Returns a matrix describing the matrix with features: Column, dtype, count,mean, sdev, min, max, 25%, 50%, 75%
         """
         from MatricesM.stats.describe import describe
         return describe(self,Matrix)
 
+    def sum(self,col=None,asDict=True):
+        """
+        Return the sum of the desired column, give no arguments to get all columns'.
+        col: int|str|None ; Column index or name
+        asDict: boolean ; Wheter or not to return values in a dictionary. If col and asDict both None, values are returned in a list. If col is given value is returned
+        """
+        if col==None:
+            if asDict:
+                return {self.features[i]:sum(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]}
+            return [sum(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]]
+        else:
+            if isinstance(col,str):
+                col = self.features.index(col)
+            if isinstance(col,int):
+                if asDict:
+                    return {self.features[col]:sum(self.col(col+1,0))}
+                return sum(self.col(col+1,0))
+
+    def prod(self,col=None,asDict=True):
+        """
+        Return the product of the desired column, give no arguments to get all columns'.
+        col: int|str|None ; Column index or name
+        asDict: boolean ; Wheter or not to return values in a dictionary. If col and asDict both None, values are returned in a list. If col is given value is returned
+        """
+        def p(lis):
+            prd=1;
+            for i in lis:
+                prd*=i
+            return prd;
+
+        if col==None:
+            if asDict:
+                return {self.features[i]:p(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]}
+            return [p(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]]
+        else:
+            if isinstance(col,str):
+                col = self.features.index(col)
+            if isinstance(col,int):
+                if asDict:
+                    return {self.features[col]:p(self.col(col+1,0))}
+                return p(self.col(col+1,0))
+
     @property
     def info(self):
+        """
+        Prints out all available attributes
+        """
         pass
 # =============================================================================
     """Logical-bitwise magic methods """
@@ -1581,8 +1626,8 @@ class Matrix:
         Indices for full columns:
             Matrix[str]                  --> Return all rows of a column
             Matrix[:,slice]              --> Return 0 or more columns
-            Matrix[:,(str,str,...,str)]  --> Return all rows of the desired columns passed as a tuple of strings
-            Matrix[str,str,...,str]      --> Return all rows of many columns (Can include duplicates)
+            Matrix[:,(str,str,...,str)]  --> Return all rows of the desired columns passed as a tuple of strings (Can include duplicates)
+            Matrix[str,str,...,str]      --> Return all rows of many columns (Can include duplicates) (Same as the previous one)
 
         Filtered rows and columns:
             Matrix[slice,(str,str,...,str)]   --> Return 0 or more rows of the desired columns
@@ -1636,15 +1681,13 @@ class Matrix:
         if self.dim[0]<=rowlimit and self.dim[1]<=collimit:
             return self._stringfy(coldtypes=self.coldtypes[:])
 
-        newstr = ""
         halfrow = rowlimit//2
         halfcol = collimit//2
         if collimit%2 != 0:
             halfcol = collimit//2 + 1
         if rowlimit%2 != 0:
             halfrow = rowlimit//2 + 1
-        #Get values rounded for printing purposes
-        # roundform = self.roundForm(self.decimal)
+
         #Too many rows
         if self.dim[0]>rowlimit:
             #Too many columns
