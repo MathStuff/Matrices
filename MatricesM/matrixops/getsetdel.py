@@ -35,7 +35,7 @@ def getitem(mat,pos,obj):
         #Column names given
         if all([1 if isinstance(i,str) else 0 for i in pos]):
             colinds = [mat.features.index(i) for i in pos]
-            temp = obj((mat.dim[0],len(pos)),fill=0,features=list(pos),dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds])
+            temp = obj((mat.dim[0],len(pos)),fill=0,features=list(pos),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds])
             for row in range(mat.dim[0]):
                 c = 0
                 for col in colinds:
@@ -62,7 +62,7 @@ def getitem(mat,pos,obj):
                     if isinstance(pos[0],obj):
                         rowrange = [i[0] for i in pos[0].find(1,0)]
 
-                    temp = obj((len(rowrange),len(pos[1])),fill=0,features=list(pos[1]),dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds])
+                    temp = obj((len(rowrange),len(pos[1])),fill=0,features=list(pos[1]),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds])
                     r = 0
                     for row in rowrange:
                         c = 0
@@ -379,7 +379,9 @@ def delitem(mat,val,obj):
             for i in range(mat.dim[0]):
                 del mat.matrix[i][colind]
             #Set new dimensions
-            mat.__dim = [mat.dim[0],mat.dim[1]-1]
+            mat._Matrix__dim = [mat.dim[0],mat.dim[1]-1]
+            del mat.features[colind]
+            del mat.coldtypes[colind]
 
         #An integer passed == delete a row
         elif isinstance(val,int):
@@ -389,7 +391,7 @@ def delitem(mat,val,obj):
             #Remove the desired row
             del mat.matrix[val]
             #Set new dimensions
-            mat.__dim = [mat.dim[0]-1,mat.dim[1]]
+            mat._Matrix__dim = [mat.dim[0]-1,mat.dim[1]]
 
         #Slice object passed == delete 1 or more rows
         elif isinstance(val,slice):
@@ -400,7 +402,7 @@ def delitem(mat,val,obj):
             #Remove rows
             mat._matrix = [mat._matrix[i] for i in range(mat.dim[0]) if not i in range(mat.dim[0])[val]]
             #Set new dimensions
-            mat.__dim = [mat.dim[0]-ceil((e-s)/t),mat.dim[1]]
+            mat._Matrix__dim = [mat.dim[0]-ceil((e-s)/t),mat.dim[1]]
 
         #Multiple arguments passed == delete 1 or more rows and columns
         elif isinstance(val,tuple):
@@ -412,15 +414,24 @@ def delitem(mat,val,obj):
                 for r in range(mat.dim[0]):
                     mat._matrix[r] = [mat._matrix[r][i] for i in range(mat.dim[1]) if not i in colinds]
                 #Remove column names and dtypes        
-                mat.__features = [mat.__features[i] for i in range(mat.dim[1]) if not i in colinds]
-                mat.__coldtypes = [mat.__coldtypes[i] for i in range(mat.dim[1]) if not i in colinds]
+                mat._Matrix__features = [mat.features[i] for i in range(mat.dim[1]) if not i in colinds]
+                mat._Matrix__coldtypes = [mat.coldtypes[i] for i in range(mat.dim[1]) if not i in colinds]
                 #Set new dimensions
-                mat.__dim = [mat.dim[0],mat.dim[1]-len(colinds)]
+                mat._Matrix__dim = [mat.dim[0],mat.dim[1]-len(colinds)]
 
             #Columns can't be deleted just for some rows
             else:
-                raise TypeError("Rows or columns should be deleted entirely not at all. Use 'replace' method to change individual values in rows")
-        
+                if isinstance(val[0],slice):
+                    if betterslice(val[0],mat.dim[0]) != slice(0,mat.dim[0],1):
+                        raise TypeError("Rows or columns should be deleted entirely not at all. Use 'replace' method to change individual values in rows")
+                    else:
+                        if isinstance(val[1],slice):
+                            cols = mat.features[val[1]]
+                        for col in cols:
+                            mat.__delitem__(col)
+                else:
+                    raise TypeError("Rows or columns should be deleted entirely not at all. Use 'replace' method to change individual values in rows")
+                    
         #Boolean matrix given as indeces == remove 0 or more rows
         elif isinstance(val,obj):
             #Assertion
@@ -431,4 +442,4 @@ def delitem(mat,val,obj):
             deleted = len(rowinds)
             mat._matrix = [mat._matrix[i] for i in range(mat.dim[0]) if i not in rowinds]
             #Set new dimensions
-            mat.__dim = [mat.dim[0]-deleted,mat.dim[1]]
+            mat._Matrix__dim = [mat.dim[0]-deleted,mat.dim[1]]
