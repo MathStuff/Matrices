@@ -28,15 +28,15 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
 
                      directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                     fill=value, #Optional,Available distributions: 'uniform'|'triangular'|'gauss'; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force 'uniform' distribution. Doesn't affect the matrix if "listed" or "directory" is given
+                     fill=value, #Optional,Available distributions: uniform|triangular|gauss; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
                      ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
                               ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
                               ->Arguments should follow one of the following rules:
-                                   1)If 'fill' is 'uniform', interval to pick numbers from as [minimum,maximum]; 
-                                   2)If 'fill' is 'gauss', mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                                   3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]  """                     
+                                   1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
+                                   2)If 'fill' is gauss, mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                                   3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode]  """                     
 
                      header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
@@ -74,16 +74,16 @@ B = Matrix([3,5],ranged=[10,25])
 E = Matrix(6,dtype="integer") 
 
 #Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
-F = Matrix([200,5],fill='gauss',ranged=[50,10]) 
+F = Matrix([200,5],fill=gauss,ranged=[50,10]) 
 
 #Create a 10x10 matrix filled with 1's
 G = Matrix(10,fill=1)
 
 #Create a 200x4 matrix filled with integer numbers using triangular distribution where the range is [0,20] and mode is around if not 18
-H = Matrix((200,4),fill='triangular',ranged=[0,20,18],dtype="integer") 
+H = Matrix((200,4),fill=triangular,ranged=[0,20,18],dtype="integer") 
 
 #Create a 9x9 matrix filled with complex numbers using gauss distribution for both real and imaginary parts with mean=5 and sdev=2
-C1 = Matrix(9,fill="gauss",ranged=[5,2],dtype="complex")
+C1 = Matrix(9,fill=gauss,ranged=[5,2],dtype="complex")
 
 #Create a 10x1 matrix filled with the given string
 S = Matrix((10,1),fill="hello",dtype="dataframe")
@@ -93,7 +93,7 @@ S = Matrix((10,1),fill="hello",dtype="dataframe")
 ```python
 #Create a 10000x3 integer numbers matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
 randomData1 = Matrix((10000,3),
-                     fill='triangular',
+                     fill=triangular,
                      ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
                      seed=32141,
                      dtype="integer")
@@ -105,7 +105,7 @@ randomData2 = Matrix([10000,4],
 
 #Create a 10000x4 matrix float numbers using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
 randomData3 = Matrix([10000,4],
-                     fill='gauss',
+                     fill=gauss,
                      ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
                      seed=4472142)
 
@@ -248,7 +248,7 @@ winedata[winedata["quality"]>6,("alcohol", "quality")]
 ##### Apply arithmetic operations to individual rows and columns.
 ```python
 #Create a 1000x2 dataframe filled using normal distribution with given arguments
-marketData = Matrix((1000,2),fill="gauss",ranged={"Price":(250,60),"Discount":(8,2)},dtype="dataframe")
+marketData = Matrix((1000,2),fill=gauss,ranged={"Price":(250,60),"Discount":(8,2)},dtype="dataframe")
 
 #Change invalid values in "Discount" column where it's less than 0 to 0
 marketData[marketData["Discount"]<0,"Discount"] = 0
@@ -325,8 +325,6 @@ C.matrix #Returns the matrix's rows as lists in a list
 
 C.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
-C.string #Returns the string form of the matrix's elements, this is the string the 'grid' property prints
-
 C.col(n,as_matrix) #Returns the nth column if n is an integer or returns the column named n, as a list or matrix, set as_matrix to True to get the list as a matrix
 
 C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
@@ -342,6 +340,8 @@ C.copy #Returns a copy of the matrix
 C.obj #Returns the string form of the Matrix object which can be evaluated to create the same matrix
 
 C.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Seed can be changed to refill the matrix in-place
+
+C.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace
 
 C.intForm #Returns integer form of the matrix
 
