@@ -689,10 +689,10 @@ class Matrix:
         return self.__coldtypes
     @coldtypes.setter
     def coldtypes(self,val):
-        if not isinstance(li,(list,tuple)):
-            raise NotListOrTuple(li)
-        if len(li) != self.dim[1]:
-            raise InvalidList(li,self.dim[1],"column dtypes")
+        if not isinstance(val,(list,tuple)):
+            raise NotListOrTuple(val)
+        if len(val) != self.dim[1]:
+            raise InvalidList(val,self.dim[1],"column dtypes")
 
         for i in val:
             if type(i)!=type:
