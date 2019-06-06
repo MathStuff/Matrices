@@ -1,8 +1,9 @@
-def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=True):
+from random import random,randint,uniform,triangular,gauss,seed
+
+def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=uniform,cmat=False,fmat=True):
     """
     Set the matrix based on the arguments given
     """
-    from random import random,randint,uniform,triangular,gauss,seed
     from MatricesM.C_funcs.randgen import getuni,getfill,igetuni,igetrand
     from MatricesM.C_funcs.zerone import pyfill
     from MatricesM.C_funcs.linalg import Ctranspose
@@ -12,11 +13,13 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         lis = []
     if len(direc)==0 and len(lis)==0:
         if fill == None:
-            fill = "uniform"
+            fill = uniform
         elif isinstance(fill,str):
-            if fill.lower() not in ["uniform","gauss","triangular"]:
-                if mat.dtype != "dataframe":
-                    raise TypeError("Can't fill matrix with strings if dtype isn't set to 'dataframe'")
+            if mat.dtype != "dataframe":
+                raise TypeError("Can't fill matrix with strings if dtype isn't set to 'dataframe'")
+        elif type(fill).__name__=="method":
+            if not (fill in [uniform,gauss,triangular]):
+                raise FillError(fill)
     #Check dimension given
     if isinstance(d,int):
         mat._setDim(d)
@@ -28,11 +31,11 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         
     # =============================================================================
     #Save the seed for reproduction
-    if mat.seed==None and (fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
+    if mat.seed==None and len(lis)==0 and len(direc)==0 and type(fill).__name__=="method":
         randseed = randint(-2**24,2**24)
         mat._Matrix__seed = randseed
     
-    elif (fill in ["random","uniform","gauss","triangular"]) and len(lis)==0 and len(direc)==0:
+    elif type(fill).__name__=="method" and len(lis)==0 and len(direc)==0:
         seed(mat.seed)
     else:
         mat._Matrix__seed=None
@@ -77,7 +80,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
         #Same range for all columns
         elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
             
-            if fill in ["uniform"]:
+            if fill is uniform:
                 m,n=max(r),min(r)
                 if cmat:
                     seed(mat.seed)
@@ -95,7 +98,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     else:
                         mat._matrix=igetuni(d[0],d[1],n-1,m+1,mat.seed)
                         
-            elif fill in ["gauss"]:
+            elif fill is gauss:
                 seed(mat.seed)
                 m,s=r[0],r[1]
                 if cmat:
@@ -107,7 +110,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                 else:
                     mat._matrix=[[round(gauss(m,s)) for a in range(d[1])] for b in range(d[0])]
                     
-            elif fill in ["triangular"]:
+            elif fill is triangular:
                 seed(mat.seed)
                 n,m,o = r[0],r[1],r[2]
                 if cmat:
@@ -148,7 +151,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
             else:
                 lis=list(r.values())
                 seed(mat.seed)
-                if fill in ["uniform"]:                    
+                if fill in uniform:                    
                     if cmat:
                         temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
@@ -158,7 +161,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     else:
                         temp=[[round(uniform(min(lis[i]),max(lis[i])+1))//1 for _ in range(d[0])] for i in range(d[1])]
                 
-                elif fill in ["gauss"]:                    
+                elif fill in gauss:                    
                     if cmat:
                         temp=[[complex(gauss(lis[i][0],lis[i][1]),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
@@ -168,7 +171,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill="uniform",cmat=False,fmat=
                     else:
                         temp=[[round(gauss(lis[i][0],lis[i][1]+1))//1 for _ in range(d[0])] for i in range(d[1])]
                         
-                elif fill in ["triangular"]:                    
+                elif fill in triangular:                    
                     if cmat:
                         temp=[[complex(triangular(lis[i][0],lis[i][1],lis[i][2]),triangular(lis[i][0],lis[i][1],lis[i][2])) for _ in range(d[0])] for i in range(d[1])]
                         

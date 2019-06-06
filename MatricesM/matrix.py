@@ -4,7 +4,9 @@ Created on Wed Oct 31 17:26:48 2018
 
 @author: Semih
 """
-from MatricesM.validations.listedcheck import *
+from MatricesM.validations.validate import *
+from MatricesM.errors.errors import *
+from random import random,randint,uniform,triangular,gauss,seed
 
 class Matrix:
     """
@@ -14,20 +16,20 @@ class Matrix:
     
     directory:str; directory of a data file(e.g. 'directory/datafile' or r'directory\datafile')
     
-    fill: 'uniform'|'triangular'|'gauss' or int|float|complex|str|list|range or None; fills the matrix with chosen distribution or the value, default is uniform distribution
+    fill: uniform|triangular|gauss or int|float|complex|str|list|range or None; fills the matrix with chosen distribution or the value, default is uniform distribution
 
     ranged:->To apply all the elements give a list | tuple
            ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
            ->Arguments should follow one of the following rules:
-                1)If 'fill' is 'uniform', interval to pick numbers from as [minimum,maximum]; 
-                2)If 'fill' is 'gauss', mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                3)If 'fill' is 'triangular, range of the numbers and the mode as [minimum,maximum,mode]
+                1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
+                2)If 'fill' is gauss, mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode]
 
     header:boolean; takes first row as header title
     
     features:list of strings; column names
     
-    seed:int; seed to use while generating random numbers, not useful when fill isn't one of ['uniform','triangular','gauss']
+    seed:int; seed to use while generating random numbers, not useful when fill isn't one of [uniform,triangular,gauss]
     
     decimal:int; Digits to round to and print
 
@@ -47,7 +49,7 @@ class Matrix:
                  dim=None,
                  listed=[],
                  directory="",
-                 fill="uniform",
+                 fill=uniform,
                  ranged=[0,1],
                  seed=None,
                  header=False,
@@ -57,8 +59,7 @@ class Matrix:
                  coldtypes=[],
                  implicit=False):  
         
-        self._matrix = listed  
-        self._string = ""
+        self._matrix = listed
         self._dir = directory
         self._header = header
 
@@ -126,7 +127,7 @@ class Matrix:
         from MatricesM.setup.dims import setDim
         setDim(self,d)
         
-    def setMatrix(self,d=None,r=None,lis=[],direc=r"",f="uniform",cmat=False,fmat=True):
+    def setMatrix(self,d=None,r=None,lis=[],direc=r"",f=uniform,cmat=False,fmat=True):
         """
         Set the matrix based on the arguments given
         """
@@ -189,9 +190,9 @@ class Matrix:
         rows : integer>0 | How many rows to return
         """
         if not isinstance(rows,int):
-            raise TypeError("rows should be a positive integer number")
+            raise InvalidIndex(rows,"Rows should be a positive integer number")
         if rows<=0:
-            raise ValueError("rows can't be less than or equal to 0")
+            raise InvalidIndex(rows,"rows can't be less than or equal to 0")
         if self.dim[0]>=rows:
             return self[:rows]
         return self[:,:]
@@ -203,9 +204,9 @@ class Matrix:
         rows : integer>0 | How many rows to return
         """
         if not isinstance(rows,int):
-            raise TypeError("rows should be a positive integer number")
+            raise InvalidIndex(rows,"Rows should be a positive integer number")
         if rows<=0:
-            raise ValueError("rows can't be less than or equal to 0")
+            raise InvalidIndex(rows,"rows can't be less than or equal to 0")
         if self.dim[0]>=rows:
             return self[self.dim[0]-rows:]
         return self[:,:]
@@ -216,25 +217,19 @@ class Matrix:
         column:integer>=1 and <=column_amount | column name
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
         """
-        try:
-            if isinstance(column,int):
-                if not (column<=self.dim[1] and column>0):
-                    raise IndexError("Column index out of range")
-            elif isinstance(column,str):
-                if not column in self.features:
-                    raise ValueError(f"{column} is not in column names")
-                column = self.features.index(column)+1
-        except:
-            print("Bad arguments in 'col' method")
-            return None
+        if isinstance(column,int):
+            if not (column<=self.dim[1] and column>0):
+                raise InvalidColumn(column,"Column index out of range")
+        elif isinstance(column,str):
+            if not column in self.features:
+                raise  InvalidColumn(column,f"'{column}' is not in column names")
+            column = self.features.index(column)+1
         else:
-            temp=[]
-            for rows in self._matrix:
-                temp.append(rows[column-1])
-            
-            if as_matrix:
-                return self[:,column-1:column]
-            return temp
+            raise InvalidColumn(column)
+
+        if as_matrix:
+            return self[:,column-1:column]
+        return [self._matrix[r][column-1] for r in range(self.dim[0])]
     
     def row(self,row=None,as_matrix=True):
         """
@@ -242,17 +237,15 @@ class Matrix:
         row:integer>=1 and <=row_amount
         as_matrix:False to get the row as a list, True to get a row matrix (default) 
         """
-        try:
-            if isinstance(row,int):
-                if not (row<=self.dim[0] and row>0):
-                    raise IndexError("Row index out of range")
-        except:
-            print("Bad arguments in 'row' method")
-            return None
+        if isinstance(row,int):
+            if not (row<=self.dim[0] and row>0):
+                raise InvalidIndex(row,"Row index out of range")
         else:
-            if as_matrix:
-                return self[row-1:row]
-            return self._matrix[row-1]
+            raise InvalidIndex(row)
+
+        if as_matrix:
+            return self[row-1:row]
+        return self._matrix[row-1]
                     
     def add(self,lis=[],row=None,col=None,feature="Col",dtype=None):
         """
@@ -399,10 +392,7 @@ class Matrix:
    
     @property
     def grid(self):
-        self.__dim=self._declareDim()
-        self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy(coldtypes=self.coldtypes)
-        print(self._string)
+        print(self._stringfy(coldtypes=self.coldtypes))
     
     @property
     def copy(self):
@@ -422,9 +412,7 @@ class Matrix:
 
     @property
     def string(self):
-        self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy(coldtypes=self.coldtypes[:])
-        return self._string
+        return self._stringfy(coldtypes=self.coldtypes[:])
     
     @property
     def directory(self):
@@ -435,14 +423,13 @@ class Matrix:
         return self.__features
     @features.setter
     def features(self,li):
-        try:
-            assert isinstance(li,list)
-            assert len(li)==self.dim[1]
-        except AssertionError:
-            print("Give the feature names as a list of strings with the right amount")
-        else:
-            temp=[str(i) for i in li]
-            self.__features=temp
+        if not isinstance(li,(list,tuple)):
+            raise NotListOrTuple(li)
+        if len(li) != self.dim[1]:
+            raise InvalidList(li,self.dim[1],"column names")
+
+        temp=[str(i) for i in li]
+        self.__features=temp
                 
     @property
     def dim(self):
@@ -472,9 +459,9 @@ class Matrix:
     @fill.setter
     def fill(self,value):
         try:
-            assert (value in ["uniform","triangular","gauss"]) or (type(value) in [int,str,float,complex,range,list]) or value==None
+            assert (value in [uniform,triangular,gauss]) or (type(value) in [int,str,float,complex,range,list]) or value==None
         except AssertionError:
-            raise TypeError("fill: 'uniform'|'triangular'|'gauss' or int|float|complex|str| or None; fills the matrix with chosen distribution or the value, default is uniform distribution")
+            raise TypeError("fill: uniform|triangular|gauss or int|float|complex|str| or None; fills the matrix with chosen distribution or the value, default is uniform distribution")
         else:
             self.__fill=value
             self.setMatrix(self.__dim,self.__initRange,[],self._dir,self.__fill,self._cMat,self._fMat)
@@ -487,13 +474,13 @@ class Matrix:
         if not (isinstance(value,list) or isinstance(value,tuple) or isinstance(value,dict)):
             raise TypeError("initRange should be a list or a tuple")
         
-        if self.fill in ["uniform","gauss"] or ( isinstance(self.fill,int) or isinstance(self.fill,float) or isinstance(self.fill,complex) ):
+        if self.fill in [uniform,gauss] or ( isinstance(self.fill,int) or isinstance(self.fill,float) or isinstance(self.fill,complex) ):
             if isinstance(value,list):
                 if len(value)!=2:
                     return IndexError("initRange|ranged should be in the form of [mean,standard_deviation] or [minimum,maximum]")
                 if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)):
                     return ValueError("list contains non integer and non float numbers")
-        elif self.fill in ["triangular"]:
+        elif self.fill in [triangular]:
             if isinstance(value,list):
                 if len(value)!=3:
                     return IndexError("initRange|ranged should be in the form of [minimum,maximum,mode]")
@@ -632,11 +619,13 @@ class Matrix:
         Object call as a string to recreate the matrix
         """
         import re
-        cdtype_str = str(re.findall(r"'(?P<inner>\w+)'","{}".format(self.coldtypes))).replace("'","")
-        return "Matrix(dim={0},listed={1},ranged={2},fill='{3}',features={4},header={5},directory='{6}',decimal={7},seed={8},dtype='{9}',coldtypes={10})".format(self.dim,
+        cdtype_str,fillstr = str(re.findall(r"'(?P<inner>\w+)'","{}".format(self.coldtypes))).replace("'",""),self.fill
+        if type(self.fill).__name__ == "method":
+            fillstr = self.fill.__name__
+        return "Matrix(dim={0},listed={1},ranged={2},fill={3},features={4},header={5},directory='{6}',decimal={7},seed={8},dtype='{9}',coldtypes={10})".format(self.dim,
                                                                                                                                                                  self._matrix,
                                                                                                                                                                  self.initRange,
-                                                                                                                                                                 self.fill,
+                                                                                                                                                                 fillstr,
                                                                                                                                                                  self.features,
                                                                                                                                                                  self._header,
                                                                                                                                                                  self._dir,
@@ -679,7 +668,7 @@ class Matrix:
     @dtype.setter
     def dtype(self,val):
         if not val in ['integer','float','complex','dataframe']:
-            return ValueError("dtype can be one of the followings: 'integer' | 'float' | 'complex' | 'dataframe'")
+            return DtypeError(val)
         else:
             self.__dtype = val
             self.__init__(dim=self.dim,
@@ -700,17 +689,16 @@ class Matrix:
         return self.__coldtypes
     @coldtypes.setter
     def coldtypes(self,val):
-        try:
-            assert isinstance(val,list)
-            assert len(val)==self.dim[1]
-        except AssertionError:
-            print("Give the col dtypes as a list of types with the right amount")
-        else:
-            for i in val:
-                if type(i)!=type:
-                    raise ValueError("coldtypes should be all 'type' objects")
-            self.__coldtypes=val
-            self.setcoldtypes(True)
+        if not isinstance(li,(list,tuple)):
+            raise NotListOrTuple(li)
+        if len(li) != self.dim[1]:
+            raise InvalidList(li,self.dim[1],"column dtypes")
+
+        for i in val:
+            if type(i)!=type:
+                raise ColdtypeError(i)
+        self.__coldtypes=val
+        self.setcoldtypes(True)
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -1767,12 +1755,12 @@ class Matrix:
         """
         self.__dim=self._declareDim()
         self._inRange=self._declareRange(self._matrix)
-        self._string=self._stringfy(coldtypes=self.coldtypes[:])
+        s=self._stringfy(coldtypes=self.coldtypes[:])
         if not self.isSquare:
             print("\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
         else:
             print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))
-        return self._string+"\n"   
+        return s+"\n"   
     
     def __call__(self):
         return self.__str__()
