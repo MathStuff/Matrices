@@ -357,7 +357,7 @@ C.ROW_LIMIT #Attribute to determine the amount of rows to print while representi
 
 C.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
-C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 125.
+C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 150.
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -410,7 +410,7 @@ C.trace #Returns the trace of the matrix
 
 C.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
 
-C.eigenvalues #Returns the eigenvalues
+C.eigenvalues #Returns the eigenvalues #Doesn't work 100%, check issue #64
 
 C.isSquare #Returns True if the matrix is a square matrix
 
@@ -468,6 +468,10 @@ C.head(n) #Returns the first n rows (if there are less than n rows it returns al
 C.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
 
 C.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, max, 25%, 50%, 75%.
+
+C.sum(n,asDict) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+
+C.prod(n,asDict) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
 
 C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
