@@ -151,7 +151,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=uniform,cmat=False,fmat=Tr
             else:
                 lis=list(r.values())
                 seed(mat.seed)
-                if fill in uniform:                    
+                if fill is uniform:                    
                     if cmat:
                         temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
@@ -161,7 +161,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=uniform,cmat=False,fmat=Tr
                     else:
                         temp=[[round(uniform(min(lis[i]),max(lis[i])+1))//1 for _ in range(d[0])] for i in range(d[1])]
                 
-                elif fill in gauss:                    
+                elif fill is gauss:                    
                     if cmat:
                         temp=[[complex(gauss(lis[i][0],lis[i][1]),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
                     
@@ -171,7 +171,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=uniform,cmat=False,fmat=Tr
                     else:
                         temp=[[round(gauss(lis[i][0],lis[i][1]+1))//1 for _ in range(d[0])] for i in range(d[1])]
                         
-                elif fill in triangular:                    
+                elif fill is triangular:                    
                     if cmat:
                         temp=[[complex(triangular(lis[i][0],lis[i][1],lis[i][2]),triangular(lis[i][0],lis[i][1],lis[i][2])) for _ in range(d[0])] for i in range(d[1])]
                         
