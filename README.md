@@ -12,7 +12,7 @@
    ```
    #### OR
    ```python 
-   from MatricesM.matrix import Matrix #Use matrices directly : Matrix(arguments)
+   from MatricesM.matrix import * #Use matrices directly : Matrix(arguments)
    ```
 ### Import and print example matrices:
    ```python 
