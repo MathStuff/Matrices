@@ -493,6 +493,8 @@ C.sample(size,condition) #Get a sample sized 'size' where the 'condition' is Tru
 
 C.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
+C.count(column,asDict) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s). asDict to change wheter or not to return values in a dictionary or a list.
+
 C.mean(n,asDict) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
 
 C.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
