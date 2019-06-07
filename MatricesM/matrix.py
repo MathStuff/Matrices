@@ -44,6 +44,7 @@ class Matrix:
 
     Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
+    from random import random,randint,uniform,triangular,gauss,seed
 
     def __init__(self,
                  dim=None,
@@ -1541,6 +1542,25 @@ class Matrix:
                 if asDict:
                     return {self.features[col]:p(self.col(col+1,0))}
                 return p(self.col(col+1,0))
+
+    def count(self,col=None,asDict=True):
+        """
+        Return the count of the valid values in column(s), give no arguments to get all columns'.
+        col: int|str|None ; Column index or name
+        asDict: boolean ; Wheter or not to return values in a dictionary. If col and asDict both None, values are returned in a list. If col is given value is returned
+        """
+        colds = self.coldtypes[:]
+        if col==None:
+            if asDict:
+                return {self.features[i]:len([1 for k in self.col(i+1,0) if type(k) == colds[i]]) for i in range(self.dim[1])}
+            return [len([1 for k in self.col(i+1,0) if type(k) == colds[i]]) for i in range(self.dim[1])]
+        else:
+            if isinstance(col,str):
+                col = self.features.index(col)
+            if isinstance(col,int):
+                if asDict:
+                    return {self.features[col]:len([1 for k in self.col(col+1,0) if type(k) == colds[col]])}
+                return len([1 for k in self.col(col+1,0) if type(k) == colds[col]])
 
     @property
     def info(self):

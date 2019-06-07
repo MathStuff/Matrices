@@ -13,16 +13,17 @@ def describe(mat,obj):
 
     #Gather the data
     dtypes = [mat.coldtypes[t] for t in valid_feats_inds]
+    counts = mat.count()
     mean = mat.mean()
     sdev = mat.sdev()
     ranges = mat.ranged()
     iqrs = mat.iqr(as_quartiles=True)
-
+    
     #Fill the matrix
     temp = []
     for i in range(len(valid_feats_inds)):
         name = valid_feats_names[i]
-        temp.append([name,dtypes[i],sum([1 for i in mat.col(name,0) if isinstance(i,(int,float))]),mean[name],sdev[name],ranges[name][0],ranges[name][1],iqrs[name][0],iqrs[name][1],iqrs[name][2]])
+        temp.append([name,dtypes[i],counts[name],mean[name],sdev[name],ranges[name][0],ranges[name][1],iqrs[name][0],iqrs[name][1],iqrs[name][2]])
 
     desc_mat._matrix = temp
     return desc_mat
