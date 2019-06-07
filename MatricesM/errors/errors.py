@@ -41,7 +41,7 @@ class FillError(MatrixError):
     Error filling matrices
     """
     def __init__(self,err,*args):
-        self.message  = f"'{type(err)}' type '{err}'can't be used to fill matrices. "+". ".join(args)
+        self.message  = f"'{type(err)}' type '{err}' can't be used to fill matrices. "+". ".join(args)
 
 class DtypeError(MatrixError):
     """

@@ -44,7 +44,6 @@ class Matrix:
 
     Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
-    from random import random,randint,uniform,triangular,gauss,seed
 
     def __init__(self,
                  dim=None,
@@ -462,7 +461,7 @@ class Matrix:
         try:
             assert (value in [uniform,triangular,gauss]) or (type(value) in [int,str,float,complex,range,list]) or value==None
         except AssertionError:
-            raise TypeError("fill: uniform|triangular|gauss or int|float|complex|str|range|list|None; fills the matrix with chosen distribution or the value, default is uniform distribution")
+            raise FillError(value)
         else:
             self.__fill=value
             self.setMatrix(self.__dim,self.__initRange,[],self._dir,self.__fill,self._cMat,self._fMat)
