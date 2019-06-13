@@ -4,8 +4,8 @@ Created on Wed Oct 31 17:38:28 2018
 
 @author: Semih
 """
-from MatricesM.matrix import Matrix
-from MatricesM.constructors.matrices import Identity
+from MatricesM.matrix import *
+from MatricesM.constructors.matrices import *
 from random import random,randint,uniform,triangular,gauss,seed
 
 try:
@@ -42,21 +42,21 @@ projectGrid="""08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08
 o=Matrix(8,fill=0)
 b=Matrix(1)
 c=Matrix(dim=[2,4],ranged=[-50,50])
-d=Matrix([4,3],dtype="float")
+d=Matrix([4,3],dtype=float)
 e=Matrix(8,fill=gauss,ranged=[0,3])
-f=Matrix(dim=6,ranged=[-1250,1250],dtype="float")
+f=Matrix(dim=6,ranged=[-1250,1250],dtype=float)
 g=Matrix(dim=[3,6],ranged=[2,10])
 p=Matrix(5,ranged=[0,100])
-q=Matrix(4,dtype="float")
-q1=Matrix(9,decimal=2,dtype="float")
-q2=Matrix(6,decimal=6,dtype="float")
+q=Matrix(4,dtype=float)
+q1=Matrix(9,decimal=2,dtype=float)
+q2=Matrix(6,decimal=6,dtype=float)
 y=Matrix(3,listed=[3,5,7,8,3,4,5,2,5])
-c1=Matrix(5,dtype="complex")
-c2=Matrix([7,3],ranged=[-10,10],dtype="complex")
+c1=Matrix(5,dtype=complex)
+c2=Matrix([7,3],ranged=[-10,10],dtype=complex)
 # =============================================================================
 # String inputs Matrices
 # =============================================================================
-proj=Matrix(20,listed=projectGrid,dtype="integer")
+proj=Matrix(20,listed=projectGrid,dtype=int)
 validStr1=Matrix(dim=[2,3],listed=" 34-52\n33a c9d88 hello\n--3-")
 validStr2=Matrix(listed="312as45\ndid12,,,44\ncc352as45\ndid12,,,44\ncc3-5")
 validStr3=Matrix(listed="\n\n\ndd34 5\n\n44\nn659")
@@ -83,7 +83,7 @@ fr,183,88,28,e
 fr,159,40,29,k
 fr,164,66,32,k
 fr,166,56,42,k
-""",features=["Height","Weight","Age"],dtype="dataframe",coldtypes=[int]*3)
+""",features=["Height","Weight","Age"],dtype=dataframe,coldtypes=[int]*3)
 # =============================================================================
 # Identity Matrices
 # =============================================================================
@@ -263,7 +263,7 @@ print("\ne-=33:")
 e-=33
 print(e)
 print("\ne+=Matrix(e.dim):")
-e+=Matrix(e.dim,dtype="float")
+e+=Matrix(e.dim,dtype=float)
 print(e)
 print("\ne*=[2,1,1,0.5,0.2,0.0003,1,3]:")
 e*=[2,1,1,0.5,0.2,0.0003,1,3]

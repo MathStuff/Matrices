@@ -1,4 +1,5 @@
 def describe(mat,obj):
+    from MatricesM.matrix import dataframe
     if mat._cMat:
         return None
     if mat.dim[0]<=1:
@@ -9,7 +10,7 @@ def describe(mat,obj):
 
     desc_mat = obj((len(valid_feats_inds),10),fill=0,
                   features=["Column","dtype","count","mean","sdev","min","max","25%","50%","75%"],
-                  dtype="dataframe",coldtypes=[str,type]+[int]+[float]*7)
+                  dtype=dataframe,coldtypes=[str,type]+[int]+[float]*7)
 
     #Gather the data
     dtypes = [mat.coldtypes[t] for t in valid_feats_inds]
