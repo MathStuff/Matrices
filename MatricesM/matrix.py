@@ -59,30 +59,35 @@ class Matrix:
                  coldtypes=[],
                  implicit=False):  
         
-        self._matrix = listed
-        self._dir = directory
-        self._header = header
+        #Basic attributes
+        self.__dim = dim                #Dimensions
+        self._matrix = listed           #Values
+        self.__directory = directory    #Directory of the matrix
+        self.__fill = fill              #Filling method for the matrix
+        self.__initRange = ranged       #Given range for 'fill'
+        self.__seed = seed              #Seed to pick values from 
+        self.__header = header          #Wheter or not matrix in the given directory has a header
+        self.__features = features      #Column names
+        self.__decimal = decimal        #How many digits to display in decimal places
+        self.__dtype = dtype            #Type of the matrix
+        self.__coldtypes = coldtypes    #Column dtypes
 
-        self.__dim = dim
-        self.__coldtypes = coldtypes
-        self.__initRange = ranged
-        self.__fill = fill
-        self.__seed = seed
-        self.__features = features
-        self.__decimal = decimal
-        self.__dtype = dtype
-        self.__seed = seed
+        #Set/fix values
+        self._setDim(dim)                     #Make 'dim' a list
+        self.setInstance()                    #Store what type of values matrix can hold
+        if not implicit:                      #If necessary arguments not passed implicitly, set them to be usable  
+            self.setMatrix(self.__dim,self.__initRange,self._matrix,self.__directory,self.__fill,self._cMat,self._fMat)
+        self.setFeatures()                    #Set column names
+        self.setcoldtypes(bool(not implicit)) #Set column dtypes
+        if directory!="":                     #If directory has backslashes, make them forward slashes
+            self.__directory = self.__directory.replace("\\","/")
 
-        self._setDim(dim)
-        self.setInstance()
-        if not implicit:
-            self.setMatrix(self.__dim,self.__initRange,self._matrix,self._dir,self.__fill,self._cMat,self._fMat)
-        self.setFeatures()
-        self.setcoldtypes(declare=bool(not implicit))
-
-        self.ROW_LIMIT = 30
-        self.COL_LIMIT = 12
-        self.EIGEN_ITERS = 150
+        #Constants to use for printing,rounding etc.
+        self.PRECISION = 8      #Decimals to round
+        self.ROW_LIMIT = 30     #Upper limit for amount of rows to print
+        self.COL_LIMIT = 12     #Upper limit for amount of columns to print
+        self.EIGEN_ITERS = 150  #QR algorithm iterations for eigenvalues
+        
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
@@ -399,8 +404,8 @@ class Matrix:
                       ranged=self.initRange,
                       fill=self.fill,
                       features=self.features[:],
-                      header=self._header,
-                      directory=self._dir,
+                      header=self.header,
+                      directory=self.directory,
                       decimal=self.decimal,
                       seed=self.seed,
                       dtype=self.dtype[:],
@@ -414,8 +419,11 @@ class Matrix:
     
     @property
     def directory(self):
-        return self._dir
-    
+        return self.__directory
+    @directory.setter
+    def directory(self,path):
+        pass
+
     @property
     def features(self):
         return self.__features
@@ -462,7 +470,7 @@ class Matrix:
             raise FillError(value)
         else:
             self.__fill=value
-            self.setMatrix(self.__dim,self.__initRange,[],self._dir,self.__fill,self._cMat,self._fMat)
+            self.setMatrix(self.__dim,self.__initRange,[],self.__directory,self.__fill,self._cMat,self._fMat)
 
     @property
     def initRange(self):
@@ -625,8 +633,8 @@ class Matrix:
                                                                                                                                                                  self.initRange,
                                                                                                                                                                  fillstr,
                                                                                                                                                                  self.features,
-                                                                                                                                                                 self._header,
-                                                                                                                                                                 self._dir,
+                                                                                                                                                                 self.header,
+                                                                                                                                                                 self.directory,
                                                                                                                                                                  self.decimal,
                                                                                                                                                                  self.seed,
                                                                                                                                                                  self.dtype,
@@ -674,8 +682,8 @@ class Matrix:
                           ranged=self.initRange,
                           fill=self.fill,
                           features=self.features,
-                          header=self._header,
-                          directory=self._dir,
+                          header=self.header,
+                          directory=self.directory,
                           decimal=self.decimal,
                           seed=self.seed,
                           dtype=self.dtype,
@@ -697,6 +705,11 @@ class Matrix:
                 raise ColdtypeError(i)
         self.__coldtypes=val
         self.setcoldtypes(True)
+    
+    @property
+    def header(self):
+        return self.__header
+    
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -1173,7 +1186,7 @@ class Matrix:
         
         t=[[float(self._matrix[a][b]) for b in range(self.dim[1])] for a in range(self.dim[0])]
         
-        return Matrix(self.dim,listed=t,features=self.features,decimal=self.decimal,seed=self.seed,directory=self._dir,implicit=True)
+        return Matrix(self.dim,listed=t,features=self.features,decimal=self.decimal,seed=self.seed,directory=self.directory,implicit=True)
 
     
     def roundForm(self,decimal=1):
@@ -1347,29 +1360,27 @@ class Matrix:
     """Statistical methods"""
 # =============================================================================      
     
-    def normalize(self,col=None,inplace=True,zerobound=12):
+    def normalize(self,col=None,inplace=True):
         """
         Use 'float' dtype for the best results
          
         Normalizes the data to be valued between 0 and 1
         col:integer>=1 | column name as string
         inplace : boolean ; True to apply changes to matrix, False to return a new matrix
-        zerobound : integer ; limit of the decimals after dot to round the max-min of the columns to be considered 0
         """
         from MatricesM.stats.normalize import normalize
-        return normalize(self,col,inplace,zerobound)
+        return normalize(self,col,inplace,self.PRECISION)
 
-    def stdize(self,col=None,inplace=True,zerobound=12):
+    def stdize(self,col=None,inplace=True):
         """
         Use 'float' dtype for the best results
         
         Standardization to get mean of 0 and standard deviation of 1
         col:integer>=1 | column name as string
         inplace : boolean ; True to apply changes to matrix, False to return a new matrix
-        zerobound : integer ; limit of the decimals after dot to round the sdev to be considered 0
         """ 
         from MatricesM.stats.stdize import stdize
-        return stdize(self,col,inplace,zerobound)
+        return stdize(self,col,inplace,self.PRECISION)
 
     def ranged(self,col=None,asDict=True):
         """
