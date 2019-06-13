@@ -8,8 +8,20 @@ from MatricesM.validations.validate import *
 from MatricesM.errors.errors import *
 from random import random,randint,uniform,triangular,gauss,seed
 
+class dataframe:
+    pass
+
 class Matrix:
     """
+    Using *args = Pass arguments matching with the parameters in order : dim, listed, directory, fill, ranged, seed, header, features, decimal, dtype, coldtypes, implicit
+    Using **kwargs = Make sure to use given parameter names OR give a dictionary with keys being parameter names as strings, values being their values
+
+    Example:
+            Matrix(3,fill=gauss)                                                --> Use both *args and **kwargs
+            Matrix(directory='.../directory/file.csv',header=1,dtype=dataframe) --> Use **kwargs
+            Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
+            Matrix(kwargs=anotherMatrix.kwargs)                                 --> Same as anotherMatrix.copy OR eval(anotherMatrix.obj)
+
     dim:int|list|tuple; dimensions of the matrix. Giving integer values creates a square matrix
     
     listed:str|list of lists of numbers|list of numbers|str; Elements of the matrix. Can extract all the numbers from a string.
@@ -33,53 +45,76 @@ class Matrix:
     
     decimal:int; Digits to round to and print
 
-    dtype:'integer'|'float'|'complex'|'dataframe'; type of values the matrix will hold, 
-            ->'dataframe' requires type specification for each column given to 'coldtypes' parameter
+    dtype:int|float|complex|dataframe; type of values the matrix will hold, 
+            ->dataframe requires type specification for each column given to 'coldtypes' parameter, or all columns will be assumed to hold type str
             Example:
-                data = Matrix(directory=data_directory, header=1, dtype='dataframe', coldtypes=[str,float,float,int,str])
+                data = Matrix(directory=data_directory, header=1, dtype=dataframe, coldtypes=[str,float,float,int,str])
 
-    coldtypes:tuple|list (Contains the objects, not names of them); data types for each column individually. Only works if dtype is set to 'dataframe'
+    coldtypes:tuple|list (Contains the objects, not names of them); data types for each column individually. Only works if dtype is set to dataframe
 
     implicit:boolean; Skip matrix setting operations if all necessary parameters are given and expected to work without any formatting etc.
 
     Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
 
-    def __init__(self,
-                 dim=None,
-                 listed=[],
-                 directory="",
-                 fill=uniform,
-                 ranged=[0,1],
-                 seed=None,
-                 header=False,
-                 features=[],
-                 decimal=4,
-                 dtype="float",
-                 coldtypes=[],
-                 implicit=False):  
-        
-        #Basic attributes
-        self.__dim = dim                #Dimensions
-        self._matrix = listed           #Values
-        self.__directory = directory    #Directory of the matrix
-        self.__fill = fill              #Filling method for the matrix
-        self.__initRange = ranged       #Given range for 'fill'
-        self.__seed = seed              #Seed to pick values from 
-        self.__header = header          #Wheter or not matrix in the given directory has a header
-        self.__features = features      #Column names
-        self.__decimal = decimal        #How many digits to display in decimal places
-        self.__dtype = dtype            #Type of the matrix
-        self.__coldtypes = coldtypes    #Column dtypes
+    def __init__(self,*args,**kwargs):
+        attributes = ["dim","listed","directory","fill","ranged","seed","header","features","decimal","dtype","coldtypes","implicit"]
+        implicit = False
 
-        #Set/fix values
-        self._setDim(dim)                     #Make 'dim' a list
-        self.setInstance()                    #Store what type of values matrix can hold
-        if not implicit:                      #If necessary arguments not passed implicitly, set them to be usable  
+        #Default values for attributes
+        self.__dim = [0,0]        #Dimensions
+        self._matrix = []         #Values
+        self.__directory = ""     #Directory of the matrix
+        self.__fill = uniform     #Filling method for the matrix
+        self.__initRange = [0,1]  #Given range for 'fill'
+        self.__seed = None        #Seed to pick values from 
+        self.__header = 0         #Wheter or not matrix in the given directory has a header
+        self.__features = []      #Column names
+        self.__decimal = 4        #How many digits to display in decimal places
+        self.__dtype = float      #Type of the matrix
+        self.__coldtypes = []     #Column dtypes
+        
+        #Use given values in args
+        for i,value in enumerate(args):
+            if i==1:
+                self._matrix=value #Will probably be deleted in the future
+            else:
+                exec(f"self._Matrix__{attributes[i]}={value}")
+
+        #Override the attributes given in kwargs with new values
+        for key,val in kwargs.items():
+            if isinstance(val,dict):
+                for k,v in val.items():
+                    if k=="listed":
+                        self._matrix = v
+                    elif k=="implicit":
+                        implicit=v
+                    elif k in attributes:
+                        exec(f"self._Matrix__{k}=v")
+                    else:
+                        raise ParameterError(k,attributes)
+            else:
+                if key=="listed":
+                    self._matrix = val
+                elif key=="implicit":
+                    implicit=val
+                elif key in attributes:
+                    exec(f"self._Matrix__{key}=val")
+                else:
+                    raise ParameterError(key,attributes)
+        #Set/fix attributes
+        self._setDim(self.__dim)        #Fix dimensions
+        self.setInstance(self.__dtype)  #Store what type of values matrix can hold
+
+        #If necessary arguments not passed implicitly, set them to be usable  
+        if not implicit:                     
             self.setMatrix(self.__dim,self.__initRange,self._matrix,self.__directory,self.__fill,self._cMat,self._fMat)
-        self.setFeatures()                    #Set column names
-        self.setcoldtypes(bool(not implicit)) #Set column dtypes
-        if directory!="":                     #If directory has backslashes, make them forward slashes
+
+        self.setFeatures(self.__features,self.__dim[1])                                #Set column names
+        self.setColdtypes(bool(not implicit),self._matrix,self.__dim[0],self.__dim[1]) #Set column dtypes
+        
+        #If directory has backslashes, make them forward slashes
+        if self.__directory!="":              
             self.__directory = self.__directory.replace("\\","/")
 
         #Constants to use for printing,rounding etc.
@@ -91,35 +126,47 @@ class Matrix:
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
-    def setInstance(self):
+    def setInstance(self,dt):
         """
         Set the type
         """
-        from MatricesM.setup.instances import _setInstance
-        _setInstance(self)
+        self._dfMat=0
+        self._fMat=0
+        self._cMat=0
+        if dt==complex:
+            self._fMat=1
+            self._cMat=1
+        elif dt==float:
+            self._fMat=1
+        elif dt==int:
+            pass
+        elif dt==dataframe:
+            self._dfMat=1
+        else:
+            raise ValueError("dtype should be one of the following: int, float, complex, dataframe")
             
-    def setFeatures(self):
+    def setFeatures(self,feats,d1):
         """
         Set default feature names
         """
-        if len(self.__features)!=self.dim[1]:
-            self.__features=["Col {}".format(i+1) for i in range(self.dim[1])]
+        if len(feats)!=d1:
+            self.__features=[f"Col {i+1}" for i in range(d1)]
     
-    def setcoldtypes(self,declare=False):
+    def setColdtypes(self,declare=False,mat=None,d0=None,d1=None):
         """
         Set column dtypes
         """
-        if not validlist(self.matrix):
+        if not validlist(mat):
             return None
-        if len(list(self.coldtypes))!=self.dim[1]:
-            self.__coldtypes=[type(self.matrix[0][i]) for i in range(self.dim[1])]
-        if declare and self.dtype=="dataframe":
-            for i in range(self.dim[0]):
+        if len(list(self.coldtypes))!=d1:
+            self.__coldtypes=[type(mat[0][i]) for i in range(d1)]
+        if declare and self.dtype==dataframe:
+            for i in range(d0):
                 j=0
-                while j<self.dim[1]:
+                while j<d1:
                     try:
                         if self.coldtypes[j] != type: 
-                            self._matrix[i][j] = self.coldtypes[j](self._matrix[i][j])
+                            self._matrix[i][j] = self.coldtypes[j](mat[i][j])
                         j+=1
                     except:
                         j+=1
@@ -129,8 +176,19 @@ class Matrix:
         """
         Set the dimension to be a list if it's an integer
         """
-        from MatricesM.setup.dims import setDim
-        setDim(self,d)
+        valid = 0
+        if isinstance(d,int):
+            if d>=1:
+                self.__dim=[d,d]
+                valid = 1
+        elif isinstance(d,list) or isinstance(d,tuple):
+            if len(d)==2:
+                if isinstance(d[0],int) and isinstance(d[1],int):
+                    if d[0]>0 and d[1]>0:
+                        self.__dim=d[:]
+                        valid = 1
+        if not valid:
+            self.__dim = [0,0]
         
     def setMatrix(self,d=None,r=None,lis=[],direc=r"",f=uniform,cmat=False,fmat=True):
         """
@@ -323,10 +381,10 @@ class Matrix:
         Returns the adjoint matrix
         """
         from MatricesM.linalg.adjoint import adjoint
-        if self.dtype=="complex":
-            dt = "complex"
+        if self.dtype==complex:
+            dt = complex
         else:
-            dt = "float"
+            dt = float
         return Matrix(self.dim,adjoint(self),dtype=dt,implicit=True)
     
     def _inverse(self):
@@ -399,19 +457,7 @@ class Matrix:
     
     @property
     def copy(self):
-        return Matrix(dim=self.dim[:],
-                      listed=[a[:] for a in self._matrix],
-                      ranged=self.initRange,
-                      fill=self.fill,
-                      features=self.features[:],
-                      header=self.header,
-                      directory=self.directory,
-                      decimal=self.decimal,
-                      seed=self.seed,
-                      dtype=self.dtype[:],
-                      coldtypes=self.coldtypes[:],
-                      implicit=True
-                      )
+        return Matrix(kwargs=self.kwargs)
 
     @property
     def string(self):
@@ -509,7 +555,7 @@ class Matrix:
         Permanent of the matrix
         """
         from MatricesM.linalg.perma import perma
-        return perma(self)
+        return perma(self,self._matrix)
             
     @property
     def trace(self):
@@ -624,11 +670,10 @@ class Matrix:
         """
         Object call as a string to recreate the matrix
         """
-        import re
-        cdtype_str,fillstr = str(re.findall(r"'(?P<inner>\w+)'","{}".format(self.coldtypes))).replace("'",""),self.fill
+        fillstr = self.fill
         if type(self.fill).__name__ == "method":
-            fillstr = self.fill.__name__
-        return "Matrix(dim={0},listed={1},ranged={2},fill={3},features={4},header={5},directory='{6}',decimal={7},seed={8},dtype='{9}',coldtypes={10})".format(self.dim,
+            fillstr=self.fill.__name__
+        return "Matrix(dim={0},listed={1},ranged={2},fill={3},features={4},header={5},directory='{6}',decimal={7},seed={8},dtype={9},coldtypes={10})".format(self.dim,
                                                                                                                                                                  self._matrix,
                                                                                                                                                                  self.initRange,
                                                                                                                                                                  fillstr,
@@ -637,8 +682,8 @@ class Matrix:
                                                                                                                                                                  self.directory,
                                                                                                                                                                  self.decimal,
                                                                                                                                                                  self.seed,
-                                                                                                                                                                 self.dtype,
-                                                                                                                                                                 cdtype_str)
+                                                                                                                                                                 self.dtype.__name__,
+                                                                                                                                                                 str([i.__name__ for i in self.coldtypes]).replace("'",""))
  
     @property
     def seed(self):
@@ -673,8 +718,8 @@ class Matrix:
         return self.__dtype
     @dtype.setter
     def dtype(self,val):
-        if not val in ['integer','float','complex','dataframe']:
-            return DtypeError(val)
+        if not val in [int,float,complex,dataframe]:
+            return DtypeError(val.__name__)
         else:
             self.__dtype = val
             self.__init__(dim=self.dim,
@@ -704,7 +749,7 @@ class Matrix:
             if type(i)!=type:
                 raise ColdtypeError(i)
         self.__coldtypes=val
-        self.setcoldtypes(True)
+        self.setColdtypes(True,self._matrix,self.__dim[0],self.__dim[1])
     
     @property
     def header(self):
@@ -1010,7 +1055,7 @@ class Matrix:
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
         signs=[[1 if self._matrix[i][j].real>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs,dtype="integer",implicit=True)
+        return Matrix(self.dim,signs,dtype=int,implicit=True)
     
     @property
     def imagsigns(self):
@@ -1019,7 +1064,7 @@ class Matrix:
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
         signs=[[1 if self._matrix[i][j].imag>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs,dtype="integer",implicit=True)
+        return Matrix(self.dim,signs,dtype=int,implicit=True)
     
     @property
     def signs(self):
@@ -1030,7 +1075,7 @@ class Matrix:
         if self._cMat:
             return {"Real":self.realsigns,"Imag":self.imagsigns}
         signs=[[1 if self._matrix[i][j]>=0 else -1 for j in range(self.dim[1])] for i in range(self.dim[0])]
-        return Matrix(self.dim,signs,dtype="integer",implicit=True)
+        return Matrix(self.dim,signs,dtype=int,implicit=True)
     
     @property
     def echelon(self):
@@ -1505,7 +1550,7 @@ class Matrix:
         """
         from MatricesM.stats.corr import _corr
         from MatricesM.constructors.matrices import Identity
-        temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype="dataframe",coldtypes=[float for _ in range(self.dim[1])])
+        temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.dim[1])])
         return _corr(self,col1,col2,population,temp)
     
     @property   
@@ -1698,7 +1743,7 @@ class Matrix:
                 raise TypeError("ROW/COL limit can't be non-integer values")
             else:
                 if i<1:
-                    raise ValueError("ROW/COL limit should be >=1")
+                    raise ValueError("Can't display any rows/columns using limits for rows and columns : [{0},{1}]".format(rowlimit,collimit))
                     
         #Not too many rows or columns
         if self.dim[0]<=rowlimit and self.dim[1]<=collimit:
@@ -1723,8 +1768,8 @@ class Matrix:
 
                 #Change dtypes to dataframes filled with strings
                 for i in [topLeft,topRight,bottomLeft,bottomRight]:
-                    if i.dtype != "dataframe":
-                        i.dtype = "dataframe"
+                    if i.dtype != dataframe:
+                        i.dtype = dataframe
                 topLeft.coldtypes = [str]*(halfcol)
                 topRight.coldtypes = [str]*(collimit//2)
                 bottomLeft.coldtypes = [str]*(halfcol)
@@ -1752,8 +1797,8 @@ class Matrix:
                 bottom = self[-(rowlimit//2):,:].roundForm(self.decimal)
                 #Set new dtypes
                 for i in [top,bottom]:
-                    if i.dtype != "dataframe":
-                        i.dtype = "dataframe"
+                    if i.dtype != dataframe:
+                        i.dtype = dataframe
                     i.coldtypes = [str]*(collimit)
                 #Concat last items
                 top.concat(bottom,concat_as="row")
@@ -1771,8 +1816,8 @@ class Matrix:
             right = self[:,-(collimit//2):].roundForm(self.decimal)
             #Set new dtypes
             for i in [left,right]:
-                if i.dtype != "dataframe":
-                    i.dtype = "dataframe"
+                if i.dtype != dataframe:
+                    i.dtype = dataframe
             left.coldtypes = [str]*(halfcol)
             right.coldtypes = [str]*(collimit//2)
             #Add and concat rest of the stuff
@@ -1797,9 +1842,31 @@ class Matrix:
             print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))
         return s+"\n"   
     
-    def __call__(self):
-        return self.__str__()
+    @property
+    def kwargs(self):
+        return {"dim":self.dim[:],
+                "listed":[a[:] for a in self._matrix],
+                "directory":self.directory[:],
+                "fill":self.fill,
+                "ranged":self.initRange,
+                "seed":self.seed,
+                "header":self.header,
+                "features":self.features[:],
+                "decimal":self.decimal,
+                "dtype":self.dtype,
+                "coldtypes":self.coldtypes[:],
+                "implicit":True}
                 
+    @classmethod
+    def __new__(cls,*args,**kwargs):
+        return object.__new__(cls)
+
+    def __call__(self,*args,**kwargs):
+        if len(args)==0 and len(kwargs.keys())==0:
+            return Matrix
+        self.__init__(*args,**kwargs)
+        return self
+
 # =============================================================================
     """Arithmetic methods"""        
 # =============================================================================
