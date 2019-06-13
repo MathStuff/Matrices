@@ -382,6 +382,8 @@ C.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's deter
 
 C.rank #Returns the rank of the matrix
 
+C.echelon #Returns the echelon form of the matrix
+
 C.rrechelon #Returns the reduced row echelon form of the matrix
 
 C.LU #Returns both L and U matrices from LU decomposition in a tuple
