@@ -17,7 +17,7 @@ def _listify(mat,stringold):
             mat._Matrix__features=re.findall(pattern,string[:i])
             if len(mat.features)!=mat.dim[1]:
                 print("Can't get enough column names from the header")
-                mat.setFeatures()
+                mat.setFeatures(mat.features,mat.dim[1])
             string=string[i:]
             
     #Get all integer and float values
@@ -41,7 +41,7 @@ def _listify(mat,stringold):
     #Fix dimensions to create a row matrix   
     if mat.dim==[0,0]:
         mat._Matrix__dim=[1,len(found)]
-        mat.setFeatures()
+        mat.setFeatures(mat.features,mat.dim[1])
     #Create the row matrix
     temp=[]
     e=0            

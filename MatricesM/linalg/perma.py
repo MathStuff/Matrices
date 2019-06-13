@@ -1,4 +1,4 @@
-def perma(mat):
+def perma(mat,m):
     """
     Permanent of the matrix
     """
@@ -9,11 +9,9 @@ def perma(mat):
         return 1
     
     if mat.dim[0]==2:
-        m = mat._matrix
         return m[0][0]*m[1][1] + m[1][0]*m[0][1]
     
     if mat.dim[0]==3:
-        m = mat._matrix
         return (m[0][0]*m[1][1]*m[2][2] + 
                 m[0][1]*m[1][2]*m[2][0] +
                 m[0][2]*m[1][0]*m[2][1] +
@@ -28,6 +26,6 @@ def perma(mat):
         temp.remove(i+1,1)
         co = mat.matrix[i][0]
 
-        total += co*perma(temp)
+        total += co*perma(temp,temp._matrix)
         
     return total

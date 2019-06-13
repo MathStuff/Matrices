@@ -23,5 +23,5 @@ def delDim(mat,num):
     else:
         if mat.features!=[]:
             mat.features=mat.features[:goal2]
-            mat.setcoldtypes()
+            mat.setColdtypes(False,mat._matrix,mat.dim[0],mat.dim[1])
         return mat

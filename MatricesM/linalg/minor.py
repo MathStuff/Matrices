@@ -11,9 +11,8 @@ def minor(mat,row=None,col=None,returndet=True):
     if temp.dim[0]==1 and temp.dim[1]==1:
         return temp
 
-    if temp.dim[0]>1:   
-        temp.remove(row=row)
-        temp.remove(col=col)
+    if temp.dim[0]>1: 
+        temp.remove(row,col)
     if returndet:
         return temp.det
     return temp

@@ -3,7 +3,7 @@ def declareDim(mat):
     Set new dimension 
     """
     try:
-        rows=[1 for i in mat._matrix].count(1)
+        rows= len(mat._matrix)
         cols = len(mat._matrix[0])
         for i in range(rows):
             if not cols == len(mat._matrix[i]):
@@ -20,8 +20,8 @@ def declareRange(mat,lis):
     Finds and returns the range of the elements in a given list
     """
     c={}
-    mat.setFeatures()
-    mat.setcoldtypes()
+    mat.setFeatures(mat.features,mat.dim[1])
+    mat.setColdtypes(False,mat._matrix,mat.dim[0],mat.dim[1])
     if mat._dfMat:
         valid_feats_inds = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
         for cols in valid_feats_inds:

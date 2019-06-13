@@ -10,7 +10,7 @@ def concat(mat,matrix,concat_as="row"):
             assert matrix.dim[1]==mat.dim[1]
         elif concat_as=="col":
             assert matrix.dim[0]==mat.dim[0]
-        if matrix.dtype=="complex" and mat.dtype!="complex":
+        if matrix.dtype==complex and mat.dtype!=complex:
             raise TypeError
 
     except AssertionError:
@@ -30,5 +30,5 @@ def concat(mat,matrix,concat_as="row"):
 
         mat._Matrix__dim=mat._declareDim()
         if concat_as=="col":
-            mat.features = mat.features+matrix.features
-            mat.setcoldtypes()
+            mat.features = mat.features+[i if i not in mat.features else "_"+i for i in matrix.features]
+            mat.setColdtypes(False,mat._matrix,mat.dim[0],mat.dim[1])
