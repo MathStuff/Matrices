@@ -44,13 +44,22 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
                      
                      seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
-                     dtype=dataType #Optional, 'integer'|'float'|'complex'|'dataframe' . Data type the matrix will hold, default is 'float'.
+                     dtype=dataType #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
                      
-                     coldtypes=listOfTypes #Requires dtype=="dataframe" to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+                     coldtypes=listOfTypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
                      
                      implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
                      )
+"""
+Using *args = Pass arguments matching with the parameters in order : dim, listed, directory, fill, ranged, seed, header, features, decimal, dtype, coldtypes, implicit
+Using **kwargs = Make sure to use given parameter names OR give a dictionary with keys being parameter names as strings, values being their values
 
+ Example:
+         Matrix(3,fill=gauss)                                                --> Use both *args and **kwargs
+         Matrix(directory='.../directory/file.csv',header=1,dtype=dataframe) --> Use **kwargs
+         Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
+         Matrix(kwargs=anotherMatrix.kwargs)                                 --> Same as anotherMatrix.copy OR eval(anotherMatrix.obj)
+"""
 ```         
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
    
@@ -71,7 +80,7 @@ A = Matrix(4)
 B = Matrix([3,5],ranged=[10,25]) 
 
 #Create a 6x6 square matrix filled with random integer numbers in the default range: [0,1]
-E = Matrix(6,dtype="integer") 
+E = Matrix(6,dtype=int) 
 
 #Create a 200x5 matrix using Gauss distribution with mean=50 and standard deviation=10
 F = Matrix([200,5],fill=gauss,ranged=[50,10]) 
@@ -80,13 +89,13 @@ F = Matrix([200,5],fill=gauss,ranged=[50,10])
 G = Matrix(10,fill=1)
 
 #Create a 200x4 matrix filled with integer numbers using triangular distribution where the range is [0,20] and mode is around if not 18
-H = Matrix((200,4),fill=triangular,ranged=[0,20,18],dtype="integer") 
+H = Matrix((200,4),fill=triangular,ranged=[0,20,18],dtype=int) 
 
 #Create a 9x9 matrix filled with complex numbers using gauss distribution for both real and imaginary parts with mean=5 and sdev=2
-C1 = Matrix(9,fill=gauss,ranged=[5,2],dtype="complex")
+C1 = Matrix(9,fill=gauss,ranged=[5,2],dtype=complex)
 
 #Create a 10x1 matrix filled with the given string
-S = Matrix((10,1),fill="hello",dtype="dataframe")
+S = Matrix((10,1),fill="hello",dtype=dataframe)
 ```
 ----------------------------------------
 ##### Generate randomly filled matrices using special distributions
@@ -96,7 +105,7 @@ randomData1 = Matrix((10000,3),
                      fill=triangular,
                      ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
                      seed=32141,
-                     dtype="integer")
+                     dtype=int)
 
 #Create a 10000x4 float numbers matrix using uniform distribution where columns' ranges are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
 randomData2 = Matrix([10000,4],
@@ -138,7 +147,7 @@ data = [["James",180.4,85],
         ["Sophia",168.25,65]]
         
 df = Matrix(listed=data,
-            dtype="dataframe",
+            dtype=dataframe,
             features=["Name","Height","Weight"],
             decimal=1)
 
@@ -169,29 +178,29 @@ data="""1,K,60,69900,6325
 intMat = Matrix(dim=[10,4],
                 listed=data,
                 features=["id","age","num1","num2"],
-                dtype="integer") 
+                dtype=int) 
 
 #Or as a dataframe
 df = Matrix(dim=[10,4],
             listed=data,
             features=["id","age","num1","num2"],
-            dtype="dataframe",
+            dtype=dataframe,
             coldtypes=[int]*4)
 
 ```
 ----------------------------------------
-##### Read data from files (Only tested on CSV and TXT files)
+##### Read data from csv files 
 ###### If there is a header, set header to any boolean value == True . Float numbers considered to be using dot(.) to separate decimal places and cammas(,) are used to separate columns. Will be updated in the future for more options
 ```python 
 data_directory = r"Example\Directory\DATAFILE"
 
-data_matrix = Matrix(directory=data_directory,header=1,dtype="dataframe",coldtypes=[str,float,...]) #Create a dataframe matrix from a csv file
+data_matrix = Matrix(directory=data_directory,header=1,dtype=dataframe,coldtypes=[str,float,...]) #Create a dataframe matrix from a csv file
 
 #If you're having issues with setting the dimension, try explicitly providing it as dim=[data_amount,feature_amount]
 #More options for reading the file will be added in the future
 
 #Example dataset: https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009
-winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype="dataframe",coldtypes=[float]*12)
+winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype=dataframe,coldtypes=[float]*12)
 ```
 ----------------------------------------
 ##### Get specific parts of the matrix
@@ -248,7 +257,7 @@ winedata[winedata["quality"]>6,("alcohol", "quality")]
 ##### Apply arithmetic operations to individual rows and columns.
 ```python
 #Create a 1000x2 dataframe filled using normal distribution with given arguments
-marketData = Matrix((1000,2),fill=gauss,ranged={"Price":(250,60),"Discount":(8,2)},dtype="dataframe")
+marketData = Matrix((1000,2),fill=gauss,ranged={"Price":(250,60),"Discount":(8,2)},dtype=dataframe)
 
 #Change invalid values in "Discount" column where it's less than 0 to 0
 marketData[marketData["Discount"]<0,"Discount"] = 0
@@ -295,7 +304,7 @@ data.replace(old=data["F5"]<0,
 data[data["Feature1"]<0,"Feature5"] = 0
 
 #Create a matrix with a square filled with 0's in the middle, 5's outside
-s = Matrix(10,fill=5,dtype="integer")
+s = Matrix(10,fill=5,dtype=int)
 s[3:7,3:7] = 0
 #Matrices can also be used to do the same
 s[3:7,3:7] = Matrix(4,fill=0)
@@ -313,9 +322,9 @@ marketData.concat(newcol,"col")
 #### Use your matrix's methods and properties
 ##### Basics
 ```python 
-C.grid #Prints ALL of the matrix's elements as a grid, if dtype is 'dataframe', column names also get printed
+C.grid #Prints ALL of the matrix's elements as a grid, if dtype is dataframe, column names also get printed
 
-C.p #Prints the dimensions, wheter or not the matrix is square and the grid. If dtype is 'dataframe', column names are also printed
+C.p #Prints the dimensions, wheter or not the matrix is square and the grid. If dtype is dataframe, column names are also printed
 
 C.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
@@ -352,6 +361,8 @@ C.ceilForm #Returns a matrix of all the elements' ceiling value
 C.floorForm #Returns the same matrix as "intForm"
 
 C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(C,n)
+
+C.kwargs #Returns a dictionary of the matrix's basic attributes
 
 C.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
 
@@ -527,10 +538,6 @@ C.features #Returns the column names if given, can also be used to set column na
 
 C.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
-C.setFeatures() #Can be used to fix column naming issues, sets the column names to defaults
-
-C.setcoldtypes(declare) #Can be used to fix column type related issues, sets the column types to what first row carries. If declare is True, individual dtypes are applied to every element in the matrix
-
 ```
 
 ----------------------------------------
@@ -551,6 +558,22 @@ myMatrix
 #Issues about dtypes not matching and/or missing data can be solved by using 'replace' method
 ```
 ----------------------------------------
+##### Copying the matrix
+```python
+#Using 'copy' property (Fastest)
+
+newMatrix = oldMatrix.copy
+
+#Using 'kwargs' property, 'copy' uses this one so it's as fast as 'copy' is
+
+newMatrix = Matrix(kwargs=oldMatrix.kwargs)
+
+#Using 'obj' property (Slowest)
+
+newMatrix = eval(oldMatrix.obj)
+
+```
+----------------------------------------
 ##### All calculations below returns a matrix filled with 1's where the condition is True, otherwise 0
 ```python 
    A**2 == A*A
@@ -562,6 +585,7 @@ myMatrix
    A.adj.matrix[2][0] == A.minor(1,3)
    
    A == A.sym + A.anti
+   
    #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
    bool(Matrix(10,fill=1)) == True
 
