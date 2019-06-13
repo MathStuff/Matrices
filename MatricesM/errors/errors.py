@@ -13,7 +13,7 @@ class NotListOrTuple(MatrixError):
     A list or a tuple is required
     """
     def __init__(self,err):
-        self.message = f"Given value should be a list or a tuple, not '{type(err)}'"
+        self.message = f"Given value should be a list or a tuple, not '{type(err).__name__}'"
 
 class EmptyMatrix(MatrixError):
     """
@@ -27,21 +27,21 @@ class InvalidColumn(MatrixError):
     Invalid column name
     """
     def __init__(self,err,*args):
-        self.message  = f"'{type(err)}' type index '{err}' can't be used as a column index. "+". ".join(args)
+        self.message  = f"'{type(err).__name__}' type index '{err}' can't be used as a column index. "+". ".join(args)
 
 class InvalidIndex(MatrixError):
     """
     Invalid row index
     """
     def __init__(self,err,*args):
-        self.message  = f"'{type(err)}' type index '{err}' can't be used as a row index. "+". ".join(args)
+        self.message  = f"'{type(err).__name__}' type index '{err}' can't be used as a row index. "+". ".join(args)
 
 class FillError(MatrixError):
     """
     Error filling matrices
     """
     def __init__(self,err,*args):
-        self.message  = f"'{type(err)}' type '{err}' can't be used to fill matrices. "+". ".join(args)
+        self.message  = f"'{type(err).__name__}' type '{err}' can't be used to fill matrices. "+". ".join(args)
 
 class DtypeError(MatrixError):
     """
@@ -55,7 +55,7 @@ class ColdtypeError(MatrixError):
     Invalid column dtype
     """
     def __init__(self,err,*args):
-        self.message = f"'{type(err)}' type '{err}' can't be used as column dtype. \ncoldtypes should be all 'type' objects. "+". ".join(args)
+        self.message = f"'{type(err).__name__}' type '{err}' can't be used as column dtype. \ncoldtypes should be all 'type' objects. "+". ".join(args)
 
 class InconsistentValues(MatrixError):
     """
@@ -68,5 +68,7 @@ class InvalidList(MatrixError):
     """
     Invalid values to set for coldtypes,features etc.
     """
-    def __init__(self,err,req,typ,*args):
-        self.message = f"{type(err)}' type '{err}' can't be used as a length {req} list to replace {typ}. "+". ".join(args)
+    def __init__(self,err,req,attribute,*args):
+        import re
+        given_dtypes = str(re.findall(r"'(?P<inner>\w+)'","{}".format(err))).replace("'","")
+        self.message = f"'{type(err).__name__}' type {given_dtypes} can't be used as a length {req} list to replace {attribute}.\nMissing {req-len(err)} items "+". ".join(args)
