@@ -49,7 +49,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=uniform,cmat=False,fmat=Tr
             mat._Matrix__dim=mat._declareDim()
     #Matrix from a directory
     elif len(direc)>0 and len(lis)==0:
-        [lis,mat._Matrix__features] = mat._Matrix__fromFile(direc,mat._header,mat.coldtypes)
+        [lis,mat._Matrix__features] = mat._Matrix__fromFile(direc,mat.header,mat.coldtypes)
         if isinstance(lis,str):
             mat._matrix = mat._listify(lis)
         elif isinstance(lis,list):

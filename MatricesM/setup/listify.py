@@ -5,7 +5,7 @@ def _listify(mat,stringold):
     #Get the features from the first row if header exists
     import re
     string=stringold[:]
-    if mat._header:
+    if mat.header:
         i=0
         for ch in string:
             if ch=="\n":
