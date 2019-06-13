@@ -48,7 +48,7 @@ class DtypeError(MatrixError):
     dtype error
     """
     def __init__(self,err,*args):
-        self.message = f"'{err}' isn't a valid value for dtype.\ndtype only accepts following values : 'integer'|'float'|'complex'|'dataframe'. "+". ".join(args)
+        self.message = f"'{err}' isn't a valid value for dtype.\ndtype only accepts following values : int|float|complex|dataframe. "+". ".join(args)
 
 class ColdtypeError(MatrixError):
     """
@@ -72,3 +72,10 @@ class InvalidList(MatrixError):
         import re
         given_dtypes = str(re.findall(r"'(?P<inner>\w+)'","{}".format(err))).replace("'","")
         self.message = f"'{type(err).__name__}' type {given_dtypes} can't be used as a length {req} list to replace {attribute}.\nMissing {req-len(err)} items "+". ".join(args)
+
+class ParameterError(MatrixError):
+    """
+    parameter error
+    """
+    def __init__(self,err,params,*args):
+        self.message = f"'{err}' isn't a valid parameter name.\nAvailable parameter names:\n\t{params}. "+". ".join(args)
