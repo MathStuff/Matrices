@@ -349,12 +349,12 @@ class Matrix:
 # =============================================================================
     """Decomposition methods"""
 # ============================================================================= 
-    def _rrechelon(self):
+    def _rrechelon(self,rr=True):
         """
         Returns reduced row echelon form of the matrix
         """
         from MatricesM.linalg.rrechelon import rrechelon
-        return rrechelon(self,[a[:] for a in self._matrix],Matrix)
+        return rrechelon(self,[a[:] for a in self._matrix],Matrix,rr)
                     
     def _symDecomp(self):
         """
@@ -365,9 +365,7 @@ class Matrix:
     
     def _LU(self):
         """
-        Returns L and U matrices of the matrix
-        ***KNOWN ISSUE:Doesn't always work if determinant is 0 | linear system is inconsistant***
-        ***STILL NEEDS CLEAN UP***
+        Returns L and U matrices from LU decomposition
         """
         from MatricesM.linalg.LU import LU
         from MatricesM.constructors.matrices import Identity
@@ -375,7 +373,7 @@ class Matrix:
 
     def _QR(self):
         """
-        Decompose the matrix into Q and R where Q is a orthogonal matrix and R is a upper triangular matrix
+        Returns Q and R matrices from QR decomposition
         """
         from MatricesM.linalg.QR import QR
         return QR(self,Matrix)
@@ -1022,11 +1020,18 @@ class Matrix:
         return Matrix(self.dim,signs,dtype="integer",implicit=True)
     
     @property
+    def echelon(self):
+        """
+        Reduced-Row-Echelon
+        """
+        return self._rrechelon(rr=False)[0]
+
+    @property
     def rrechelon(self):
         """
         Reduced-Row-Echelon
         """
-        return self._rrechelon()[0]
+        return self._rrechelon(rr=True)[0]
     
     @property
     def conj(self):

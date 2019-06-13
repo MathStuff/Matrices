@@ -1,9 +1,10 @@
-cpdef list Crrechelon(list copy,int cm,list dim):
+cpdef list Crrechelon(list copy,int cm,list dim,rr):
   """
   Returns reduced row echelon form of the matrix
   """
   
   cdef int cmat = cm
+  cdef int start = 0
   cdef int i
   cdef int i2
   cdef int i3
@@ -49,12 +50,20 @@ cpdef list Crrechelon(list copy,int cm,list dim):
     #Do the calculations to reduce rows
 
     row1 = []
+    #Make diagonal element 1
     for j in range(d1):
       row1.append(temp[i][j]/temp[i][i])
-
+    
+    #Apply changes
     temp[i] = row1[:]
+
+    #Wheter or not to reduce previous rows, depending on the rrechelon or echelon form
+    if not rr:
+      start=i
+
+    #Start reducing rows
     if cmat:
-      for k in range(d0):
+      for k in range(start,d0):
         if k!=i:
           row2 = []
           for m in range(d1):
@@ -64,7 +73,7 @@ cpdef list Crrechelon(list copy,int cm,list dim):
         else:
           temp[k] = temp[i][:]
     else:
-      for k in range(d0):
+      for k in range(start,d0):
         if k!=i:
           row2 = [] 
           for m in range(d1):
@@ -72,6 +81,7 @@ cpdef list Crrechelon(list copy,int cm,list dim):
           temp[k] = row2[:]
         else:
           temp[k] = temp[i][:]
+          
   #Fix -0.0 issue
   if cmat:
     for i in range(d0):
@@ -94,10 +104,7 @@ cpdef list Crrechelon(list copy,int cm,list dim):
           temp[i][j] = 0
 
   z = temp.count(zeros)
-  if cmat:
-    dt = "complex"
-  else:
-    dt = "float"
+
   return [temp,d0-z]
 
 cpdef list Ctranspose(int m,int n,list arr):			
