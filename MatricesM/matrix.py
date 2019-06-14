@@ -76,8 +76,13 @@ class Matrix:
         
         #Use given values in args
         for i,value in enumerate(args):
+            #Very lame and lazy way to do this, will probably be deleted in the future
             if i==1:
-                self._matrix=value #Will probably be deleted in the future
+                self._matrix = value
+            elif i==4:
+                self.__initRange = value
+            elif i==11:
+                implicit = value
             else:
                 exec(f"self._Matrix__{attributes[i]}={value}")
 
@@ -87,6 +92,8 @@ class Matrix:
                 for k,v in val.items():
                     if k=="listed":
                         self._matrix = v
+                    elif k=="ranged":
+                        self.__initRange = v
                     elif k=="implicit":
                         implicit=v
                     elif k in attributes:
@@ -96,6 +103,8 @@ class Matrix:
             else:
                 if key=="listed":
                     self._matrix = val
+                elif key=="ranged":
+                    self.__initRange = val
                 elif key=="implicit":
                     implicit=val
                 elif key in attributes:
