@@ -1,7 +1,7 @@
 def _replace(mat,old,new,col=None,cond=None):
     #Assert parameters
-    if not isinstance(col,(str,tuple)) and col!=None:
-        raise TypeError("column parameter only accepts str|tuple|None")
+    if not isinstance(col,(str,tuple,list)) and col!=None:
+        raise TypeError("column parameter only accepts str|tuple|list|None")
     if not isinstance(cond,type(mat)) and cond!=None:
         raise TypeError("conditions should be a boolean matrix or None")
     if isinstance(col,str):

@@ -1329,7 +1329,8 @@ class Matrix:
         #Required parameters:
         old: all available types|boolean *column* matrix; value(s) to be replaced
         new:all available types; value(s) to replace old ones with
-        column: str|tuple of strings|None;  which column(s) to apply replacements, None for all columns
+        column: str|tuple or list of strings|None;  which column(s) to apply replacements, None for all columns
+
         #Optional parameters:
         condition: boolean *column* matrix|None; row(s) to apply replacements, None for all rows
             Example:
@@ -1416,8 +1417,6 @@ class Matrix:
     
     def normalize(self,col=None,inplace=True):
         """
-        Use 'float' dtype for the best results
-         
         Normalizes the data to be valued between 0 and 1
         col:integer>=1 | column name as string
         inplace : boolean ; True to apply changes to matrix, False to return a new matrix
@@ -1427,8 +1426,6 @@ class Matrix:
 
     def stdize(self,col=None,inplace=True):
         """
-        Use 'float' dtype for the best results
-        
         Standardization to get mean of 0 and standard deviation of 1
         col:integer>=1 | column name as string
         inplace : boolean ; True to apply changes to matrix, False to return a new matrix
