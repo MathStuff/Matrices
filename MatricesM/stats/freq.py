@@ -1,33 +1,36 @@
-def freq(mat,col=None):
+def freq(mat,col=None,dic=True):
+    from collections import Counter
+    from MatricesM.errors.errors import MatrixError
     try:
+        #Get the parts needed
+        #No argument given
         if col==None:
             temp=mat.t
             feats=mat.features[:]
+            r=mat.dim[1]
+        #Column index or name given
         else:
             if isinstance(col,str):
                 col=mat.features.index(col)+1
             assert col>=1 and col<=mat.dim[1]
             temp=mat[:,col-1].t
             feats=mat.features[col-1]
-
-        res={}
-        if col==None:
-            r=mat.dim[1]
-        else:
             r=1
 
+        res={}
+
+        #Iterate over the transposed rows
         for rows in range(r):
-            a={}
-            for els in temp.matrix[rows]:
-                if els not in a.keys():
-                    a[els]=1
-                else:
-                    a[els]+=1
+            a=dict(Counter(temp.matrix[rows]))
+
+            #Add to dictionary
             if col!=None:
                 res[feats]=a
             else:
                 res[feats[rows]]=a
-    except:
-        print("Bad indeces in freq method")
+    except Exception as e:
+        raise MatrixError(f"Error in freq: {e}")
     else:
-        return res
+        if dic:
+            return res
+        return list(res.values())
