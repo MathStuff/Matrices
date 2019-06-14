@@ -584,21 +584,26 @@ newMatrix = eval(oldMatrix.obj)
    
    A.adj.matrix[2][0] == A.minor(1,3)
    
-   A == A.sym + A.anti
+   
    
    #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
    bool(Matrix(10,fill=1)) == True
 
    #round call is currently required for the next examples due to <~%1e-5 error rate on some calculations
+   
    round(A @ Matrix(listed=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
    
-   round(A.lowtri @ A.uptri, 4) == round(A, 4)
+   round(A @ A.inv)== Matrix(listed=Identity(A.dim[0]))
+   
+   round(A,4) == round(A.sym + A.anti,4)
    
    round(A.inv.inv,4) == round(A, 4)
    
+   round(A.lowtri @ A.uptri, 4) == round(A, 4)
+   
    round(A.Q @ A.R, 4) == round(A, 4)
    
-   round(A @ A.inv)== Matrix(listed=Identity(A.dim[0]))
+   
 ``` 
 ----------------------------------------
 
