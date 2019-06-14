@@ -88,7 +88,7 @@ class Matrix:
 
         #Override the attributes given in kwargs with new values
         for key,val in kwargs.items():
-            if isinstance(val,dict):
+            if isinstance(val,dict) and key=="kwargs":
                 for k,v in val.items():
                     if k=="listed":
                         self._matrix = v
