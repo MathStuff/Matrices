@@ -19,7 +19,7 @@ def _corr(mat,col1=None,col2=None,population=1,temp=None):
             dts = mat.coldtypes
             j=0
             for i in range(len(dts)):
-                if dts[i] == str:
+                if not dts[i] in [float,int]:
                     temp.remove(row=i+1-j,col=i+1-j)
                     j+=1
         else:
