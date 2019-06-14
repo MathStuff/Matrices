@@ -1503,6 +1503,7 @@ class Matrix:
         z-scores of the elements
         column:integer>=1 |None|column name as string ; z-scores of the desired column
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
+        asDict: True|False ; Wheter or not to return a dictionary
         
         Give no arguments to get the whole scores in a matrix
         """
@@ -1534,22 +1535,23 @@ class Matrix:
         from MatricesM.stats.iqr import iqr
         return iqr(self,col,as_quartiles,asDict)   
      
-    def freq(self,col=None):
+    def freq(self,col=None,asDict=True):
         """
         Returns the frequency of every element on desired column(s)
         col:column index>=1 or column name
+        asDict: True|False ; Wheter or not to return a dictionary
         """
         from MatricesM.stats.freq import freq
-        return freq(self,col)   
+        return freq(self,col,asDict)   
      
     def cov(self,col1=None,col2=None,population=1):
         """
         Covariance of two columns
-        col1,col2: integers>=1 |str|None; column numbers/names.
+        col1,col2: integers>=1 |str|None; column numbers/names. For covariance matrix give None to both
         population: 0 or 1 ; 0 for samples, 1 for population
         """
         from MatricesM.stats.cov import cov
-        return cov(self,col1,col2,population)
+        return cov(self,col1,col2,population,Matrix)
         
     def corr(self,col1=None,col2=None,population=1):
         """
