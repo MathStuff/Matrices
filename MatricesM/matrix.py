@@ -1455,21 +1455,23 @@ class Matrix:
         from MatricesM.stats.mean import mean
         return mean(self,col,asDict)
     
-    def mode(self,col=None):
+    def mode(self,col=None,asDict=True):
         """
         Returns the columns' most repeated elements in a dictionary
         col:integer>=1 | column name as string
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys modes as values, if set to False:
         """
         from MatricesM.stats.mode import mode
-        return mode(self,col)
+        return mode(self,col,asDict)
     
-    def median(self,col=None):
+    def median(self,col=None,asDict=True):
         """
         Returns the median of the columns
         col:integer>=1 | column name as string
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys medians as values, if set to False:
         """ 
         from MatricesM.stats.median import median
-        return median(self,col)
+        return median(self,col,asDict)
     
     def sdev(self,col=None,population=1,asDict=True):
         """

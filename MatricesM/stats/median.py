@@ -1,4 +1,4 @@
-def median(mat,col=None):
+def median(mat,col=None,asDict=True):
     if isinstance(col,str):
         col=mat.features.index(col)+1
 
@@ -40,5 +40,14 @@ def median(mat,col=None):
             meds[feats[rows]]=n
         else:
             meds[feats]=n
-
-    return meds
+    
+    if asDict:
+        return meds
+    
+    items=list(meds.values())
+    if len(items)==1:
+        return items[0]
+    
+    if col==None:
+        return items
+    return items[col-1]

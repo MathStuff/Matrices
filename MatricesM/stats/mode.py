@@ -1,4 +1,4 @@
-def mode(mat,col=None):
+def mode(mat,col=None,asDict=True):
     try:
         if isinstance(col,str):
             col=mat.features.index(col)+1
@@ -20,7 +20,6 @@ def mode(mat,col=None):
         from MatricesM.stats.freq import freq
         
         freqs = freq(mat,col)
-        mode = {}
         
         #Check which element(s) repeat most
         for k,v in freqs.items():
@@ -43,4 +42,13 @@ def mode(mat,col=None):
         print("Error in mode:\n\t",e)
         return None
     else:
-        return mode
+        if asDict:
+            return mode
+        
+        items=list(mode.values())
+        if len(items)==1:
+            return items[0]
+        
+        if col==None:
+            return items
+        return items[col-1]

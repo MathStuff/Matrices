@@ -33,4 +33,11 @@ def freq(mat,col=None,dic=True):
     else:
         if dic:
             return res
-        return list(res.values())
+        
+        items=list(res.values())
+        if len(items)==1:
+            return items[0]
+        
+        if col==None:
+            return items
+        return items[col-1]
