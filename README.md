@@ -512,11 +512,11 @@ C.mean(n,asDict) #Returns the nth column or column named n's average, give None 
 
 C.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
 
-C.median(n) #Returns the nth column or column named n's median, give None to get all columns' medians
+C.median(n,asDict) #Returns the nth column or column named n's median, give None to get all columns' medians; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
 
-C.freq(n) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies 
+C.freq(n,asDict) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
 
-C.mode(n) #Returns the nth column or column named n's mode, give None to get all columns' modes
+C.mode(n,asDict) #Returns the nth column or column named n's mode, give None to get all columns' modes; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
 
 C.iqr(n,as_quartiles,asDict) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
 
@@ -583,8 +583,6 @@ newMatrix = eval(oldMatrix.obj)
    A.t.t == A
    
    A.adj.matrix[2][0] == A.minor(1,3)
-   
-   
    
    #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
    bool(Matrix(10,fill=1)) == True
