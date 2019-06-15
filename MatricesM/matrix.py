@@ -59,7 +59,6 @@ class Matrix:
 
     def __init__(self,*args,**kwargs):
         attributes = ["dim","listed","directory","fill","ranged","seed","header","features","decimal","dtype","coldtypes","implicit"]
-        implicit = False
 
         #Default values for attributes
         self.__dim = [0,0]        #Dimensions
@@ -73,7 +72,9 @@ class Matrix:
         self.__decimal = 4        #How many digits to display in decimal places
         self.__dtype = float      #Type of the matrix
         self.__coldtypes = []     #Column dtypes
-        
+        self.__implicit = False   #Implicity value 
+
+        #Get values from args and kwargs
         #Use given values in args
         for i,value in enumerate(args):
             #Very lame and lazy way to do this, will probably be deleted in the future
@@ -81,8 +82,6 @@ class Matrix:
                 self._matrix = value
             elif i==4:
                 self.__initRange = value
-            elif i==11:
-                implicit = value
             else:
                 exec(f"self._Matrix__{attributes[i]}={value}")
 
@@ -94,8 +93,6 @@ class Matrix:
                         self._matrix = v
                     elif k=="ranged":
                         self.__initRange = v
-                    elif k=="implicit":
-                        implicit=v
                     elif k in attributes:
                         exec(f"self._Matrix__{k}=v")
                     else:
@@ -105,8 +102,6 @@ class Matrix:
                     self._matrix = val
                 elif key=="ranged":
                     self.__initRange = val
-                elif key=="implicit":
-                    implicit=val
                 elif key in attributes:
                     exec(f"self._Matrix__{key}=val")
                 else:
@@ -116,11 +111,11 @@ class Matrix:
         self.setInstance(self.__dtype)  #Store what type of values matrix can hold
 
         #If necessary arguments not passed implicitly, set them to be usable  
-        if not implicit:                     
+        if not self.__implicit:                     
             self.setMatrix(self.__dim,self.__initRange,self._matrix,self.__directory,self.__fill,self._cMat,self._fMat)
 
         self.setFeatures(self.__features,self.__dim[1])                                #Set column names
-        self.setColdtypes(bool(not implicit),self._matrix,self.__dim[0],self.__dim[1]) #Set column dtypes
+        self.setColdtypes(bool(not self.__implicit),self._matrix,self.__dim[0],self.__dim[1]) #Set column dtypes
         
         #If directory has backslashes, make them forward slashes
         if self.__directory!="":              
