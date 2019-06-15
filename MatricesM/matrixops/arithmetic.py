@@ -1,9 +1,13 @@
 def matmul(mat,other,obj):
     from MatricesM.matrix import dataframe
+    from MatricesM.errors.errors import MatrixError
+    if not type(other) == obj:
+        raise MatrixError(f"{obj} is not not a matrix")
     if not mat.dim[1]==other.dim[0]:
         raise ValueError("Dimensions don't match for matrix multiplication")
-
-    temp = [[sum([mat.matrix[r][cs]*other.matrix[cs][rs] for cs in range(other.dim[0])]) for rs in range(other.dim[1])] for r in range(mat.dim[0])]           
+    m = mat.matrix
+    o = other.matrix   
+    temp = [[sum([m[r][cs]*o[cs][rs] for cs in range(other.dim[0])]) for rs in range(other.dim[1])] for r in range(mat.dim[0])]           
     #Return proper the matrix
     if other._cMat or mat._cMat:
         t = complex
@@ -17,8 +21,10 @@ def add(mat,other,obj):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]+other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim  
+            m = mat.matrix
+            o = other.matrix                 
+            temp=[[m[rows][cols]+o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
             print("Can't add: ",err)
             return mat
@@ -36,7 +42,8 @@ def add(mat,other,obj):
             
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            temp=[[mat.matrix[rows][cols]+other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]+other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except:
             print("Can't add")
@@ -66,7 +73,8 @@ def add(mat,other,obj):
                 t = float
             else:
                 t = int
-            temp=[[mat.matrix[rows][cols]+other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]+other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
@@ -77,8 +85,10 @@ def sub(mat,other,obj):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]-other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim      
+            m = mat.matrix
+            o = other.matrix             
+            temp=[[m[rows][cols]-o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
             print("Can't subtract: ",err)
             return mat
@@ -95,7 +105,8 @@ def sub(mat,other,obj):
             
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            temp=[[mat.matrix[rows][cols]-other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]-other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except:
             print("Can't subtract")
@@ -125,7 +136,8 @@ def sub(mat,other,obj):
                 t = float
             else:
                 t = int
-            temp=[[mat.matrix[rows][cols]-other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]-other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
@@ -136,8 +148,10 @@ def mul(mat,other,obj):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]*other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim
+            m = mat.matrix
+            o = other.matrix            
+            temp=[[m[rows][cols]*o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
             print("Can't multiply: ",err)
             return mat
@@ -154,7 +168,8 @@ def mul(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            temp=[[mat.matrix[rows][cols]*other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]*other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except Exception as err:
             print("Can't multiply: ",err)
@@ -184,7 +199,8 @@ def mul(mat,other,obj):
                 t = float
             else:
                 t = int
-            temp=[[mat.matrix[rows][cols]*other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]*other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
@@ -198,8 +214,10 @@ def fdiv(mat,other,obj):
             print("Complex numbers doesn't allow floor division")
         return mat
         try:
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]//other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim
+            m = mat.matrix
+            o = other.matrix              
+            temp=[[m[rows][cols]//o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
             return mat
@@ -215,7 +233,8 @@ def fdiv(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float):
         try:
-            temp=[[mat.matrix[rows][cols]//other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]//other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
             return mat
@@ -244,7 +263,8 @@ def fdiv(mat,other,obj):
             return mat
         else:
             try:
-                temp=[[mat.matrix[rows][cols]//other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+                m = mat.matrix
+                temp=[[m[rows][cols]//other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             except ZeroDivisionError:
                 print("Division by 0")
                 return mat
@@ -266,8 +286,10 @@ def tdiv(mat,other,obj):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]/other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim
+            m = mat.matrix
+            o = other.matrix               
+            temp=[[m[rows][cols]/o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except ZeroDivisionError:
             print("Division by 0")
@@ -288,7 +310,8 @@ def tdiv(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            temp=[[mat.matrix[rows][cols]/other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix 
+            temp=[[m[rows][cols]/other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
             return mat
@@ -320,7 +343,8 @@ def tdiv(mat,other,obj):
             return mat
         else:
             try:
-                temp=[[mat.matrix[rows][cols]/other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+                m = mat.matrix
+                temp=[[m[rows][cols]/other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             except ZeroDivisionError:
                 print("Division by 0")
                 return mat
@@ -341,8 +365,10 @@ def mod(mat,other,obj):
             if mat._cMat or  other._cMat:
                 print("Complex numbers doesn't allow floor division")
                 return mat
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]%other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim
+            m = mat.matrix
+            o = other.matrix                 
+            temp=[[m[rows][cols]%o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except ZeroDivisionError:
             print("Division by 0")
@@ -361,7 +387,8 @@ def mod(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float):
         try:
-            temp=[[mat.matrix[rows][cols]%other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]%other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
             return mat
@@ -392,7 +419,8 @@ def mod(mat,other,obj):
             return mat
         else:
             try:
-                temp=[[mat.matrix[rows][cols]%other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+                m = mat.matrix
+                temp=[[m[rows][cols]%other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             except ZeroDivisionError:
                 print("Division by 0")
                 return mat
@@ -410,8 +438,10 @@ def pwr(mat,other,obj):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
-            assert mat.dim==other.dim                
-            temp=[[mat.matrix[rows][cols]**other.matrix[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            assert mat.dim==other.dim
+            m = mat.matrix
+            o = other.matrix                  
+            temp=[[m[rows][cols]**o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
             print("Can't raise to the given power: ",err)
             return mat
@@ -428,7 +458,8 @@ def pwr(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            temp=[[mat.matrix[rows][cols]**other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]**other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except:
             print("Can't raise to the given power")            
@@ -458,7 +489,8 @@ def pwr(mat,other,obj):
                 t = float
             else:
                 t = int
-            temp=[[mat.matrix[rows][cols]**other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
+            m = mat.matrix
+            temp=[[m[rows][cols]**other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
     else:
