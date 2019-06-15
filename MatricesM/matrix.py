@@ -1880,81 +1880,81 @@ class Matrix:
 # =============================================================================
     def __matmul__(self,other):
         from MatricesM.matrixops.arithmetic import matmul
-        return matmul(self,other,Matrix)
+        return matmul(self,other,Matrix,self.matrix)
     
     def __add__(self,other):
         from MatricesM.matrixops.arithmetic import add
-        return add(self,other,Matrix)
+        return add(self,other,Matrix,self.matrix)
             
     def __sub__(self,other):
         from MatricesM.matrixops.arithmetic import sub
-        return sub(self,other,Matrix)
+        return sub(self,other,Matrix,self.matrix)
      
     def __mul__(self,other):
         from MatricesM.matrixops.arithmetic import mul
-        return mul(self,other,Matrix)
+        return mul(self,other,Matrix,self.matrix)
 
     def __floordiv__(self,other):
         from MatricesM.matrixops.arithmetic import fdiv
-        return fdiv(self,other,Matrix)
+        return fdiv(self,other,Matrix,self.matrix)
             
     def __truediv__(self,other):
         from MatricesM.matrixops.arithmetic import tdiv
-        return tdiv(self,other,Matrix)
+        return tdiv(self,other,Matrix,self.matrix)
 
     def __mod__(self, other):
         from MatricesM.matrixops.arithmetic import mod
-        return mod(self,other,Matrix)
+        return mod(self,other,Matrix,self.matrix)
          
     def __pow__(self,other):
         from MatricesM.matrixops.arithmetic import pwr
-        return pwr(self,other,Matrix)
+        return pwr(self,other,Matrix,self.matrix)
 
 # =============================================================================
     """ Comparison operators """                    
 # =============================================================================
     def __le__(self,other):
         from MatricesM.matrixops.comparison import le
-        return le(self,other,Matrix)
+        return le(self,other,Matrix,self.matrix)
         
     def __lt__(self,other):
         from MatricesM.matrixops.comparison import lt
-        return lt(self,other,Matrix)
+        return lt(self,other,Matrix,self.matrix)
         
     def __eq__(self,other):
         from MatricesM.matrixops.comparison import eq
-        return eq(self,other,Matrix)
+        return eq(self,other,Matrix,self.matrix)
         
     def __ne__(self,other):
         from MatricesM.matrixops.comparison import ne
-        return ne(self,other,Matrix)
+        return ne(self,other,Matrix,self.matrix)
                 
     def __ge__(self,other):
         from MatricesM.matrixops.comparison import ge
-        return ge(self,other,Matrix)
+        return ge(self,other,Matrix,self.matrix)
         
     def __gt__(self,other):
         from MatricesM.matrixops.comparison import gt
-        return gt(self,other,Matrix)
+        return gt(self,other,Matrix,self.matrix)
         
 # =============================================================================
     """ Rounding etc. """                    
 # =============================================================================   
     def __round__(self,n=-1):
         from MatricesM.matrixops.rounding import rnd
-        return rnd(self,n,Matrix)
+        return rnd(self,n,Matrix,self.matrix)
     
     def __floor__(self):
         from MatricesM.matrixops.rounding import flr
-        return flr(self,Matrix)     
+        return flr(self,Matrix,self.matrix)     
     
     def __ceil__(self):
         from MatricesM.matrixops.rounding import ceil
-        return ceil(self,Matrix)
+        return ceil(self,Matrix,self.matrix)
     
     def __abs__(self):
         from MatricesM.matrixops.rounding import _abs
-        return _abs(self,Matrix)
+        return _abs(self,Matrix,self.matrix)
 
 # =============================================================================
 

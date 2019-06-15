@@ -1,11 +1,10 @@
-def matmul(mat,other,obj):
+def matmul(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     from MatricesM.errors.errors import MatrixError
     if not type(other) == obj:
         raise MatrixError(f"{obj} is not not a matrix")
     if not mat.dim[1]==other.dim[0]:
         raise ValueError("Dimensions don't match for matrix multiplication")
-    m = mat.matrix
     o = other.matrix   
     temp = [[sum([m[r][cs]*o[cs][rs] for cs in range(other.dim[0])]) for rs in range(other.dim[1])] for r in range(mat.dim[0])]           
     #Return proper the matrix
@@ -17,12 +16,11 @@ def matmul(mat,other,obj):
         t = int
     return obj(dim=[mat.dim[0],other.dim[1]],listed=temp,features=other.features[:],decimal=other.decimal,dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
     
-def add(mat,other,obj):
+def add(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
             assert mat.dim==other.dim  
-            m = mat.matrix
             o = other.matrix                 
             temp=[[m[rows][cols]+o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
@@ -42,7 +40,6 @@ def add(mat,other,obj):
             
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            m = mat.matrix
             temp=[[m[rows][cols]+other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except:
@@ -73,7 +70,6 @@ def add(mat,other,obj):
                 t = float
             else:
                 t = int
-            m = mat.matrix
             temp=[[m[rows][cols]+other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
@@ -81,12 +77,11 @@ def add(mat,other,obj):
         print("Can't add")
         return mat
             
-def sub(mat,other,obj):
+def sub(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
             assert mat.dim==other.dim      
-            m = mat.matrix
             o = other.matrix             
             temp=[[m[rows][cols]-o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
@@ -105,7 +100,6 @@ def sub(mat,other,obj):
             
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            m = mat.matrix
             temp=[[m[rows][cols]-other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except:
@@ -136,7 +130,6 @@ def sub(mat,other,obj):
                 t = float
             else:
                 t = int
-            m = mat.matrix
             temp=[[m[rows][cols]-other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
@@ -144,12 +137,11 @@ def sub(mat,other,obj):
         print("Can't subtract")
         return mat
     
-def mul(mat,other,obj):
+def mul(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
             assert mat.dim==other.dim
-            m = mat.matrix
             o = other.matrix            
             temp=[[m[rows][cols]*o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
@@ -168,7 +160,6 @@ def mul(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            m = mat.matrix
             temp=[[m[rows][cols]*other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except Exception as err:
@@ -199,7 +190,6 @@ def mul(mat,other,obj):
                 t = float
             else:
                 t = int
-            m = mat.matrix
             temp=[[m[rows][cols]*other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
@@ -207,7 +197,7 @@ def mul(mat,other,obj):
         print("Can't multiply")
         return mat
 
-def fdiv(mat,other,obj):
+def fdiv(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         if mat._cMat or  other._cMat:
@@ -215,7 +205,6 @@ def fdiv(mat,other,obj):
         return mat
         try:
             assert mat.dim==other.dim
-            m = mat.matrix
             o = other.matrix              
             temp=[[m[rows][cols]//o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
@@ -233,7 +222,6 @@ def fdiv(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float):
         try:
-            m = mat.matrix
             temp=[[m[rows][cols]//other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
@@ -263,7 +251,6 @@ def fdiv(mat,other,obj):
             return mat
         else:
             try:
-                m = mat.matrix
                 temp=[[m[rows][cols]//other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             except ZeroDivisionError:
                 print("Division by 0")
@@ -282,12 +269,11 @@ def fdiv(mat,other,obj):
         print("Can't divide")
         return mat
         
-def tdiv(mat,other,obj):
+def tdiv(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
             assert mat.dim==other.dim
-            m = mat.matrix
             o = other.matrix               
             temp=[[m[rows][cols]/o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
@@ -310,7 +296,6 @@ def tdiv(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            m = mat.matrix 
             temp=[[m[rows][cols]/other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
@@ -343,7 +328,6 @@ def tdiv(mat,other,obj):
             return mat
         else:
             try:
-                m = mat.matrix
                 temp=[[m[rows][cols]/other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             except ZeroDivisionError:
                 print("Division by 0")
@@ -358,7 +342,7 @@ def tdiv(mat,other,obj):
         print("Can't divide")
         return mat
 
-def mod(mat,other,obj):
+def mod(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
@@ -366,7 +350,6 @@ def mod(mat,other,obj):
                 print("Complex numbers doesn't allow floor division")
                 return mat
             assert mat.dim==other.dim
-            m = mat.matrix
             o = other.matrix                 
             temp=[[m[rows][cols]%o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
@@ -387,7 +370,6 @@ def mod(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float):
         try:
-            m = mat.matrix
             temp=[[m[rows][cols]%other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")
@@ -419,7 +401,6 @@ def mod(mat,other,obj):
             return mat
         else:
             try:
-                m = mat.matrix
                 temp=[[m[rows][cols]%other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             except ZeroDivisionError:
                 print("Division by 0")
@@ -434,12 +415,11 @@ def mod(mat,other,obj):
         print("Can't get modular")
         return mat
         
-def pwr(mat,other,obj):
+def pwr(mat,other,obj,m):
     from MatricesM.matrix import dataframe
     if isinstance(other,obj):
         try:
             assert mat.dim==other.dim
-            m = mat.matrix
             o = other.matrix                  
             temp=[[m[rows][cols]**o[rows][cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except Exception as err:
@@ -458,7 +438,6 @@ def pwr(mat,other,obj):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
-            m = mat.matrix
             temp=[[m[rows][cols]**other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
 
         except:
@@ -489,7 +468,6 @@ def pwr(mat,other,obj):
                 t = float
             else:
                 t = int
-            m = mat.matrix
             temp=[[m[rows][cols]**other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
             return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,coldtypes=mat.coldtypes[:],implicit=True)
             #--------------------------------------------------------------------------
