@@ -6,7 +6,9 @@ Created on Wed Oct 31 17:26:48 2018
 """
 from MatricesM.validations.validate import *
 from MatricesM.errors.errors import *
-from random import random,randint,uniform,triangular,gauss,seed
+from random import random,randint,uniform,triangular,\
+                   gauss,gammavariate,betavariate,   \
+                   expovariate,lognormvariate,seed
 
 class dataframe:
     pass
@@ -28,14 +30,17 @@ class Matrix:
     
     directory:str; directory of a data file(e.g. 'directory/datafile' or r'directory\datafile')
     
-    fill: uniform|triangular|gauss or int|float|complex|str|list|range or None; fills the matrix with chosen distribution or the value, default is uniform distribution
+    fill: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate or int|float|complex|str|list|range or None; 
+          Fills the matrix with chosen distribution or the value, default is uniform distribution
 
     ranged:->To apply all the elements give a list | tuple
            ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
            ->Arguments should follow one of the following rules:
                 1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
-                2)If 'fill' is gauss, mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode]
+                2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
+                4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
+                5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]
 
     header:boolean; takes first row as header title
     
@@ -525,7 +530,7 @@ class Matrix:
     @fill.setter
     def fill(self,value):
         try:
-            assert (value in [uniform,triangular,gauss]) or (type(value) in [int,str,float,complex,range,list]) or value==None
+            assert (value in [uniform,triangular,gauss,expovariate,gammavariate,betavariate,lognormvariate]) or (type(value) in [int,str,float,complex,range,list]) or value==None
         except AssertionError:
             raise FillError(value)
         else:
@@ -684,35 +689,21 @@ class Matrix:
         """
         Object call as a string to recreate the matrix
         """
-        fillstr = self.fill
+        fill_str,cdtype_str = self.fill,str([i.__name__ for i in self.coldtypes]).replace("'","")
         if type(self.fill).__name__ == "method":
-            fillstr=self.fill.__name__
-        return "Matrix(dim={0},listed={1},ranged={2},fill={3},features={4},header={5},directory='{6}',decimal={7},seed={8},dtype={9},coldtypes={10})".format(self.dim,
-                                                                                                                                                                 self._matrix,
-                                                                                                                                                                 self.initRange,
-                                                                                                                                                                 fillstr,
-                                                                                                                                                                 self.features,
-                                                                                                                                                                 self.header,
-                                                                                                                                                                 self.directory,
-                                                                                                                                                                 self.decimal,
-                                                                                                                                                                 self.seed,
-                                                                                                                                                                 self.dtype.__name__,
-                                                                                                                                                                 str([i.__name__ for i in self.coldtypes]).replace("'",""))
+            fill_str=self.fill.__name__
+        return "Matrix(dim={0},listed={1},ranged={2},fill={3},features={4},header={5},directory='{6}',decimal={7},seed={8},dtype={9},coldtypes={10})".format(
+                self.dim,self._matrix,self.initRange,fill_str,self.features,self.header,self.directory,self.decimal,self.seed,self.dtype.__name__,cdtype_str)
  
     @property
     def seed(self):
         return self.__seed
     @seed.setter
     def seed(self,value):
-        try:
-            if isinstance(value,int):
-                self.__seed=value
-            else:
-                raise TypeError("Seed must be an integer")
-        except Exception as err:
-            raise err
-        else:
-            self.setMatrix(self.dim,self.initRange)
+        if not isinstance(value,int):
+            raise TypeError("Seed must be an integer")
+        self.__seed = value
+        self.setMatrix(self.dim,self.initRange,[],"",self.fill,self._cMat,self._fMat)
 
     @property
     def decimal(self):
@@ -723,7 +714,7 @@ class Matrix:
             assert isinstance(val,int)
             assert val>=1
         except:
-            print("Invalid argument")
+            raise ValueError("Seed should be an integer higher or equal to 1")
         else:
             self.__decimal=val     
         
