@@ -114,7 +114,7 @@ class Matrix:
         if not self.__implicit:                     
             self.setMatrix(self.__dim,self.__initRange,self._matrix,self.__directory,self.__fill,self._cMat,self._fMat)
 
-        self.setFeatures(self.__features,self.__dim[1])                                #Set column names
+        self.setFeatures(self.__features,self.__dim[1])                                                   #Set column names
         self.setColdtypes(bool(not self.__implicit),self._matrix,self.__dim[0],self.__dim[1]) #Set column dtypes
         
         #If directory has backslashes, make them forward slashes
@@ -162,19 +162,28 @@ class Matrix:
         """
         if not validlist(mat):
             return None
-        if len(list(self.coldtypes))!=d1:
-            self.__coldtypes=[type(mat[0][i]) for i in range(d1)]
-        if declare and self.dtype==dataframe:
-            for i in range(d0):
-                j=0
-                while j<d1:
-                    try:
-                        if self.coldtypes[j] != type: 
-                            self._matrix[i][j] = self.coldtypes[j](mat[i][j])
-                        j+=1
-                    except:
-                        j+=1
-                        continue
+
+        df = self._dfMat
+        if not df:
+            dt = self.dtype
+            self.__coldtypes = [dt for _ in range(d1)]
+        else:
+            if len(list(self.coldtypes))!=d1:
+                self.__coldtypes = [type(mat[0][i]) for i in range(d1)]
+        
+            if declare:
+                temp = self._matrix
+                cdts = self.coldtypes
+                for i in range(d0):
+                    j=0
+                    while j<d1:
+                        try:
+                            if cdts[j] != type: 
+                                temp[i][j] = cdts[j](mat[i][j])
+                            j+=1
+                        except:
+                            j+=1
+                            continue
            
     def _setDim(self,d):
         """
@@ -505,9 +514,10 @@ class Matrix:
         except:
             return None
         else:
-            els=[self.matrix[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
+            m = self.matrix
+            els=[m[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
             temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
-            self.__init__(dim=list(val),listed=temp)
+            self.__init__(dim=list(val),listed=temp,dtype=self.dtype,implicit=True)
     
     @property
     def fill(self):
@@ -765,12 +775,15 @@ class Matrix:
     @property
     def isSquare(self):
         """
-        A.dim == (i,j) where i == j
+        Matrix.dim == [i,j] where i == j
         """
         return self.dim[0] == self.dim[1]
     
     @property
     def isIdentity(self):
+        """
+        Matrix[i,j] == 1 where i==j and Matrix[i,j] == 0 where i!=j 
+        """
         if not self.isSquare:
             return False
         from MatricesM.constructors.matrices import Identity
@@ -779,7 +792,7 @@ class Matrix:
     @property
     def isSingular(self):
         """
-        A.det == 0
+        Matrix.det == 0
         """
         if not self.isSquare:
             return False
@@ -788,7 +801,7 @@ class Matrix:
     @property
     def isSymmetric(self):
         """
-        A(i)(j) == A(j)(i)
+        Matrix[i,j] == Matrix[j,i]
         """        
         if not self.isSquare:
             return False
@@ -797,7 +810,7 @@ class Matrix:
     @property  
     def isAntiSymmetric(self):
         """
-        A(i)(j) == -A(j)(i)
+        Matrix[i,j] == -Matrix[j,i]
         """
         if not self.isSquare:
             return False
@@ -805,84 +818,97 @@ class Matrix:
     
     @property
     def isPerSymmetric(self):
+        """
+        Matrix[i,j] == Matrix[n+1-j,n+1-i] , for nxn Matrix 
+        """
         if not self.isSquare:
             return False
-        d=self.dim[0]
+        d = self.dim[0]
+        m = self.matrix
         for i in range(d):
             for j in range(d):
-                if self.matrix[i][j] != self.matrix[d-1-j][d-1-i]:
+                if m[i][j] != m[d-1-j][d-1-i]:
                     return False
         return True
     
     @property
     def isHermitian(self):
         """
-        A.ht == A
+        Matrix.ht == Matrix
         """
         return (self.ht).matrix == self.matrix
         
     @property
     def isTriangular(self):
         """
-        A(i)(j) == 0 where i < j XOR i > j
+        Matrix[i,j] == 0 where i < j XOR i > j
         """
-        from functools import reduce
-        if not self.isSquare:
+        if not (self.isSquare and (self.isUpperTri or self.isLowerTri)):
             return False
-        return self.det == reduce((lambda a,b: a*b),[self.matrix[a][a] for a in range(self.dim[0])])
-    
+        return True
+
     @property
     def isUpperTri(self):
         """
-        A(i)(j) == 0 where i > j
+        Matrix[i,j] == 0 where i > j
         """
-        if self.isTriangular:
-            for i in range(1,self.dim[0]):
-                for j in range(i):
-                    if self.matrix[i][j]!=0:
-                        return False
-            return True
-        return False
+        if not self.isSquare:
+            return False
+        m = self.matrix
+        for i in range(1,self.dim[0]):
+            for j in range(i):
+                if m[i][j]!=0: #Check elements below diagonal to be 0
+                    return False
+        return True
     
     @property
     def isLowerTri(self):
         """
-        A(i)(j) == 0 where i < j
+        Matrix[i,j] == 0 where i < j
         """
-        return self.t.isUpperTri
+        if not self.isSquare:
+            return False
+        m = self.matrix
+        for i in range(1,self.dim[0]):
+            for j in range(i):
+                if m[j][i]!=0: #Check elements above diagonal to be 0
+                    return False
+        return True
     
     @property
     def isDiagonal(self):
         """
-        A(i)(j) == 0 where i != j
+        Matrix[i,j] == 0 where i != j
         """
+        from functools import reduce
         if not self.isSquare:
             return False
-        return self.isUpperTri and self.isLowerTri
+        return self.isUpperTri and self.isLowerTri and (self.det == reduce((lambda a,b: a*b),self.diags))
 
     @property
     def isBidiagonal(self):
         """
-        A(i)(j) == 0 where ( i != j OR i != j+1 ) XOR ( i != j OR i != j-1 )
+        Matrix[i,j] == 0 where ( i != j OR i != j+1 ) XOR ( i != j OR i != j-1 )
         """
         return self.isUpperBidiagonal or self.isLowerBidiagonal
     
     @property
     def isUpperBidiagonal(self):
         """
-        A(i)(j) == 0 where i != j OR i != j+1
+        Matrix[i,j] == 0 where i != j OR i != j+1
         """
         #Assure the matrix is upper triangular
-        if not self.isUpperTri or self.dim[0]<=2:
+        if not self.isSquare:
             return False
-        
+
+        m=self.matrix
         #Assure diagonal and superdiagonal have non-zero elements 
-        if 0 in [self._matrix[i][i] for i in range(self.dim[0])] + [self._matrix[i][i+1] for i in range(self.dim[0]-1)]:
+        if 0 in [m[i][i] for i in range(self.dim[0])] + [m[i][i+1] for i in range(self.dim[0]-1)]:
             return False
         
         #Assure the elements above first superdiagonal are zero
         for i in range(self.dim[0]-2):
-            if [0]*(self.dim[0]-2-i) != self._matrix[i][i+2:]:
+            if [0]*(self.dim[0]-2-i) != m[i][i+2:]:
                 return False
             
         return True
@@ -890,76 +916,98 @@ class Matrix:
     @property
     def isLowerBidiagonal(self):
         """
-        A(i)(j) == 0 where i != j OR i != j-1
+        Matrix[i,j] == 0 where i != j OR i != j-1
         """
-        return self.t.isUpperBidiagonal          
+        #Assure the matrix is upper triangular
+        if not self.isSquare:
+            return False
 
+        m=self.matrix
+        #Assure diagonal and subdiagonal have non-zero elements 
+        if 0 in [m[i][i] for i in range(self.dim[0])] + [m[i+1][i] for i in range(self.dim[0]-1)]:
+            return False
+        
+        #Assure the elements above first subdiagonal are zero
+        for i in range(self.dim[0]-2):
+            if [0]*(self.dim[0]-2-i) != m[i][i+2:]:
+                return False
+            
+        return True
+        
     @property
     def isUpperHessenberg(self):
         """
-        A(i)(j) == 0 where i<j-1
+        Matrix[i,j] == 0 where i<j-1
         """
-        if not self.isSquare or self.dim[0]<=2:
+        if not self.isSquare:
             return False
-        
+        m = self.matrix
         for i in range(2,self.dim[0]):
-            if [0]*(i-1) != self._matrix[i][0:i-1]:
-                return False
-                
+            for j in range(i):
+                if m[i][j]!=0: #Check elements below subdiagonal to be 0
+                    return False
         return True
     
     @property
     def isLowerHessenberg(self):
         """
-        A(i)(j) == 0 where i>j+1
+        Matrix[i,j] == 0 where i>j+1
         """
-        return self.t.isUpperHessenberg
+        if not self.isSquare:
+            return False
+        m = self.matrix
+        for i in range(2,self.dim[0]):
+            for j in range(i):
+                if m[j][i]!=0: #Check elements above superdiagonal to be 0
+                    return False
+        return True
     
     @property
     def isHessenberg(self):
         """
-        A(i)(j) == 0 where i>j+1 XOR i<j-1
+        Matrix[i,j] == 0 where i>j+1 XOR i<j-1
         """
         return self.isUpperHessenberg or self.isLowerHessenberg
     
     @property
     def isTridiagonal(self):
         """
-        A(i)(j) == 0 where abs(i-j) > 1 AND A(i)(j) != 0 where 0 <= abs(i-j) <= 1
+        Matrix[i,j] == 0 where abs(i-j) > 1 AND Matrix[i,j] != 0 where 0 <= abs(i-j) <= 1
         """
         if not self.isSquare or self.dim[0]<=2:
             return False
-        
+        m = self.matrix
         #Check diagonal and first subdiagonal and first superdiagonal
-        if 0 in [self._matrix[i][i] for i in range(self.dim[0])] + [self._matrix[i][i+1] for i in range(self.dim[0]-1)] + [self._matrix[i+1][i] for i in range(self.dim[0]-1)]:
+        if 0 in [m[i][i] for i in range(self.dim[0])] + [m[i][i+1] for i in range(self.dim[0]-1)] + [m[i+1][i] for i in range(self.dim[0]-1)]:
             return False
         
         #Assure rest of the elements are zeros
         for i in range(self.dim[0]-2):
             #Non-zero check above first superdiagonal
-            if [0]*(self.dim[0]-2-i) != self._matrix[i][i+2:]:
+            if [0]*(self.dim[0]-2-i) != m[i][i+2:]:
                 return False
             
             #Non-zero check below first subdiagonal
-            if [0]*(self.dim[0]-2-i) != self._matrix[self.dim[0]-i-1][:self.dim[0]-i-2]:
+            if [0]*(self.dim[0]-2-i) != m[self.dim[0]-i-1][:self.dim[0]-i-2]:
                 return False
         return True
 
     @property
     def isToeplitz(self):
         """
-        A(i)(j) == A(i+1)(j+1) when 0 < i < row number, 0 < j < column number
+        Matrix[i,j] == Matrix[i+1,j+1] for every i and j
         """
+        m = self.matrix
         for i in range(self.dim[0]-1):
             for j in range(self.dim[1]-1):
-                if self._matrix[i][j] != self._matrix[i+1][j+1]:
+                if m[i][j] != m[i+1][j+1]:
                     return False
         return True
     
     @property
     def isIdempotent(self):
         """
-        A@A == A
+        Matrix@Matrix == Matrix
         """
         if not self.isSquare:
             return False
@@ -968,7 +1016,7 @@ class Matrix:
     @property
     def isOrthogonal(self):
         """
-        A.t == A.inv
+        Matrix.t == Matrix.inv
         """
         if not self.isSquare or self.isSingular:
             return False
@@ -977,7 +1025,7 @@ class Matrix:
     @property
     def isUnitary(self):
         """
-        A.ht == A.inv
+        Matrix.ht == Matrix.inv
         """
         if not self.isSquare or self.isSingular:
             return False
@@ -986,7 +1034,7 @@ class Matrix:
     @property
     def isNormal(self):
         """
-        A@A.ht == A.ht@A OR A@A.t == A.t@A
+        Matrix@Matrix.ht == Matrix.ht@Matrix OR Matrix@Matrix.t == Matrix.t@Matrix
         """
         if not self.isSquare:
             return False
@@ -995,7 +1043,7 @@ class Matrix:
     @property
     def isCircular(self):
         """
-        A.inv == A.conj
+        Matrix.inv == Matrix.conj
         """
         if not self.isSquare or self.isSingular:
             return False
@@ -1004,7 +1052,7 @@ class Matrix:
     @property
     def isPositive(self):
         """
-        A(i)(j) > 0 for every i and j 
+        Matrix[i,j] > 0 for every i and j 
         """
         if self._cMat:
             return False
@@ -1013,7 +1061,7 @@ class Matrix:
     @property
     def isNonNegative(self):
         """
-        A(i)(j) >= 0 for every i and j 
+        Matrix[i,j] >= 0 for every i and j 
         """
         if self._cMat:
             return False
@@ -1022,7 +1070,7 @@ class Matrix:
     @property
     def isProjection(self):
         """
-        A.ht == A@A == A 
+        Matrix.ht == Matrix@Matrix == Matrix 
         """
         if not self.isSquare:
             return False
@@ -1031,7 +1079,7 @@ class Matrix:
     @property
     def isInvolutory(self):
         """
-        A@A == Identity
+        Matrix@Matrix == Identity
         """
         if not self.isSquare:
             return False
@@ -1041,7 +1089,7 @@ class Matrix:
     @property
     def isIncidence(self):
         """
-        A(i)(j) == 0 | 1 for every i and j
+        Matrix[i,j] == 0 | 1 for every i and j
         """
         for i in range(self.dim[0]):
             for j in range(self.dim[1]):
@@ -1049,6 +1097,18 @@ class Matrix:
                     return False
         return True
     
+    @property
+    def isZero(self):
+        """
+        Matrix[i,j] == 0 for every i and j
+        """
+        m = self.matrix
+        for i in range(self.dim[0]):
+            for j in range(self.dim[1]):
+                if m[i][j] != 0:
+                    return False
+        return True
+
 # =============================================================================
     """Get special formats"""
 # =============================================================================    
@@ -1839,7 +1899,6 @@ class Matrix:
         Prints the matrix's attributes and itself as a grid of numbers
         """
         self.__dim=self._declareDim()
-        self._inRange=self._declareRange(self._matrix)
         s=self._stringfy(coldtypes=self.coldtypes[:])
         if not self.isSquare:
             print("\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
