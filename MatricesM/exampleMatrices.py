@@ -4,7 +4,7 @@ Created on Wed Oct 31 17:38:28 2018
 
 @author: Semih
 """
-from MatricesM.matrix import *
+from MatricesM import *
 from MatricesM.constructors.matrices import *
 from random import random,randint,uniform,triangular,gauss,seed
 
