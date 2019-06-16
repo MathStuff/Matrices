@@ -1,6 +1,6 @@
 # <a href="https://pypi.org/project/MatricesM/">MatricesM (Alpha)</a>
 #### Python(>=3.6) library for creating matrices and doing matrix operations related to statistics and algebra mathematics
-#### [Join MathStuff's Slack](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) workspace for questions and discussions.
+#### [Join MathStuff's Slack workspace](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) for questions and discussions.
  
 ### Install using pip:
    
@@ -8,11 +8,11 @@
    
 ### Import by using:
    ```python 
-   import MatricesM.matrix as mm #Use by calling : mm.Matrix(arguments)
+   import MatricesM as mm #Use by calling : mm.Matrix(arguments)
    ```
    #### OR
    ```python 
-   from MatricesM.matrix import * #Use matrices directly : Matrix(arguments)
+   from MatricesM import * #Use matrices directly : Matrix(arguments)
    ```
 ### Import and print example matrices:
    ```python 
