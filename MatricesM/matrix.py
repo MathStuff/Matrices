@@ -1377,14 +1377,18 @@ class Matrix:
             return applyop(self,expressions,columns,conditions,self.features[:])
         applyop(self,expressions,columns,conditions,self.features[:])
 
-    def replace(self,old,new,column=None,condition=None):
+    def replace(self,old,new,column=None,condition=None,returnmat=False):
         """
         Replace single values,rows and/or columns
 
         #Required parameters:
         old: all available types|boolean *column* matrix; value(s) to be replaced
+
         new:all available types; value(s) to replace old ones with
+
         column: str|tuple or list of strings|None;  which column(s) to apply replacements, None for all columns
+        
+        returnmat: boolean; True to return self after evaluation, False to return None
 
         #Optional parameters:
         condition: boolean *column* matrix|None; row(s) to apply replacements, None for all rows
@@ -1421,6 +1425,8 @@ class Matrix:
         """
         from MatricesM.filter.replace import _replace
         _replace(self,old,new,column,condition)
+        if returnmat:
+            return self
         
     def indexSet(self,name="Index",start=0,returnmat=False):
         """
@@ -1562,7 +1568,7 @@ class Matrix:
         Give no arguments to get the whole scores in a matrix
         """
         from MatricesM.stats.z import z
-        return z(self,col,population,Matrix(self.dim,fill=0,features=self.__features))        
+        return z(self,col,population,Matrix(self.dim,fill=0,features=self.features[:]))        
     
     def iqr(self,col=None,as_quartiles=False,asDict=True):
         """
