@@ -3,10 +3,11 @@ def declareDim(mat):
     Set new dimension 
     """
     try:
-        rows= len(mat._matrix)
-        cols = len(mat._matrix[0])
+        m = mat._matrix
+        rows= len(m)
+        cols = len(m[0])
         for i in range(rows):
-            if not cols == len(mat._matrix[i]):
+            if cols != len(m[i]):
                 raise IndexError
             
     except IndexError:
