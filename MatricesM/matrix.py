@@ -46,7 +46,7 @@ class Matrix:
     
     features:list of strings; column names
     
-    seed:int; seed to use while generating random numbers, not useful when fill isn't one of [uniform,triangular,gauss]
+    seed:int; seed to use while generating random numbers, not useful when fill isn't one of [uniform,triangular,gauss,gammavariate,betavariate,lognormvariate,expovariate]
     
     decimal:int; Digits to round to and print
 
@@ -535,32 +535,38 @@ class Matrix:
             raise FillError(value)
         else:
             self.__fill=value
-            self.setMatrix(self.__dim,self.__initRange,[],self.__directory,self.__fill,self._cMat,self._fMat)
+            self.setMatrix(self.__dim,self.__initRange,[],self.__directory,value,self._cMat,self._fMat)
 
     @property
     def initRange(self):
         return self.__initRange
     @initRange.setter
     def initRange(self,value):
-        if not (isinstance(value,list) or isinstance(value,tuple) or isinstance(value,dict)):
+        if not (isinstance(value,list) or isinstance(value,tuple)):
             raise TypeError("initRange should be a list or a tuple")
         
-        if self.fill in [uniform,gauss] or ( isinstance(self.fill,int) or isinstance(self.fill,float) or isinstance(self.fill,complex) ):
-            if isinstance(value,list):
-                if len(value)!=2:
-                    return IndexError("initRange|ranged should be in the form of [mean,standard_deviation] or [minimum,maximum]")
-                if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)):
-                    return ValueError("list contains non integer and non float numbers")
+        if self.fill in [uniform,gauss,gammavariate,betavariate,lognormvariate] or ( isinstance(self.fill,int) or isinstance(self.fill,float) or isinstance(self.fill,complex) ):
+            if len(value)!=2:
+                return IndexError("initRange|ranged should be in the form of [mean,standard_deviation] or [minimum,maximum] or [alpha,beta]")
+            if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)):
+                return ValueError("list contains non integer and non float numbers")
+        
         elif self.fill in [triangular]:
-            if isinstance(value,list):
-                if len(value)!=3:
-                    return IndexError("initRange|ranged should be in the form of [minimum,maximum,mode]")
-                if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)) and not (isinstance(value[2],float) or isinstance(value[2],int)):
-                    return ValueError("list contains non integer and non float numbers")
-        else:
-            raise TypeError("Invalid 'fill' attribute, change it first")
-        self.__initRange=list(value)
+            if len(value)!=3:
+                return IndexError("initRange|ranged should be in the form of [minimum,maximum,mode]")
+            if not (isinstance(value[0],float) or isinstance(value[0],int)) and not (isinstance(value[1],float) or isinstance(value[1],int)) and not (isinstance(value[2],float) or isinstance(value[2],int)):
+                return ValueError("list contains non integer and non float numbers")
+        
+        elif self.fill in [expovariate]:
+            if len(value)!=1:
+                return IndexError("initRange|ranged should be in the form of [lambda]")
             
+        else:
+            raise TypeError("Invalid 'fill' attribute to use 'initRange' with, change it to a method to use this setter.")
+        l=list(value)
+        self.__initRange=l
+        self.setMatrix(self.__dim,l,[],self.__directory,self.__fill,self._cMat,self._fMat)
+
     @property
     def rank(self):
         """
