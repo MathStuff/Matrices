@@ -1,1 +1,1 @@
-name = "MatricesM"
+from MatricesM.matrix import *
