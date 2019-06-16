@@ -28,15 +28,19 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
 
                      directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
 
-                     fill=value, #Optional,Available distributions: uniform|triangular|gauss; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" or "directory" is given
+                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" or "directory" is given
 
                      ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
                               ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
                               ->Arguments should follow one of the following rules:
                                    1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
-                                   2)If 'fill' is gauss, mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                                   3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode]  """                     
+                                   2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                                   3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
+                                   4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
+                                   5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]
+
+  """                     
 
                      header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
@@ -107,8 +111,9 @@ randomData1 = Matrix((10000,3),
                      seed=32141,
                      dtype=int)
 
-#Create a 10000x4 float numbers matrix using uniform distribution where columns' ranges are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
+#Create a 10000x4 float numbers matrix using gamma distribution where columns' alpha and beta values are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
 randomData2 = Matrix([10000,4],
+                     fill=gammavariate,
                      ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
                      seed=39598)
 
@@ -348,9 +353,11 @@ C.copy #Returns a copy of the matrix
 
 C.obj #Returns the string form of the Matrix object which can be evaluated to create the same matrix
 
-C.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Seed can be changed to refill the matrix in-place
+C.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Can be used to refill the matrix inplace if set to a new value
 
-C.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace
+C.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace if set to a new value
+
+C.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
 
 C.intForm #Returns integer form of the matrix
 
@@ -494,7 +501,7 @@ C.where(condition) #Returns a matrix where the given condition(s) are True. Exam
 
 C.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
 
-C.replace(old,new,columns,conditions) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True
+C.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
 C.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
 
