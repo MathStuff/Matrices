@@ -1,3 +1,30 @@
+cpdef list matmultip(int md0,int od0,int od1,list mlis,list olis):
+
+  cdef int row=0
+  cdef int rinner
+  cdef int cinner
+  cdef double total
+  cdef list temp = []
+  
+  while row<md0:
+    rinner = 0
+    temp.append([])
+    
+    while rinner<od1:
+      cinner = 0
+      total = 0
+
+      while cinner<od0:
+        total += mlis[row][cinner]*olis[cinner][rinner]
+        cinner += 1
+
+      temp[row].append(total)
+      rinner += 1
+
+    row += 1
+
+  return temp
+
 cpdef list Crrechelon(list copy,int cm,list dim,rr):
   """
   Returns reduced row echelon form of the matrix
