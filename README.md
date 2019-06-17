@@ -375,7 +375,7 @@ C.ROW_LIMIT #Attribute to determine the amount of rows to print while representi
 
 C.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
-C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 150.
+C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
