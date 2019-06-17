@@ -119,7 +119,7 @@ class Matrix:
         if not self.__implicit:                     
             self.setMatrix(self.__dim,self.__initRange,self._matrix,self.__directory,self.__fill,self._cMat,self._fMat)
 
-        self.setFeatures(self.__features,self.__dim[1])                                                   #Set column names
+        self.setFeatures(self.__features,self.__dim[1])                                       #Set column names
         self.setColdtypes(bool(not self.__implicit),self._matrix,self.__dim[0],self.__dim[1]) #Set column dtypes
         
         #If directory has backslashes, make them forward slashes
@@ -127,10 +127,10 @@ class Matrix:
             self.__directory = self.__directory.replace("\\","/")
 
         #Constants to use for printing,rounding etc.
-        self.PRECISION = 8      #Decimals to round
-        self.ROW_LIMIT = 30     #Upper limit for amount of rows to print
-        self.COL_LIMIT = 12     #Upper limit for amount of columns to print
-        self.EIGEN_ITERS = 150  #QR algorithm iterations for eigenvalues
+        self.PRECISION = 8                              #Decimals to round
+        self.ROW_LIMIT = 30                             #Upper limit for amount of rows to print
+        self.COL_LIMIT = 12                             #Upper limit for amount of columns to print
+        self.EIGEN_ITERS = 100 + 400*(self.__dim[0]%2)  #QR algorithm iterations for eigenvalues
         
 # =============================================================================
     """Attribute formatting and setting methods"""
@@ -632,35 +632,53 @@ class Matrix:
             if self.isSymmetric:#Symmetrical matrices always have real eigenvalues
                 return a1.diags
 
-            isodd=(a1.dim[0]%2)         
-            #Create rest of the eigenvalues from 2x2 matrices
-            if isodd:
-                eigens.append(a1[0,0])
-            ind=isodd
+            isOdd=(a1.dim[0]%2)
 
+            #Check the element on the right, if zero then the last value is an eigenvalue
+            if a1._cMat: 
+                neighbor = a1[-1,-2]
+                if round(neighbor.real,8)==0 and round(neighbor.imag,8):
+                    eigens.append(a1[-1,-1])
+            else:
+                if round(a1[-1,-2],8)==0:
+                    eigens.append(a1[-1,-1])
+
+            #Create rest of the eigenvalues from 2x2 matrices
+            ind=0
             while ind<a1.dim[0]-1:
                 mat = a1[ind:ind+2,ind:ind+2]
-                ind+=2
-                if round(mat[1,0],8)==0:
-                    eigens.append(mat[0,0])
-                    ind-=1
-                    continue
-                r = mat.trace/2
-                v = (mat.det - r**2)**(1/2)
+                ind+=1+isOdd
 
-                r = complex(complex(round(r.real.real,12),round(r.real.imag,12)),complex(round(r.imag.real,12),round(r.imag.imag,12)))
-                v = complex(complex(round(v.real.real,12),round(v.real.imag,12)),complex(round(v.imag.real,12),round(v.imag.imag,12)))                
-                
-                c1 = complex(r,v)
-                c2 = complex(r,v*(-1))
-                
-                if c1.imag==0:
-                    c1 = c1.real
-                if c2.imag==0:
-                    c2 = c2.real
-                
-                eigens.append(c1)
-                eigens.append(c2)
+                done=0
+                if a1._cMat:
+                    if round(mat[1,0].real,6)==0 and round(mat[1,0].imag,6):
+                        eigens.append(mat[0,0])
+                        ind-=isOdd
+                        done=1
+
+                elif round(mat[1,0],8)==0:
+                    eigens.append(mat[0,0])
+                    ind-=isOdd
+                    done=1
+
+                if not done:
+                    ind+=1-isOdd
+                    r = mat.trace/2
+                    v = (mat.det - r**2)**(1/2)
+
+                    r = complex(complex(round(r.real.real,6),round(r.real.imag,6)),complex(round(r.imag.real,6),round(r.imag.imag,6)))
+                    v = complex(complex(round(v.real.real,6),round(v.real.imag,6)),complex(round(v.imag.real,6),round(v.imag.imag,6)))                
+                    
+                    c1 = complex(r,v)
+                    c2 = complex(r,v*(-1))
+                    
+                    if c1.imag==0:
+                        c1 = c1.real
+                    if c2.imag==0:
+                        c2 = c2.real
+                    
+                    eigens.append(c1)
+                    eigens.append(c2)
 
             return eigens
 
