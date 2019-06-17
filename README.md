@@ -1,4 +1,4 @@
-# <a href="https://pypi.org/project/MatricesM/">MatricesM (Alpha)</a>
+# <a href="https://pypi.org/project/MatricesM/">MatricesM</a>
 #### Python(>=3.6) library for creating matrices and doing matrix operations related to statistics and algebra mathematics
 #### [Join MathStuff's Slack workspace](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) for questions and discussions.
  
@@ -38,9 +38,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
                                    2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
                                    3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
                                    4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
-                                   5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]
-
-  """                     
+                                   5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
 
                      header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
@@ -59,7 +57,7 @@ Using *args = Pass arguments matching with the parameters in order : dim, listed
 Using **kwargs = Make sure to use given parameter names OR give a dictionary with keys being parameter names as strings, values being their values
 
  Example:
-         Matrix(3,fill=gauss)                                                --> Use both *args and **kwargs
+         Matrix(3,"1 3 5 2 4 6 3 5 7",dtype=int)                             --> Use both *args and **kwargs
          Matrix(directory='.../directory/file.csv',header=1,dtype=dataframe) --> Use **kwargs
          Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
          Matrix(kwargs=anotherMatrix.kwargs)                                 --> Same as anotherMatrix.copy OR eval(anotherMatrix.obj)
@@ -95,8 +93,8 @@ G = Matrix(10,fill=1)
 #Create a 200x4 matrix filled with integer numbers using triangular distribution where the range is [0,20] and mode is around if not 18
 H = Matrix((200,4),fill=triangular,ranged=[0,20,18],dtype=int) 
 
-#Create a 9x9 matrix filled with complex numbers using gauss distribution for both real and imaginary parts with mean=5 and sdev=2
-C1 = Matrix(9,fill=gauss,ranged=[5,2],dtype=complex)
+#Create a 50x50 matrix filled with complex numbers using beta distribution for both real and imaginary parts with alpha=2 and beta=5
+C1 = Matrix(50,fill=betavariate,ranged=[2,5],dtype=complex)
 
 #Create a 10x1 matrix filled with the given string
 S = Matrix((10,1),fill="hello",dtype=dataframe)
