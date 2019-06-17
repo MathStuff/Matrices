@@ -632,9 +632,10 @@ class Matrix:
             if self.isSymmetric:#Symmetrical matrices always have real eigenvalues
                 return a1.diags
 
+            #Wheter or not dimensions are odd
             isOdd=(a1.dim[0]%2)
 
-            #Check the element on the right, if zero then the last value is an eigenvalue
+            #Decide wheter or not to skip the bottom right 2x2 matrix
             if a1._cMat: 
                 neighbor = a1[-1,-2]
                 if round(neighbor.real,8)==0 and round(neighbor.imag,8):
@@ -649,6 +650,7 @@ class Matrix:
                 mat = a1[ind:ind+2,ind:ind+2]
                 ind+=1+isOdd
 
+                #Decide wheter or not to skip the top right corner 2x2 matrix
                 done=0
                 if a1._cMat:
                     if round(mat[1,0].real,6)==0 and round(mat[1,0].imag,6):
@@ -661,11 +663,12 @@ class Matrix:
                     ind-=isOdd
                     done=1
 
+                #2x2 matrices in the middle
                 if not done:
                     ind+=1-isOdd
                     r = mat.trace/2
                     v = (mat.det - r**2)**(1/2)
-
+                    
                     r = complex(complex(round(r.real.real,6),round(r.real.imag,6)),complex(round(r.imag.real,6),round(r.imag.imag,6)))
                     v = complex(complex(round(v.real.real,6),round(v.real.imag,6)),complex(round(v.imag.real,6),round(v.imag.imag,6)))                
                     
