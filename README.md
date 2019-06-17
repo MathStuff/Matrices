@@ -102,25 +102,30 @@ S = Matrix((10,1),fill="hello",dtype=dataframe)
 ----------------------------------------
 ##### Generate randomly filled matrices using special distributions
 ```python
-#Create a 10000x3 integer numbers matrix using a triangular distribution that is symmetrical by the modes 50,25 and 20 for each column limited by [0,100], [-50,50] and [10,20] in order with the seed 32141. Column names are selected from ranged.keys()
+#Create a 10000x3 matrix using a triangular distribution with integer values.
 randomData1 = Matrix((10000,3),
                      fill=triangular,
-                     ranged={"Feature_1":(0,100,50),"Feature_2":(-50,50,25),"Feature_3":(10,20,20)},
+                     ranged={"feature1":(0,100,50),"feature2":(-50,50,25),"feature3":(10,20,20)},
                      seed=32141,
                      dtype=int)
 
-#Create a 10000x4 float numbers matrix using gamma distribution where columns' alpha and beta values are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
+#Create a 10000x4 matrix using gamma distribution with float numbers.
 randomData2 = Matrix([10000,4],
                      fill=gammavariate,
                      ranged={"feature1":[1,1.2],"feature2":[12,24],"feature3":[15,100],"feature4":[1.5,3]},
                      seed=39598)
 
-#Create a 10000x4 matrix float numbers using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
+#Create a 10000x4 matrix using normal(gauss) distribution with integer numbers.
 randomData3 = Matrix([10000,4],
                      fill=gauss,
                      ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
                      seed=4472142)
 
+#Create a 20000x4 matrix float numbers using exponential distribution with float numbers.
+randomData4 = Matrix([20000,4],
+                     fill=expovariate,
+                     ranged={"feature1":[0.1],"feature2":[0.95],"feature3":[0.5],"feature4":[0.00025]},
+                     seed=21751923)
 ```
 ----------------------------------------
 ##### Create special matrices
