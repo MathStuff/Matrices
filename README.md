@@ -112,7 +112,7 @@ randomData1 = Matrix((10000,3),
 #Create a 10000x4 float numbers matrix using gamma distribution where columns' alpha and beta values are in order [10,100], [200,500], [200,1000] and [0,10] with the seed 39598 for each column. Column names are selected from ranged.keys()
 randomData2 = Matrix([10000,4],
                      fill=gammavariate,
-                     ranged={"height":[10,100],"weight":[200,500],"cost":[200,1000],"quality":[0,10]},
+                     ranged={"feature1":[1,1.2],"feature2":[12,24],"feature3":[15,100],"feature4":[1.5,3]},
                      seed=39598)
 
 #Create a 10000x4 matrix float numbers using normal(gauss) distribution where [0,25], [100,200], [1000,10000] and [1,100] are columns' means and standard deviations and the seed is 4472142 for each column. Column names are selected from ranged.keys()
