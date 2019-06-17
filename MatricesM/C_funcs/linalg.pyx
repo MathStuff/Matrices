@@ -1,27 +1,47 @@
-cpdef list matmultip(int md0,int od0,int od1,list mlis,list olis):
+cpdef list matmultip(int md0,int od0,int od1,list mlis,list olis,int isCmat):
 
   cdef int row=0
-  cdef int rinner
-  cdef int cinner
-  cdef double total
+  cdef int rowinner
+  cdef int colinner
+  cdef double ftotal
+  cdef complex ctotal
   cdef list temp = []
   
-  while row<md0:
-    rinner = 0
-    temp.append([])
-    
-    while rinner<od1:
-      cinner = 0
-      total = 0
+  if isCmat:
+    while row<md0:
+      rowinner = 0
+      temp.append([])
+      
+      while rowinner<od1:
+        colinner = 0
+        ctotal = 0+0j
 
-      while cinner<od0:
-        total += mlis[row][cinner]*olis[cinner][rinner]
-        cinner += 1
+        while colinner<od0:
+          ctotal += mlis[row][colinner]*olis[colinner][rowinner]
+          colinner += 1
 
-      temp[row].append(total)
-      rinner += 1
+        temp[row].append(ctotal)
+        rowinner += 1
 
-    row += 1
+      row += 1
+      
+  else:
+    while row<md0:
+      rowinner = 0
+      temp.append([])
+      
+      while rowinner<od1:
+        colinner = 0
+        ftotal = 0
+
+        while colinner<od0:
+          ftotal += mlis[row][colinner]*olis[colinner][rowinner]
+          colinner += 1
+
+        temp[row].append(ftotal)
+        rowinner += 1
+
+      row += 1
 
   return temp
 

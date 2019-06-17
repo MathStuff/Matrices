@@ -6,7 +6,10 @@ def matmul(mat,other,obj,m):
     if not mat.dim[1]==other.dim[0]:
         raise ValueError("Dimensions don't match for matrix multiplication")
     o = other.matrix   
-    temp = matmultip(mat.dim[0],other.dim[0],other.dim[1],mat.matrix,o)         
+    cm = 0
+    if other._cMat or mat._cMat:
+        cm = 1
+    temp = matmultip(mat.dim[0],other.dim[0],other.dim[1],mat.matrix,o,cm)         
     #Return proper the matrix
     if other._cMat or mat._cMat:
         t = complex
