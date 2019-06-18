@@ -4,9 +4,6 @@ def QR(mat,obj):
     if mat.isSquare:
         if mat.isSingular:
             return (None,None)
-        
-    if mat.dim[0]>mat.dim[1]:
-        return (None,None)
     
     def _projection(vec1,vec2):
         """
@@ -31,7 +28,7 @@ def QR(mat,obj):
         dt = float
     else:
         dt = complex
-    matU = obj(min(mat.dim),U,dtype=dt,implicit=True).t
+    matU = obj((len(U),len(U[0])),U,dtype=dt,implicit=True).t
     #Orthonormalize by diving the columns by their norms
     Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
     #Get the upper-triangular part
