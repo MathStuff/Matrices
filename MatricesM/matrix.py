@@ -1485,10 +1485,36 @@ class Matrix:
         Get a sample of the matrix
 
         size:int. How many samples to take
-        condition:str. Conditionas to set as a base for sampling, uses 'where' method to filter 
+        condition:str. Conditions to set as a base for sampling, uses 'where' method to filter 
         """
         from MatricesM.filter.sample import samples
         return Matrix(listed=samples(self,size,condition),decimal=self.decimal,dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:])
+
+    def match(self,expression,columns=None,as_row=True):
+        """
+        Return the values or rows that match the given expression
+
+        expression: str; regular expression, uses re.findall
+        columns: str|tuple or list of strings|int(starts from 1)|None; Column names/numbers
+        as_row: boolean; True to return rows with the matching values, False to return:
+            1)A dictionary if 'columns' == None|tuple or list as {'column_name':[(row_index,matching_value), ...], ...}
+            2)A list if 'columns' == str [(row_index,matching_values), ...]
+
+        Example:
+            #Return the rows of all email adresses using gmail.com domain in the column 'mail'
+            Matrix.match(expression=r"\w+@gmail.com",
+                         columns="mail",
+                         as_row=True)
+        Notes:
+            #This method is CURRENTLY faster in most cases than using boolean matrices as indices:
+                Matrix[Matrix[column]==value] --> Using boolean matrices as indices
+                Matrix.match(value,column)    --> Corresponding method call for the same result as previous one
+
+        """
+        if not self._dfMat:
+            raise MatrixError("'match' method only works with dataframes.")
+        from MatricesM.filter.match import _match
+        return _match(self,expression,columns,as_row,Matrix)
 
 # =============================================================================
     """Statistical methods"""
@@ -1832,7 +1858,8 @@ class Matrix:
                 raise TypeError("ROW/COL limit can't be non-integer values")
             else:
                 if i<1:
-                    raise ValueError("Can't display any rows/columns using limits for rows and columns : [{0},{1}]".format(rowlimit,collimit))
+                    return f"Can't display any rows/columns using limits for rows and columns : [{rowlimit},{collimit}]"
+                    #raise ValueError("Can't display any rows/columns using limits for rows and columns : [{0},{1}]".format(rowlimit,collimit))
                     
         #Not too many rows or columns
         if self.dim[0]<=rowlimit and self.dim[1]<=collimit:
