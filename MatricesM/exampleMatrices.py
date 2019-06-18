@@ -6,7 +6,6 @@ Created on Wed Oct 31 17:38:28 2018
 """
 from MatricesM import *
 from MatricesM.constructors.matrices import *
-from random import random,randint,uniform,triangular,gauss,seed
 
 # =============================================================================
 """Example Inputs"""      
