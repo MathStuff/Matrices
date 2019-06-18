@@ -371,7 +371,7 @@ Matrix.ceilForm #Returns a matrix of all the elements' ceiling value
 
 Matrix.floorForm #Returns the same matrix as "intForm"
 
-Matrix.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(C,n)
+Matrix.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(Matrix,n)
 
 Matrix.kwargs #Returns a dictionary of the matrix's basic attributes
 
