@@ -122,7 +122,7 @@ randomData3 = Matrix([10000,4],
                      seed=4472142,
                      dtype=int)
 
-#Create a 20000x4 matrix float numbers using exponential distribution with float numbers.
+#Create a 20000x4 matrix using exponential distribution with float numbers.
 randomData4 = Matrix([20000,4],
                      fill=expovariate,
                      ranged={"feature1":[0.1],"feature2":[0.95],"feature3":[0.5],"feature4":[0.00025]},
@@ -483,6 +483,9 @@ Matrix.isPositive #Returns True if the matrix is a positive valued matrix
 Matrix.isNonNegative #Returns True if the matrix is a non-negative matrix
 
 Matrix.isProjection #Returns True if the matrix is a projection matrix
+
+Matrix.isZero #Returns True if the all the elements in the matrix is 0
+
 ```
 ##### Statistical properties 
 ```python 
