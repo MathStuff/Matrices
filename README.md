@@ -119,7 +119,8 @@ randomData2 = Matrix([10000,4],
 randomData3 = Matrix([10000,4],
                      fill=gauss,
                      ranged={"feature1":[0,25],"feature2":[100,200],"feature3":[1000,10000],"feature4":[1,100]},
-                     seed=4472142)
+                     seed=4472142,
+                     dtype=int)
 
 #Create a 20000x4 matrix float numbers using exponential distribution with float numbers.
 randomData4 = Matrix([20000,4],
@@ -214,19 +215,19 @@ winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype=datafr
 ##### Get specific parts of the matrix
 ```python
 #All rows' second to forth columns as a matrix
-C[:,1:4] == C.t[1:4,:].t
+Matrix[:,1:4] == Matrix.t[1:4,:].t
 
 #Nineth column of every even numbered row as a matrix
-C[::2,8] == C[::2,8:9] == C.col(9)[::2] == C["Col 9"][::2] == C.select(("Col 9"))[::2]
+Matrix[::2,8] == Matrix[::2,8:9] == Matrix.col(9)[::2] == Matrix["Col 9"][::2] == Matrix.select(("Col 9"))[::2]
 
 #Forth to seventh rows as a matrix
-C[3:7] 
+Matrix[3:7] 
 
 #Fifth row's eighth element (returns the value as it is, not a new matrix)
-C[4,7] == C.matrix[4][7]
+Matrix[4,7] == Matrix.matrix[4][7]
 
 #Use column names
-C["Col 3","Col 1","Col 2"] == C.select(("Col 3","Col 1","Col 2"))
+Matrix["Col 3","Col 1","Col 2"] == Matrix.select(("Col 3","Col 1","Col 2"))
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
@@ -330,55 +331,55 @@ marketData.concat(newcol,"col")
 #### Use your matrix's methods and properties
 ##### Basics
 ```python 
-C.grid #Prints ALL of the matrix's elements as a grid, if dtype is dataframe, column names also get printed
+Matrix.grid #Prints ALL of the matrix's elements as a grid, if dtype is dataframe, column names also get printed
 
-C.p #Prints the dimensions, wheter or not the matrix is square and the grid. If dtype is dataframe, column names are also printed
+Matrix.p #Prints the dimensions, wheter or not the matrix is square and the grid. If dtype is dataframe, column names are also printed
 
-C.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
+Matrix.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
-C.directory #Returns the directory of the matrix if there is any given
+Matrix.directory #Returns the directory of the matrix if there is any given
 
-C.matrix #Returns the matrix's rows as lists in a list
+Matrix.matrix #Returns the matrix's rows as lists in a list
 
-C.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
+Matrix.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
-C.col(n,as_matrix) #Returns the nth column if n is an integer or returns the column named n, as a list or matrix, set as_matrix to True to get the list as a matrix
+Matrix.col(n,as_matrix) #Returns the nth column if n is an integer or returns the column named n, as a list or matrix, set as_matrix to True to get the list as a matrix
 
-C.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
+Matrix.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
-C.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
+Matrix.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
 
-C.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
+Matrix.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
 
-C.remove(row,col) #Removes the desired row and/or column
+Matrix.remove(row,col) #Removes the desired row and/or column
 
-C.copy #Returns a copy of the matrix
+Matrix.copy #Returns a copy of the matrix
 
-C.obj #Returns the string form of the Matrix object which can be evaluated to create the same matrix
+Matrix.obj #Returns the string form of the Matrix object which can be evaluated to create the same matrix
 
-C.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Can be used to refill the matrix inplace if set to a new value
+Matrix.seed #Returns the seed used to generate the random numbers in the matrix, returns None if matrix wasn't filled randomly. Can be used to refill the matrix inplace if set to a new value
 
-C.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace if set to a new value
+Matrix.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace if set to a new value
 
-C.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
+Matrix.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
 
-C.intForm #Returns integer form of the matrix
+Matrix.intForm #Returns integer form of the matrix
 
-C.floatForm #Returns integer form of the matrix
+Matrix.floatForm #Returns integer form of the matrix
 
-C.ceilForm #Returns a matrix of all the elements' ceiling value
+Matrix.ceilForm #Returns a matrix of all the elements' ceiling value
 
-C.floorForm #Returns the same matrix as "intForm"
+Matrix.floorForm #Returns the same matrix as "intForm"
 
-C.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(C,n)
+Matrix.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digits. Same as round(C,n)
 
-C.kwargs #Returns a dictionary of the matrix's basic attributes
+Matrix.kwargs #Returns a dictionary of the matrix's basic attributes
 
-C.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
+Matrix.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
 
-C.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
+Matrix.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
-C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
+Matrix.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -387,166 +388,168 @@ C.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenv
 ```
 ##### Algebric properties
 ```python
-C.det #Returns the determinant of the matrix
+Matrix.det #Returns the determinant of the matrix
 
-C.t #Returns the transposed matrix
+Matrix.t #Returns the transposed matrix
 
-C.ht #Returns the hermitian-transpose of the matrix
+Matrix.ht #Returns the hermitian-transpose of the matrix
 
-C.adj #Returns the adjoint matrix
+Matrix.adj #Returns the adjoint matrix
 
-C.inv #Returns the inversed matrix
+Matrix.inv #Returns the inversed matrix
 
-C.pseudoinv #Returns the pseudo inverse of the matrix
+Matrix.pseudoinv #Returns the pseudo inverse of the matrix
 
-C.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
+Matrix.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
 
-C.rank #Returns the rank of the matrix
+Matrix.rank #Returns the rank of the matrix
 
-C.echelon #Returns the echelon form of the matrix
+Matrix.echelon #Returns the echelon form of the matrix
 
-C.rrechelon #Returns the reduced row echelon form of the matrix
+Matrix.rrechelon #Returns the reduced row echelon form of the matrix
 
-C.LU #Returns both L and U matrices from LU decomposition in a tuple
+Matrix.LU #Returns both L and U matrices from LU decomposition in a tuple
 
-C.lowtri #Returns the lower triangular form (L matrix from LU decomposition) of the matrix
+Matrix.lowtri #Returns the lower triangular form (L matrix from LU decomposition) of the matrix
 
-C.uptri #Returns the upper triangular form (U matrix from LU decomposition) of the matrix
+Matrix.uptri #Returns the upper triangular form (U matrix from LU decomposition) of the matrix
 
-C.symdec #Returns both symmetrical and anti-symmetrical parts of the matrix
+Matrix.symdec #Returns both symmetrical and anti-symmetrical parts of the matrix
 
-C.sym #Returns the symmetric part of the matrix 
+Matrix.sym #Returns the symmetric part of the matrix 
 
-C.anti #Returns the antisymmetric part of the matrix
+Matrix.anti #Returns the antisymmetric part of the matrix
 
-C.perma #Returns the permanent of the matrix
+Matrix.perma #Returns the permanent of the matrix
 
-C.conj #Returns the conjugated forms of the elements in a matrix
+Matrix.conj #Returns the conjugated forms of the elements in a matrix
 
-C.QR #Returns both Q and R matrices from QR decomposition in a tuple
+Matrix.QR #Returns both Q and R matrices from QR decomposition in a tuple
 
-C.Q #Returns the orthonormal matrix from the QR decomposition
+Matrix.Q #Returns the orthonormal matrix from the QR decomposition
 
-C.R #Returns the upper-triangular matrix from the QR decomposition
+Matrix.R #Returns the upper-triangular matrix from the QR decomposition
 
-C.trace #Returns the trace of the matrix
+Matrix.trace #Returns the trace of the matrix
 
-C.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
+Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
 
-C.eigenvalues #Returns the eigenvalues #Doesn't work 100%, check issue #64
+Matrix.eigenvalues #Returns the eigenvalues #Doesn't work 100%, check issue #64
 
-C.isSquare #Returns True if the matrix is a square matrix
+Matrix.isSquare #Returns True if the matrix is a square matrix
 
-C.isSymmetric #Returns True if the matrix is a symmetric matrix
+Matrix.isSymmetric #Returns True if the matrix is a symmetric matrix
 
-C.isAntiSymmetric #Returns True if the matrix is an antisymmetric matrix
+Matrix.isAntiSymmetric #Returns True if the matrix is an antisymmetric matrix
 
-C.isPerSymmetric #Returns True if the matrix is a persymmetric matrix
+Matrix.isPerSymmetric #Returns True if the matrix is a persymmetric matrix
 
-C.isHermitian #Returns True if the matrix is a hermitian matrix
+Matrix.isHermitian #Returns True if the matrix is a hermitian matrix
 
-C.isTriangular #Returns True if the matrix is a triangular matrix
+Matrix.isTriangular #Returns True if the matrix is a triangular matrix
 
-C.isUpperTri #Returns True if the matrix is a upper-trianguar matrix
+Matrix.isUpperTri #Returns True if the matrix is a upper-trianguar matrix
 
-C.isLowerTri #Returns True if the matrix is a lower-triangular matrix
+Matrix.isLowerTri #Returns True if the matrix is a lower-triangular matrix
 
-C.isDiagonal #Returns True if the matrix is a diagonal matrix
+Matrix.isDiagonal #Returns True if the matrix is a diagonal matrix
 
-C.isUpperBidiagonal #Returns True if the matrix is an upper-bidiagonal matrix
+Matrix.isUpperBidiagonal #Returns True if the matrix is an upper-bidiagonal matrix
 
-C.isLowerBidiagonal #Returns True if the matrix is a lower-bidiagonal matrix
+Matrix.isLowerBidiagonal #Returns True if the matrix is a lower-bidiagonal matrix
 
-C.isBidiagonal #Returns True if the matrix is an upper-bidiagonal or a lower-bidiagonal matrix
+Matrix.isBidiagonal #Returns True if the matrix is an upper-bidiagonal or a lower-bidiagonal matrix
 
-C.isTridiagonal #Returns True if the matrix is a tridiagonal matrix
+Matrix.isTridiagonal #Returns True if the matrix is a tridiagonal matrix
 
-C.isUpperHessenberg #Returns True if the matrix is an upper-Hessenberg matrix
+Matrix.isUpperHessenberg #Returns True if the matrix is an upper-Hessenberg matrix
 
-C.isLowerHessenberg #Returns True if the matrix is a lower-Hessenberg matrix
+Matrix.isLowerHessenberg #Returns True if the matrix is a lower-Hessenberg matrix
 
-C.isHessenberg #Returns True if the matrix is an upper-Hessenberg or a lower-Hessenberg matrix
+Matrix.isHessenberg #Returns True if the matrix is an upper-Hessenberg or a lower-Hessenberg matrix
 
-C.isToeplitz #Returns True if the matrix is a Toeplitz matrix
+Matrix.isToeplitz #Returns True if the matrix is a Toeplitz matrix
 
-C.isUnitary #Returns True if the matrix is a unitary matrix
+Matrix.isUnitary #Returns True if the matrix is a unitary matrix
 
-C.isIdempotent #Returns True if the matrix is an idempotent matrix
+Matrix.isIdempotent #Returns True if the matrix is an idempotent matrix
 
-C.isOrthogonal #Returns True if the matrix is an orthogonal matrix
+Matrix.isOrthogonal #Returns True if the matrix is an orthogonal matrix
 
-C.isCircular #Returns True if the matrix is a circular matrix
+Matrix.isCircular #Returns True if the matrix is a circular matrix
 
-C.isPositive #Returns True if the matrix is a positive valued matrix
+Matrix.isPositive #Returns True if the matrix is a positive valued matrix
 
-C.isNonNegative #Returns True if the matrix is a non-negative matrix
+Matrix.isNonNegative #Returns True if the matrix is a non-negative matrix
 
-C.isProjection #Returns True if the matrix is a projection matrix
+Matrix.isProjection #Returns True if the matrix is a projection matrix
 ```
 ##### Statistical properties 
 ```python 
 
-C.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
+Matrix.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
 
-C.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
+Matrix.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
 
-C.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, max, 25%, 50%, 75%.
+Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, max, 25%, 50%, 75%.
 
-C.sum(n,asDict) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+Matrix.sum(n,asDict) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
 
-C.prod(n,asDict) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+Matrix.prod(n,asDict) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
 
-C.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
+Matrix.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
-C.select(columns) #Returns a matrix where the desired columns are concatenated in order. Only works if 'columns' is a tuple or a list
+Matrix.select(columns) #Returns a matrix where the desired columns are concatenated in order. Only works if 'columns' is a tuple or a list
 
-C.where(condition) #Returns a matrix where the given condition(s) are True. Example: C.where("(Col 1>=0.5) and (Col 2!=0)") 
+Matrix.where(condition) #Returns a matrix where the given condition(s) are True. Example: Matrix.where("(Col 1>=0.5) and (Col 2!=0)") 
 
-C.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
+Matrix.match(regex,columns,as_row) #Return the rows or the values in the matrix depending on 'as_row', in the given column names/numbers in 'columns' as a list/tuple or str/int, matching given 'regex' regular expressions
 
-C.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
+Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
 
-C.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
+Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
-C.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
+Matrix.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
 
-C.shuffle(iterations,returnmat) #Shuffle the rows 'iterations' times and return self if 'returnmat'==True
+Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
-C.sample(size,condition) #Get a sample sized 'size' where the 'condition' is True
+Matrix.shuffle(iterations,returnmat) #Shuffle the rows 'iterations' times and return self if 'returnmat'==True
 
-C.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
+Matrix.sample(size,condition) #Get a sample sized 'size' where the 'condition' is True
 
-C.count(column,asDict) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s). asDict to change wheter or not to return values in a dictionary or a list.
+Matrix.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
-C.mean(n,asDict) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
+Matrix.count(column,asDict) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s). asDict to change wheter or not to return values in a dictionary or a list.
 
-C.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
+Matrix.mean(n,asDict) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
 
-C.median(n,asDict) #Returns the nth column or column named n's median, give None to get all columns' medians; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
 
-C.freq(n,asDict) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.median(n,asDict) #Returns the nth column or column named n's median, give None to get all columns' medians; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
 
-C.mode(n,asDict) #Returns the nth column or column named n's mode, give None to get all columns' modes; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.freq(n,asDict) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
 
-C.iqr(n,as_quartiles,asDict) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
+Matrix.mode(n,asDict) #Returns the nth column or column named n's mode, give None to get all columns' modes; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
 
-C.sdev(n,population,asDict) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
+Matrix.iqr(n,as_quartiles,asDict) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
 
-C.var(n,population,asDict) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
+Matrix.sdev(n,population,asDict) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
 
-C.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give population parameter True if calculation is not for samples
+Matrix.var(n,population,asDict) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
 
-C.z(col,population) #Returns the z-scores of the desired  column, call without arguments to get the all z-scores as a matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise.
+Matrix.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give population parameter True if calculation is not for samples
 
-C.corr(column_1,column_2,population) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise
+Matrix.z(col,population) #Returns the z-scores of the desired  column, call without arguments to get the all z-scores as a matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise.
 
-C.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
+Matrix.corr(column_1,column_2,population) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise
 
-C.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
+Matrix.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
 
-C.features #Returns the column names if given, can also be used to set column names
+Matrix.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
 
-C.coldtypes #Returns what type of data each column carries, can be used to set the values.
+Matrix.features #Returns the column names if given, can also be used to set column names
+
+Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
 ```
 
