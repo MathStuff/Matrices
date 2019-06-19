@@ -116,23 +116,23 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
                 elif fill.__name__=="triangular":
                     n,m,o = r[0],r[1],r[2]
                     if cmat:
-                        mat._matrix=[[complex(triangular(n,m,o),triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(fill(n,m,o),fill(n,m,o)) for a in range(d[1])] for b in range(d[0])]
                     
                     elif fmat:
-                        mat._matrix=[[triangular(n,m,o) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[fill(n,m,o) for a in range(d[1])] for b in range(d[0])]
                     else:
-                        mat._matrix=[[round(triangular(n,m,o)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[round(fill(n,m,o)) for a in range(d[1])] for b in range(d[0])]
 
                 elif fill.__name__=="expovariate":
                     lmb = r[0]
                     if cmat:
-                        mat._matrix=[[complex(expovariate(lmb),expovariate(lmb)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(fill(lmb),fill(lmb)) for a in range(d[1])] for b in range(d[0])]
                     
                     elif fmat:
-                        mat._matrix=[[expovariate(lmb) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[fill(lmb) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
-                        mat._matrix=[[round(expovariate(lmb)) for a in range(d[1])] for b in range(d[0])]  
+                        mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]  
 
             #Ranged has no affect after this point
             elif type(fill) == list:
