@@ -1750,9 +1750,10 @@ class Matrix:
         """
         Returns True if all the elements are equal to 1, otherwise returns False
         """
+        m = self.matrix
         for i in range(self.dim[0]):
             for j in range(self.dim[1]):
-                if self.matrix[i][j] != 1:
+                if m[i][j] != 1:
                     return False
         return True
 
@@ -1761,28 +1762,28 @@ class Matrix:
         Returns a matrix filled with inverted elements, that is the 'not' bitwise operator
         """
         from MatricesM.matrixops.bitwise import _invert
-        return _invert(self)
+        return _invert(self,self.intForm)
     
     def __and__(self,other):
         """
         Can only be used with '&' operator not with 'and'
         """        
         from MatricesM.matrixops.bitwise import _and
-        return _and(self,other,Matrix)
+        return _and(self,other,Matrix,self.matrix)
     
     def __or__(self,other):
         """
         Can only be used with '|' operator not with 'or'
         """
         from MatricesM.matrixops.bitwise import _or
-        return _or(self,other,Matrix)
+        return _or(self,other,Matrix,self.matrix)
         
     def __xor__(self,other):
         """
         Can only be used with '^' operator 
         """
         from MatricesM.matrixops.bitwise import _xor
-        return _xor(self,other,Matrix)
+        return _xor(self,other,Matrix,self.matrix)
      
 # =============================================================================
     """Other magic methods """
