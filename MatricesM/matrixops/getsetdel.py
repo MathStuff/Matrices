@@ -6,8 +6,8 @@ def betterslice(oldslice,dim0):
             s = vs
     if ve!=None:
         if ve>0 and ve<dim0:
-            if ve<=vs:
-                e = vs
+            if ve<=s:
+                e = s
             else:
                 e = ve
     if vt!=None:
@@ -179,30 +179,29 @@ def setitem(mat,pos,item,obj):
     #Change certain parts of the matrix
     elif isinstance(pos,tuple):
         #Change given columns
+        pos = list(pos)
         if all([1 if isinstance(i,str) else 0 for i in pos]):
+            colrange = [mat.features.index(v) for v in pos] 
             if isinstance(item,list):
-                for i in item:
-                    if type(i)!=list:
-                        raise TypeError(f"Given list contains non-list element: {i}")
-                    elif len(i)!=mat.dim[0]:
-                        raise IndexError(f"Expected {mat.dim[0]}x{len(pos)} dimensions, but got at least one {len(i)} length list")
+                if not isinstance(item[0],list):
+                    item = [[i for j in colrange] for i in item]
 
             elif isinstance(item,obj):
                 if item.dim[0] != mat.dim[0] or item.dim[1] != len(pos):
                     raise IndexError(f"Expected {mat.dim[0]}x{len(pos)} dimensions, but got {item.dim[0]}x{item.dim[1]}")
                 item = item.matrix
             
-            colrange = [mat.features.index(v) for v in pos]   
-            
             #If given 'item' is not in a list or a matrix
-            if isinstance(item,(int,float,complex,str,type,tuple)):
+            else:
                 item = [[item for i in range(len(colrange))] for j in range(mat.dim[0])]
-            
+            row = 0
             for r in range(mat.dim[0]):
                 i = 0
                 for c in colrange:
-                    mat._matrix[r][c] = item[r][i]
+                    mat._matrix[r][c] = item[row][i]
                     i+=1
+                row+=1
+
         #Tuple with row indices first, column indices/names second
         elif len(pos)==2:
             pos = list(pos)
@@ -222,32 +221,32 @@ def setitem(mat,pos,item,obj):
 
             # (row_index,tuple_of_column_names)
             elif isinstance(pos[1],tuple):
+                rowrange = range(1)
+                #Check row indices
+                if isinstance(pos[0],slice):
+                    newslice = betterslice(pos[0],mat.dim[0])
+                    rowrange = range(newslice.start,min(newslice.stop,mat.dim[0]),newslice.step)
+                
+                elif isinstance(pos[0],int):
+                    rowrange = [pos[0]]
+                
+                elif isinstance(pos[0],obj):
+                    rowrange = [i[0] for i in pos[0].find(1,0)]
+
+                else:
+                    raise TypeError("Row indices should be either an integer, a slice or a boolean matrix")
+                
                 #Assert second index contains column names
                 if all([1 if isinstance(i,str) else 0 for i in pos[1]]):
                     if isinstance(item,list):
-                        for i in item:
-                            if type(i)!=list:
-                                raise TypeError(f"Given list contains non-list element: {i}")
+                        if not isinstance(item[0],list):
+                            item = [item for i in rowrange]
                     elif isinstance(item,obj):
                         item = item.matrix
                     #If given 'item' is not in a list or a matrix
-                    elif isinstance(item,(int,float,complex,str,type,tuple)):
-                        rowrange = range(1)
-                        #Check row indices
-                        if isinstance(pos[0],slice):
-                            newslice = betterslice(pos[0],mat.dim[0])
-                            rowrange = range(newslice.start,min(newslice.stop,mat.dim[0]),newslice.step)
-                        
-                        elif isinstance(pos[0],int):
-                            rowrange = [pos[0]]
-                        
-                        elif isinstance(pos[0],obj):
-                            rowrange = [i[0] for i in pos[0].find(1,0)]
-
-                        else:
-                            raise TypeError("Row indices should be either an integer, a slice or a boolean matrix")
-                        
+                    else:
                         item = [[item for i in range(len(pos[1]))] for j in rowrange]
+                    
                 else:
                     raise ValueError(f"{pos[1]} has non-string values")
 
@@ -272,9 +271,14 @@ def setitem(mat,pos,item,obj):
                 colrange = range(pos[1].start,min(pos[1].stop,mat.dim[1]),pos[1].step)
 
                 #If given 'item' is not in a list or a matrix
-                if isinstance(item,(int,float,complex,str,type,tuple)):
+                if isinstance(item,list):
+                    if not isinstance(item[0],list): #List of single values
+                        item = [item[:] for i in rowrange]
+                    else:
+                        pass #Validate
+                else:
                     item = [[item for i in colrange] for j in rowrange]
-
+                
                 row=0
                 for r in rowrange:
                     col=0
@@ -287,9 +291,13 @@ def setitem(mat,pos,item,obj):
                 #Get indices
                 rowrange = range(pos[0].start,min(pos[0].stop,mat.dim[0]),pos[0].step)
                 #If given 'item' is not in a list or a matrix
-                if isinstance(item,(int,float,complex,str,type,tuple)):
+                if isinstance(item,list): #Item is a list
+                    if not isinstance(item[0],list): #List of single values
+                        item = [[i] for i in item]
+                    else: #List of lists [[num1],[num2],...]
+                        pass #Validate
+                else:  #Item is a single value
                     item = [[item] for j in rowrange]
-
                 row=0
                 for r in rowrange:
                     mat._matrix[r][pos[1]] = item[row][0]
@@ -300,15 +308,17 @@ def setitem(mat,pos,item,obj):
                 #Get indices
                 colrange = range(pos[1].start,min(pos[1].stop,mat.dim[1]),pos[1].step)
                 #If given 'item' is not in a list or a matrix
-                if isinstance(item,(int,float,complex,str,type,tuple)):
-                    item = [[item for i in colrange]]
+                if not isinstance(item,list):
+                    item = [item for j in colrange]
+                else:#List of non-list elements
+                    pass #Validate
 
                 col=0
                 for c in colrange:
-                    mat._matrix[pos[0]][c] = item[0][col]
+                    mat._matrix[pos[0]][c] = item[col]
                     col+=1
 
-            # mat[ int, int]
+            # mat[ int, int ]
             elif isinstance(pos[0],int) and isinstance(pos[1],int):
                 mat._matrix[pos[0]][pos[1]] = item
 
@@ -333,7 +343,7 @@ def setitem(mat,pos,item,obj):
                     item = item.matrix
 
                 #Given item should be repeated in a list
-                elif isinstance(item,(int,float,complex,str,type,tuple)):
+                else:
                     item = [[item for j in cols] for _ in range(len(inds))]
                 r=0
                 for row in inds:
@@ -358,7 +368,7 @@ def setitem(mat,pos,item,obj):
         elif isinstance(item,obj):
             item = item.matrix
 
-        elif isinstance(item,(int,float,complex,str,type,tuple)):
+        else:
             item = [item for j in range(mat.dim[1])]
         for row in inds:
             mat._matrix[row] = item
