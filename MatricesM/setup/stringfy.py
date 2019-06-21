@@ -16,8 +16,11 @@ def _stringfy(mat,dtyps=None):
                 colbounds=[]
                 col = mat.col(dt+1,0)
                 if dtyps[dt] in [float,int]:
-                    colbounds.append(len(st.format(round(min(col),mat.decimal))))
-                    colbounds.append(len(st.format(round(max(col),mat.decimal))))
+                    try:
+                        colbounds.append(len(st.format(round(min(col),mat.decimal))))
+                        colbounds.append(len(st.format(round(max(col),mat.decimal))))
+                    except:
+                        continue
                 else:
                     colbounds.append(max([len(str(a)) for a in col]))
                 colbounds.append(len(mat.features[dt]))
@@ -90,12 +93,20 @@ def _stringfy(mat,dtyps=None):
                 num = mat._matrix[rows][cols]
                 #float column
                 if dtyps[cols] == float:
-                    item = st.format(num)
-                    s = len(item)
+                    try:
+                        item = st.format(num)
+                    except:
+                        item = str(num)
+                    finally:
+                        s = len(item)
                 #integer column
                 elif dtyps[cols] == int:
-                    item = str(int(num))
-                    s = len(item)
+                    try:
+                        item = str(int(num))
+                    except:
+                        item = str(num)
+                    finally:
+                        s = len(item)
                 #Any other type column
                 else:
                     item = str(num)
