@@ -167,8 +167,9 @@ def setitem(mat,pos,item,obj):
 
     #Change a column
     elif isinstance(pos,str):
+        new_col = 0
         if not pos in mat.features:
-            raise ValueError(f"{pos} is not a column name")
+            new_col = 1
         if isinstance(item,list):        
             typ = type(item[0])
             if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
@@ -181,7 +182,7 @@ def setitem(mat,pos,item,obj):
                     raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
             
             else:#Single values given in a list, 
-                item = [item for i in range(mat.dim[0])]
+                pass
 
         elif isinstance(item,obj):
             if item.dim[1] == 1  ^ item.dim[0] == 1:
@@ -195,11 +196,18 @@ def setitem(mat,pos,item,obj):
             item = [item for i in range(mat.dim[0])]
 
         try:
-            ind = mat.features.index(pos)
-            for i in range(mat.dim[0]):
-                mat._matrix[i][ind] = item[i]
+            if not new_col:
+                ind = mat.features.index(pos)
+                for i in range(mat.dim[0]):
+                    mat._matrix[i][ind] = item[i]
+            else:
+                for i in range(mat.dim[0]):
+                    mat._matrix[i].append(item[i])
+                mat._Matrix__features.append(pos)
+                mat._Matrix__coldtypes.append(type(item[i]))
+                mat._Matrix__dim = [mat.dim[0],mat.dim[1]+1]
         except:
-            raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
+            raise IndexError(f"Given list: {item} doesn't have enough items to use")
 
     #Change certain parts of the matrix
     elif isinstance(pos,tuple):
