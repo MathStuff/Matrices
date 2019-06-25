@@ -21,8 +21,7 @@ def declareRange(mat,lis):
     Finds and returns the range of the elements in a given list
     """
     c={}
-    mat.setFeatures(mat.features,mat.dim[1])
-    mat.setColdtypes(False,mat._matrix,mat.dim[0],mat.dim[1])
+    mat.setup(False)
     if mat._dfMat:
         valid_feats_inds = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
         for cols in valid_feats_inds:
