@@ -321,11 +321,8 @@ s[3:7,3:7] = Matrix(4,fill=0)
 ----------------------------------------
 ##### Concatenate a matrix to your matrix.
 ```python
-#Concatenate a new column named 'discounted' containing the product of the 'Price' and 'Discount' columns
-newcol = marketData["Price"] - marketData["Price"]*(marketData["Discount"]/100)
-newcol.features = ["discounted"]
-marketData.concat(newcol,"col")
-
+#Concatenate a new column named 'Discounted_Price' containing the product of the 'Price' and 'Discount' columns
+marketData["Discounted_Price"] = marketData["Price"] - marketData["Price"]*(marketData["Discount"]/100)
 ```
 ----------------------------------------
 #### Use your matrix's methods and properties
@@ -365,9 +362,9 @@ Matrix.initRange #Returns the value of 'ranged' used while creating the matrix. 
 
 Matrix.intForm #Returns integer form of the matrix
 
-Matrix.floatForm #Returns integer form of the matrix
+Matrix.floatForm #Returns float form of the matrix
 
-Matrix.ceilForm #Returns a matrix of all the elements' ceiling value
+Matrix.ceilForm #Returns a matrix of all the elements' ceiling values
 
 Matrix.floorForm #Returns the same matrix as "intForm"
 
