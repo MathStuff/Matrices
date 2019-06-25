@@ -15,14 +15,6 @@ class dataframe:
 
 class Matrix:
     """
-    Using *args = Pass arguments matching with the parameters in order : dim, listed, directory, fill, ranged, seed, header, features, decimal, dtype, coldtypes, implicit
-    Using **kwargs = Make sure to use given parameter names OR give a dictionary with keys being parameter names as strings, values being their values
-
-    Example:
-            Matrix(3,fill=gauss)                                                --> Use both *args and **kwargs
-            Matrix(directory='.../directory/file.csv',header=1,dtype=dataframe) --> Use **kwargs
-            Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
-            Matrix(kwargs=anotherMatrix.kwargs)                                 --> Same as anotherMatrix.copy OR eval(anotherMatrix.obj)
 
     dim:int|list|tuple; dimensions of the matrix. Giving integer values creates a square matrix
     
@@ -57,9 +49,12 @@ class Matrix:
 
     coldtypes:tuple|list (Contains the objects, not names of them); data types for each column individually. Only works if dtype is set to dataframe
 
-    implicit:boolean; Skip matrix setting operations if dimensions and elements ar given
+    implicit:boolean; Skip matrix setting operations if dimensions and elements are given
 
-    Check https://github.com/MathStuff/MatricesM  for further explanation and examples
+    NOTE:
+        - Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
+
+        - Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
 
     def __init__(self,
@@ -76,8 +71,6 @@ class Matrix:
                  coldtypes=[],
                  implicit=False,**kwargs):  
 
-        attributes = ["dim","listed","directory","fill","ranged","seed","header","features","decimal","dtype","coldtypes","implicit"]
-
         #Basic attributes
         self.__dim = dim                            #Dimensions
         self._matrix = listed                       #Values
@@ -93,7 +86,14 @@ class Matrix:
         self.__implicit = implicit                  #Implicity value
         self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
+        #Constants to use for printing,rounding etc.
+        self.PRECISION = 8                          #Decimals to round
+        self.ROW_LIMIT = 30                         #Upper limit for amount of rows to print
+        self.COL_LIMIT = 12                         #Upper limit for amount of columns to print
+        self.EIGEN_ITERS = 100                      #QR algorithm iterations for eigenvalues
+
         #Override the attributes given in kwargs with new values
+        attributes = ["dim","listed","directory","fill","ranged","seed","header","features","decimal","dtype","coldtypes","implicit"]
         for key,val in kwargs.items():
             if isinstance(val,dict) and key=="kwargs":
                 for k,v in val.items():
@@ -106,28 +106,22 @@ class Matrix:
                     else:
                         raise ParameterError(k,attributes)
             else:
-                if key=="listed":
-                    self._matrix = val
-                elif key=="ranged":
-                    self.__initRange = val
-                elif key in attributes:
-                    exec(f"self._Matrix__{key}=val")
-                else:
-                    raise ParameterError(key,attributes)
+                exec(f"self.{key}=val")
+
         #Set/fix attributes
         self._setDim(self.__dim)           #Fix dimensions
         self.setInstance(self.__dtype)     #Store what type of values matrix can hold
+
+        #For the favor of better results, increase iterations for odd numbered dimensions
+        if self.EIGEN_ITERS < 250:
+            self.EIGEN_ITERS+= 400*(self.__dim[0]%2)  
+        
+        #Setup the matrix and column names,types
         self.setup(True,self.__implicit)
 
         #If directory has backslashes, make them forward slashes
         if self.__directory!="":              
             self.__directory = self.__directory.replace("\\","/")
-
-        #Constants to use for printing,rounding etc.
-        self.PRECISION = 8                              #Decimals to round
-        self.ROW_LIMIT = 30                             #Upper limit for amount of rows to print
-        self.COL_LIMIT = 12                             #Upper limit for amount of columns to print
-        self.EIGEN_ITERS = 100 + 400*(self.__dim[0]%2)  #QR algorithm iterations for eigenvalues
         
 # =============================================================================
     """Attribute formatting and setting methods"""
@@ -153,17 +147,17 @@ class Matrix:
 
         if len(cdts) != d1:
             if df:
-                self.__coldtypes = [str]*d1
+                self.__coldtypes = [type(i) for i in self.matrix[0]]
             else:
                 self.__coldtypes = [dt]*d1
 
-        if df and not implicit:
+        if df:
             for i in range(self.dim[0]):
                 j=0
                 while j<d1:
                     try:
                         if cdts[j] != type: 
-                            self._matrix[i][j] = cdts[j](mat[i][j])
+                            self._matrix[i][j] = cdts[j](self._matrix[i][j])
                         j+=1
                     except:
                         j+=1
