@@ -9,8 +9,8 @@ def describe(mat,obj):
     valid_feats_names = [mat.features[i] for i in valid_feats_inds]
 
     desc_mat = obj((len(valid_feats_inds),10),fill=0,
-                  features=["Column","dtype","count","mean","sdev","min","max","25%","50%","75%"],
-                  dtype=dataframe,coldtypes=[str,type]+[int]+[float]*7)
+                  features=["Column","dtype","count","mean","sdev","min","25%","50%","75%","max"],
+                  dtype=dataframe,coldtypes=[str,type,int,float,float,float,float,float,float,float])
 
     #Gather the data
     dtypes = [mat.coldtypes[t] for t in valid_feats_inds]
@@ -24,7 +24,7 @@ def describe(mat,obj):
     temp = []
     for i in range(len(valid_feats_inds)):
         name = valid_feats_names[i]
-        temp.append([name,dtypes[i],counts[name],mean[name],sdev[name],ranges[name][0],ranges[name][1],iqrs[name][0],iqrs[name][1],iqrs[name][2]])
+        temp.append([name,dtypes[i],counts[name],mean[name],sdev[name],ranges[name][0],iqrs[name][0],iqrs[name][1],iqrs[name][2],ranges[name][1]])
 
     desc_mat._matrix = temp
     return desc_mat
