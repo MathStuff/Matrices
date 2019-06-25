@@ -57,38 +57,41 @@ class Matrix:
 
     coldtypes:tuple|list (Contains the objects, not names of them); data types for each column individually. Only works if dtype is set to dataframe
 
-    implicit:boolean; Skip matrix setting operations if all necessary parameters are given and expected to work without any formatting etc.
+    implicit:boolean; Skip matrix setting operations if dimensions and elements ar given
 
     Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self,
+                 dim=None,
+                 listed=[],
+                 directory="",
+                 fill=uniform,
+                 ranged=[0,1],
+                 seed=None,
+                 header=False,
+                 features=[],
+                 decimal=4,
+                 dtype=float,
+                 coldtypes=[],
+                 implicit=False,**kwargs):  
+
         attributes = ["dim","listed","directory","fill","ranged","seed","header","features","decimal","dtype","coldtypes","implicit"]
 
-        #Default values for attributes
-        self.__dim = [0,0]        #Dimensions
-        self._matrix = []         #Values
-        self.__directory = ""     #Directory of the matrix
-        self.__fill = uniform     #Filling method for the matrix
-        self.__initRange = [0,1]  #Given range for 'fill'
-        self.__seed = None        #Seed to pick values from 
-        self.__header = 0         #Wheter or not matrix in the given directory has a header
-        self.__features = []      #Column names
-        self.__decimal = 4        #How many digits to display in decimal places
-        self.__dtype = float      #Type of the matrix
-        self.__coldtypes = []     #Column dtypes
-        self.__implicit = False   #Implicity value 
-
-        #Get values from args and kwargs
-        #Use given values in args
-        for i,value in enumerate(args):
-            #Very lame and lazy way to do this, will probably be deleted in the future
-            if i==1:
-                self._matrix = value
-            elif i==4:
-                self.__initRange = value
-            else:
-                exec(f"self._Matrix__{attributes[i]}={value}")
+        #Basic attributes
+        self.__dim = dim                            #Dimensions
+        self._matrix = listed                       #Values
+        self.__directory = directory                #Directory of the matrix
+        self.__fill = fill                          #Filling method for the matrix
+        self.__initRange = ranged                   #Given range for 'fill'
+        self.__seed = seed                          #Seed to pick values from 
+        self.__header = header                      #Wheter or not matrix in the given directory has a header
+        self.__features = features                  #Column names
+        self.__decimal = decimal                    #How many digits to display in decimal places
+        self.__dtype = dtype                        #Type of the matrix
+        self.__coldtypes = coldtypes                #Column dtypes
+        self.__implicit = implicit                  #Implicity value
+        self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
         #Override the attributes given in kwargs with new values
         for key,val in kwargs.items():
@@ -112,16 +115,10 @@ class Matrix:
                 else:
                     raise ParameterError(key,attributes)
         #Set/fix attributes
-        self._setDim(self.__dim)        #Fix dimensions
-        self.setInstance(self.__dtype)  #Store what type of values matrix can hold
+        self._setDim(self.__dim)           #Fix dimensions
+        self.setInstance(self.__dtype)     #Store what type of values matrix can hold
+        self.setup(True,self.__implicit)
 
-        #If necessary arguments not passed implicitly, set them to be usable  
-        if not self.__implicit:                     
-            self.setMatrix(self.__dim,self.__initRange,self._matrix,self.__directory,self.__fill,self._cMat,self._fMat)
-
-        self.setFeatures(self.__features,self.__dim[1])                                       #Set column names
-        self.setColdtypes(bool(not self.__implicit),self._matrix,self.__dim[0],self.__dim[1]) #Set column dtypes
-        
         #If directory has backslashes, make them forward slashes
         if self.__directory!="":              
             self.__directory = self.__directory.replace("\\","/")
@@ -135,13 +132,48 @@ class Matrix:
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
+    def setup(self,first,implicit=False):
+        #Matrix fix
+        if first and not implicit:
+            self.setMatrix(self.dim,self.initRange,self._matrix,self.directory,self.fill,self._cMat,self._fMat)
+        
+        #Variables
+        d0,d1 = self.dim
+        df = self._dfMat
+        dt = self.dtype
+        cdts = self.coldtypes
+        
+        #Column names set
+        if len(self.features)!=d1:
+            self.__features=[f"Col {i}" for i in range(1,d1+1)]
+
+        #Column types
+        if not validlist(self._matrix):
+            return None
+
+        if len(cdts) != d1:
+            if df:
+                self.__coldtypes = [str]*d1
+            else:
+                self.__coldtypes = [dt]*d1
+
+        if df and not implicit:
+            for i in range(self.dim[0]):
+                j=0
+                while j<d1:
+                    try:
+                        if cdts[j] != type: 
+                            self._matrix[i][j] = cdts[j](mat[i][j])
+                        j+=1
+                    except:
+                        j+=1
+                        continue
+ 
+
     def setInstance(self,dt):
         """
         Set the type
         """
-        self._dfMat=0
-        self._fMat=0
-        self._cMat=0
         if dt==complex:
             self._fMat=1
             self._cMat=1
@@ -152,44 +184,9 @@ class Matrix:
         elif dt==dataframe:
             self._dfMat=1
         else:
-            raise ValueError("dtype should be one of the following: int, float, complex, dataframe")
+            raise ValueError("dtype should be one of the following: int, float, complex, dataframe")       
             
-    def setFeatures(self,feats,d1):
-        """
-        Set default feature names
-        """
-        if len(feats)!=d1:
-            self.__features=[f"Col {i+1}" for i in range(d1)]
-    
-    def setColdtypes(self,declare=False,mat=None,d0=None,d1=None):
-        """
-        Set column dtypes
-        """
-        if not validlist(mat):
-            return None
-
-        df = self._dfMat
-        if not df:
-            dt = self.dtype
-            self.__coldtypes = [dt for _ in range(d1)]
-        else:
-            if len(list(self.coldtypes))!=d1:
-                self.__coldtypes = [type(mat[0][i]) for i in range(d1)]
         
-            if declare:
-                temp = self._matrix
-                cdts = self.coldtypes
-                for i in range(d0):
-                    j=0
-                    while j<d1:
-                        try:
-                            if cdts[j] != type: 
-                                temp[i][j] = cdts[j](mat[i][j])
-                            j+=1
-                        except:
-                            j+=1
-                            continue
-           
     def _setDim(self,d):
         """
         Set the dimension to be a list if it's an integer
@@ -694,23 +691,7 @@ class Matrix:
         if not self.isSquare or self.isSingular:
             return None
         pass
-        
-    @property
-    def highest(self):
-        """
-        Highest value in the matrix
-        """
-        return max([max(a) for a in self.ranged().values()])
-
-        
-    @property
-    def lowest(self):
-        """
-        Lowest value in the matrix
-        """
-        return min([min(a) for a in self.ranged().values()])  
-
-        
+               
     @property
     def obj(self):
         """
@@ -781,7 +762,7 @@ class Matrix:
             if type(i)!=type:
                 raise ColdtypeError(i)
         self.__coldtypes=val
-        self.setColdtypes(True,self._matrix,self.__dim[0],self.__dim[1])
+        self.setup(True)
     
     @property
     def header(self):
@@ -1540,20 +1521,42 @@ class Matrix:
 
     def ranged(self,col=None,asDict=True):
         """
-        col:integer>=1 | column name as string
         Range of the columns
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys ranges as lists, if set to False:
+        col:integer>=1 | column name as string
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, ranges as lists, if set to False:
             1) If there is only 1 column returns the list as it is
             2) If there are multiple columns returns the lists in order in a list        
         """    
         from MatricesM.stats.ranged import ranged
         return ranged(self,col,asDict)
 
+    def max(self,col=None,asDict=True):
+        """
+        Highest value(s) in the desired column(s)
+        col:integer>=1 | column name as string
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, highest value(s) as values, if set to False:
+            1) If there is only 1 column returns the value as it is
+            2) If there are multiple columns returns the values in order in a list
+        """
+        from MatricesM.stats.minmax import _minmax
+        return _minmax(self,col,asDict,1)
+
+    def min(self,col=None,asDict=True):
+        """
+        Lowest value(s) in the desired column(s)
+        col:integer>=1 | column name as string
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, lowest value(s) as values, if set to False:
+            1) If there is only 1 column returns the value as it is
+            2) If there are multiple columns returns the values in order in a list
+        """
+        from MatricesM.stats.minmax import _minmax
+        return _minmax(self,col,asDict,0)
+
     def mean(self,col=None,asDict=True):
         """
-        col:integer>=1 | column name as string
         Mean of the columns
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys means as values, if set to False:
+        col:integer>=1 | column name as string
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, means as values, if set to False:
             1) If there is only 1 column returns the value as it is
             2) If there are multiple columns returns the values in order in a list
         """  
@@ -1564,7 +1567,7 @@ class Matrix:
         """
         Returns the columns' most repeated elements in a dictionary
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys modes as values, if set to False:
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, modes as values, if set to False:
         """
         from MatricesM.stats.mode import mode
         return mode(self,col,asDict)
@@ -1573,7 +1576,7 @@ class Matrix:
         """
         Returns the median of the columns
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys medians as values, if set to False:
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, medians as values, if set to False:
         """ 
         from MatricesM.stats.median import median
         return median(self,col,asDict)
@@ -1583,7 +1586,7 @@ class Matrix:
         Standard deviation of the columns
         col:integer>=1 | column name as string
         population: 1 for σ, 0 for s value (default 1)
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys standard deviations as values, if set to False:
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, standard deviations as values, if set to False:
             1) If there is only 1 column returns the value as it is
             2) If there are multiple columns returns the values in order in a list
         """
@@ -1595,7 +1598,7 @@ class Matrix:
         Variance in the columns
         col:integer>=1 |None|column name as string ; Index/name of the column, None to get all columns 
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys variance as values, if set to False:
+        asDict: True|False ; Wheter or not to return a dictionary with features as keys, variance as values, if set to False:
             1) If there is only 1 column returns the value as it is
             2) If there are multiple columns returns the values in order in a list
         """   
@@ -1671,7 +1674,7 @@ class Matrix:
     @property   
     def describe(self):
         """
-        Returns a matrix describing the matrix with features: Column, dtype, count,mean, sdev, min, max, 25%, 50%, 75%
+        Returns a matrix describing the matrix with features: Column, dtype, count,mean, sdev, min, 25%, 50%, 75%, max
         """
         from MatricesM.stats.describe import describe
         return describe(self,Matrix)
@@ -1740,7 +1743,7 @@ class Matrix:
     @property
     def info(self):
         """
-        Prints out all available attributes
+        Prints out column info
         """
         pass
 # =============================================================================
