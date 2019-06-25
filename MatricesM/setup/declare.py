@@ -21,11 +21,11 @@ def declareRange(mat,lis):
     Finds and returns the range of the elements in a given list
     """
     c={}
-    mat.setup(False)
     if mat._dfMat:
         valid_feats_inds = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
         for cols in valid_feats_inds:
-            temp=[lis[rows][cols] for rows in range(mat.dim[0]) if isinstance(lis[rows][cols],(int,float))]
+            current = mat.col(cols+1,0)
+            temp=[val for val in current if isinstance(val,(int,float))]
             c[mat.features[cols]]=[min(temp),max(temp)]
     elif mat._cMat:
         for i in range(mat.dim[1]):
@@ -36,6 +36,6 @@ def declareRange(mat,lis):
             c[mat.features[i]]=[min(temp),max(temp)]
     else:
         for cols in range(mat.dim[1]):
-            temp=[lis[rows][cols] for rows in range(mat.dim[0])]
+            temp=mat.col(cols+1,0)
             c[mat.features[cols]]=[min(temp),max(temp)]
     return c
