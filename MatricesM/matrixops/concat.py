@@ -30,5 +30,5 @@ def concat(mat,matrix,concat_as="row"):
 
         mat._Matrix__dim=mat._declareDim()
         if concat_as=="col":
-            mat.features = mat.features+[i if i not in mat.features else "_"+i for i in matrix.features]
-            mat.setColdtypes(False,mat._matrix,mat.dim[0],mat.dim[1])
+            mat._Matrix__features = mat.features + [i if i not in mat.features else "_"+i for i in matrix.features]
+            mat._Matrix__coldtypes = mat.coldtypes + [i for i in matrix.coldtypes]

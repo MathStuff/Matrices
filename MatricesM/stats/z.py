@@ -26,6 +26,7 @@ def z(mat,col=None,population=1,empty=None):
     feats = mat.features
     availablecols = list(m.keys())
     all_inds = [i for i in range(mat.dim[1]) if feats[i] in availablecols]
+    mm = mat.matrix
     l = len(all_inds)
     for i in range(mat.dim[0]):
         j=0 #Index
@@ -33,7 +34,7 @@ def z(mat,col=None,population=1,empty=None):
             try:
                 while j<l:
                     ind = all_inds[j]
-                    scores._matrix[i][ind] = (mat.matrix[i][ind]-m[feats[ind]])/s[feats[ind]]
+                    scores._matrix[i][ind] = (mm[i][ind]-m[feats[ind]])/s[feats[ind]]
                     j+=1
             except:#Value was invalid
                 j+=1
@@ -41,6 +42,6 @@ def z(mat,col=None,population=1,empty=None):
             else:
                 break  
 
-    scores._Matrix__dim=[dims[0],l]
-    scores.features = availablecols
+    scores._Matrix__dim = [dims[0],l]
+    scores._Matrix__features = availablecols
     return scores
