@@ -6,6 +6,7 @@ Created on Wed Oct 31 17:26:48 2018
 """
 from MatricesM.validations.validate import *
 from MatricesM.errors.errors import *
+from MatricesM.constructors.matrices import *
 from random import random,randint,uniform,triangular,\
                    gauss,gammavariate,betavariate,   \
                    expovariate,lognormvariate,seed
