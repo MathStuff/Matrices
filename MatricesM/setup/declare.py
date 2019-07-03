@@ -4,6 +4,9 @@ def declareDim(mat):
     """
     try:
         m = mat._matrix
+        if m == None:
+            mat._matrix = []
+            return [0,0]
         rows= len(m)
         cols = len(m[0])
         for i in range(rows):
