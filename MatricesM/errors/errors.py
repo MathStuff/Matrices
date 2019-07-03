@@ -71,7 +71,7 @@ class InvalidList(MatrixError):
     def __init__(self,err,req,attribute,*args):
         import re
         given_dtypes = str(re.findall(r"'(?P<inner>\w+)'","{}".format(err))).replace("'","")
-        self.message = f"'{type(err).__name__}' type {given_dtypes} can't be used as a length {req} list to replace {attribute}.\nMissing {req-len(err)} items "+". ".join(args)
+        self.message = f"'{type(err).__name__}' type {given_dtypes} can't be used as a length {req} list to replace {attribute}. Expected {req} items, got {len(err)}"+". ".join(args)
 
 class ParameterError(MatrixError):
     """
