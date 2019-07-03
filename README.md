@@ -257,6 +257,10 @@ winedata[(winedata["quality"]>5) & ((winedata["alcohol"]<11) | (winedata["densit
 #Return all the rows and select 'alcohol' and 'quality' columns where quality is higher than 6
 winedata[winedata["quality"]>6,("alcohol", "quality")]
 
+#Return the rows of all email adresses using gmail.com domain in the column 'mail'
+Matrix.match(expression=r"\w+@gmail.com",
+             columns="mail",
+             as_row=True)
 ```
 ----------------------------------------
 ##### Apply arithmetic operations to individual rows and columns.
@@ -335,6 +339,10 @@ Matrix.directory #Returns the directory of the matrix if there is any given
 Matrix.matrix #Returns the matrix's rows as lists in a list
 
 Matrix.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
+
+Matrix.d0 #Returns the amount of rows
+
+Matrix.d1 #Returns the amount of columns
 
 Matrix.col(n,as_matrix) #Returns the nth column if n is an integer or returns the column named n, as a list or matrix, set as_matrix to True to get the list as a matrix
 
