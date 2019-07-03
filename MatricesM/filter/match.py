@@ -37,6 +37,7 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                     match = re.findall(reg,str(m[i][j]))
                     if len(match)>0:
                         results[feats[j]].append((i,match))
+                        
             return results
         
         #Return rows in a matrix
@@ -45,7 +46,10 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
             for j in range(mat.dim[1]):
                 match = re.findall(reg,str(m[i][j]))
                 if len(match)>0:
-                    temp.append(m[i])
+                    found_row = m[i]
+                    if not (found_row in temp):
+                        temp.append(found_row)
+
         return obj(listed=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,decimal=mat.decimal)
 
     #Search given column
@@ -58,6 +62,7 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                 match = re.findall(reg,str(col[i]))
                 if len(match)>0:
                     results.append([(i,match)])
+
             return obj(listed=results,features=[cols],dtype=mat.dtype,coldtypes=[tuple])
         
         #Return rows in a matrix
@@ -67,7 +72,9 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
         for i in range(mat.dim[0]):
             match = re.findall(reg,str(col[i]))
             if len(match)>0:
-                temp.append(m[i])
+                found_row = m[i]
+                if not (found_row in temp):
+                    temp.append(found_row)
 
         return obj(listed=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,decimal=mat.decimal)
         
