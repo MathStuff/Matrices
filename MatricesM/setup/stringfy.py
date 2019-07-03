@@ -1,30 +1,35 @@
 def _stringfy(mat,dtyps=None):
-    """
-    Turns a square matrix shaped list into a grid-like form that is printable
-    Returns a string
-    """
+    
     import re
     pre = "0:.{}f".format(mat.decimal)
     st = "{"+pre+"}"    
     string=""
+
+    #Empty matrix check
+    if mat.matrix in [ [], None ]:
+        return "Empty matrix"
+
     #Tab sizes
     #Dataframe
     if mat._dfMat:
         try:
             bounds=[]
+            ranges = mat.ranged()
+            feats = mat.features[:]
+            decimals = mat.decimal
+
             for dt in range(len(dtyps)):
+
                 colbounds=[]
-                col = mat.col(dt+1,0)
                 if dtyps[dt] in [float,int]:
-                    try:
-                        colbounds.append(len(st.format(round(min(col),mat.decimal))))
-                        colbounds.append(len(st.format(round(max(col),mat.decimal))))
-                    except:
-                        continue
+                    colbounds.append(len(st.format(round(ranges[feats[dt]][0],decimals))))
+                    colbounds.append(len(st.format(round(ranges[feats[dt]][1],decimals))))
                 else:
-                    colbounds.append(max([len(str(a)) for a in col]))
+                    colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
+
                 colbounds.append(len(mat.features[dt]))
                 bounds.append(max(colbounds))
+                
         except TypeError:
             msg = f"Replace invalid values in column: '{mat.features[dt]}'"
             raise TypeError(msg)
