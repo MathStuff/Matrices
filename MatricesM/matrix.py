@@ -327,9 +327,12 @@ class Matrix:
         row: natural number
         col: natural number 
         row>=1 and col>=1
-        
-        To append a row, only give the list of numbers, no other arguments
-        To append a column, you need to use col = self.dim[1]
+
+        feature: new column's name
+        dtype: type of data the new column will hold, doesn't work if a row is inserted
+
+        To append a row, use row=self.d0
+        To append a column, use col=self.d1
         """
         from MatricesM.matrixops.add import add
         add(self,lis,row,col,feature,dtype)
@@ -513,6 +516,13 @@ class Matrix:
         temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
         self.__init__(dim=list(val),listed=temp,dtype=self.dtype,implicit=True)
     
+    @property
+    def d0(self):
+        return self.dim[0]
+    @property
+    def d1(self):
+        return self.dim[1]
+
     @property
     def fill(self):
         return self.__fill
@@ -1846,98 +1856,11 @@ class Matrix:
         delitem(self,val,Matrix)
 
     def __repr__(self):
-        rowlimit,collimit = min(self.dim[0],self.ROW_LIMIT),min(self.dim[1],self.COL_LIMIT)
-        for i in [rowlimit,collimit]:
-            if not isinstance(i,int):
-                raise TypeError("ROW/COL limit can't be non-integer values")
-            else:
-                if i<1:
-                    return f"Can't display any rows/columns using limits for rows and columns : [{rowlimit},{collimit}]"
-                    #raise ValueError("Can't display any rows/columns using limits for rows and columns : [{0},{1}]".format(rowlimit,collimit))
-                    
-        #Not too many rows or columns
-        if self.dim[0]<=rowlimit and self.dim[1]<=collimit:
-            return self._stringfy(coldtypes=self.coldtypes[:])
-
-        halfrow = rowlimit//2
-        halfcol = collimit//2
-        if collimit%2 != 0:
-            halfcol = collimit//2 + 1
-        if rowlimit%2 != 0:
-            halfrow = rowlimit//2 + 1
-
-        #Too many rows
-        if self.dim[0]>rowlimit:
-            #Too many columns
-            if self.dim[1]>collimit:
-                #Divide matrix into 4 parts
-                topLeft = self[:halfrow,:halfcol].roundForm(self.decimal)
-                topRight = self[:halfrow,-(collimit//2):].roundForm(self.decimal)
-                bottomLeft = self[-(rowlimit//2):,:halfcol].roundForm(self.decimal)
-                bottomRight = self[-(rowlimit//2):,-(collimit//2):].roundForm(self.decimal)
-
-                #Change dtypes to dataframes filled with strings
-                for i in [topLeft,topRight,bottomLeft,bottomRight]:
-                    if i.dtype != dataframe:
-                        i.dtype = dataframe
-                topLeft.coldtypes = [str]*(halfcol)
-                topRight.coldtypes = [str]*(collimit//2)
-                bottomLeft.coldtypes = [str]*(halfcol)
-                bottomRight.coldtypes = [str]*(collimit//2)
-
-                #Add . . . to represent missing column's existence
-                topLeft.add([". . ."]*(halfrow),col=halfcol + 1,dtype=str,feature="")
-                bottomLeft.add([". . ."]*(rowlimit//2),col=halfcol + 1,dtype=str,feature="")
-                
-                #Concat left part with right, dots in the middle
-                topLeft.concat(topRight,concat_as="col")
-                bottomLeft.concat(bottomRight,concat_as="col")
-                topLeft.concat(bottomLeft,concat_as="row")
-                
-                #Add dots as middle row and spaces below and above it
-                topLeft.add([""]*(collimit+1),row=halfrow+1)
-                topLeft.add([". . ."]*(collimit+1),row=halfrow+1)
-                topLeft.add([""]*(collimit+1),row=halfrow+1)
-                return topLeft._stringfy(coldtypes=topLeft.coldtypes)
-
-            #Just too many rows
-            else:
-                #Get needed parts
-                top = self[:halfrow,:].roundForm(self.decimal)
-                bottom = self[-(rowlimit//2):,:].roundForm(self.decimal)
-                #Set new dtypes
-                for i in [top,bottom]:
-                    if i.dtype != dataframe:
-                        i.dtype = dataframe
-                    i.coldtypes = [str]*(collimit)
-                #Concat last items
-                top.concat(bottom,concat_as="row")
-                #Add middle part
-                top.add([""]*self.dim[1],row=halfrow+1)
-                top.add([". . ."]*self.dim[1],row=halfrow+1)
-                top.add([""]*self.dim[1],row=halfrow+1)
-
-                return top._stringfy(coldtypes=top.coldtypes)
-                
-        #Just too many columns
-        elif self.dim[1]>collimit:
-            #Get needed parts
-            left = self[:,:halfcol].roundForm(self.decimal)
-            right = self[:,-(collimit//2):].roundForm(self.decimal)
-            #Set new dtypes
-            for i in [left,right]:
-                if i.dtype != dataframe:
-                    i.dtype = dataframe
-            left.coldtypes = [str]*(halfcol)
-            right.coldtypes = [str]*(collimit//2)
-            #Add and concat rest of the stuff
-            left.add([". . ."]*self.dim[0],col=halfcol + 1,dtype=str,feature="")
-            left.concat(right,concat_as="col")
-
-            return left._stringfy(coldtypes=left.coldtypes)
-        #Should't go here
-        else:
-            raise ValueError("Something is wrong with the matrix, check dimensions and values")
+        """
+        Returns the matrix's string form using its row and column limits
+        """
+        from MatricesM.matrixops.repr import _repr
+        return _repr(self)
     
     def __str__(self): 
         """ 
