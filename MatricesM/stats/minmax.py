@@ -2,6 +2,8 @@ def _minmax(mat,col,dic,ismax):
     if col==None:
         feats = mat.features[:]
         ranges = mat.ranged(asDict=False)
+        if not isinstance(ranges[0],list):
+            ranges = [ranges]
         m = {feats[i]:ranges[i][ismax] for i in range(len(ranges))}
     else:
         if isinstance(col,str):
