@@ -402,7 +402,6 @@ class Matrix:
         Returns the inversed matrix
         """
         from MatricesM.linalg.inverse import inverse
-        from MatricesM.constructors.matrices import Identity
         return inverse(self,Matrix(listed=Identity(self.dim[0])))
 
     def _Rank(self):
@@ -441,7 +440,6 @@ class Matrix:
         Returns L and U matrices from LU decomposition
         """
         from MatricesM.linalg.LU import LU
-        from MatricesM.constructors.matrices import Identity
         return LU(self,Identity(self.dim[0]),[a[:] for a in self.matrix],Matrix)
 
     def _QR(self):
@@ -682,7 +680,6 @@ class Matrix:
         """
         Returns the eigenvectors
         """
-        from MatricesM.constructors.matrices import Identity
         if not self.isSquare or self.isSingular:
             return None
         pass
@@ -780,7 +777,6 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        from MatricesM.constructors.matrices import Identity
         return self.matrix == Identity(self.dim[0])
     
     @property
@@ -1077,7 +1073,6 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        from MatricesM.constructors.matrices import Identity
         return (self@self).roundForm(4).matrix == Matrix(listed=Identity(self.dim[0])).matrix
     
     @property
@@ -1662,7 +1657,6 @@ class Matrix:
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         """
         from MatricesM.stats.corr import _corr
-        from MatricesM.constructors.matrices import Identity
         temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.dim[1])])
         return _corr(self,col1,col2,population,temp)
     
