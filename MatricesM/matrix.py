@@ -496,23 +496,22 @@ class Matrix:
         return list(self.__dim)
     @dim.setter
     def dim(self,val):
-        try:
-            a=self.dim[0]*self.dim[1]
-            if isinstance(val,int):
-                assert val>0
-                val=[val,val]
-            elif isinstance(val,list) or isinstance(val,tuple):
-                assert len(val)==2
-            else:
-                return None
-            assert val[0]*val[1]==a
-        except:
-            return None
+        amount = self.dim[0]*self.dim[1]
+
+        if isinstance(val,int):
+            assert val>0 , "Dimensions can't be <=0"
+            val=[val,val]
+        elif isinstance(val,list) or isinstance(val,tuple):
+            assert len(val)==2 , f"Matrices accept 2 dimensions, {len(val)} length {type(val)} type can't be used."
         else:
-            m = self.matrix
-            els=[m[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
-            temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
-            self.__init__(dim=list(val),listed=temp,dtype=self.dtype,implicit=True)
+            raise TypeError("dim setter only accepts int>0 or list/tuple with length of 2")
+
+        assert val[0]*val[1]==amount , f"{amount} elements can't fill a matrix with {val} dimensions"
+
+        m = self.matrix
+        els=[m[i][j] for i in range(self.dim[0]) for j in range(self.dim[1])]
+        temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
+        self.__init__(dim=list(val),listed=temp,dtype=self.dtype,implicit=True)
     
     @property
     def fill(self):
@@ -579,7 +578,8 @@ class Matrix:
         """
         if not self.isSquare:
             return None
-        return sum([self._matrix[i][i] for i in range(self.dim[0])])
+        m = self._matrix
+        return sum([m[i][i] for i in range(self.dim[0])])
     
     @property
     def matrix(self):
@@ -596,7 +596,8 @@ class Matrix:
     
     @property
     def diags(self):
-        return [self._matrix[i][i] for i in range(min(self.dim))]
+        m = self._matrix
+        return [m[i][i] for i in range(min(self.dim))]
     
     @property
     def eigenvalues(self):
