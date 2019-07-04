@@ -52,16 +52,8 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
                      
                      implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
                      )
-"""
-Using *args = Pass arguments matching with the parameters in order : dim, listed, directory, fill, ranged, seed, header, features, decimal, dtype, coldtypes, implicit
-Using **kwargs = Make sure to use given parameter names OR give a dictionary with keys being parameter names as strings, values being their values
 
- Example:
-         Matrix(3,"1 3 5 2 4 6 3 5 7",dtype=int)                             --> Use both *args and **kwargs
-         Matrix(directory='.../directory/file.csv',header=1,dtype=dataframe) --> Use **kwargs
-         Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
-         Matrix(kwargs=anotherMatrix.kwargs)                                 --> Same as anotherMatrix.copy OR eval(anotherMatrix.obj)
-"""
+
 ```         
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
    
