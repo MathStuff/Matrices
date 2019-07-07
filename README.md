@@ -42,7 +42,7 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
 
                      header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
-                     features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
+                     features=columnNames #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
                      
                      seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
@@ -200,13 +200,15 @@ data_matrix = Matrix(directory=data_directory,header=1,dtype=dataframe,coldtypes
 winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype=dataframe,coldtypes=[float]*12)
 ```
 ----------------------------------------
-##### Get specific parts of the matrix
+##### Get specific parts of the matrix (Assuming default column names)
 ```python
 #All rows' second to forth columns as a matrix
 Matrix[:,1:4] == Matrix.t[1:4,:].t
 
 #Nineth column of every even numbered row as a matrix
-Matrix[::2,8] == Matrix[::2,8:9] == Matrix.col(9)[::2] == Matrix["Col 9"][::2] == Matrix.select(("Col 9"))[::2]
+Matrix[::2,8] == Matrix[::2,8:9] == Matrix["col_9"][::2] == Matrix.col_9[::2] 
+#Using methods
+Matrix.select(("col_9"))[::2] == Matrix.col(9)[::2]
 
 #Forth to seventh rows as a matrix
 Matrix[3:7] 
@@ -215,7 +217,34 @@ Matrix[3:7]
 Matrix[4,7] == Matrix.matrix[4][7]
 
 #Use column names
-Matrix["Col 3","Col 1","Col 2"] == Matrix.select(("Col 3","Col 1","Col 2"))
+Matrix["col_3","col_1","col_2"] == Matrix.select(("col_3","col_1","col_2"))
+```
+----------------------------------------
+##### Change specific parts of the matrix (Assuming default column names)
+```python
+#Change the values in the 2nd to 4th rows' 1st and 3rd columns to 0 and 99 
+Matrix[1:4,("col_1","col_3")] = [0,9]
+#Visually:
+3 9 6 10               3 9  6  10
+5 0 4  2   Changes to  0 0 99   2
+5 8 2  2      ---->    0 8 99   2
+6 1 7  0               0 1 99   0
+
+#Change all values in the 2nd column to 7's
+Matrix.col_2 = 7
+#Visually:
+3 9 6 10               3 7 6 10
+5 0 4  2   Changes to  5 7 4  2
+5 8 2  2      ---->    5 7 2  2
+6 1 7  0               6 7 7  0
+
+#Change even numbered rows' odd numbered columns to the values in the given matrix (assuming 0th row as odd)
+Matrix[1::2,0::2] = Matrix(2,fill=999)
+#Visually:
+3 9 6 10               3 999 6 999
+5 0 4  2   Changes to  5   7 4   2
+5 8 2  2      ---->    5 999 2 999
+6 1 7  0               6   7 7   0
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
@@ -374,6 +403,8 @@ Matrix.COL_LIMIT #Attribute to determine the amount of columns to print while re
 
 Matrix.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
 
+Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
+
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
 #Available comparison operators : "<" ,"<=", ">", ">=", "==", "!=", "&", "|", "~"
@@ -497,7 +528,7 @@ Matrix.find(element,indexStart) #Returns a list of the element's indeces as tupl
 
 Matrix.select(columns) #Returns a matrix where the desired columns are concatenated in order. Only works if 'columns' is a tuple or a list
 
-Matrix.where(condition) #Returns a matrix where the given condition(s) are True. Example: Matrix.where("(Col 1>=0.5) and (Col 2!=0)") 
+Matrix.where(condition) #Returns a matrix where the given condition(s) are True. Example: Matrix.where("(col_1>=0.5) and (col_2!=0)") 
 
 Matrix.match(regex,columns,as_row) #Return the rows or the values in the matrix depending on 'as_row', in the given column names/numbers in 'columns' as a list/tuple or str/int, matching given 'regex' regular expressions
 
