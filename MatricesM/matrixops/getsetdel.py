@@ -28,7 +28,9 @@ def getitem(mat,pos,obj):
     elif isinstance(pos,str):
         if pos not in mat.features:
             raise ValueError(f"{pos} is not in column names")
-        return mat.col(mat.features.index(pos)+1)
+        else:
+            pos = mat.features.index(pos)
+        return obj(listed=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]])
 
     #Get certain parts of the matrix
     elif isinstance(pos,tuple):

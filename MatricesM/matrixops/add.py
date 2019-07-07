@@ -1,4 +1,4 @@
-def add(mat,lis=[],row=None,col=None,feature="Col",dtype=None):
+def add(mat,lis=[],row=None,col=None,feature=None,dtype=None):
 
     r,c = 0,0
     assert isinstance(lis,(list,tuple)) , "'lis' parameter only accepts tuples or lists"
@@ -34,6 +34,8 @@ def add(mat,lis=[],row=None,col=None,feature="Col",dtype=None):
             if dtype==None:
                 dtype=type(lis[0])
 
+            if feature == None:
+                feature = f"col_{col + 1}"
             #Prevent repetation of the column names
             if feature in mat.features:
                 feature = "_"+feature

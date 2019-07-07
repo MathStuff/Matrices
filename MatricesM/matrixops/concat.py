@@ -1,4 +1,4 @@
-def concat(mat,matrix,concat_as="row"):
+def concat(mat,matrix,concat_as="col"):
     """
     Concatenate matrices row or columns vice
     matrix:matrix to concatenate to self
