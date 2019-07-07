@@ -73,6 +73,7 @@ class Matrix:
                  implicit=False,**kwargs):  
 
         #Basic attributes
+        self.__features = features                  #Column names
         self.__dim = dim                            #Dimensions
         self._matrix = listed                       #Values
         self.__directory = directory                #Directory of the matrix
@@ -80,7 +81,6 @@ class Matrix:
         self.__initRange = ranged                   #Given range for 'fill'
         self.__seed = seed                          #Seed to pick values from 
         self.__header = header                      #Wheter or not matrix in the given directory has a header
-        self.__features = features                  #Column names
         self.__decimal = decimal                    #How many digits to display in decimal places
         self.__dtype = dtype                        #Type of the matrix
         self.__coldtypes = coldtypes                #Column dtypes
@@ -119,14 +119,35 @@ class Matrix:
         
         #Setup the matrix and column names,types
         self.setup(True,self.__implicit)
-
-        #If directory has backslashes, make them forward slashes
-        if self.__directory!="":              
-            self.__directory = self.__directory.replace("\\","/")
         
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
+    def __getattr__(self,attr,fromset=0):
+        try:
+            property_names = ['_Matrix__features','_Matrix__dim','_Matrix__fill','_Matrix__initRange','_Matrix__dtype','_Matrix__coldtypes',
+            '_Matrix__seed','_Matrix__header','_Matrix__decimal','_Matrix__directory','_Matrix__implicit','p', 'grid', 'copy', 'string', 'directory',
+            'features', 'dim', 'd0', 'd1', 'fill', 'initRange', 'rank','perma', 'trace', 'matrix', 'det', 'diags', 'eigenvalues', 'eigenvectors',
+            'obj', 'seed', 'decimal', 'dtype', 'coldtypes', 'header','isSquare', 'isIdentity', 'isSingular', 'isSymmetric', 'isAntiSymmetric', 
+            'isPerSymmetric', 'isHermitian', 'isTriangular', 'isUpperTri','isLowerTri', 'isDiagonal', 'isBidiagonal', 'isUpperBidiagonal', 
+            'isLowerBidiagonal', 'isUpperHessenberg', 'isLowerHessenberg','isHessenberg', 'isTridiagonal', 'isToeplitz', 'isIdempotent', 
+            'isOrthogonal', 'isUnitary', 'isNormal', 'isCircular', 'isPositive','isNonNegative', 'isProjection', 'isInvolutory','isIncidence',
+            'isZero', 'realsigns', 'imagsigns', 'signs', 'echelon', 'rrechelon','conj', 't', 'ht', 'adj', 'inv', 'pseudoinv','LU', 'uptri',
+            'lowtri', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm','intForm', 'floatForm', 'describe', 'info', 'kwargs']
+            if attr in property_names:
+                return object.__getattr__(self,attr)
+
+            return (self[attr],True)[fromset]
+
+        except:
+            return None
+
+    def __setattr__(self,attr,val):
+        if isinstance(self.__getattr__(attr,1),bool):
+            self.__setitem__(attr,val)
+        else:
+            object.__setattr__(self,attr,val)
+
     def setup(self,first,implicit=False):
         #Matrix fix
         if first and not implicit:
@@ -137,10 +158,10 @@ class Matrix:
         df = self._dfMat
         dt = self.dtype
         cdts = self.coldtypes
-        
+
         #Column names set
         if len(self.features)!=d1:
-            self.__features=[f"Col {i}" for i in range(1,d1+1)]
+            self.__features=[f"col_{i}" for i in range(1,d1+1)]
 
         #Column types
         if not validlist(self._matrix):
@@ -163,7 +184,10 @@ class Matrix:
                     except:
                         j+=1
                         continue
- 
+
+        #If directory has backslashes, make them forward slashes
+        if self.__directory!="":              
+            self.__directory = self.__directory.replace("\\","/")
 
     def setInstance(self,dt):
         """
@@ -320,7 +344,7 @@ class Matrix:
             return self[row-1:row]
         return self._matrix[row-1]
                     
-    def add(self,lis=[],row=None,col=None,feature="Col",dtype=None):
+    def add(self,lis=[],row=None,col=None,feature=None,dtype=None):
         """
         Add a row or a column of numbers
         lis: list of numbers desired to be added to the matrix
@@ -346,7 +370,7 @@ class Matrix:
         from MatricesM.matrixops.remove import remove
         remove(self,self.dim[0],self.dim[1],row,col)
             
-    def concat(self,matrix,concat_as="row"):
+    def concat(self,matrix,concat_as="col"):
         """
         Concatenate matrices row or columns vice
         b:matrix to concatenate to self
@@ -1348,8 +1372,16 @@ class Matrix:
             Matrix.where((" ('Column_Name' (<|>|==|...) obj (and|or|...) 'Column_Name' ...") and ("'Other_column' (<|...) ..."), ...)
         
         Example:
-            #Get the rows with scores in range [0,10) or Hours is higher than mean, where the DateOfBirth is higher than 1985
-            data.where( " ( (Score>=0 and Score<10) or Hours>={mean} ) and DateOfBirth>1985 ".format(mean=self.mean()["Hours"]) )
+            #Get the rows with Score in range [0,10) or Hours is higher than mean, where the DateOfBirth is higher than 1985
+            
+                data.where( f" ( ( (Score>=0) and (Score<10) ) or ( Hours>={data.mean('Hours',0)} ) ) 
+                            and ( DateOfBirth>1985 ) ")
+            #Same as
+                data[(((data["Score"]>=0) & (data["Score"]<10)) | (data["Hours"]>=data.mean("Hours",0))) 
+                      & (data["DateOfBirth"]>1985) ]
+
+        NOTE:
+            # Every statement HAVE TO BE enclosed in parentheses as shown in the examples above
         """
         from MatricesM.filter.where import wheres
         return Matrix(listed=wheres(self,conditions,self.features[:])[0],features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
@@ -1835,7 +1867,7 @@ class Matrix:
         If a single value is given on the right-hand-side, value replaces all other values where left-hand-side represents
         Example:
             #Every row with even index numbers gets their 'Col 3' column changed to value 99
-                Matrix[::2,"Col 3"] = 99                        
+                Matrix[::2,"col_3"] = 99                        
                 
             #Rows where their 'Score1' is lower than 50 gets their 'Pass1' and 'Pass2' columns replaced with value 0   
                 Matrix[Matrix["Score1"]<50,('Pass1','Pass2')] = 0
