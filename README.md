@@ -220,33 +220,6 @@ Matrix[4,7] == Matrix.matrix[4][7]
 Matrix["col_3","col_1","col_2"] == Matrix.select(("col_3","col_1","col_2"))
 ```
 ----------------------------------------
-##### Change specific parts of the matrix (Assuming default column names)
-```python
-#Change the values in the 2nd to 4th rows' 1st and 3rd columns to 0 and 99 
-Matrix[1:4,("col_1","col_3")] = [0,9]
-#Visually:
-3 9 6 10               3 9  6  10
-5 0 4  2   Changes to  0 0 99   2
-5 8 2  2      ---->    0 8 99   2
-6 1 7  0               0 1 99   0
-
-#Change all values in the 2nd column to 7's
-Matrix.col_2 = 7
-#Visually:
-3 9 6 10               3 7 6 10
-5 0 4  2   Changes to  5 7 4  2
-5 8 2  2      ---->    5 7 2  2
-6 1 7  0               6 7 7  0
-
-#Change even numbered rows' odd numbered columns to the values in the given matrix (assuming 0th row as odd)
-Matrix[1::2,0::2] = Matrix(2,fill=999)
-#Visually:
-3 9 6 10               3 999 6 999
-5 0 4  2   Changes to  5   7 4   2
-5 8 2  2      ---->    5 999 2 999
-6 1 7  0               6   7 7   0
-```
-----------------------------------------
 ##### Filter out depending on what you need
 ```python 
 #Using example dataset, get the rows where the "quality" feature is higher or equal to 6 and pH in range (3,3.3)
@@ -334,10 +307,46 @@ data.replace(old=data["F5"]<0,
 data[data["Feature1"]<0,"Feature5"] = 0
 
 #Create a matrix with a square filled with 0's in the middle, 5's outside
-s = Matrix(10,fill=5,dtype=int)
-s[3:7,3:7] = 0
-#Matrices can also be used to do the same
-s[3:7,3:7] = Matrix(4,fill=0)
+s = Matrix(5,fill=5,dtype=int)
+s[1:4,1:4] = 0 #Same as using Matrix(3,fill=0)
+#Visually:
+"""
+5 5 5 5 5              5 5 5 5 5
+5 5 5 5 5  Changes to  5 0 0 0 5
+5 5 5 5 5     ---->    5 0 0 0 5
+5 5 5 5 5              5 0 0 0 5
+5 5 5 5 5              5 5 5 5 5
+"""
+
+#Change the values in the 2nd to 4th rows' 1st and 3rd columns to 0 and 99 
+Matrix[1:4,("col_1","col_3")] = [0,9]
+#Visually:
+"""
+3 9 6 10               3 9  6  10
+5 0 4  2   Changes to  0 0 99   2
+5 8 2  2      ---->    0 8 99   2
+6 1 7  0               0 1 99   0
+"""
+
+#Change all values in the 2nd column to 7's
+Matrix.col_2 = 7
+#Visually:
+"""
+3 9 6 10               3 7 6 10
+5 0 4  2   Changes to  5 7 4  2
+5 8 2  2      ---->    5 7 2  2
+6 1 7  0               6 7 7  0
+"""
+
+#Change even numbered rows' odd numbered columns to the values in the given matrix (assuming 0th row as odd)
+Matrix[0::2,1::2] = Matrix(2,fill=999)
+#Visually:
+"""
+3 9 6 10               3 999 6 999
+5 0 4  2   Changes to  5   7 4   2
+5 8 2  2      ---->    5 999 2 999
+6 1 7  0               6   7 7   0
+"""
 ```
 ----------------------------------------
 ##### Concatenate a matrix to your matrix.
