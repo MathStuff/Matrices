@@ -338,7 +338,7 @@ Matrix.col_2 = 7
 6 1 7  0               6 7 7  0
 """
 
-#Change even numbered rows' odd numbered columns to the values in the given matrix (assuming 0th row as odd)
+#Change odd numbered rows' even numbered columns to the values in the given matrix
 Matrix[0::2,1::2] = Matrix(2,fill=999)
 #Visually:
 """
