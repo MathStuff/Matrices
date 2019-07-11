@@ -38,9 +38,9 @@ def _repr(mat):
             bottomLeft.coldtypes = [str]*(halfcol)
             bottomRight.coldtypes = [str]*(collimit//2)
 
-            #Add . . . to represent missing column's existence
-            topLeft.add([". . ."]*(halfrow),col=halfcol + 1,dtype=str,feature="")
-            bottomLeft.add([". . ."]*(rowlimit//2),col=halfcol + 1,dtype=str,feature="")
+            #Add  ...  to represent missing column's existence
+            topLeft.add([" ..."]*(halfrow),col=halfcol + 1,dtype=str,feature="")
+            bottomLeft.add([" ..."]*(rowlimit//2),col=halfcol + 1,dtype=str,feature="")
             
             #Concat left part with right, dots in the middle
             topLeft.concat(topRight,concat_as="col")
@@ -49,7 +49,7 @@ def _repr(mat):
             
             #Add dots as middle row and spaces below and above it
             topLeft.add([""]*(collimit+1),row=halfrow+1)
-            topLeft.add([". . ."]*(collimit+1),row=halfrow+1)
+            topLeft.add([" ..."]*(collimit+1),row=halfrow+1)
             topLeft.add([""]*(collimit+1),row=halfrow+1)
             return topLeft._stringfy(coldtypes=topLeft.coldtypes)
 
@@ -67,7 +67,7 @@ def _repr(mat):
             top.concat(bottom,concat_as="row")
             #Add middle part
             top.add([""]*mat.dim[1],row=halfrow+1)
-            top.add([". . ."]*mat.dim[1],row=halfrow+1)
+            top.add([" ..."]*mat.dim[1],row=halfrow+1)
             top.add([""]*mat.dim[1],row=halfrow+1)
 
             return top._stringfy(coldtypes=top.coldtypes)
@@ -84,7 +84,7 @@ def _repr(mat):
         left.coldtypes = [str]*(halfcol)
         right.coldtypes = [str]*(collimit//2)
         #Add and concat rest of the stuff
-        left.add([". . ."]*mat.dim[0],col=halfcol + 1,dtype=str,feature="")
+        left.add([" ..."]*mat.dim[0],col=halfcol + 1,dtype=str,feature="")
         left.concat(right,concat_as="col")
 
         return left._stringfy(coldtypes=left.coldtypes)
