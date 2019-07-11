@@ -271,8 +271,8 @@ print("################")
 print("\nc%j")
 print(c%j)
 
-print("\nbool((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)):")
-print(bool((f.lowtri@f.uptri).roundForm(4)==f.roundForm(4)))
+print("\nbool((f.L@f.U).roundForm(4)==f.roundForm(4)):")
+print(bool((f.L@f.U).roundForm(4)==f.roundForm(4)))
 # =============================================================================
 """ STRING MATRICES' OUTPUTS"""
 # =============================================================================
@@ -325,40 +325,34 @@ print(validStr4.var())
 print("")
 
 print('################')
-print("Multivariate linear model for validStr4:")
-print("""
-validStr4.corr().p Correlation matrix
+print("Multivariate linear model for validStr4:\n")
 
+print("Correlation matrix")
+validStr4.corr().grid
+
+#Sample amount
+n = validStr4.d0
+
+#Columns to use as variables
 var = validStr4["Weight","Age"]
-var.add([1]*22,col=1,feature="constant")
 
-out = validStr4["Height"]
+#Values to be predicted
+out = validStr4.Height
 
+#Add a column filled with 1's for the intercept
+var["Constant"] = Matrix((n,1),fill=1)
+
+#Use least squares formula
 coefs = (((var.t@var).inv)@var.t)@out
 
+#Use calculated coefficients to get estimates
 preds = var@coefs
 
+#Get the differences
 err = out-preds
-err.features=["Difference"]
+err.features = ["Difference"]
 
-""")
-print("Correlation Matrix")
-validStr4.corr().p
-
-n = validStr4.dim[0]
-
-var = validStr4["Weight","Age"]
-var.add([1 for _ in range(n)],col=1,feature="constant")
-
-out = validStr4["Height"]
-
-coefs = (((var.t@var).inv)@var.t)@out
-
-preds = var@coefs
-err = out-preds
-err.features=["Difference"]
-
-#95% reliability 
+#Used data's range with 95% reliability 
 means = validStr4.mean()
 sdevs = validStr4.sdev()
 
@@ -366,9 +360,12 @@ meanH = means["Height"]
 rangeH = 1.96*sdevs["Height"]/(n**0.5)
 heightrange95 = [meanH-rangeH,meanH+rangeH]
 
-print(f"n: {n}, Reliability: 95%")
-print("\nHeight = {0} + ({1})*{2} + ({3})*{4}".format(coefs[0,0],coefs[1,0],"Weight",coefs[2,0],"Age"))
-print(f"\nHeight range: {heightrange95}")
+print(f"\nn: {n}, Reliability: 95%")
+print(f"\nHeight range of the data: {heightrange95}")
+print("\nLeast squares method formula:\n\tHeight = {0} + ({1})*{2} + ({3})*{4}".format(coefs[2,0],coefs[0,0],"Weight",coefs[1,0],"Age"))
+
+#Analyze the error rates of the estimates
+print("\nErrors matrix described:")
 err.describe.grid
 
 # =============================================================================
