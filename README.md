@@ -235,7 +235,7 @@ filtered = winedata["pH","quality"]
 
 
 #Set index column to reverse further actions
-winedata.indexSet()
+winedata.setIndex()
 
 #Sort by given column and shuffle the data
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
@@ -545,7 +545,7 @@ Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression'
 
 Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
-Matrix.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
+Matrix.setIndex(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
 
 Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
