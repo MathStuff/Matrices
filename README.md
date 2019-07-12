@@ -285,7 +285,7 @@ data.replace(old="Pending", #(data["Order1"]=="Pending") & (data["Order2"]=="Pen
 
 #Replace all '' values in the column "Length" with the mean of the "Length" column
 data.replace=(old='', #data["Length"]=="" can also be used
-              new=data.mean("Length",asDict=False),
+              new=data.mean("Length",get=0),
               column="Length"
               )
 
@@ -527,11 +527,11 @@ Matrix.head(n) #Returns the first n rows (if there are less than n rows it retur
 
 Matrix.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
 
-Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, max, 25%, 50%, 75%.
+Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, 25%, 50%, 75%, max.
 
-Matrix.sum(n,asDict) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+Matrix.sum(n,get) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.prod(n,asDict) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+Matrix.prod(n,get) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
@@ -555,23 +555,23 @@ Matrix.sample(size,condition) #Get a sample sized 'size' where the 'condition' i
 
 Matrix.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
-Matrix.count(column,asDict) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s). asDict to change wheter or not to return values in a dictionary or a list.
+Matrix.count(column,get) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s).  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.mean(n,asDict) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
+Matrix.mean(n,get) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
+Matrix.ranged(n,get) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.median(n,asDict) #Returns the nth column or column named n's median, give None to get all columns' medians; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.median(n,get) #Returns the nth column or column named n's median, give None to get all columns' medians;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.freq(n,asDict) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.freq(n,get) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
 
-Matrix.mode(n,asDict) #Returns the nth column or column named n's mode, give None to get all columns' modes; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.mode(n,get) #Returns the nth column or column named n's mode, give None to get all columns' modes;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
 
-Matrix.iqr(n,as_quartiles,asDict) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
+Matrix.iqr(n,as_quartiles,get) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True);  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.sdev(n,population,asDict) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
+Matrix.sdev(n,population,get) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.var(n,population,asDict) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
+Matrix.var(n,population,get) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give population parameter True if calculation is not for samples
 
