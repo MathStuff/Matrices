@@ -12,29 +12,42 @@ def _stringfy(mat,dtyps=None):
     #Tab sizes
     #Dataframe
     if mat._dfMat:
-        try:
-            bounds=[]
-            ranges = mat.ranged()
-            feats = mat.features[:]
-            decimals = mat.decimal
+        bounds=[]
+        ranges = mat.ranged()
+        feats = mat.features[:]
+        decimals = mat.decimal
+        m = mat.matrix
 
-            for dt in range(len(dtyps)):
+        for dt in range(len(dtyps)):
 
-                colbounds=[]
-                if dtyps[dt] in [float,int]:
-                    colbounds.append(len(st.format(round(ranges[feats[dt]][0],decimals))))
-                    colbounds.append(len(st.format(round(ranges[feats[dt]][1],decimals))))
-                else:
-                    colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
+            colbounds=[]
+            if dtyps[dt] in [float,int]:
+                colbounds.append(len(st.format(round(ranges[feats[dt]][0],decimals))))
+                colbounds.append(len(st.format(round(ranges[feats[dt]][1],decimals))))
 
-                colbounds.append(len(mat.features[dt]))
-                bounds.append(max(colbounds))
+            elif dtyps[dt] == complex:
+                ns=""
+                for i in range(mat.d0):
+                    num = m[i][dt]
+                    ns+=str(round(num.real,mat.decimal))
+                    im=num.imag
+                    if im<0:
+                        ns+=str(round(im,mat.decimal))+"j "
+                    else:
+                        ns+="+"+str(round(im,mat.decimal))+"j "
+                            
+                pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
+                colbounds.append(max([len(a) for a in re.findall(pattern,ns)]))
+
+            else:
+                colbounds.append(max([len(str(a)) for a in mat.col(dt+1,0)]))
+
+            colbounds.append(len(mat.features[dt]))
+            bounds.append(max(colbounds))
                 
-        except TypeError:
-            msg = f"Replace invalid values in column: '{mat.features[dt]}'"
-            raise TypeError(msg)
     #Complex
     elif mat._cMat:
+        #Update this nonsense :)
         try:
             ns=""
             for i in mat._matrix:
@@ -108,6 +121,17 @@ def _stringfy(mat,dtyps=None):
                 elif dtyps[cols] == int:
                     try:
                         item = str(int(num))
+                    except:
+                        item = str(num)
+                    finally:
+                        s = len(item)
+                #complex column
+                elif dtyps[cols] == complex:
+                    try:
+                        num = complex(num)
+                        if num.imag == 0:
+                            num = num.real
+                        item = st.format(num)
                     except:
                         item = str(num)
                     finally:
