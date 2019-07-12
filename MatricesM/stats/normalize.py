@@ -36,7 +36,7 @@ def normalize(mat,col=None,inplace=True,zerobound=12):
                 raise TypeError("Can't normalize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
             temp = mat.col(col)
-            r = mat.ranged(col,asDict=False)
+            r = mat.ranged(col,get=0)
             mn,mx = r[0],r[1]
 
             if round(mx-mn,zerobound) == 0:
@@ -86,7 +86,7 @@ def normalize(mat,col=None,inplace=True,zerobound=12):
             if not mat.coldtypes[col-1] in [float,int]:
                 raise TypeError("Can't normalize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
-            r = mat.ranged(col,asDict=False)
+            r = mat.ranged(col,get=0)
             mn,mx = r[0],r[1]
             
             if round(mx-mn,zerobound) == 0:

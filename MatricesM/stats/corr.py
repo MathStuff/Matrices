@@ -49,7 +49,7 @@ def _corr(mat,col1=None,col2=None,population=1,temp=None):
         return temp
     
     else:
-        sd = mat.sdev(population=population,asDict=0)
+        sd = mat.sdev(population=population,get=0)
         if 0 in sd:
             raise ZeroDivisionError("Standard deviation of 0")
         return mat.cov(col1,col2,population=population)/(sd[col1-1]*sd[col2-1])

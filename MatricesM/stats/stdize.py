@@ -41,7 +41,7 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
 
             temp = mat.col(col)
             mean = mat.mean(col,0)
-            sd = mat.sdev(col,asDict=0)
+            sd = mat.sdev(col,get=0)
             
             if round(sd,zerobound)==0:
                 raise ZeroDivisionError("Standard deviation of 0")
@@ -95,7 +95,7 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
                 raise TypeError("Can't standardize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
             mean = mat.mean(col,0)
-            sd = mat.sdev(col,asDict=0)
+            sd = mat.sdev(col,get=0)
             
             if round(sd,zerobound)==0:
                 raise ZeroDivisionError("Standard deviation of 0")

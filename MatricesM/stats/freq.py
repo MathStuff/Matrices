@@ -1,40 +1,73 @@
-def freq(mat,col=None,dic=True):
+def freq(mat,col,get,obj,dFrame):
     from collections import Counter
     from MatricesM.errors.errors import MatrixError
-    try:
-        #Get the parts needed
-        #No argument given
-        if col==None:
-            temp=mat.t
-            feats=mat.features[:]
-            r=mat.dim[1]
-        #Column index or name given
-        else:
-            if isinstance(col,str):
-                col=mat.features.index(col)+1
-            assert col>=1 and col<=mat.dim[1]
-            temp=mat[:,col-1].t
-            feats=mat.features[col-1]
-            r=1
 
-        res={}
-
-        #Iterate over the transposed rows
-        for rows in range(r):
-            a=dict(Counter(temp.matrix[rows]))
-
-            #Add to dictionary
-            if col!=None:
-                res[feats]=a
-            else:
-                res[feats[rows]]=a
-    except Exception as e:
-        raise MatrixError(f"Error in freq: {e}")
+    #Get the parts needed
+    #No argument given
+    if col==None:
+        temp=mat.t
+        feats=mat.features[:]
+        r=mat.dim[1]
+    #Column index or name given
     else:
-        if dic:
-            return res
-        
+        if isinstance(col,str):
+            col=mat.features.index(col)+1
+        if col != None:
+            if col<=0 or col>mat.d1:
+                raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+        temp=mat[:,col-1].t
+        feats=mat.features[col-1]
+        r=1
+
+    res={}
+
+    #Iterate over the transposed rows
+    for rows in range(r):
+        a=dict(Counter(temp.matrix[rows]))
+
+        #Add to dictionary
+        if col!=None:
+            res[feats]=a
+        else:
+            res[feats[rows]]=a
+
+    #Return matrices
+    if get==2:
+        return [obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat,"Frequencies"],dtype=dFrame,coldtypes=[str,int]) for feat,c in res.items()]
+    #Return a dictionary
+    elif get==1:
+        return res
+    #Return a list
+    else:
         items=list(res.values())
+        if len(items)==1:
+            return items[0]
+        
+        if col==None:
+            return items
+        return items[col-1]
+
+def _count(mat,col,get,obj,dFrame):
+    if isinstance(col,str):
+        col = feats.index(col)
+    if col != None:
+        if col<=0 or col>mat.d1:
+            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+
+    colds = mat.coldtypes[:]
+    feats = mat.features[:]
+    counts = {feats[i]:len([1 for k in mat.col(i+1,0) if type(k) == colds[i]]) for i in range(mat.dim[1])}
+    
+    #Return a matrix
+    if get == 2:
+        cols = mat.d1 if col==None else 1
+        return obj((cols,2),[[i,j] for i,j in counts.items()],features=["Column","Valid_values"],dtype=dFrame,coldtypes=[str,int])
+    #Return a dictionary
+    elif get == 1:
+        return counts
+    #Return a list
+    else:
+        items=list(counts.values())
         if len(items)==1:
             return items[0]
         
