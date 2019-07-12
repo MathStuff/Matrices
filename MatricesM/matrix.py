@@ -150,7 +150,7 @@ class Matrix:
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int]]=None,
                  listed:Union[List[List[Any]],List[Any]]=[],
-                 directory:[str]="",
+                 directory:str="",
                  fill:Any=uniform,
                  ranged:Union[List[Union[float,int]],Tuple[Union[float,int]],Dict[str,Union[List[Union[float,int]],Tuple[Union[float,int]]]]]=[0,1],
                  seed:int=None,
@@ -599,7 +599,7 @@ class Matrix:
     def directory(self):
         return self.__directory
     @directory.setter
-    def directory(self,path:[str]):
+    def directory(self,path:str):
         pass
 
     @property
@@ -1567,7 +1567,7 @@ class Matrix:
         if returnmat:
             return self
         
-    def indexSet(self,name:str="Index",start:int=0,returnmat:bool=False):
+    def setIndex(self,name:str="Index",start:int=0,returnmat:bool=False):
         """
         Add a column with values corresponding to the row number
 
@@ -1626,7 +1626,7 @@ class Matrix:
             Matrix.match(expression=r"\w+@gmail.com",
                          columns="mail",
                          as_row=True)
-        Notes:
+        NOTE:
             #This method is CURRENTLY faster in most cases than using boolean matrices as indices:
                 Matrix[Matrix[column]==value] --> Using boolean matrices as indices
                 Matrix.match(value,column)    --> Corresponding method call for the same result as previous one
@@ -1659,105 +1659,92 @@ class Matrix:
         from MatricesM.stats.stdize import stdize
         return stdize(self,col,inplace,self.PRECISION)
 
-    def ranged(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def ranged(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Range of the columns
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, ranges as lists, if set to False:
-            1) If there is only 1 column returns the list as it is
-            2) If there are multiple columns returns the lists in order in a list        
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """    
         from MatricesM.stats.ranged import ranged
-        return ranged(self,col,asDict)
+        return ranged(self,col,get,Matrix,dataframe)
 
-    def max(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def max(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Highest value(s) in the desired column(s)
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, highest value(s) as values, if set to False:
-            1) If there is only 1 column returns the value as it is
-            2) If there are multiple columns returns the values in order in a list
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
         from MatricesM.stats.minmax import _minmax
-        return _minmax(self,col,asDict,1)
+        return _minmax(self,col,get,1,Matrix,dataframe)
 
-    def min(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def min(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Lowest value(s) in the desired column(s)
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, lowest value(s) as values, if set to False:
-            1) If there is only 1 column returns the value as it is
-            2) If there are multiple columns returns the values in order in a list
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
         from MatricesM.stats.minmax import _minmax
-        return _minmax(self,col,asDict,0)
+        return _minmax(self,col,get,0,Matrix,dataframe)
 
-    def mean(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def mean(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Mean of the columns
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, means as values, if set to False:
-            1) If there is only 1 column returns the value as it is
-            2) If there are multiple columns returns the values in order in a list
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """  
         from MatricesM.stats.mean import mean
-        return mean(self,col,asDict)
+        return mean(self,col,get,Matrix,dataframe)
     
-    def mode(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def mode(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Returns the columns' most repeated elements in a dictionary
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, modes as values, if set to False:
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a list of Matrices for every column individually
         """
         from MatricesM.stats.mode import mode
-        return mode(self,col,asDict)
+        return mode(self,col,get,Matrix,dataframe)
     
-    def median(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def median(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Returns the median of the columns
         col:integer>=1 | column name as string
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, medians as values, if set to False:
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """ 
         from MatricesM.stats.median import median
-        return median(self,col,asDict)
+        return median(self,col,get,Matrix,dataframe)
     
-    def sdev(self,col:Union[int,str,None]=None,population:[0,1]=1,asDict:bool=True):
+    def sdev(self,col:Union[int,str,None]=None,population:[0,1]=1,get:[0,1,2]=1):
         """
         Standard deviation of the columns
         col:integer>=1 | column name as string
         population: 1 for σ, 0 for s value (default 1)
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, standard deviations as values, if set to False:
-            1) If there is only 1 column returns the value as it is
-            2) If there are multiple columns returns the values in order in a list
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
         from MatricesM.stats.sdev import sdev
-        return sdev(self,col,population,asDict)    
+        return sdev(self,col,population,get,Matrix,dataframe)    
     
-    def var(self,col:Union[int,str,None]=None,population:[0,1]=1,asDict:bool=True):
+    def var(self,col:Union[int,str,None]=None,population:[0,1]=1,get:[0,1,2]=1):
         """
         Variance in the columns
         col:integer>=1 |None|column name as string ; Index/name of the column, None to get all columns 
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys, variance as values, if set to False:
-            1) If there is only 1 column returns the value as it is
-            2) If there are multiple columns returns the values in order in a list
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """   
         from MatricesM.stats.var import var
-        return var(self,col,population,asDict)      
+        return var(self,col,population,get,Matrix,dataframe)     
     
     def z(self,col:Union[int,str,None]=None,population:[0,1]=1):
         """
         z-scores of the elements
         column:integer>=1 |None|column name as string ; z-scores of the desired column
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-        asDict: True|False ; Wheter or not to return a dictionary
-        
-        Give no arguments to get the whole scores in a matrix
+
+        Give no arguments to get all the scores in a matrix
         """
         from MatricesM.stats.z import z
         return z(self,col,population,Matrix(self.dim,fill=0,features=self.features[:]))        
     
-    def iqr(self,col:Union[int,str,None]=None,as_quartiles:bool=False,asDict:bool=True):
+    def iqr(self,col:Union[int,str,None]=None,as_quartiles:bool=False,get:[0,1,2]=1):
         """
         Returns the interquartile range(IQR)
         col:integer>=1 and <=column amount | column name
@@ -1768,28 +1755,26 @@ class Matrix:
             False to get iqr values(default):
                 {Column1=IQR_1,Column2=IQR_2,...}
                 
-        asDict: True|False ; Wheter or not to return a dictionary with features as keys iqr's as values, if set to False:
-            1) If there is only 1 column returns the value as it is
-            2) If there are multiple columns returns the values in order in a list
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
                 
         Usage:
             self.iqr() : Returns a dictionary with iqr's as values
             self.iqr(None,True) : Returns a dictionary where the values are quartile medians in lists
-            self.iqr(None,True,False) : Returns a list of quartile medians in lists
-            self.iqr(None,False,False) : Returns a list of iqr's
+            self.iqr(None,True,0) : Returns a list of quartile medians in lists
+            self.iqr(None,False,2) : Returns a matrix of iqr's
             -> Replace "None" with any column number to get a specific column's iqr
         """ 
         from MatricesM.stats.iqr import iqr
-        return iqr(self,col,as_quartiles,asDict)   
+        return iqr(self,col,as_quartiles,get,Matrix,dataframe)   
      
-    def freq(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def freq(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Returns the frequency of every element on desired column(s)
         col:column index>=1 or column name
-        asDict: True|False ; Wheter or not to return a dictionary
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a list of Matrices for every column individually
         """
         from MatricesM.stats.freq import freq
-        return freq(self,col,asDict)   
+        return freq(self,col,get,Matrix,dataframe)   
      
     def cov(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
         """
@@ -1818,66 +1803,32 @@ class Matrix:
         from MatricesM.stats.describe import describe
         return describe(self,Matrix)
 
-    def sum(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Return the sum of the desired column, give no arguments to get all columns'.
         col: int|str|None ; Column index or name
-        asDict: boolean ; Wheter or not to return values in a dictionary. If col and asDict both None, values are returned in a list. If col is given value is returned
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
-        if col==None:
-            if asDict:
-                return {self.features[i]:sum(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]}
-            return [sum(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]]
-        else:
-            if isinstance(col,str):
-                col = self.features.index(col)
-            if isinstance(col,int):
-                if asDict:
-                    return {self.features[col]:sum(self.col(col+1,0))}
-                return sum(self.col(col+1,0))
+        from MatricesM.stats.prodsum import _prodsum
+        return _prodsum(self,col,get,Matrix,dataframe,1)
 
-    def prod(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def prod(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Return the product of the desired column, give no arguments to get all columns'.
         col: int|str|None ; Column index or name
-        asDict: boolean ; Wheter or not to return values in a dictionary. If col and asDict both None, values are returned in a list. If col is given value is returned
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
-        def p(lis):
-            prd=1;
-            for i in lis:
-                prd*=i
-            return prd;
+        from MatricesM.stats.prodsum import _prodsum
+        return _prodsum(self,col,get,Matrix,dataframe,0)
 
-        if col==None:
-            if asDict:
-                return {self.features[i]:p(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]}
-            return [p(self.col(i+1,0)) for i in [j for j in range(self.dim[1]) if self.coldtypes[j] in [int,float]]]
-        else:
-            if isinstance(col,str):
-                col = self.features.index(col)
-            if isinstance(col,int):
-                if asDict:
-                    return {self.features[col]:p(self.col(col+1,0))}
-                return p(self.col(col+1,0))
-
-    def count(self,col:Union[int,str,None]=None,asDict:bool=True):
+    def count(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Return the count of the valid values in column(s), give no arguments to get all columns'.
         col: int|str|None ; Column index or name
-        asDict: boolean ; Wheter or not to return values in a dictionary. If col and asDict both None, values are returned in a list. If col is given value is returned
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
-        colds = self.coldtypes[:]
-        if col==None:
-            if asDict:
-                return {self.features[i]:len([1 for k in self.col(i+1,0) if type(k) == colds[i]]) for i in range(self.dim[1])}
-            return [len([1 for k in self.col(i+1,0) if type(k) == colds[i]]) for i in range(self.dim[1])]
-        else:
-            if isinstance(col,str):
-                col = self.features.index(col)
-            if isinstance(col,int):
-                if asDict:
-                    return {self.features[col]:len([1 for k in self.col(col+1,0) if type(k) == colds[col]])}
-                return len([1 for k in self.col(col+1,0) if type(k) == colds[col]])
+        from MatricesM.stats.freq import _count
+        return _count(self,col,get,Matrix,dataframe)
 
     @property
     def info(self):
