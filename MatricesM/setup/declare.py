@@ -2,22 +2,17 @@ def declareDim(mat):
     """
     Set new dimension 
     """
-    try:
-        m = mat._matrix
-        if m == None:
-            mat._matrix = []
-            return [0,0]
-        rows= len(m)
-        cols = len(m[0])
-        for i in range(rows):
-            if cols != len(m[i]):
-                raise IndexError
-            
-    except IndexError:
-        print("Matrix has different length rows")
-        return None
-    else:
-        return [rows,cols]
+    m = mat._matrix
+    if m == None:
+        mat._matrix = []
+        return [0,0]
+    rows= len(m)
+    cols = len(m[0])
+    for i in range(rows):
+        if cols != len(m[i]):
+            raise IndexError("Matrix has different length rows")
+
+    return [rows,cols]
     
 def declareRange(mat,lis):
     """
