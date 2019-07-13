@@ -1,5 +1,5 @@
-def _repr(mat):
-    from MatricesM.matrix import dataframe
+def _repr(mat,notes,dFrame):
+
     rowlimit,collimit = min(mat.dim[0],mat.ROW_LIMIT),min(mat.dim[1],mat.COL_LIMIT)
     for i in [rowlimit,collimit]:
         if not isinstance(i,int):
@@ -7,10 +7,13 @@ def _repr(mat):
         else:
             if i<1:
                 return f"Can't display any rows/columns using limits for rows and columns : [{rowlimit},{collimit}]"
-                
+    
+    if not isinstance(notes,str):
+        raise TypeError(f"NOTES option can only be used with strings, not {type(notes).__name__}")
+
     #Not too many rows or columns
     if mat.dim[0]<=rowlimit and mat.dim[1]<=collimit:
-        return mat._stringfy(coldtypes=mat.coldtypes[:])
+        return mat._stringfy(coldtypes=mat.coldtypes[:]) + "\n\n" + notes
 
     halfrow = rowlimit//2
     halfcol = collimit//2
@@ -29,10 +32,10 @@ def _repr(mat):
             bottomLeft = mat[-(rowlimit//2):,:halfcol].roundForm(mat.decimal)
             bottomRight = mat[-(rowlimit//2):,-(collimit//2):].roundForm(mat.decimal)
 
-            #Change dtypes to dataframes filled with strings
+            #Change dtypes to dFrames filled with strings
             for i in [topLeft,topRight,bottomLeft,bottomRight]:
-                if i.dtype != dataframe:
-                    i.dtype = dataframe
+                if i.dtype != dFrame:
+                    i.dtype = dFrame
             topLeft.coldtypes = [str]*(halfcol)
             topRight.coldtypes = [str]*(collimit//2)
             bottomLeft.coldtypes = [str]*(halfcol)
@@ -51,7 +54,7 @@ def _repr(mat):
             topLeft.add([""]*(collimit+1),row=halfrow+1)
             topLeft.add([" ..."]*(collimit+1),row=halfrow+1)
             topLeft.add([""]*(collimit+1),row=halfrow+1)
-            return topLeft._stringfy(coldtypes=topLeft.coldtypes)
+            return topLeft._stringfy(coldtypes=topLeft.coldtypes) + "\n\n" + notes
 
         #Just too many rows
         else:
@@ -60,8 +63,8 @@ def _repr(mat):
             bottom = mat[-(rowlimit//2):,:].roundForm(mat.decimal)
             #Set new dtypes
             for i in [top,bottom]:
-                if i.dtype != dataframe:
-                    i.dtype = dataframe
+                if i.dtype != dFrame:
+                    i.dtype = dFrame
                 i.coldtypes = [str]*(collimit)
             #Concat last items
             top.concat(bottom,concat_as="row")
@@ -70,7 +73,7 @@ def _repr(mat):
             top.add([" ..."]*mat.dim[1],row=halfrow+1)
             top.add([""]*mat.dim[1],row=halfrow+1)
 
-            return top._stringfy(coldtypes=top.coldtypes)
+            return top._stringfy(coldtypes=top.coldtypes) + "\n\n" + notes
             
     #Just too many columns
     elif mat.dim[1]>collimit:
@@ -79,15 +82,15 @@ def _repr(mat):
         right = mat[:,-(collimit//2):].roundForm(mat.decimal)
         #Set new dtypes
         for i in [left,right]:
-            if i.dtype != dataframe:
-                i.dtype = dataframe
+            if i.dtype != dFrame:
+                i.dtype = dFrame
         left.coldtypes = [str]*(halfcol)
         right.coldtypes = [str]*(collimit//2)
         #Add and concat rest of the stuff
         left.add([" ..."]*mat.dim[0],col=halfcol + 1,dtype=str,feature="")
         left.concat(right,concat_as="col")
 
-        return left._stringfy(coldtypes=left.coldtypes)
+        return left._stringfy(coldtypes=left.coldtypes) + "\n\n" + notes
     #Should't go here
     else:
         raise ValueError("Something is wrong with the matrix, check dimensions and values")
