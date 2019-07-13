@@ -21,7 +21,7 @@ def _stringfy(mat,dtyps=None):
         for dt in range(len(dtyps)):
 
             colbounds=[]
-            if dtyps[dt] in [float,int]:
+            if dtyps[dt] == float:
                 colbounds.append(len(st.format(round(ranges[feats[dt]][0],decimals))))
                 colbounds.append(len(st.format(round(ranges[feats[dt]][1],decimals))))
 
