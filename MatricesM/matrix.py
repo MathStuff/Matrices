@@ -178,13 +178,15 @@ class Matrix:
         self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
         #Constants to use for printing,rounding etc.
-        self.PRECISION = 8                          #Decimals to round
+        self.PRECISION = 6                          #Decimals to round
         self.ROW_LIMIT = 30                         #Upper limit for amount of rows to print
         self.COL_LIMIT = 12                         #Upper limit for amount of columns to print
         self.EIGEN_ITERS = 100                      #QR algorithm iterations for eigenvalues
+        self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
 
         #Override the attributes given in kwargs with new values
         attributes = ["dim","listed","directory","fill","ranged","seed","header","features","decimal","dtype","coldtypes","implicit"]
+        options = ["PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES"]
         for key,val in kwargs.items():
             if isinstance(val,dict) and key=="kwargs":
                 for k,v in val.items():
@@ -194,8 +196,10 @@ class Matrix:
                         self.__initRange = v
                     elif k in attributes:
                         exec(f"self._Matrix__{k}=v")
+                    elif k in options:
+                        exec(f"self.{k}=v")
                     else:
-                        raise ParameterError(k,attributes)
+                        raise ParameterError(k,attributes+options)
             else:
                 exec(f"self.{key}=val")
 
@@ -1801,7 +1805,7 @@ class Matrix:
         Returns a matrix describing the matrix with features: Column, dtype, count,mean, sdev, min, 25%, 50%, 75%, max
         """
         from MatricesM.stats.describe import describe
-        return describe(self,Matrix)
+        return describe(self,Matrix,dataframe)
 
     def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
@@ -1835,7 +1839,15 @@ class Matrix:
         """
         Prints out column info
         """
-        pass
+        feats,cdtyps,counts,uniques = self.features[:],self.coldtypes[:],self.count(get=0),self.freq(get=0)
+        invalids = [self.d0-j for j in counts]
+        return Matrix((self.d1,5),[[feats[i],cdtyps[i],counts[i],invalids[i],len(list(uniques[i].keys()))] for i in range(self.d1)],
+                       dtype=dataframe,
+                       coldtypes=[str,type,int,int,int],
+                       features=["Column","dtype","Valid_data","Invalid_data","Unique_data"],
+                       implicit=True,
+                       NOTES=f"Size: {self.dim}")
+
 # =============================================================================
     """Logical-bitwise magic methods """
 # =============================================================================
@@ -1952,7 +1964,7 @@ class Matrix:
         Returns the matrix's string form using its row and column limits
         """
         from MatricesM.matrixops.repr import _repr
-        return _repr(self)
+        return _repr(self,self.NOTES,dataframe)
     
     def __str__(self): 
         """ 
@@ -1960,11 +1972,14 @@ class Matrix:
         """
         self.__dim=self._declareDim()
         s=self._stringfy(coldtypes=self.coldtypes[:])
+        notes = self.NOTES
+        if not isinstance(notes,str):
+            raise TypeError(f"NOTES option can only be used with strings, not {type(notes).__name__}")
         if not self.isSquare:
             print("\nDimension: {0}x{1}".format(self.dim[0],self.dim[1]))
         else:
             print("\nSquare matrix\nDimension: {0}x{0}".format(self.dim[0]))
-        return s+"\n"   
+        return s+"\n\n" + notes 
     
     @property
     def kwargs(self):
