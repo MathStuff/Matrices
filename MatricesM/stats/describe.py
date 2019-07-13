@@ -1,16 +1,17 @@
-def describe(mat,obj):
-    from MatricesM.matrix import dataframe
+def describe(mat,obj,dFrame):
+
     if mat._cMat:
-        return None
+        raise TypeError("Can't use complex numbers to describe the matrix")
     if mat.dim[0]<=1:
-        return None
+        raise ValueError("Not enough rows to describe the matrix")
+
     #Create the base of the description matrix
     valid_feats_inds = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
     valid_feats_names = [mat.features[i] for i in valid_feats_inds]
 
     desc_mat = obj((len(valid_feats_inds),10),fill=0,
                   features=["Column","dtype","count","mean","sdev","min","25%","50%","75%","max"],
-                  dtype=dataframe,coldtypes=[str,type,int,float,float,float,float,float,float,float])
+                  dtype=dFrame,coldtypes=[str,type,int,float,float,float,float,float,float,float])
 
     #Gather the data
     dtypes = [mat.coldtypes[t] for t in valid_feats_inds]
@@ -27,4 +28,10 @@ def describe(mat,obj):
         temp.append([name,dtypes[i],counts[name],mean[name],sdev[name],ranges[name][0],iqrs[name][0],iqrs[name][1],iqrs[name][2],ranges[name][1]])
 
     desc_mat._matrix = temp
+    desc_mat.decimal = mat.PRECISION
+
+    unused_names = ",".join([name for name in mat.features if not name in valid_feats_names])
+    unused = f"{mat.d1-len(valid_feats_names)} Unused columns : \n\t{unused_names}" if len(unused_names) else "" 
+    desc_mat.NOTES = f"Size: {mat.dim}\n"+unused
+    
     return desc_mat
