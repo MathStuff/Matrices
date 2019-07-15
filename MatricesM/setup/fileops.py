@@ -19,12 +19,12 @@ def readAll(d,encoding,delimiter):
         feats = []
         data = []
         dtyps = []
+        from random import sample
 
         if d[-4:] == ".csv":  
             import csv
             import itertools
-            from random import sample
-
+            
             sample_head = ''.join(itertools.islice(open(d,"r",encoding=encoding), 6))
             header = csv.Sniffer().has_header(sample_head)
 
