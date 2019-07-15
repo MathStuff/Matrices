@@ -189,11 +189,8 @@ from MatricesM import *
 #Create a dataframe matrix from a csv file. read_file accepts 2 optional parameters: encoding, delimiter
 data_matrix = read_file(data_directory) 
 
-#If you're having issues with setting the dimension, try explicitly providing it as dim=[data_amount,feature_amount]
-#More options for reading the file will be added in the future
-
 #Example dataset: https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009
-wine = read_file("...\Data\winequality-red.csv")
+wine = read_file(".../Data/winequality-red.csv")
 ```
 ----------------------------------------
 ##### Get specific parts of the matrix (Assuming default column names)
