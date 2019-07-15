@@ -8,7 +8,6 @@ Created on Wed Oct 31 17:26:48 2018
 from MatricesM.validations.validate import *
 from MatricesM.errors.errors import *
 from MatricesM.constructors.matrices import *
-from MatricesM.setup.fileops import *
 
 import re
 from typing import *
@@ -21,6 +20,7 @@ def read_file(directory:str,encoding:str="utf8",delimiter:str=","):
     """
     Read data from files
     """
+    from MatricesM.setup.fileops import readAll
     directory = directory.replace("\\","/")
     (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
     return Matrix(listed=data,features=feats,dtype=dataframe,coldtypes=cdtypes,DIRECTORY=directory)
