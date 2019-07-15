@@ -22,13 +22,11 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is given), int | list/tuple as [rows,cols]
+matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | list/tuple as [rows,cols]
 
                      listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
-                     directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
-
-                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" or "directory" is given
+                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" is given
 
                      ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
@@ -39,8 +37,6 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
                                    3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
                                    4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
                                    5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
-
-                     header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
 
                      features=columnNames #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
                      
@@ -186,18 +182,18 @@ df = Matrix(dim=[10,4],
 
 ```
 ----------------------------------------
-##### Read data from csv files 
-###### If there is a header, set header to any boolean value == True . Float numbers considered to be using dot(.) to separate decimal places and cammas(,) are used to separate columns. Will be updated in the future for more options
+##### Read data from files 
 ```python 
-data_directory = r"Example\Directory\DATAFILE"
+from MatricesM import *
 
-data_matrix = Matrix(directory=data_directory,header=1,dtype=dataframe,coldtypes=[str,float,...]) #Create a dataframe matrix from a csv file
+#Create a dataframe matrix from a csv file. read_file accepts 2 optional parameters: encoding, delimiter
+data_matrix = read_file(data_directory) 
 
 #If you're having issues with setting the dimension, try explicitly providing it as dim=[data_amount,feature_amount]
 #More options for reading the file will be added in the future
 
 #Example dataset: https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009
-winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype=dataframe,coldtypes=[float]*12)
+wine = read_file("...\Data\winequality-red.csv")
 ```
 ----------------------------------------
 ##### Get specific parts of the matrix (Assuming default column names)
@@ -363,8 +359,6 @@ Matrix.grid #Prints ALL of the matrix's elements as a grid, if dtype is datafram
 Matrix.p #Prints the dimensions, wheter or not the matrix is square and the grid. If dtype is dataframe, column names are also printed
 
 Matrix.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
-
-Matrix.directory #Returns the directory of the matrix if there is any given
 
 Matrix.matrix #Returns the matrix's rows as lists in a list
 
