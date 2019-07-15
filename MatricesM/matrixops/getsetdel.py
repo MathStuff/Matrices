@@ -30,7 +30,9 @@ def getitem(mat,pos,obj):
             raise ValueError(f"{pos} is not in column names")
         else:
             pos = mat.features.index(pos)
-        return obj(listed=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]])
+        mat =  obj(listed=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]])
+        mat.NOTES = f"n:{mat.d0},type:{mat.coldtypes[0].__name__},invalid:{mat.d0-mat.count(get=0)}"
+        return mat
 
     #Get certain parts of the matrix
     elif isinstance(pos,tuple):
