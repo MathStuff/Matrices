@@ -53,14 +53,18 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
                     mat._Matrix__dim=mat._declareDim()
             else:
                 try:
-                    assert mat.dim[0]*mat.dim[1] == len(lis)
+                    if mat.dim != [0,0]:
+                        assert mat.dim[0]*mat.dim[1] == len(lis)
+                        mat._matrix=[]
+                        for j in range(0,len(lis),mat.dim[1]):
+                            mat._matrix.append(lis[j:j+mat.dim[1]]) 
+                    else:
+                        mat._matrix = [lis]
+
                 except Exception as err:
                     print(err)
                 else:
-                    mat._matrix=[]
-                    for j in range(0,len(lis),mat.dim[1]):
-                        mat._matrix.append(lis[j:j+mat.dim[1]])
-            
+                    mat._Matrix__dim=mat._declareDim()
         # =============================================================================
         #Same range for all columns
         elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
