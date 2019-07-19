@@ -15,7 +15,8 @@ def delDim(mat,num):
         mat._Matrix__dim = [goal1,goal2]
         mm = mat._matrix
         mat._matrix = [mm[i][:goal2] for i in range(goal1)]
-
+        if mat._dfMat:
+            mat._Matrix__index = mat.index[:goal1]
     except AssertionError:
         print("Enter a valid input")
     except Exception as err:
