@@ -1,4 +1,4 @@
-def add(mat,lis=[],row=None,col=None,feature=None,dtype=None):
+def add(mat,lis=[],row=None,col=None,feature=None,dtype=None,index=""):
 
     r,c = 0,0
     assert isinstance(lis,(list,tuple)) , "'lis' parameter only accepts tuples or lists"
@@ -13,7 +13,8 @@ def add(mat,lis=[],row=None,col=None,feature=None,dtype=None):
 
             if row>0 and isinstance(row,int):
                 mat._matrix.insert(row-1,list(lis))
-
+                if mat._dfMat:
+                    mat._Matrix__index.insert(row-1,index)
             else:
                 raise ValueError(f"'row' should be an integer higher than 0")
 

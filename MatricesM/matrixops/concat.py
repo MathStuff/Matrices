@@ -32,3 +32,6 @@ def concat(mat,matrix,concat_as="col"):
         if concat_as=="col":
             mat._Matrix__features = mat.features + [i if i not in mat.features else "_"+i for i in matrix.features]
             mat._Matrix__coldtypes = mat.coldtypes + [i for i in matrix.coldtypes]
+        else:
+            if mat._dfMat:
+                mat._Matrix__index = mat.index + [ind for ind in matrix.index]
