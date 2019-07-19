@@ -84,6 +84,8 @@ def _repr(mat,notes,dFrame):
             topLeft.add([""]*(collimit+1),row=halfrow+1)
             topLeft.add([" ..."]*(collimit+1),row=halfrow+1)
             topLeft.add([""]*(collimit+1),row=halfrow+1)
+            if not mat._dfMat:
+                topLeft.index = list(range(halfrow)) + ["","",""] + list(range(d0-(rowlimit//2),d0))
             return topLeft._stringfy(coldtypes=topLeft.coldtypes) + "\n\n" + notes
 
         #Just too many rows
@@ -102,7 +104,8 @@ def _repr(mat,notes,dFrame):
             top.add([""]*mat.dim[1],row=halfrow+1)
             top.add([" ..."]*mat.dim[1],row=halfrow+1)
             top.add([""]*mat.dim[1],row=halfrow+1)
-
+            if not mat._dfMat:
+                top.index =  list(range(halfrow)) + ["","",""] + list(range(d0-(rowlimit//2),d0))
             return top._stringfy(coldtypes=top.coldtypes) + "\n\n" + notes
             
     #Just too many columns
@@ -119,7 +122,8 @@ def _repr(mat,notes,dFrame):
         #Add and concat rest of the stuff
         left.add([" ..."]*mat.dim[0],col=halfcol + 1,dtype=str,feature="")
         left.concat(right,concat_as="col")
-
+        if not mat._dfMat:
+            left.index = list(range(d0))
         return left._stringfy(coldtypes=left.coldtypes) + "\n\n" + notes
     #Should't go here
     else:
