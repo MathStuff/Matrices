@@ -1,10 +1,10 @@
-def _stringfy(mat,dtyps=None):
+def _stringfy(mat,dtyps,retbounds):
     
     import re
     pre = "0:.{}f".format(mat.decimal)
     st = "{"+pre+"}"    
-    string=""
-
+    string = ""
+    indbound = None
     #Empty matrix check
     if mat.matrix in [ [], None ]:
         return "Empty matrix"
@@ -17,7 +17,11 @@ def _stringfy(mat,dtyps=None):
         feats = mat.features[:]
         decimals = mat.decimal
         m = mat.matrix
+        indices = [str(i) for i in mat.index]
 
+        #Bound from index column
+        indbound = max([len(str(i)) for i in indices+[mat.indexname]])
+        #Bounds from values
         for dt in range(len(dtyps)):
 
             colbounds=[]
@@ -29,12 +33,12 @@ def _stringfy(mat,dtyps=None):
                 ns=""
                 for i in range(mat.d0):
                     num = m[i][dt]
-                    ns+=str(round(num.real,mat.decimal))
+                    ns+=str(round(num.real,decimals))
                     im=num.imag
                     if im<0:
-                        ns+=str(round(im,mat.decimal))+"j "
+                        ns+=str(round(im,decimals))+"j "
                     else:
-                        ns+="+"+str(round(im,mat.decimal))+"j "
+                        ns+="+"+str(round(im,decimals))+"j "
                             
                 pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
                 colbounds.append(max([len(a) for a in re.findall(pattern,ns)]))
@@ -60,7 +64,7 @@ def _stringfy(mat,dtyps=None):
                         ns+="+"+str(round(im,mat.decimal))+"j "
                         
             pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
-            bound=max([len(a) for a in re.findall(pattern,ns)])-2
+            bounds=max([len(a) for a in re.findall(pattern,ns)])-2
 
         except TypeError:
             msg = f"Invalid value for complex dtype matrix: '{j}'"
@@ -91,6 +95,12 @@ def _stringfy(mat,dtyps=None):
         except TypeError:
             msg = f"Invalid values for integer dtype in column: '{mat.features[c]}'"
             raise TypeError(msg)
+    
+    if retbounds:
+        ind_bound = [indbound] if isinstance(indbound,int) else [0]
+        _bounds = [bounds for _ in range(mat.d1)] if isinstance(bounds,int) else bounds
+        return ind_bound+_bounds
+
     #-0.0 error interval set    
     if mat._fMat or mat._cMat:
         interval=[float("-0."+"0"*(mat.decimal-1)+"1"),float("0."+"0"*(mat.decimal-1)+"1")] 
@@ -98,17 +108,26 @@ def _stringfy(mat,dtyps=None):
     #Dataframe
     if mat._dfMat:
         #Add features
-        string += "\n"
-        for cols in range(mat.dim[1]):
-            name = mat.features[cols]
+        string += "\n" + " "*indbound + " "
+        feats = mat.features
+        for cols in range(mat.dim[1]-1):
+            name = feats[cols]
             s = len(name)
             string += " "*(bounds[cols]-s)+name+"  "
-        
-        #Add elements
+
+        string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
+
+        #Add index name row
+        string += "\n"+mat.indexname
+
+        #Add rows
+        mm = mat.matrix
         for rows in range(mat.dim[0]):
-            string += "\n"
+            #Add index
+            string += "\n" + indices[rows] + " "*(indbound-len(indices[rows])) + " "
+            #Add values
             for cols in range(mat.dim[1]):
-                num = mat._matrix[rows][cols]
+                num = mm[rows][cols]
                 #float column
                 if dtyps[cols] == float:
                     try:
@@ -155,7 +174,7 @@ def _stringfy(mat,dtyps=None):
                     else:
                         item=str(round(num.real,mat.decimal))+str(round(num.imag,mat.decimal))+"j "
                     s=len(item)-4
-                    string += " "*(bound-s)+item+" "
+                    string += " "*(bounds-s)+item+" "
                     continue
 
                 #float
