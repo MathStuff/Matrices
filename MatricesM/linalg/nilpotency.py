@@ -10,7 +10,7 @@ def nilpotency(mat,limit=50):
     
     lim = limit
     zeroM = mat.copy
-    zeroM._matrix = [[0 for i in range(zeroM.dim[0])] for j in range(zeroM.dim[0]) ]
+    zeroM.fill = 0
     temp = mat.copy
     
     for i in range(2,lim+2):
@@ -21,5 +21,4 @@ def nilpotency(mat,limit=50):
         
         lis = [temp.matrix[i][j] for i in range(temp.dim[0]) for j in range(temp.dim[1])]
         if (inf in lis) or (nan in lis):
-            print("Some elements converged to inf")
             return None
