@@ -538,7 +538,8 @@ class Matrix:
         self.__useind = 1
         return self
         
-
+    def swap(self):
+        pass
 # =============================================================================
     """Methods for special matrices and properties"""
 # =============================================================================     
@@ -1729,20 +1730,8 @@ class Matrix:
         size:int. How many samples to take
         condition:str. Conditions to set as a base for sampling, uses 'where' method to filter 
         """
-        from random import sample
-
-        mat = self.where(condition) if condition != None else self  
-        if size > mat.d0:
-            raise ValueError("Sample size is too big")
-
-        i = mat.index
-        mm = mat.matrix
-        sample_inds = sample(list(range(mat.d0)),size)
-        indices = [i[row] for row in sample_inds] if mat._dfMat else []
-        
-        return Matrix(listed=[mm[row][:] for row in sample_inds],decimal=self.decimal,
-                      dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:],
-                      index=indices,indexname=self.indexname)
+        from MatricesM.filter.sample import samples
+        return samples(self,size,condition,Matrix)
 
     def match(self,expression:str,columns:Union[str,int,List[Union[str,None]],Tuple[Union[str,None]],None]=None,as_row:bool=True):
         """
@@ -1922,33 +1911,6 @@ class Matrix:
         """
         from MatricesM.stats.freq import freq
         return freq(self,col,get,Matrix,dataframe)   
-     
-    def cov(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
-        """
-        Covariance of two columns
-        col1,col2: integers>=1 |str|None; column numbers/names. For covariance matrix give None to both
-        population: 0 or 1 ; 0 for samples, 1 for population
-        """
-        from MatricesM.stats.cov import cov
-        return cov(self,col1,col2,population,Matrix,dataframe)
-        
-    def corr(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1,method:["pearson","kendall","spearman"]="pearson"):
-        """
-        Correlation of 2 columns
-        col1,col2: integers>=1 |str|None; column numbers/names. For correlation matrix give None to both
-        population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
-        """
-        from MatricesM.stats.corr import _corr
-        temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.dim[1])])
-        return _corr(self,col1,col2,population,temp,method)
-    
-    @property   
-    def describe(self):
-        """
-        Returns a matrix describing the matrix with features: Column, dtype, count,mean, sdev, min, 25%, 50%, 75%, max
-        """
-        from MatricesM.stats.describe import describe
-        return describe(self,Matrix,dataframe)
 
     def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
@@ -1977,6 +1939,33 @@ class Matrix:
         from MatricesM.stats.freq import _count
         return _count(self,col,get,Matrix,dataframe)
 
+    def cov(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
+        """
+        Covariance of two columns
+        col1,col2: integers>=1 |str|None; column numbers/names. For covariance matrix give None to both
+        population: 0 or 1 ; 0 for samples, 1 for population
+        """
+        from MatricesM.stats.cov import cov
+        return cov(self,col1,col2,population,Matrix,dataframe)
+        
+    def corr(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1,method:["pearson","kendall","spearman"]="pearson"):
+        """
+        Correlation of 2 columns
+        col1,col2: integers>=1 |str|None; column numbers/names. For correlation matrix give None to both
+        population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
+        """
+        from MatricesM.stats.corr import _corr
+        temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.dim[1])])
+        return _corr(self,col1,col2,population,temp,method)
+    
+    @property   
+    def describe(self):
+        """
+        Returns a matrix describing the matrix with features: Column, dtype, count,mean, sdev, min, 25%, 50%, 75%, max
+        """
+        from MatricesM.stats.describe import describe
+        return describe(self,Matrix,dataframe)
+
     @property
     def info(self):
         """
@@ -1986,17 +1975,19 @@ class Matrix:
         counts = self.count(get=0) if self.d1>1 else [self.count(get=0)]
         uniques = self.freq(get=0) if self.d1>1 else [self.freq(get=0)]
         invalids = [self.d0-j for j in counts]
-        return Matrix((self.d1,5),[[feats[i],cdtyps[i],counts[i],invalids[i],len(list(uniques[i].keys()))] for i in range(self.d1)],
+        return Matrix((self.d1,4),[[cdtyps[i],counts[i],invalids[i],len(list(uniques[i].keys()))] for i in range(self.d1)],
                        dtype=dataframe,
-                       coldtypes=[str,type,int,int,int],
-                       features=["Column","dtype","Valid_data","Invalid_data","Unique_data"],
+                       coldtypes=[type,int,int,int],
+                       features=["dtype","Valid_data","Invalid_data","Unique_data"],
                        implicit=True,
-                       index=None,
+                       index=feats,
                        NOTES=f"Size: {self.dim}")
 
     def groupBy(self):
         pass
 
+    def oneHot(self):
+        pass
 # =============================================================================
     """Logical-bitwise magic methods """
 # =============================================================================
