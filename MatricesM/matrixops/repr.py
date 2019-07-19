@@ -1,6 +1,36 @@
 def _repr(mat,notes,dFrame):
+    from shutil import get_terminal_size as gts
+    
+    d0,d1 = mat.dim
+    feats = mat.features
+    used_col_amount = 1 if mat._dfMat else 0
+    cmat = 4 if mat._cMat else 0
 
-    rowlimit,collimit = min(mat.dim[0],mat.ROW_LIMIT),min(mat.dim[1],mat.COL_LIMIT)
+    string_bounds = mat._stringfy(mat.coldtypes,True)
+    if (not isinstance(string_bounds,list)) or (len(feats)==0):
+        return "Empty Matrix"
+    string_bounds = string_bounds[:1] + list(map(lambda a:a+2+cmat,string_bounds[1:]))
+    terminal_col_size = gts().columns - max([len(feat) for feat in feats]) - 8 - string_bounds[0]
+
+    shuffled_col_inds = [0]
+    upper = d1//2+1 if d1%2 else d1//2
+    for ind in range(1,upper):
+        shuffled_col_inds.append(ind)
+        shuffled_col_inds.append(-ind)
+    if not d1%2:
+        shuffled_col_inds.append(d1//2)
+    
+    total = 0
+    for i in shuffled_col_inds:
+        bound = string_bounds[i]
+        new = total+bound
+        if new < terminal_col_size:
+            total += bound
+            used_col_amount += 1
+        else:
+            break
+
+    rowlimit,collimit = min(d0,mat.ROW_LIMIT),min(d1,mat.COL_LIMIT,used_col_amount)
     for i in [rowlimit,collimit]:
         if not isinstance(i,int):
             raise TypeError("ROW/COL limit can't be non-integer values")
@@ -29,8 +59,8 @@ def _repr(mat,notes,dFrame):
             #Divide matrix into 4 parts
             topLeft = mat[:halfrow,:halfcol].roundForm(mat.decimal)
             topRight = mat[:halfrow,-(collimit//2):].roundForm(mat.decimal)
-            bottomLeft = mat[-(rowlimit//2):,:halfcol].roundForm(mat.decimal)
-            bottomRight = mat[-(rowlimit//2):,-(collimit//2):].roundForm(mat.decimal)
+            bottomLeft = mat[mat.d0-(rowlimit//2):,:halfcol].roundForm(mat.decimal)
+            bottomRight = mat[mat.d0-(rowlimit//2):,-(collimit//2):].roundForm(mat.decimal)
 
             #Change dtypes to dFrames filled with strings
             for i in [topLeft,topRight,bottomLeft,bottomRight]:
@@ -60,7 +90,7 @@ def _repr(mat,notes,dFrame):
         else:
             #Get needed parts
             top = mat[:halfrow,:].roundForm(mat.decimal)
-            bottom = mat[-(rowlimit//2):,:].roundForm(mat.decimal)
+            bottom = mat[mat.d0-(rowlimit//2):,:].roundForm(mat.decimal)
             #Set new dtypes
             for i in [top,bottom]:
                 if i.dtype != dFrame:
