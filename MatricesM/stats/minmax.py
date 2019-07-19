@@ -18,7 +18,7 @@ def _minmax(mat,col,get,ismax,obj,dFrame):
     #Return a matrix
     if get==2:
         cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in m.items()],features=["Column",["Minimum","Maximum"][ismax]],dtype=dFrame,coldtypes=[str,float])
+        return obj((cols,2),[[i,j] for i,j in m.items()],features=["Column",["Minimum","Maximum"][ismax]],dtype=dFrame,coldtypes=[str,float],index=None)
     #Return a dictionary
     elif get==1:
         return m

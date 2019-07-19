@@ -57,7 +57,7 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
         cols = mat.d1 if col==None else 1
         name = 1 if as_quartiles else 0
         dic = qmeds if as_quartiles else iqr
-        return obj((cols,2),[[i,j] for i,j in dic.items()],features=["Column",["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[str,[float,list][name]])
+        return obj((cols,2),[[i,j] for i,j in dic.items()],features=["Column",["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[str,[float,list][name]],index=None)
     #Return a dictionary
     elif get==1:
         if as_quartiles:

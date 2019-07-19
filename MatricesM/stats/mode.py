@@ -39,9 +39,9 @@ def mode(mat,col,get,obj,dFrame):
             repeats=tuple(sorted(repeats))
         mode[k] = {repeats:vmax}
 
-    #Return a list of matrices
+    #Return a tuple of matrices
     if get==2:
-        return [obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat+" Mode(s)","Frequency"],dtype=dFrame,coldtypes=[str,int]) for feat,c in mode.items()]
+        return tuple([obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat+" Mode(s)","Frequency"],dtype=dFrame,coldtypes=[str,int],index=None) for feat,c in mode.items()])
     #Return a dictionary
     elif get==1:
         return mode

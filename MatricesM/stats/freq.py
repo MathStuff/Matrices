@@ -33,7 +33,7 @@ def freq(mat,col,get,obj,dFrame):
 
     #Return matrices
     if get==2:
-        return [obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat,"Frequencies"],dtype=dFrame,coldtypes=[str,int]) for feat,c in res.items()]
+        return [obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat,"Frequencies"],dtype=dFrame,coldtypes=[str,int],index=None) for feat,c in res.items()]
     #Return a dictionary
     elif get==1:
         return res
@@ -61,7 +61,7 @@ def _count(mat,col,get,obj,dFrame):
     #Return a matrix
     if get == 2:
         cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in counts.items()],features=["Column","Valid_values"],dtype=dFrame,coldtypes=[str,int])
+        return obj((cols,2),[[i,j] for i,j in counts.items()],features=["Column","Valid_values"],dtype=dFrame,coldtypes=[str,int],index=None)
     #Return a dictionary
     elif get == 1:
         return counts

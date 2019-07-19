@@ -21,7 +21,7 @@ def _prodsum(mat,col,get,obj,dFrame,isSum):
     #Return a matrix
     if get == 2:
         cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in vals.items()],features=["Column",["Product","Sum"][isSum]],dtype=dFrame,coldtypes=[str,complex])
+        return obj((cols,2),[[i,j] for i,j in vals.items()],features=["Column",["Product","Sum"][isSum]],dtype=dFrame,coldtypes=[str,complex],index=None)
     #Return a dictionary
     elif get == 1:
         return vals

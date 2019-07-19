@@ -51,7 +51,7 @@ def mean(mat,col,get,obj,dFrame):
     #Return a matrix
     if get == 2:
         cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in avg.items()],features=["Column","Mean"],dtype=dFrame,coldtypes=[str,complex])
+        return obj((cols,2),[[i,j] for i,j in avg.items()],features=["Column","Mean"],dtype=dFrame,coldtypes=[str,complex],index=None)
     #Return a dictionary
     elif get == 1:
         return avg

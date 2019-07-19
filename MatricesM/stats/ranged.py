@@ -14,7 +14,7 @@ def ranged(mat,col,get,obj,dFrame):
     #Return a matrix
     if get==2:
         cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in rang.items()],features=["Column","Range"],dtype=dFrame,coldtypes=[str,list])
+        return obj((cols,2),[[i,j] for i,j in rang.items()],features=["Column","Range"],dtype=dFrame,coldtypes=[str,list],index=None)
     #Return a dictionary
     elif get==1:
         if col==None:
