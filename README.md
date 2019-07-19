@@ -22,7 +22,7 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | list/tuple as [rows,cols]
+matrix_name = Matrix(dim=dimensions,#Required(UNLESS 'listed' is given), int | list/tuple as [rows,cols]
 
                      listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
@@ -38,14 +38,18 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' is given), int | li
                                    4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
                                    5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
 
-                     features=columnNames #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
+                     features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
                      
-                     seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+                     seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
-                     dtype=dataType #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
+                     dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
                      
-                     coldtypes=listOfTypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+                     coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
                      
+                     index=index_column #Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+
+                     indexname=index_name #str; name of the index column
+
                      implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
                      )
 
@@ -211,6 +215,13 @@ Matrix[4,7] == Matrix.matrix[4][7]
 
 #Use column names
 Matrix["col_3","col_1","col_2"] == Matrix.select(("col_3","col_1","col_2"))
+
+#Use index column for row indices
+#Return the rows where the index matches the 'value'
+Matrix.ind[value]
+
+#Return the rows from val1's first appearance until val2's first appearance with only 'col_4' column
+Matrix.ind[val1:val2,"col_4"]
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
@@ -226,9 +237,8 @@ filtered = winedata.select(("pH","quality"))
 #Alternative way (2x faster)
 filtered = winedata["pH","quality"] 
 
-
-#Set index column to reverse further actions
-winedata.setIndex()
+#Use 'quality' column as indices
+winedata.index = winedata.quality
 
 #Sort by given column and shuffle the data
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
@@ -385,6 +395,10 @@ Matrix.fill #Returns the value or distribution of which the matrix was filled wi
 
 Matrix.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
 
+Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
+
+Matrix.indexname #Returns the index column's name
+
 Matrix.intForm #Returns integer form of the matrix
 
 Matrix.floatForm #Returns float form of the matrix
@@ -536,7 +550,7 @@ Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression'
 
 Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
-Matrix.setIndex(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
+Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
 
 Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
@@ -558,6 +572,8 @@ Matrix.freq(n,get) #Returns the nth column or column named n's elements frequenc
 
 Matrix.mode(n,get) #Returns the nth column or column named n's mode, give None to get all columns' modes;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
 
+Matrix.ranked(n,reverse,key,get) #Returns the nth column or column named n's ranks(that are the indices the values would get if they were sorted) give None to get all columns' modes;  Use 'get' to choose what to return,-1 for ranks in-place, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
+
 Matrix.iqr(n,as_quartiles,get) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True);  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.sdev(n,population,get) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
@@ -568,7 +584,7 @@ Matrix.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give p
 
 Matrix.z(col,population) #Returns the z-scores of the desired  column, call without arguments to get the all z-scores as a matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise.
 
-Matrix.corr(column_1,column_2,population) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise
+Matrix.corr(column_1,column_2,population,method) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise; methods available: 'pearson'(default), 'kandell', 'spearman'
 
 Matrix.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
 
