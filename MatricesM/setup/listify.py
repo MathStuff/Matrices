@@ -5,22 +5,7 @@ def _listify(mat,stringold):
     #Get the features from the first row if header exists
     import re
     string=stringold[:]
-    d1 = mat.dim[1]
-    if mat.header:
-        i=0
-        for ch in string:
-            if ch=="\n":
-                break
-            else:
-                i+=1
-        if len(mat.features)!=d1:
-            pattern="\w+"
-            mat._Matrix__features=re.findall(pattern,string[:i])
-            if len(mat.features)!=d1:
-                print("Can't get enough column names from the header")
-                mat._Matrix__features=[f"Col {i+1}" for i in range(d1)]
-            string=string[i:]
-            
+    d1 = mat.d1
     #Get all integer and float values
     if not mat._cMat:       
         pattern=r"-?\d+\.?\d*"
@@ -32,17 +17,16 @@ def _listify(mat,stringold):
     try:
         if mat._cMat:
             found=[complex(a) for a in found if len(a)!=0]
-        elif mat._fMat:
+        elif mat._fMat or mat._dfMat:
             found=[float(a) for a in found if len(a)!=0]
         else:
             found=[int(a) for a in found if len(a)!=0]
     except ValueError as v:
-        print("Choose the correct matrix for your data\n",v)
-        return []
+        raise ValueError(v)
     #Fix dimensions to create a row matrix   
     if mat.dim==[0,0]:
         mat._Matrix__dim=[1,len(found)]
-        mat._Matrix__features=[f"Col {i+1}" for i in range(d1)]
+        mat._Matrix__features=[f"col_{i+1}" for i in range(d1)]
     #Create the row matrix
     temp=[]
     e=0            
