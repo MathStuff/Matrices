@@ -25,6 +25,22 @@ def read_file(directory:str,encoding:str="utf8",delimiter:str=","):
     (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
     return Matrix(listed=data,features=feats,dtype=dataframe,coldtypes=cdtypes,DIRECTORY=directory)
 
+def roundto(val:Any,decimal:int=8,force:bool=False):
+    """
+    Better round function which works with complex numbers and lists
+    val:Any; value to round
+    decimal:int>=0; decimal places to round to
+    force:bool; force value rounding as complex number rounding
+    """
+    if isinstance(val,complex) or force:
+        return complex(round(val.real,decimal),round(val.imag,decimal))
+    elif isinstance(val,(int,float)):
+        return round(val,decimal)
+    elif isinstance(val,list):
+        return [roundto(value,decimal) for value in val]
+    else:
+        return TypeError(f"Can't round type {type(val)}.")
+
 class date:
     """
     Date object, define patterns for the date and time data
@@ -141,6 +157,10 @@ class Matrix:
 
     coldtypes:tuple|list (Contains the objects, not names of them); data types for each column individually. Only works if dtype is set to dataframe
 
+    index:Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+
+    indexname:str; name of the index column
+    
     implicit:boolean; Skip matrix setting operations if dimensions and elements are given
 
     NOTE:
@@ -159,6 +179,8 @@ class Matrix:
                  decimal:int=4,
                  dtype:Union[int,float,complex,dataframe]=float,
                  coldtypes:List[Any]=[],
+                 index:Union[List[Any],Tuple[Any]]=[],
+                 indexname:str="",
                  implicit:bool=False,
                  **kwargs):  
 
@@ -172,6 +194,8 @@ class Matrix:
         self.__decimal = decimal                    #How many digits to display in decimal places
         self.__dtype = dtype                        #Type of the matrix
         self.__coldtypes = coldtypes                #Column dtypes
+        self.__index = index                        #Column to use as index column
+        self.__indexname = indexname                #Index column's name
         self.__implicit = implicit                  #Implicity value
         self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
@@ -183,7 +207,7 @@ class Matrix:
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
 
         #Override the attributes given in kwargs with new values
-        attributes = ["dim","listed","fill","ranged","seed","features","decimal","dtype","coldtypes","implicit"]
+        attributes = ["dim","listed","fill","ranged","seed","features","decimal","dtype","coldtypes","index","indexname","implicit"]
         options = ["PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
         for key,val in kwargs.items():
             if isinstance(val,dict) and key=="kwargs":
@@ -218,15 +242,15 @@ class Matrix:
     def __getattr__(self,attr:str,fromset:[0,1]=0):
         try:
             property_names = ['_Matrix__features','_Matrix__dim','_Matrix__fill','_Matrix__initRange','_Matrix__dtype','_Matrix__coldtypes',
-            '_Matrix__seed','_Matrix__decimal','_Matrix__implicit','p', 'grid', 'copy', 'string','features', 'dim',
-            'd0', 'd1', 'fill', 'initRange', 'rank','perma', 'trace', 'matrix', 'det', 'diags', 'eigenvalues', 'eigenvectors',
-            'obj', 'seed', 'decimal', 'dtype', 'coldtypes','isSquare', 'isIdentity', 'isSingular', 'isSymmetric', 'isAntiSymmetric', 
-            'isPerSymmetric', 'isHermitian', 'isTriangular', 'isUpperTri','isLowerTri', 'isDiagonal', 'isBidiagonal', 'isUpperBidiagonal', 
-            'isLowerBidiagonal', 'isUpperHessenberg', 'isLowerHessenberg','isHessenberg', 'isTridiagonal', 'isToeplitz', 'isIdempotent', 
-            'isOrthogonal', 'isUnitary', 'isNormal', 'isCircular', 'isPositive','isNonNegative', 'isProjection', 'isInvolutory','isIncidence',
-            'isZero', 'realsigns', 'imagsigns', 'signs', 'echelon', 'rrechelon','conj', 't', 'ht', 'adj', 'inv', 'pseudoinv','LU', 'U',
-            'L', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm','intForm', 'floatForm', 'describe', 'info', 'kwargs',
-            "PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
+            '_Matrix__seed','_Matrix__decimal','_Matrix_initRange','_Matrix__implicit','_Matrix__index','_Matrix__indexname','_Matrix__useind',
+            '_matrix','p', 'grid', 'copy', 'string','features', 'dim','d0', 'd1', 'fill', 'initRange', 'rank','perma', 'trace', 'matrix', 'det', 
+            'diags','eigenvalues', 'eigenvectors','obj', 'seed', 'decimal', 'dtype', 'coldtypes','isSquare', 'isIdentity', 'isSingular', 'isSymmetric', 
+            'isAntiSymmetric', 'isPerSymmetric', 'isHermitian', 'isTriangular', 'isUpperTri','isLowerTri', 'isDiagonal', 'isBidiagonal', 
+            'isUpperBidiagonal','isLowerBidiagonal', 'isUpperHessenberg', 'isLowerHessenberg','isHessenberg', 'isTridiagonal', 'isToeplitz', 
+            'isIdempotent','isOrthogonal', 'isUnitary', 'isNormal', 'isCircular', 'isPositive','isNonNegative', 'isProjection', 'isInvolutory',
+            'isIncidence','isZero', 'realsigns', 'imagsigns', 'signs', 'echelon', 'rrechelon','conj', 't', 'ht', 'adj', 'inv', 'pseudoinv','LU', 
+            'U','L', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm','intForm', 'floatForm', 'describe', 'info', 'kwargs','index',
+            'indexname','_dfMat','_cMat','_fMat',"PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
             if attr in property_names:
                 return object.__getattr__(self,attr)
 
@@ -266,17 +290,42 @@ class Matrix:
             else:
                 self.__coldtypes = [dt]*d1
 
+        #Apply coldtypes to values in the matrix, set indices
         if df:
-            for i in range(self.dim[0]):
+            r = range(d0)
+            mm = self.matrix
+            for i in r:
                 j=0
                 while j<d1:
                     try:
                         if cdts[j] != type: 
-                            self._matrix[i][j] = cdts[j](self._matrix[i][j])
+                            mm[i][j] = cdts[j](mm[i][j])
                         j+=1
                     except:
                         j+=1
                         continue
+
+            ind = self.__index
+            if isinstance(ind,Matrix):
+                if ind.d1 > 1:
+                    raise TypeError("Index parameter only accepts column matrices")
+                if ind.d0 != d0:
+                    raise ValueError(f"Given matrix can't be used as indices; expected {d0} rows, got {ind.d0}")
+                
+                self.__index = ind.col(1,0)
+
+            elif isinstance(ind,(list,tuple)):
+                if len(ind) == 0:
+                    self.__index = list(r)
+                elif len(ind) != d0:
+                    raise ValueError(f"Given list can't be used as indices; expected {d0} values, got {len(ind)}")
+
+            elif ind == None:
+                self.__index = ["" for _ in range(self.d0)]
+            else:
+                raise TypeError(f"Type {type(ind).__name__} can't be used as indices")
+            
+            self._matrix = mm
 
     def setInstance(self,dt:Union[int,float,complex,dataframe]):
         """
@@ -353,13 +402,13 @@ class Matrix:
         from MatricesM.setup.listify import _listify
         return _listify(self,stringold)
             
-    def _stringfy(self,coldtypes:Union[List[Any],None]=None):
+    def _stringfy(self,coldtypes:Union[List[Any],None]=None,returnbounds:bool=False):
         """
         Turns a list into a grid-like form that is printable
         Returns a string
         """
         from MatricesM.setup.stringfy import _stringfy
-        return _stringfy(self,coldtypes)
+        return _stringfy(self,coldtypes,returnbounds)
     
 # =============================================================================
     """Row/Column methods"""
@@ -392,7 +441,7 @@ class Matrix:
             return self[self.dim[0]-rows:]
         return self[:,:]
 
-    def col(self,column:Union[int,str]=None,as_matrix:bool=True):
+    def col(self,column:Union[int,str],as_matrix:bool=True):
         """
         Get a specific column of the matrix
         column:integer>=1 and <=column_amount | column name
@@ -410,7 +459,7 @@ class Matrix:
             raise InvalidColumn(column)
 
         if as_matrix:
-            return self[name]
+            return self[:,column-1]
         mm = self._matrix
         return [mm[r][column-1] for r in range(self.dim[0])]
     
@@ -430,7 +479,7 @@ class Matrix:
             return self[row-1:row]
         return self._matrix[row-1][:]
                     
-    def add(self,lis:List[Any],row:Union[int,None]=None,col:Union[int,None]=None,feature:str=None,dtype:Any=None):
+    def add(self,lis:List[Any],row:Union[int,None]=None,col:Union[int,None]=None,feature:str=None,dtype:Any=None,returnmat:bool=False):
         """
         Add a row or a column of numbers
         lis: list of numbers desired to be added to the matrix
@@ -441,30 +490,39 @@ class Matrix:
         feature: new column's name
         dtype: type of data the new column will hold, doesn't work if a row is inserted
 
+        returnmat:bool; wheter or not to return self
+
         To append a row, use row=self.d0
         To append a column, use col=self.d1
         """
         from MatricesM.matrixops.add import add
         add(self,lis,row,col,feature,dtype)
-        
-    def remove(self,row:int=None,col:int=None):
+        if returnmat:
+            return self
+
+    def remove(self,row:int=None,col:int=None,returnmat:bool=False):
         """
         Deletes the given row and/or column
         row:int>=1
         col:int>=1
+        returnmat:bool; wheter or not to return self
         """
         from MatricesM.matrixops.remove import remove
         remove(self,self.dim[0],self.dim[1],row,col)
-            
-    def concat(self,matrix:object,concat_as:["row","col"]="col"):
+        if returnmat:
+            return self  
+
+    def concat(self,matrix:object,concat_as:["row","col"]="col",returnmat:bool=False):
         """
         Concatenate matrices row or columns vice
-        b:matrix to concatenate to self
-        concat_as:"row" to concat b matrix as rows, "col" to add b matrix as columns
-        Note: This method concatenates the matrix to self
+        matrix:Matrix; matrix to concatenate to self
+        concat_as:'row'|'col'; "row" to concat b matrix as rows, "col" to add b matrix as columns
+        returnmat:bool; wheter or not to return self
         """
         from MatricesM.matrixops.concat import concat
         concat(self,matrix,concat_as)
+        if returnmat:
+            return self
             
     def delDim(self,num:int):
         """
@@ -472,6 +530,14 @@ class Matrix:
         """        
         from MatricesM.matrixops.matdelDim import delDim
         delDim(self,num)
+
+    @property
+    def ind(self):
+        if not self._dfMat:
+            raise TypeError("Can't use 'ind' with non-dataframe matrices")
+        self.__useind = 1
+        return self
+        
 
 # =============================================================================
     """Methods for special matrices and properties"""
@@ -591,10 +657,16 @@ class Matrix:
     def features(self,li:Union[List[str],Tuple[str]]):
         if not isinstance(li,(list,tuple)):
             raise NotListOrTuple(li)
-        if len(li) != self.dim[1]:
-            raise InvalidList(li,self.dim[1],"column names")
+        if len(li) != self.d1:
+            raise InvalidList(li,self.d1,"column names")
 
-        temp=[str(i) for i in li]
+        temp = []
+        for i in range(len(li)):
+            name = li[i]
+            while name in temp:
+                name = "_"+name
+            temp.append(name)
+
         self.__features=temp
                 
     @property
@@ -691,8 +763,7 @@ class Matrix:
         """
         if not self.isSquare:
             return None
-        m = self._matrix
-        return sum([m[i][i] for i in range(self.dim[0])])
+        return sum(self.diags)
     
     @property
     def matrix(self):
@@ -773,8 +844,8 @@ class Matrix:
                     r = mat.trace/2
                     v = (mat.det - r**2)**(1/2)
                     
-                    r = complex(complex(round(r.real.real,6),round(r.real.imag,6)),complex(round(r.imag.real,6),round(r.imag.imag,6)))
-                    v = complex(complex(round(v.real.real,6),round(v.real.imag,6)),complex(round(v.imag.real,6),round(v.imag.imag,6)))                
+                    r = complex(complex(roundto(r.real,6,True)),complex(roundto(r.imag,6,True)))
+                    v = complex(complex(roundto(v.real,6,True)),complex(roundto(v.imag,6,True)))               
                     
                     c1 = complex(r,v)
                     c2 = complex(r,v*(-1))
@@ -850,6 +921,8 @@ class Matrix:
                           seed=self.seed,
                           dtype=self.dtype,
                           coldtypes=self.__coldtypes,
+                          index=self.index,
+                          indexname=self.indexname
                           )
 
     @property
@@ -868,6 +941,40 @@ class Matrix:
         self.__coldtypes=val
         self.setup(True)
     
+    @property
+    def index(self):
+        return self.__index
+    @index.setter
+    def index(self,val:Union[object,list,tuple]):
+        if isinstance(val,Matrix):
+            if val.d1 > 1:
+                raise TypeError("Index parameter only accepts column matrices")
+            if val.d0 != self.d0:
+                raise ValueError(f"Given matrix can't be used as indices; expected {self.d0} rows, got {val.d0}")
+            
+            self.__index = val.col(1,0)
+            self.__indexname = val.features[0]
+
+        elif isinstance(val,(list,tuple)):
+            if len(val) != self.d0:
+                raise ValueError(f"Given list can't be used as indices; expected {self.d0} values, got {len(val)}")
+            self.__index = list(val)
+
+        elif val == None:
+            self.__index = ["" for _ in range(self.d0)]
+
+        else:
+            raise TypeError(f"Type {type(val).__name__} can't be used as indices")     
+
+    @property
+    def indexname(self):
+        return self.__indexname
+    @indexname.setter
+    def indexname(self,val:str):
+        if not isinstance(val,str):
+            raise TypeError("indexname only accepts strings")
+        self.__indexname = val
+
 # =============================================================================
     """Check special cases"""
 # =============================================================================    
@@ -885,7 +992,7 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return self.matrix == Identity(self.dim[0])
+        return round(self,self.PRECISION).matrix == Identity(self.dim[0])
     
     @property
     def isSingular(self):
@@ -894,7 +1001,7 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return self.det == 0
+        return roundto(self.det,self.PRECISION) == 0
     
     @property
     def isSymmetric(self):
@@ -903,7 +1010,8 @@ class Matrix:
         """        
         if not self.isSquare:
             return False
-        return self.t.matrix == self.matrix
+        dig = self.PRECISION
+        return self.t.roundForm(dig).matrix == self.roundForm(dig).matrix
         
     @property  
     def isAntiSymmetric(self):
@@ -912,7 +1020,8 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return (self.t*-1).matrix == self.matrix
+        dig = self.PRECISION
+        return (self.t*-1).roundForm(dig).matrix == self.roundForm(dig).matrix
     
     @property
     def isPerSymmetric(self):
@@ -921,11 +1030,13 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        d = self.dim[0]
+
         m = self.matrix
+        dig = self.PRECISION
+        d = self.d0
         for i in range(d):
             for j in range(d):
-                if m[i][j] != m[d-1-j][d-1-i]:
+                if roundto(m[i][j],dig) != roundto(m[d-1-j][d-1-i],dig):
                     return False
         return True
     
@@ -953,9 +1064,10 @@ class Matrix:
         if not self.isSquare:
             return False
         m = self.matrix
+        dig = self.PRECISION
         for i in range(1,self.dim[0]):
             for j in range(i):
-                if m[i][j]!=0: #Check elements below diagonal to be 0
+                if roundto(m[i][j],dig)!=0: #Check elements below diagonal to be 0
                     return False
         return True
     
@@ -967,9 +1079,10 @@ class Matrix:
         if not self.isSquare:
             return False
         m = self.matrix
+        dig = self.PRECISION
         for i in range(1,self.dim[0]):
             for j in range(i):
-                if m[j][i]!=0: #Check elements above diagonal to be 0
+                if roundto(m[j][i],dig)!=0: #Check elements above diagonal to be 0
                     return False
         return True
     
@@ -981,7 +1094,7 @@ class Matrix:
         from functools import reduce
         if not self.isSquare:
             return False
-        return self.isUpperTri and self.isLowerTri and (self.det == reduce((lambda a,b: a*b),self.diags))
+        return self.isUpperTri and self.isLowerTri and (roundto(self.det,self.PRECISION) == reduce((lambda a,b: a*b),self.diags))
 
     @property
     def isBidiagonal(self):
@@ -998,15 +1111,16 @@ class Matrix:
         #Assure the matrix is upper triangular
         if not self.isSquare:
             return False
-
+        
+        dig = self.PRECISION
         m=self.matrix
         #Assure diagonal and superdiagonal have non-zero elements 
-        if 0 in [m[i][i] for i in range(self.dim[0])] + [m[i][i+1] for i in range(self.dim[0]-1)]:
+        if 0 in [roundto(m[i][i],dig) for i in range(self.dim[0])] + [roundto(m[i][i+1],dig) for i in range(self.dim[0]-1)]:
             return False
         
         #Assure the elements above first superdiagonal are zero
         for i in range(self.dim[0]-2):
-            if [0]*(self.dim[0]-2-i) != m[i][i+2:]:
+            if [0]*(self.dim[0]-2-i) != roundto(m[i][i+2:],dig):
                 return False
             
         return True
@@ -1021,13 +1135,14 @@ class Matrix:
             return False
 
         m=self.matrix
+        dig = self.PRECISION
         #Assure diagonal and subdiagonal have non-zero elements 
-        if 0 in [m[i][i] for i in range(self.dim[0])] + [m[i+1][i] for i in range(self.dim[0]-1)]:
+        if 0 in [roundto(m[i][i],dig) for i in range(self.dim[0])] + [roundto(m[i+1][i],dig) for i in range(self.dim[0]-1)]:
             return False
         
         #Assure the elements above first subdiagonal are zero
         for i in range(self.dim[0]-2):
-            if [0]*(self.dim[0]-2-i) != m[i][i+2:]:
+            if [0]*(self.dim[0]-2-i) != roundto(m[i][i+2:],dig):
                 return False
             
         return True
@@ -1040,9 +1155,10 @@ class Matrix:
         if not self.isSquare:
             return False
         m = self.matrix
+        dig = self.PRECISION
         for i in range(2,self.dim[0]):
             for j in range(i):
-                if m[i][j]!=0: #Check elements below subdiagonal to be 0
+                if roundto(m[i][j],dig)!=0: #Check elements below subdiagonal to be 0
                     return False
         return True
     
@@ -1054,9 +1170,10 @@ class Matrix:
         if not self.isSquare:
             return False
         m = self.matrix
+        dig = self.PRECISION
         for i in range(2,self.dim[0]):
             for j in range(i):
-                if m[j][i]!=0: #Check elements above superdiagonal to be 0
+                if roundto(m[j][i],dig)!=0: #Check elements above superdiagonal to be 0
                     return False
         return True
     
@@ -1075,18 +1192,19 @@ class Matrix:
         if not self.isSquare or self.dim[0]<=2:
             return False
         m = self.matrix
+        dig = self.PRECISION
         #Check diagonal and first subdiagonal and first superdiagonal
-        if 0 in [m[i][i] for i in range(self.dim[0])] + [m[i][i+1] for i in range(self.dim[0]-1)] + [m[i+1][i] for i in range(self.dim[0]-1)]:
+        if 0 in [roundto(m[i][i],dig) for i in range(self.dim[0])] + [roundto(m[i][i+1],dig) for i in range(self.dim[0]-1)] + [roundto(m[i+1][i],dig) for i in range(self.dim[0]-1)]:
             return False
         
         #Assure rest of the elements are zeros
         for i in range(self.dim[0]-2):
             #Non-zero check above first superdiagonal
-            if [0]*(self.dim[0]-2-i) != m[i][i+2:]:
+            if [0]*(self.dim[0]-2-i) != roundto(m[i][i+2:],dig):
                 return False
             
             #Non-zero check below first subdiagonal
-            if [0]*(self.dim[0]-2-i) != m[self.dim[0]-i-1][:self.dim[0]-i-2]:
+            if [0]*(self.dim[0]-2-i) != roundto(m[self.dim[0]-i-1][:self.dim[0]-i-2],dig):
                 return False
         return True
 
@@ -1096,9 +1214,10 @@ class Matrix:
         Matrix[i,j] == Matrix[i+1,j+1] for every i and j
         """
         m = self.matrix
+        dig = self.PRECISION
         for i in range(self.dim[0]-1):
             for j in range(self.dim[1]-1):
-                if m[i][j] != m[i+1][j+1]:
+                if roundto(m[i][j],dig) != roundto(m[i+1][j+1],dig):
                     return False
         return True
     
@@ -1109,7 +1228,8 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return self.roundForm(4).matrix == (self@self).roundForm(4).matrix
+        dig = self.PRECISION            
+        return self.roundForm(dig).matrix == (self@self).roundForm(dig).matrix
     
     @property
     def isOrthogonal(self):
@@ -1118,7 +1238,8 @@ class Matrix:
         """
         if not self.isSquare or self.isSingular:
             return False
-        return self.inv.roundForm(4).matrix == self.t.roundForm(4).matrix
+        dig = self.PRECISION
+        return self.inv.roundForm(dig).matrix == self.t.roundForm(dig).matrix
     
     @property
     def isUnitary(self):
@@ -1127,7 +1248,8 @@ class Matrix:
         """
         if not self.isSquare or self.isSingular:
             return False
-        return self.ht.roundForm(4).matrix == self.inv.roundForm(4).matrix
+        dig = self.PRECISION
+        return self.ht.roundForm(dig).matrix == self.inv.roundForm(dig).matrix
     
     @property
     def isNormal(self):
@@ -1136,7 +1258,8 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return (self@self.ht).roundForm(4).matrix == (self.ht@self).roundForm(4).matrix
+        dig = self.PRECISION
+        return (self@self.ht).roundForm(dig).matrix == (self.ht@self).roundForm(dig).matrix
     
     @property
     def isCircular(self):
@@ -1145,7 +1268,8 @@ class Matrix:
         """
         if not self.isSquare or self.isSingular:
             return False
-        return self.inv.roundForm(4).matrix == self.roundForm(4).matrix
+        dig = self.PRECISION
+        return self.inv.roundForm(dig).matrix == self.roundForm(dig).matrix
     
     @property
     def isPositive(self):
@@ -1370,34 +1494,38 @@ class Matrix:
     @property
     def floorForm(self):
         """
-        Floor values elements
+        Returns a matrix with all possible values' floor values
         """
         return self.__floor__()
     
     @property
     def ceilForm(self):
         """
-        Ceiling value of the elements
+        Returns a matrix with all possible values' ceiling values
         """
         return self.__ceil__()
     
     @property   
     def intForm(self):
         """
-        Integer part of the elements
+        Returns a matrix with all possible values as integers
         """
         return self.__floor__()
     
     @property   
     def floatForm(self):
         """
-        Elements in float values
+        Returns a matrix with all possible values as floats
         """
         if self._cMat:
-            return eval(self.obj)
-        
-        t=[[float(self._matrix[a][b]) for b in range(self.dim[1])] for a in range(self.dim[0])]
-        
+            return self
+        if self._dfMat:
+            return Matrix(self.dim,listed=[a[:] for a in self.matrix],features=self.features,coldtypes=[float if i in [int,float] else i for i in self.coldtypes],
+                          decimal=self.decimal,seed=self.seed,dtype=dataframe,index=self.index,indexname=self.indexname,implicit=True)
+
+        mm = self.matrix
+        t=[[float(mm[a][b]) for b in range(self.dim[1])] for a in range(self.dim[0])]
+
         return Matrix(self.dim,listed=t,features=self.features,decimal=self.decimal,seed=self.seed,implicit=True)
 
     
@@ -1422,14 +1550,15 @@ class Matrix:
             temp.concat(self.col(self.features.index(col)+1))
         return temp
 
-    def find(self,element:Any,start:int=1):
+    def find(self,value:Any,start:[0,1]=1,onlyrow:bool=False):
         """
-        element: object
-        start: 0 or 1. Index to start from 
-        Returns the indices of the given elements, multiple occurances are returned in a list
+        value: object
+        start: 0 or 1. Index to start from
+        onlyrow: boolean; Wheter or not to return only the row indices of value's appearances
+        Returns the indices of the given value in a list
         """
         from MatricesM.filter.find import find
-        return find([a[:] for a in self.matrix],self.dim,element,start)
+        return find([a[:] for a in self.matrix],self.dim,value,start,onlyrow)
 
     def joint(self,matrix:object):
         """
@@ -1543,25 +1672,31 @@ class Matrix:
         if returnmat:
             return self
         
-    def setIndex(self,name:str="Index",start:int=0,returnmat:bool=False):
-        """
-        Add a column with values corresponding to the row number
-
-        name: str. Name of the index column
-        start: int. Starting index
-        """
-        self.add(list(range(start,self.dim[0]+start)),col=1,feature=name,dtype=int)
-        if returnmat:
-            return self
-
-    def sortBy(self,column:str,reverse:bool=False,returnmat:bool=False):
+    def sortBy(self,column:Union[str,None]=None,key=lambda a:a[1],reverse:bool=False,returnmat:bool=False):
         """
         Sort the rows by the desired column
-        column:column name as string
+        column:str|None; column name as string, None to sort by index column
+        key:function; function to use while sorting
         reverse:boolean; wheter or not to sort the matrix in reversed order
         returnmat:boolean; wheter or not to return self
         """
-        self._matrix=sorted(self.matrix,key=lambda c,i=0:c[i+self.features.index(column)],reverse=reverse)
+        if column == None:
+            if self._dfMat:
+                temp = Matrix(listed=self.index,dtype=dataframe,index=None).t.concat(self.copy,returnmat=True).sortBy("col_1",key=key,reverse=reverse,returnmat=True)
+                self.__index = temp.col("col_1",0)
+                self._matrix = temp[:,1:].matrix
+            else:
+                raise TypeError("Indexing by index column is not allowed on non-dataframe matrices")
+        else:       
+            temp=sorted([(i,row) for i,row in enumerate(self.col(column,0))],key=key,reverse=reverse)
+            if self._dfMat:
+                inds = self.index
+                newinds = [r[0] for r in temp]
+                self.__index = [inds[i] for i in newinds]
+
+            mm = self.matrix
+            self._matrix = [mm[r[0]] for r in temp]
+
         if returnmat:
             return self
 
@@ -1572,8 +1707,18 @@ class Matrix:
         returnmat:boolean; wheter or not to return self        
         """
         from random import shuffle
+
+        inds = list(range(self.d0))
+        mm = self.matrix
+        inds = self.index
+        
         for i in range(iterations):
-            shuffle(self.matrix)
+            shuffle(inds)
+    
+        if self._dfMat:
+            self.__index = [inds[i] for i in inds]
+        self._matrix = [mm[i][:] for i in inds]
+
         if returnmat:
             return self
 
@@ -1584,8 +1729,20 @@ class Matrix:
         size:int. How many samples to take
         condition:str. Conditions to set as a base for sampling, uses 'where' method to filter 
         """
-        from MatricesM.filter.sample import samples
-        return Matrix(listed=samples(self,size,condition),decimal=self.decimal,dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:])
+        from random import sample
+
+        mat = self.where(condition) if condition != None else self  
+        if size > mat.d0:
+            raise ValueError("Sample size is too big")
+
+        i = mat.index
+        mm = mat.matrix
+        sample_inds = sample(list(range(mat.d0)),size)
+        indices = [i[row] for row in sample_inds] if mat._dfMat else []
+        
+        return Matrix(listed=[mm[row][:] for row in sample_inds],decimal=self.decimal,
+                      dtype=self.dtype,features=self.features[:],coldtypes=self.coldtypes[:],
+                      index=indices,indexname=self.indexname)
 
     def match(self,expression:str,columns:Union[str,int,List[Union[str,None]],Tuple[Union[str,None]],None]=None,as_row:bool=True):
         """
@@ -1613,6 +1770,9 @@ class Matrix:
         from MatricesM.filter.match import _match
         return _match(self,expression,columns,as_row,Matrix)
 
+    def indexreset(self,start=0):
+        self.__index = list(range(start,self.d0+start))
+        
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
@@ -1675,7 +1835,7 @@ class Matrix:
         """
         Returns the columns' most repeated elements in a dictionary
         col:integer>=1 | column name as string
-        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a list of Matrices for every column individually
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a tuple of Matrices for every column individually
         """
         from MatricesM.stats.mode import mode
         return mode(self,col,get,Matrix,dataframe)
@@ -1709,6 +1869,17 @@ class Matrix:
         from MatricesM.stats.var import var
         return var(self,col,population,get,Matrix,dataframe)     
     
+    def ranked(self,col:Union[int,str,None]=None,reverse:bool=False,key=lambda a:a[1],get:[-1,0,1,2]=1,start:int=0):
+        """
+        Ranks of the values in the columns when they are sorted
+        col:int|str|None; column number/name, None for all columns
+        reverse:bool; wheter or not to use reversed sorting
+        key:function; function to use while sorting
+        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
+        """
+        from MatricesM.stats.ranked import _rank
+        return _rank(self,col,reverse,key,get,start)
+
     def z(self,col:Union[int,str,None]=None,population:[0,1]=1):
         """
         z-scores of the elements
@@ -1759,9 +1930,9 @@ class Matrix:
         population: 0 or 1 ; 0 for samples, 1 for population
         """
         from MatricesM.stats.cov import cov
-        return cov(self,col1,col2,population,Matrix)
+        return cov(self,col1,col2,population,Matrix,dataframe)
         
-    def corr(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
+    def corr(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1,method:["pearson","kendall","spearman"]="pearson"):
         """
         Correlation of 2 columns
         col1,col2: integers>=1 |str|None; column numbers/names. For correlation matrix give None to both
@@ -1769,7 +1940,7 @@ class Matrix:
         """
         from MatricesM.stats.corr import _corr
         temp = Matrix(self.dim[1],Identity(self.dim[1]),features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.dim[1])])
-        return _corr(self,col1,col2,population,temp)
+        return _corr(self,col1,col2,population,temp,method)
     
     @property   
     def describe(self):
@@ -1811,14 +1982,20 @@ class Matrix:
         """
         Prints out column info
         """
-        feats,cdtyps,counts,uniques = self.features[:],self.coldtypes[:],self.count(get=0),self.freq(get=0)
+        feats,cdtyps = self.features[:],self.coldtypes[:]
+        counts = self.count(get=0) if self.d1>1 else [self.count(get=0)]
+        uniques = self.freq(get=0) if self.d1>1 else [self.freq(get=0)]
         invalids = [self.d0-j for j in counts]
         return Matrix((self.d1,5),[[feats[i],cdtyps[i],counts[i],invalids[i],len(list(uniques[i].keys()))] for i in range(self.d1)],
                        dtype=dataframe,
                        coldtypes=[str,type,int,int,int],
                        features=["Column","dtype","Valid_data","Invalid_data","Unique_data"],
                        implicit=True,
+                       index=None,
                        NOTES=f"Size: {self.dim}")
+
+    def groupBy(self):
+        pass
 
 # =============================================================================
     """Logical-bitwise magic methods """
@@ -1869,7 +2046,7 @@ class Matrix:
         """
         val: object; value to search for in the whole matrix
         Returns True or False
-        syntax: "value" in a.matrix
+        syntax: "value" in Matrix
         """
         inds=self.find(val)
         return bool(inds)
@@ -1877,29 +2054,44 @@ class Matrix:
     def __len__(self):
         return self.dim[0]*self.dim[1]    
 
-    def __getitem__(self,pos:Union[object,int,str,slice,Tuple[Union[str,int,slice,Tuple[str]]]]):
+    def __getitem__(self,pos:Union[object,int,str,slice,list,Tuple[Union[str,int,slice,list,Tuple[str]]]]):
         """
-        Indices for full rows:
-            Matrix[int]     --> Return a row
-            Matrix[slice]   --> Return 0 or more rows
-            Matrix[Matrix]  --> Return filtered rows
+        Using list indices:
 
-        Indices for full columns:
-            Matrix[str]                  --> Return all rows of a column
-            Matrix[:,slice]              --> Return 0 or more columns
-            Matrix[:,(str,str,...,str)]  --> Return all rows of the desired columns passed as a tuple of strings (Can include duplicates)
-            Matrix[str,str,...,str]      --> Return all rows of many columns (Can include duplicates) (Same as the previous one)
+            Indices for full rows:
+                Matrix[int]     --> Return a row
+                Matrix[slice]   --> Return 0 or more rows
+                Matrix[Matrix]  --> Return filtered rows
 
-        Filtered rows and columns:
-            Matrix[slice,(str,str,...,str)]   --> Return 0 or more rows of the desired columns
-            Matrix[Matrix,(str,str,...,str)]  --> Return filtered rows of the desired columns 
+            Indices for full columns:
+                Matrix[str]                  --> Return all rows of a column
+                Matrix[:,slice]              --> Return 0 or more columns
+                Matrix[:,(str,str,...,str)]  --> Return all rows of the desired columns passed as a tuple of strings (Can include duplicates)
+                Matrix[str,str,...,str]      --> Return all rows of many columns (Can include duplicates) (Same as the previous one)
 
-        Indices for single values:
-            Matrix[int,int]  --> Return the value in the matrix using row and column indices
-            Matrix[int,str]  --> Return the value in the matrix using row index and column name
+            Filtered rows and columns:
+                Matrix[slice,(str,str,...,str)]   --> Return 0 or more rows of the desired columns
+                Matrix[Matrix,(str,str,...,str)]  --> Return filtered rows of the desired columns 
+
+            Indices for single values:
+                Matrix[int,int]  --> Return the value in the matrix using row and column indices
+                Matrix[int,str]  --> Return the value in the matrix using row index and column name
+
+        Using row indices:
+            --> Use it after sorting the dataframe for the best results for slices
+
+            Matrix.ind["pending"]                      --> Returns all the rows where the row index is 'pending'
+
+            Matrix.ind[1990,"Score"]                   --> Returns the 'Score' column of all the rows with index 1990
+
+            Matrix.ind[50:150]                         --> Return the rows with index higher than 50 and less than 150, starts and stops with limits' first appearances
+                                                       
+            Matrix.ind["Average":,"Final_Score"] --> Return the rows' 'Final_Score' columns where indices start from 'Average'
+            
         """
         from MatricesM.matrixops.getsetdel import getitem
-        return getitem(self,pos,Matrix)
+        useind = self.__useind or 0
+        return getitem(self,pos,Matrix,useind)
 
     def __setitem__(self,pos:Union[object,int,str,slice,Tuple[Union[str,int,slice,Tuple[str]]]],item:Any):
         """
@@ -1926,7 +2118,7 @@ class Matrix:
         """
         Works 'similar' to __getitem__ , but can only be used to delete entire columns and/or rows
         Example:
-            del Matrix.col_2     #Delete 2nd column of the matrix
+            del Matrix['col_2']     #Delete 2nd column of the matrix
         """
         from MatricesM.matrixops.getsetdel import delitem
         delitem(self,val,Matrix)
@@ -1964,6 +2156,8 @@ class Matrix:
                 "decimal":self.decimal,
                 "dtype":self.dtype,
                 "coldtypes":self.coldtypes[:],
+                "index":self.index[:],
+                "indexname":self.indexname,
                 "implicit":True}
                 
     @classmethod
@@ -1984,31 +2178,31 @@ class Matrix:
     
     def __add__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import add
-        return add(self,other,Matrix,self.matrix)
+        return add(self,other,Matrix,self.matrix,dataframe)
             
     def __sub__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import sub
-        return sub(self,other,Matrix,self.matrix)
+        return sub(self,other,Matrix,self.matrix,dataframe)
      
     def __mul__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import mul
-        return mul(self,other,Matrix,self.matrix)
+        return mul(self,other,Matrix,self.matrix,dataframe)
 
     def __floordiv__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import fdiv
-        return fdiv(self,other,Matrix,self.matrix)
+        return fdiv(self,other,Matrix,self.matrix,dataframe)
             
     def __truediv__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import tdiv
-        return tdiv(self,other,Matrix,self.matrix)
+        return tdiv(self,other,Matrix,self.matrix,dataframe)
 
     def __mod__(self, other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import mod
-        return mod(self,other,Matrix,self.matrix)
+        return mod(self,other,Matrix,self.matrix,dataframe)
          
     def __pow__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import pwr
-        return pwr(self,other,Matrix,self.matrix)
+        return pwr(self,other,Matrix,self.matrix,dataframe)
 
 # =============================================================================
     """ Comparison operators """                    
@@ -2042,19 +2236,19 @@ class Matrix:
 # =============================================================================   
     def __round__(self,n:int=-1):
         from MatricesM.matrixops.rounding import rnd
-        return rnd(self,n,Matrix,self.matrix)
+        return rnd(self,n,Matrix,self.matrix,dataframe)
     
     def __floor__(self):
         from MatricesM.matrixops.rounding import flr
-        return flr(self,Matrix,self.matrix)     
+        return flr(self,Matrix,self.matrix,dataframe)     
     
     def __ceil__(self):
         from MatricesM.matrixops.rounding import ceil
-        return ceil(self,Matrix,self.matrix)
+        return ceil(self,Matrix,self.matrix,dataframe)
     
     def __abs__(self):
         from MatricesM.matrixops.rounding import _abs
-        return _abs(self,Matrix,self.matrix)
+        return _abs(self,Matrix,self.matrix,dataframe)
 
 # =============================================================================
 
