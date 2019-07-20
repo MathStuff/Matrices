@@ -1561,15 +1561,15 @@ class Matrix:
         from MatricesM.filter.find import find
         return find([a[:] for a in self.matrix],self.dim,value,start,onlyrow)
 
-    def joint(self,matrix:object):
+    def join(self,matrix:object,method:["inner","left","left-ex","right","right-ex","outer","outer-ex"]="outer"):
         """
         Returns the rows of self which are also in the compared matrix
         
-        matrix: matrix object
+        matrix: matrix object; matrix to use as the 2nd table
+        method: inner|left|left-ex|right|right-ex|outer|outer-ex; joining method
         """
-        if not isinstance(matrix,Matrix):
-            raise TypeError("Not a matrix")
-        return Matrix(listed=[i[:] for i in self.matrix if i in matrix.matrix],features=self.features[:],dtype=self.dtype,coldtypes=self.coldtypes[:])
+        from MatricesM.filter.joins import joins
+        return joins(mat,matrix,method,Matrix)
 
     def where(self,conditions:Union[List[str],Tuple[str]]):
         """
