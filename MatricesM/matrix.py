@@ -242,7 +242,7 @@ class Matrix:
     def __getattr__(self,attr:str,fromset:[0,1]=0):
         try:
             property_names = ['_Matrix__features','_Matrix__dim','_Matrix__fill','_Matrix__initRange','_Matrix__dtype','_Matrix__coldtypes',
-            '_Matrix__seed','_Matrix__decimal','_Matrix_initRange','_Matrix__implicit','_Matrix__index','_Matrix__indexname','_Matrix__useind',
+            '_Matrix__seed','_Matrix__decimal','_Matrix_initRange','_Matrix__implicit','_Matrix__index','_Matrix__indexname',
             '_matrix','p', 'grid', 'copy', 'string','features', 'dim','d0', 'd1', 'fill', 'initRange', 'rank','perma', 'trace', 'matrix', 'det', 
             'diags','eigenvalues', 'eigenvectors','obj', 'seed', 'decimal', 'dtype', 'coldtypes','isSquare', 'isIdentity', 'isSingular', 'isSymmetric', 
             'isAntiSymmetric', 'isPerSymmetric', 'isHermitian', 'isTriangular', 'isUpperTri','isLowerTri', 'isDiagonal', 'isBidiagonal', 
@@ -253,6 +253,11 @@ class Matrix:
             'indexname','_dfMat','_cMat','_fMat',"PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
             if attr in property_names:
                 return object.__getattr__(self,attr)
+
+            if (attr in ["use_row_index_to_get_item"]):
+                if fromset:
+                    return 1
+                return 0
 
             return (self[attr],True)[fromset]
 
@@ -535,11 +540,15 @@ class Matrix:
     def ind(self):
         if not self._dfMat:
             raise TypeError("Can't use 'ind' with non-dataframe matrices")
-        self.__useind = 1
+        self.use_row_index_to_get_item = 1
         return self
         
     def swap(self):
         pass
+    
+    def rename(self):
+        pass
+        
 # =============================================================================
     """Methods for special matrices and properties"""
 # =============================================================================     
@@ -2081,7 +2090,7 @@ class Matrix:
             
         """
         from MatricesM.matrixops.getsetdel import getitem
-        useind = self.__useind or 0
+        useind = self.use_row_index_to_get_item or 0
         return getitem(self,pos,Matrix,useind)
 
     def __setitem__(self,pos:Union[object,int,str,slice,Tuple[Union[str,int,slice,Tuple[str]]]],item:Any):
@@ -2103,7 +2112,8 @@ class Matrix:
             Check README.md and exampleMatrices.py for more examples
         """
         from MatricesM.matrixops.getsetdel import setitem
-        setitem(self,pos,item,Matrix)
+        useind = self.use_row_index_to_get_item or 0
+        setitem(self,pos,item,Matrix,useind)
 
     def __delitem__(self,val:object):
         """
@@ -2112,7 +2122,8 @@ class Matrix:
             del Matrix['col_2']     #Delete 2nd column of the matrix
         """
         from MatricesM.matrixops.getsetdel import delitem
-        delitem(self,val,Matrix)
+        useind = self.use_row_index_to_get_item or 0
+        delitem(self,val,Matrix,useind)
 
     def __repr__(self):
         """
