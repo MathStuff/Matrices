@@ -1,4 +1,4 @@
-def add(mat,lis=[],row=None,col=None,feature=None,dtype=None,index=""):
+def add(mat,lis,row,col,feature,dtype,index):
 
     r,c = 0,0
     assert isinstance(lis,(list,tuple)) , "'lis' parameter only accepts tuples or lists"
