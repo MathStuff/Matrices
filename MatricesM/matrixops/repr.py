@@ -4,16 +4,17 @@ def _repr(mat,notes,dFrame):
     d0,d1 = mat.dim
     feats = mat.features
     used_col_amount = 1 if mat._dfMat else 0
-    cmat = 4 if mat._cMat else 0
-
     string_bounds = mat._stringfy(mat.coldtypes,True)
+
     if (not isinstance(string_bounds,list)) or (len(feats)==0):
         return "Empty Matrix"
-    string_bounds = string_bounds[:1] + list(map(lambda a:a+2+cmat,string_bounds[1:]))
-    terminal_col_size = gts().columns - max([len(feat) for feat in feats]) - 8 - string_bounds[0]
+
+    string_bounds = string_bounds[:1] + list(map(lambda a:a+2,string_bounds[1:]))
+    terminal_col_size = gts().columns - max([len(feat) for feat in feats]) - 10 - string_bounds[0]
 
     shuffled_col_inds = [0]
     upper = d1//2+1 if d1%2 else d1//2
+
     for ind in range(1,upper):
         shuffled_col_inds.append(ind)
         shuffled_col_inds.append(-ind)
@@ -82,10 +83,9 @@ def _repr(mat,notes,dFrame):
             
             #Add dots as middle row and spaces below and above it
             topLeft.add([""]*(collimit+1),row=halfrow+1)
-            topLeft.add([" ..."]*(collimit+1),row=halfrow+1)
+            topLeft.add([" ..."]*(collimit+1),row=halfrow+1,index="...")
             topLeft.add([""]*(collimit+1),row=halfrow+1)
-            if not mat._dfMat:
-                topLeft.index = list(range(halfrow)) + ["","",""] + list(range(d0-(rowlimit//2),d0))
+
             return topLeft._stringfy(coldtypes=topLeft.coldtypes) + "\n\n" + notes
 
         #Just too many rows
@@ -102,10 +102,9 @@ def _repr(mat,notes,dFrame):
             top.concat(bottom,concat_as="row")
             #Add middle part
             top.add([""]*mat.dim[1],row=halfrow+1)
-            top.add([" ..."]*mat.dim[1],row=halfrow+1)
+            top.add([" ..."]*mat.dim[1],row=halfrow+1,index="...")
             top.add([""]*mat.dim[1],row=halfrow+1)
-            if not mat._dfMat:
-                top.index =  list(range(halfrow)) + ["","",""] + list(range(d0-(rowlimit//2),d0))
+
             return top._stringfy(coldtypes=top.coldtypes) + "\n\n" + notes
             
     #Just too many columns
