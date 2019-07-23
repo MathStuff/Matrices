@@ -24,6 +24,7 @@ def betterslice(oldslice,dim):
 def getitem(mat,pos,obj,useindex,returninds=False):
     from MatricesM.validations.validate import consistentlist,sublist,rangedlist
 
+    unique = lambda lis:[i for i in lis[:] if lis.count(i)==1]
     mat.use_row_index_to_get_item = 0 #Reset ind
     d0,d1 = mat.dim
 
@@ -177,7 +178,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                             continue
                 else:
                     newslice = betterslice(pos[0],d0)
-                    rowrange = range(newslice.start,min(newslice.stop,d0),newslice.step)
+                    rowrange = list(range(newslice.start,newslice.stop,newslice.step))
             # Matrix[int,column_index]
             elif isinstance(pos[0],int):
                 if useindex:
@@ -231,7 +232,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 temp = []
                 mm = mat.matrix
                 r=0
-                rowrange = list(set(rowrange))
+                rowrange = unique(rowrange)
 
                 if returninds:
                     return (rowrange,colinds)
@@ -252,7 +253,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
             t = mat.coldtypes[pos[1]]
             mm = mat.matrix
             inds = mat.index
-            rowrange = list(set(rowrange))
+            rowrange = unique(rowrange)
             lastinds = [inds[i] for i in rowrange] if mat._dfMat else []
 
             if type(t) != list:
@@ -294,7 +295,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         if useindex:
             return None
         rowrange = [i for i in range(mat.d0) if pos._matrix[i][0]==1]
-        rowrange = list(set(rowrange))
+        rowrange = unique(rowrange)
 
         if returninds:
             return (rowrange,None)
@@ -337,12 +338,12 @@ def setitem(mat,pos,item,obj,useindex):
         #Single value given
         else:
             if axis:
-                item = [[item for j in colrange] for i in rowrange]
-            else:
                 item = [[item for j in rowrange] for i in colrange]
+            else:
+                item = [[item for j in colrange] for i in rowrange]
         return item
     
-    rowrange,colrange = getitem(mat,pos,None,useindex,returninds=True)
+    rowrange,colrange = getitem(mat,pos,obj,useindex,returninds=True)
     rowrange = rowrange if isinstance(rowrange,(list,range)) else [rowrange]
     colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
     rows = rowrange if rowrange!=[None] else range(d0)
@@ -459,7 +460,7 @@ def delitem(mat,pos,obj,useind):
     mat.use_row_index_to_get_item = 0 #Reset ind
     d0,d1 = mat.dim
 
-    rowrange,colrange = getitem(mat,pos,None,useind,returninds=True)
+    rowrange,colrange = getitem(mat,pos,obj,useind,returninds=True)
     rowrange = rowrange if isinstance(rowrange,(list,range)) else [rowrange]
     colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
     rows = rowrange if rowrange!=[None] else range(d0)
