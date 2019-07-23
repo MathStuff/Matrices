@@ -4,7 +4,8 @@ def _stringfy(mat,dtyps,retbounds):
     pre = "0:.{}f".format(mat.decimal)
     st = "{"+pre+"}"    
     string = ""
-    indbound = None
+    indbound = 0
+    d0,d1 = mat.dim
     #Empty matrix check
     if mat.matrix in [ [], None ]:
         return "Empty matrix"
@@ -73,7 +74,7 @@ def _stringfy(mat,dtyps,retbounds):
     elif mat._fMat:
         try:
             bounds=[]
-            for c in range(mat.dim[1]):
+            for c in range(d1):
                 colbounds=[]
                 col = mat.col(c+1,0)
                 colbounds.append(len(st.format(round(min(col),mat.decimal))))
@@ -86,7 +87,7 @@ def _stringfy(mat,dtyps,retbounds):
     else:
         try:
             bounds=[]
-            for c in range(mat.dim[1]):
+            for c in range(d1):
                 colbounds=[]
                 col = mat.col(c+1,0)
                 colbounds.append(len(str(min(col))))
@@ -110,7 +111,7 @@ def _stringfy(mat,dtyps,retbounds):
         #Add features
         string += "\n" + " "*indbound + " "
         feats = mat.features
-        for cols in range(mat.dim[1]-1):
+        for cols in range(d1-1):
             name = feats[cols]
             s = len(name)
             string += " "*(bounds[cols]-s)+name+"  "
@@ -118,15 +119,15 @@ def _stringfy(mat,dtyps,retbounds):
         string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
 
         #Add index name row
-        string += "\n"+mat.indexname
+        string += "\n" + mat.indexname + " "*indbound + "+" + "-"*(sum(bounds) + 2*(d1) - len(mat.indexname) - 2)
 
         #Add rows
         mm = mat.matrix
-        for rows in range(mat.dim[0]):
+        for rows in range(d0):
             #Add index
-            string += "\n" + indices[rows] + " "*(indbound-len(indices[rows])) + " "
+            string += "\n" + indices[rows]  + " "*(indbound-len(indices[rows])) + "|"
             #Add values
-            for cols in range(mat.dim[1]):
+            for cols in range(d1):
                 num = mm[rows][cols]
                 #float column
                 if dtyps[cols] == float:
@@ -162,9 +163,9 @@ def _stringfy(mat,dtyps,retbounds):
                 string += " "*(bounds[cols]-s)+item+"  "
     #int/float/complex
     else:
-        for rows in range(mat.dim[0]):
+        for rows in range(d0):
             string+="\n"
-            for cols in range(mat.dim[1]):
+            for cols in range(d1):
                 num=mat._matrix[rows][cols]
 
                 #complex
