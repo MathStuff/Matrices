@@ -509,6 +509,7 @@ class Matrix:
             col:Union[int,None]=None,
             feature:Union[str,None]=None,
             dtype:Any=None,
+            index:Any="",
             returnmat:bool=False):
         """
         Add a row or a column of numbers
@@ -526,7 +527,7 @@ class Matrix:
         To append a column, use col=self.d1
         """
         from MatricesM.matrixops.add import add
-        add(self,lis,row,col,feature,dtype)
+        add(self,lis,row,col,feature,dtype,index)
         if returnmat:
             return self
 
@@ -1883,7 +1884,11 @@ class Matrix:
 
     def indexreset(self,start=0):
         self.__index = list(range(start,self.d0+start))
-        
+        self.__indexname = ""
+    
+    def namereset(self,start=0):
+        self.__features = [f"col_{i}" for i in range(1,mat.d1+1)]
+
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
