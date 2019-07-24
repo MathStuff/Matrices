@@ -545,15 +545,15 @@ class Matrix:
         if returnmat:
             return self  
 
-    def concat(self,matrix:object,concat_as:["row","col"]="col",returnmat:bool=False):
+    def concat(self,matrix:object,axis:[0,1]=1,returnmat:bool=False):
         """
         Concatenate matrices row or columns vice
         matrix:Matrix; matrix to concatenate to self
-        concat_as:'row'|'col'; "row" to concat b matrix as rows, "col" to add b matrix as columns
+        axis:0|1; 0 to add 'matrix' as rows, 1 to add 'matrix' as columns
         returnmat:bool; wheter or not to return self
         """
         from MatricesM.matrixops.concat import concat
-        concat(self,matrix,concat_as)
+        concat(self,matrix,axis)
         if returnmat:
             return self
             
@@ -571,12 +571,51 @@ class Matrix:
         self.use_row_index_to_get_item = 1
         return self
         
-    def swap(self):
+    def swap(self,index1:Union[int,str],index2:Union[int,str],axis:[0,1]):
+        """
+        Swap two rows or columns
+
+        index1:int|str; first row index OR column index|name
+        index2:int|str; second row index OR column index|name
+        axis:0|1; 0 for row swap, 1 for column swap
+        """
         pass
-    
-    def rename(self):
-        pass
-        
+
+    def rename(self,old:Union[str,Tuple[str],List[str]],new:Union[str,Tuple[str],List[str]]):
+        """
+        Rename columns
+
+        old:str OR tuple|list of strings; Old name(s) of the column(s)
+        new:str OR tuple|list of strings; New name(s) for the column(s)
+        """
+        def namecheck(o,n,f):
+            if not o in f:
+                raise ValueError(f"'{o}' not in column names")
+            try:
+                n = str(n)
+            except:
+                raise TypeError(f"Can't use '{n}' as a column name")
+            else:
+                return (o,n)
+
+        feats = self.features
+        if isinstance(old,str):
+            old,new = namecheck(old,new,feats)
+            self.__features[feats.index(old)] = new
+
+        elif isinstance(old,(tuple,list)):
+            if not isinstance(new,(tuple,list)):
+                raise TypeError("'new' only accepts tuples or lists if 'old' is a tuple or a list")
+            if len(new) != len(old):
+                raise AssertionError(f"Expected {len(old)} items for 'new', got {len(new)}")
+
+            for o,n in list(zip(old,new)):
+                old,new = namecheck(o,n,feats)
+                ind = feats.index(old)
+                self.__features[ind] = new
+        else:
+            raise TypeError(f"Type '{type(old).__name__}' can't be used to change column names")
+
 # =============================================================================
     """Methods for special matrices and properties"""
 # =============================================================================     
@@ -1628,7 +1667,7 @@ class Matrix:
              return_cols:Union[tuple,list,None]=None,
              null:Any=None):
         """
-        Returns the rows of self which are also in the compared matrix
+        Joins two matrices with given methods and conditions
         
         matrix: matrix object; matrix to use as the 2nd table
         conditions: matrix object; column boolean matrix for getting row indices
@@ -1677,9 +1716,9 @@ class Matrix:
             using left join, return usr_id and department columns
 
                 >>> Matrix.join(matrix=otherMatrix,
-                               conditions=Matrix.usr_id==otherMatrix.id,
-                               method='left',
-                               return_cols=('usr_id','department'))
+                                conditions=Matrix.usr_id==otherMatrix.id,
+                                method='left',
+                                return_cols=('usr_id','department'))
         """
         from MatricesM.filter.joins import joins
         return joins(mat,matrix,conditions,method,return_cols,null,Matrix)
