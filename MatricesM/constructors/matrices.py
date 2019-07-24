@@ -13,12 +13,13 @@ def Identity(dim=1):
     matrix=[[0 for a in range(dim)] for b in range(dim)]
     for row in range(dim):
         matrix[row][row]=1
+
     return matrix
 
-def Symmetrical(dim=None,ranged=[0,1],fill="uniform"):
+def Symmetrical(dim):
     """
     Symmetrical matrix
     """
-    if list(ranged) == [0,1] and fill == "uniform":
-        from MatricesM.C_funcs.constructors import symzerone
-        return symzerone(dim)
+    from MatricesM.C_funcs.constructors import symzerone
+    return symzerone(dim)
+
