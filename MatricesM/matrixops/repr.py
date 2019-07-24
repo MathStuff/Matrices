@@ -90,9 +90,9 @@ def _repr(mat,notes,dFrame):
             bottomLeft.add(["..."]*(rowlimit//2),col=halfcol + 1,dtype=str,feature="")
             
             #Concat left part with right, dots in the middle
-            topLeft.concat(topRight,concat_as="col")
-            bottomLeft.concat(bottomRight,concat_as="col")
-            topLeft.concat(bottomLeft,concat_as="row")
+            topLeft.concat(topRight,axis=1)
+            bottomLeft.concat(bottomRight,axis=1)
+            topLeft.concat(bottomLeft,axis=0)
             
             #Add dots as middle row
             topLeft.add(["..."]*(collimit+1),row=halfrow+1,index="...")
@@ -115,7 +115,7 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Concat last items
-            top.concat(bottom,concat_as="row")
+            top.concat(bottom,axis=0)
 
             #Add middle part
             top.add(["..."]*end,row=halfrow+1,index="...")
@@ -144,7 +144,7 @@ def _repr(mat,notes,dFrame):
 
             #Add and concat rest of the stuff
             left.add(["..."]*d0,col=halfcol + 1,dtype=str,feature="")
-            left.concat(right,concat_as="col")
+            left.concat(right,axis=1)
 
         return left._stringfy(coldtypes=left.coldtypes) + "\n\n" + notes
     #Should't go here
