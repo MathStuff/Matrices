@@ -45,7 +45,9 @@ class date:
     """
     Date object, define patterns for the date and time data
     data: str; string format of the data
-    pattern: str; string to format the data with. Usage:
+    pattern: str; string to format the data with. 
+    
+    Usage:
         day "d"
         month "m"
         year "y"
@@ -164,7 +166,7 @@ class Matrix:
 
     indexname: str; name of the index column
     
-    implicit: boolean; Skip matrix setting operations if dimensions and elements are given
+    implicit: bool; Skip matrix setting operations if dimensions and elements are given
 
     NOTE:
         - Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
@@ -1614,7 +1616,7 @@ class Matrix:
         """
         value: object
         start: 0 or 1. Index to start from
-        onlyrow: boolean; Wheter or not to return only the row indices of value's appearances
+        onlyrow: bool; Wheter or not to return only the row indices of value's appearances
         Returns the indices of the given value in a list
         """
         from MatricesM.filter.find import find
@@ -1623,13 +1625,16 @@ class Matrix:
     def join(self,matrix:object,
              conditions:str,
              method:["inner","left","left-ex","right","right-ex","full","full-ex"]="full",
-             returned_cols:Union[tuple,list,None]=None):
+             return_cols:Union[tuple,list,None]=None,
+             null:Any=None):
         """
         Returns the rows of self which are also in the compared matrix
         
         matrix: matrix object; matrix to use as the 2nd table
         conditions: matrix object; column boolean matrix for getting row indices
         method: inner|left|left-ex|right|right-ex|full|full-ex; joining method
+        return_cols: list|tuple of strings; names of the columns to be used after joining
+        null: Any; Value to replace possible the None-type values 
 
         Example representation of methods:
             -> 1's represent the values which will be kept, 0's won't be used.
@@ -1668,12 +1673,16 @@ class Matrix:
                                     1  0  1                   
 
         Example usage:
-            
-            ->Get
-            Matrix.join(otherMatrix,Matrix.usr_id==otherMatrix.usr_id,')
+            ->Join Matrix and otherMatrix where Matrix.usr_id==otherMatrix.id,
+            using left join, return usr_id and department columns
+
+                >>> Matrix.join(matrix=otherMatrix,
+                               conditions=Matrix.usr_id==otherMatrix.id,
+                               method='left',
+                               return_cols=('usr_id','department'))
         """
         from MatricesM.filter.joins import joins
-        return joins(mat,matrix,conditions,method,Matrix)
+        return joins(mat,matrix,conditions,method,return_cols,null,Matrix)
 
     def where(self,conditions:Union[List[str],Tuple[str]]):
         """
@@ -1687,11 +1696,11 @@ class Matrix:
         Example:
             #Get the rows with Score in range [0,10) or Hours is higher than mean, where the DateOfBirth is higher than 1985
             
-                data.where( f" ( ( (Score>=0) and (Score<10) ) or ( Hours>={data.mean('Hours',0)} ) ) 
-                            and ( DateOfBirth>1985 ) ")
+                >>> data.where( f" ( ( (Score>=0) and (Score<10) ) or ( Hours>={data.mean('Hours',0)} ) ) 
+                                  and ( DateOfBirth>1985 ) ")
             #Same as
-                data[(((data["Score"]>=0) & (data["Score"]<10)) | (data["Hours"]>=data.mean("Hours",0))) 
-                      & (data["DateOfBirth"]>1985) ]
+                >>> data[(((data["Score"]>=0) & (data["Score"]<10)) | (data["Hours"]>=data.mean("Hours",0))) 
+                         & (data["DateOfBirth"]>1985) ]
 
         NOTE:
             # Every statement HAVE TO BE enclosed in parentheses as shown in the examples above
@@ -1717,27 +1726,29 @@ class Matrix:
         
         expressions: str(1 column only)|tuple|list of strings; Operations to do for each column given.
             ->Multiple operations can be applied if given in a single string. 
-            ->One white space required between each operation and no space should be given between operator and operand
+            ->One white space required between each operation and no space should 
+            be given between operator and operand
         
         columns: str(1 column only)|tuple|list|None; Column names to apply the given expression
         
         conditions: str|None; Conditions of rows to apply changes to
 
-        returnmat: boolean; True to return self after evaluation, False to return None
+        returnmat: bool; True to return self after evaluation, False to return None
+
         Example:
 
             #Multiply all columns with 3 and then add 10
-                Matrix.apply( ("*3 +10") ) 
+                >>> Matrix.apply( ("*3 +10") ) 
 
             #Multiply Prices with 0.9 and subtract 5 also add 10 to Discounts where Price>100 and Discount<5
-                Matrix.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
+                >>> Matrix.apply( ("*0.9 -5","+10"), ("Price","Discount"), "(Price>100) and (Discount<5)" )
 
                 #Same as the following process
-                filtered = market_base[(market_base.Price>100) & (market_base.Discount<5)]
-                filtered['Price'] *= 0.9
-                filtered['Price'] -= 5
-                filtered['Discount'] += 10
-                market_base[(market_base.Price>100) & (market_base.Discount<5)] = filtered
+                >>> filtered = market_base[(market_base.Price>100) & (market_base.Discount<5)]
+                >>> filtered['Price'] *= 0.9
+                >>> filtered['Price'] -= 5
+                >>> filtered['Discount'] += 10
+                >>> market_base[(market_base.Price>100) & (market_base.Discount<5)] = filtered
         """
         from MatricesM.filter.apply import applyop
         if returnmat:
@@ -1758,37 +1769,34 @@ class Matrix:
         column: str|tuple or list of strings|None;  which column(s) to apply replacements, None for all columns
 
         condition: boolean *column* matrix|None; row(s) to apply replacements, None for all rows
-            Example:
+        
+        returnmat: bool; True to return self after evaluation, False to return None
+        
+        Example:
                 #Replace all 0's with 1's
-                data.replace(old=0,new=1)
+                >>> data.replace(old=0,new=1)
 
                 #Replace all "Pending" values to "Done" in "Order1" and "Order2" columns
-                data.replace(old="Pending", #(data["Order1"]=="Pending") & (data["Order2"]=="Pending") can also be used
-                             new="Done",
-                             column=("Order1","Order2")
-                             )
+                >>> data.replace(old="Pending",
+                                 new="Done",
+                                 column=("Order1","Order2"))
 
                 #Replace all '' values in the column "Length" with the mean of the "Length" column
-                data.replace=(old='', #data["Length"]=="" can also be used
-                              new=data.mean("Length",asDict=False),
-                              column="Length"
-                              )
+                >>> data.replace=(old='', #data["Length"]=="" can also be used
+                                  new=data.mean("Length",asDict=False),
+                                  column="Length")
 
-                #Replace all "FF" values in "Grade" column with "AA" in the column "Grade" where "Year" is less than 2019
-                data.replace(old="FF", #data["Grade"]=="FF" can also be used
-                             new="AA",
-                             column="Grade",
-                             condition=data["Year"]<=2019
-                             )
+                #Replace all "FF" values in "Grade" column with "AA" in the column "Grade" where "Year"<=2019
+                >>> data.replace(old="FF",
+                                 new="AA",
+                                 column="Grade",
+                                 condition=data["Year"]<=2019)
 
                 #Replace all numbers below 0 in with 0's in column named "F5" where "Score1" is less than "Score2"
-                data.replace(old=data["F5"]<0,
-                             new=0,
-                             column="F5",
-                             condition=data["Score1"]<data["Score2"]
-                             )
-        
-        returnmat: boolean; True to return self after evaluation, False to return None
+                >>> data.replace(old=data["F5"]<0,
+                                 new=0,
+                                 column="F5",
+                                 condition=data["Score1"]<data["Score2"])
 
         """
         from MatricesM.filter.replace import _replace
@@ -1801,12 +1809,13 @@ class Matrix:
         Sort the rows by the desired column
         column:str|None; column name as string, None to sort by index column
         key:function; function to use while sorting
-        reverse:boolean; wheter or not to sort the matrix in reversed order
-        returnmat:boolean; wheter or not to return self
+        reverse:bool; wheter or not to sort the matrix in reversed order
+        returnmat:bool; wheter or not to return self
         """
         if column == None:
             if self._dfMat:
-                temp = Matrix(listed=self.index,dtype=dataframe,index=None).t.concat(self.copy,returnmat=True).sortBy("col_1",key=key,reverse=reverse,returnmat=True)
+                temp = Matrix(listed=self.index,dtype=dataframe,index=None).t. \
+                       concat(self.copy,returnmat=True).sortBy("col_1",key=key,reverse=reverse,returnmat=True)
                 self.__index = temp.col("col_1",0)
                 self._matrix = temp[:,1:].matrix
             else:
@@ -1828,7 +1837,7 @@ class Matrix:
         """
         Shuffle the rows of the matrix
         iterations : int; Times to shuffle
-        returnmat:boolean; wheter or not to return self        
+        returnmat:bool; wheter or not to return self        
         """
         from random import shuffle
 
@@ -1856,25 +1865,27 @@ class Matrix:
         from MatricesM.filter.sample import samples
         return samples(self,size,condition,Matrix)
 
-    def match(self,expression:str,columns:Union[str,int,List[Union[str,None]],Tuple[Union[str,None]],None]=None,as_row:bool=True):
+    def match(self,expression:str,
+              columns:Union[str,int,List[Union[str,None]],Tuple[Union[str,None]],None]=None,
+              as_row:bool=True):
         """
         Return the values or rows that match the given expression
 
         expression: str; regular expression, uses re.findall
         columns: str|tuple or list of strings|int(starts from 1)|None; Column names/numbers
-        as_row: boolean; True to return rows with the matching values, False to return:
+        as_row: bool; True to return rows with the matching values, False to return:
             1)A dictionary if 'columns' == None|tuple or list as {'column_name':[(row_index,matching_value), ...], ...}
             2)A list if 'columns' == str [(row_index,matching_values), ...]
 
         Example:
             #Return the rows of all email adresses using gmail.com domain in the column 'mail'
-            Matrix.match(expression=r"\w+@gmail.com",
-                         columns="mail",
-                         as_row=True)
+            >>> Matrix.match(expression=r"\w+@gmail.com",
+                             columns="mail",
+                             as_row=True)
         NOTE:
             #This method is CURRENTLY faster in most cases than using boolean matrices as indices:
-                Matrix[Matrix[column]==value] --> Using boolean matrices as indices
-                Matrix.match(value,column)    --> Corresponding method call for the same result as previous one
+                >>> Matrix[Matrix[column]==value] --> Using boolean matrices as indices
+                >>> Matrix.match(value,column)    --> Corresponding method call for the same result as previous one
 
         """
         if not self._dfMat:
@@ -1897,7 +1908,7 @@ class Matrix:
         """
         Normalizes the data to be valued between 0 and 1
         col:integer>=1 | column name as string | None
-        inplace : boolean ; True to apply changes to matrix, False to return a new matrix
+        inplace: bool ; True to apply changes to matrix, False to return a new matrix
         """
         from MatricesM.stats.normalize import normalize
         return normalize(self,col,inplace,self.PRECISION)
@@ -1906,7 +1917,7 @@ class Matrix:
         """
         Standardization to get mean of 0 and standard deviation of 1
         col:integer>=1 | column name as string
-        inplace : boolean ; True to apply changes to matrix, False to return a new matrix
+        inplace: bool ; True to apply changes to matrix, False to return a new matrix
         """ 
         from MatricesM.stats.stdize import stdize
         return stdize(self,col,inplace,self.PRECISION)
@@ -2021,11 +2032,20 @@ class Matrix:
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
                 
         Usage:
-            self.iqr() : Returns a dictionary with iqr's as values
-            self.iqr(None,True) : Returns a dictionary where the values are quartile medians in lists
-            self.iqr(None,True,0) : Returns a list of quartile medians in lists
-            self.iqr(None,False,2) : Returns a matrix of iqr's
-            -> Replace "None" with any column number to get a specific column's iqr
+            #Returns a dictionary with iqr's as values
+            >>> self.iqr()
+
+            #Returns a dictionary where the values are quartile medians in lists
+            >>> self.iqr(None,True)
+
+            #Returns a list of quartile medians in lists
+            >>> self.iqr(None,True,0)
+
+            #Returns a matrix of iqr's
+            >>> self.iqr(None,False,2)
+
+        NOTE:
+            Replace "None" with any column number to get a specific column's iqr
         """ 
         from MatricesM.stats.iqr import iqr
         return iqr(self,col,as_quartiles,get,Matrix,dataframe)   
@@ -2219,13 +2239,13 @@ class Matrix:
         If a single value is given on the right-hand-side, value replaces all other values where left-hand-side represents
         Example:
             #Every row with even index numbers gets their 'Col 3' column changed to value 99
-                Matrix[::2,"col_3"] = 99                        
+                >>> Matrix[::2,"col_3"] = 99                        
                 
             #Rows where their 'Score1' is lower than 50 gets their 'Pass1' and 'Pass2' columns replaced with value 0   
-                Matrix[Matrix["Score1"]<50,('Pass1','Pass2')] = 0
+                >>> Matrix[Matrix["Score1"]<50,('Pass1','Pass2')] = 0
             
                 #Following method does the same changes, slightly faster on most cases
-                Matrix.replace(Matrix["Score1"]<50,0,('Pass1','Pass2'))
+                >>> Matrix.replace(Matrix["Score1"]<50,0,('Pass1','Pass2'))
             
             Check README.md and exampleMatrices.py for more examples
         """
@@ -2237,7 +2257,7 @@ class Matrix:
         """
         Works 'similar' to __getitem__ , but can only be used to delete entire columns and/or rows
         Example:
-            del Matrix['col_2']     #Delete 2nd column of the matrix
+            >>> del Matrix['col_2']     #Delete 2nd column of the matrix
         """
         from MatricesM.matrixops.getsetdel import delitem
         useind = self.use_row_index_to_get_item or 0
