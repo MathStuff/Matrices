@@ -1,11 +1,16 @@
 def _stringfy(mat,dtyps,retbounds):
-    
     import re
+    
     pre = "0:.{}f".format(mat.decimal)
     st = "{"+pre+"}"    
     string = ""
     indbound = 0
     d0,d1 = mat.dim
+
+    #Dtypes assertion
+    if dtyps == None:
+        dtyps = mat.coldtypes[:]
+
     #Empty matrix check
     if mat.matrix in [ [], None ]:
         return "Empty matrix"
