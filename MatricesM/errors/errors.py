@@ -62,7 +62,7 @@ class InconsistentValues(MatrixError):
     Different value types in a column
     """
     def __init__(self,lis,typ,*args):
-        self.message  = f"Given {lis} has inconsistent values. \nAll values inside should be '{typ.__name__}' type. "+". ".join(args)
+        self.message  = f"Given {lis} has inconsistent values. \nAll values inside should be '{type(typ).__name__}' type. "+". ".join(args)
 
 class NotSubList(MatrixError):
     """
