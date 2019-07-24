@@ -4,7 +4,7 @@ def _corr(mat,col1,col2,population,temp,method):
             i=mat.features.index(i)+1
     
     if not (( isinstance(col1,int) and isinstance(col2,int) ) or (col1==None and col2==None)):
-        raise TypeError("'col1' and 'col2' should be integers | both None or column names")
+        raise TypeError("'col1' and 'col2' should be integers | both None | column names")
         
     if not population in [0,1]:
         raise ValueError("'population' should be 0 for samples, 1 for population")
@@ -61,6 +61,7 @@ def _corr(mat,col1,col2,population,temp,method):
                 m+=1
         #Kendall rank correlation coefficients
         else:
+            return None
             for i in availablecols[:]:
                 availablecols.remove(i)
                 n = m+1
@@ -90,4 +91,4 @@ def _corr(mat,col1,col2,population,temp,method):
             return 1-((6*((mat.ranked(col1,get=2)["Rank"]-mat.ranked(col2,get=2)["Rank"])**2).sum(get=0))/d0*(d0**2 - 1))
         
         else:
-            pass
+            return None
