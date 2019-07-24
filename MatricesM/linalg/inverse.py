@@ -7,7 +7,7 @@ def inverse(mat,ident):
         return None
     else:
         temp=mat.copy
-        temp.concat(ident,"col")
+        temp.concat(ident)
         inv=temp.rrechelon[:,mat.dim[1]:]
         if mat.dtype in [float,int,dataframe]:
             dt = float
