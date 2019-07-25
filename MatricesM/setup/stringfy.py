@@ -1,4 +1,4 @@
-def _stringfy(mat,dtyps,retbounds):
+def _stringfy(mat,dtyps,retbounds,grid):
     import re
     
     pre = "0:.{}f".format(mat.decimal)
@@ -113,24 +113,32 @@ def _stringfy(mat,dtyps,retbounds):
 
     #Dataframe
     if mat._dfMat:
+
         #Add features
-        string += "\n" + " "*indbound + " "
-        feats = mat.features
-        for cols in range(d1-1):
-            name = feats[cols]
-            s = len(name)
-            string += " "*(bounds[cols]-s)+name+"  "
+        if not grid:
+            string += "\n" + " "*indbound + " "
+            feats = mat.features
+            for cols in range(d1-1):
+                name = feats[cols]
+                s = len(name)
+                string += " "*(bounds[cols]-s)+name+"  "
 
-        string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
-
+            string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
         #Add index name row
-        string += "\n" + mat.indexname + " "*indbound + "+" + "-"*(sum(bounds) + 2*(d1) - len(mat.indexname) - 2)
+            string += "\n" + mat.indexname + " "*indbound + "+" + "-"*(sum(bounds) + 2*(d1) - len(mat.indexname) - 2)
 
+        else:
+            string += "\n"
+                 
         #Add rows
         mm = mat.matrix
         for rows in range(d0):
             #Add index
-            string += "\n" + indices[rows]  + " "*(indbound-len(indices[rows])) + "|"
+            if not grid:
+                string += "\n" + indices[rows]  + " "*(indbound-len(indices[rows])) + "|"
+            else:
+                string += "\n"
+                    
             #Add values
             for cols in range(d1):
                 num = mm[rows][cols]
