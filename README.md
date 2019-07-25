@@ -379,7 +379,7 @@ Matrix.col(n,as_matrix) #Returns the nth column if n is an integer or returns th
 
 Matrix.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
-Matrix.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
+Matrix.concat(matrix,axis) #Concatenate a matrix to self. Set 'axis' to 0 to concatenate as rows, 1(default) to concatenate as columns
 
 Matrix.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
 
@@ -552,6 +552,8 @@ Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'ne
 
 Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
 
+Matrix.namereset() #Reset column names to 'col_1','col_2', ...
+
 Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
 Matrix.shuffle(iterations,returnmat) #Shuffle the rows 'iterations' times and return self if 'returnmat'==True
@@ -591,6 +593,8 @@ Matrix.normalize(column,inplace) #Normalize the data in the desired column, None
 Matrix.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
 
 Matrix.features #Returns the column names if given, can also be used to set column names
+
+Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
 
 Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
