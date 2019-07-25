@@ -958,10 +958,14 @@ class Matrix:
         """
         Object call as a string to recreate the matrix
         """
-        fill_str,cdtype_str = self.fill,str([i.__name__ for i in self.coldtypes]).replace("'","")
+        f,cd = self.fill,str([i.__name__ for i in self.coldtypes]).replace("'","")
         if type(self.fill).__name__ == "method":
-            fill_str=self.fill.__name__
-        return f"Matrix(dim={self.dim},listed={self._matrix},ranged={self.initRange},fill={fill_str},features={self.features},decimal={self.decimal},seed={self.seed},dtype={self.dtype.__name__},coldtypes={cdtype_str},index={self.index},indexname='{self.indexname}')"
+            f=self.fill.__name__
+            
+        dm,m,r,fs,d = self.dim,self.matrix,self.initRange,self.features,self.decimal
+        s,dt,i,n = self.seed,self.dtype.__name__,self.index,self.indexname
+
+        return f"Matrix(dim={dm},listed={m},ranged={r},fill={f},features={fs},decimal={d},seed={s},dtype={dt},coldtypes={cd},index={i},indexname='{n}')"
  
     @property
     def seed(self):
