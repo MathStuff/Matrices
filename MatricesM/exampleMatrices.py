@@ -328,7 +328,7 @@ print('################')
 print("Multivariate linear model for validStr4:\n")
 
 print("Correlation matrix")
-validStr4.corr().grid
+validStr4.corr().p
 
 #Sample amount
 n = validStr4.d0
@@ -366,6 +366,6 @@ print("\nLeast squares method formula:\n\tHeight = {0} + ({1})*{2} + ({3})*{4}".
 
 #Analyze the error rates of the estimates
 print("\nErrors matrix described:")
-err.describe.grid
+err.describe.p
 
 # =============================================================================
