@@ -429,13 +429,13 @@ class Matrix:
         from MatricesM.setup.listify import _listify
         return _listify(self,stringold)
             
-    def _stringfy(self,coldtypes:Union[List[Any],None]=None,returnbounds:bool=False):
+    def _stringfy(self,coldtypes:Union[List[Any],None]=None,returnbounds:bool=False,grid:bool=False):
         """
         Turns a list into a grid-like form that is printable
         Returns a string
         """
         from MatricesM.setup.stringfy import _stringfy
-        return _stringfy(self,coldtypes,returnbounds)
+        return _stringfy(self,coldtypes,returnbounds,grid)
     
 # =============================================================================
     """Row/Column methods"""
@@ -717,7 +717,7 @@ class Matrix:
    
     @property
     def grid(self):
-        print(self._stringfy(coldtypes=self.coldtypes))
+        print(self._stringfy(coldtypes=self.coldtypes,grid=True))
     
     @property
     def copy(self):
