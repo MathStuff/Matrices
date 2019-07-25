@@ -1720,7 +1720,7 @@ class Matrix:
                                 method='left',
                                 return_cols=('usr_id','department'))
         """
-        from MatricesM.filter.joins import joins
+        from MatricesM.matrixops.joins import joins
         return joins(mat,matrix,conditions,method,return_cols,null,Matrix)
 
     def where(self,conditions:Union[List[str],Tuple[str]]):
