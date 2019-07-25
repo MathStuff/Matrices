@@ -13,15 +13,16 @@ def delDim(mat,num):
             print("All rows have been deleted")
             
         mat._Matrix__dim = [goal1,goal2]
-        temp = [mat._matrix[i][:goal2] for i in range(goal1)]
-        mat._matrix=temp
-
+        mm = mat._matrix
+        mat._matrix = [mm[i][:goal2] for i in range(goal1)]
+        if mat._dfMat:
+            mat._Matrix__index = mat.index[:goal1]
     except AssertionError:
         print("Enter a valid input")
     except Exception as err:
         print(err)
     else:
         if mat.features!=[]:
-            mat.features=mat.features[:goal2]
-            mat.setColdtypes(False,mat._matrix,mat.dim[0],mat.dim[1])
+            mat._Matrix__features = mat.features[:goal2]
+            mat._Matrix__coldtypes = mat.coldtypes[:goal2]
         return mat

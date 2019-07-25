@@ -61,9 +61,23 @@ class InconsistentValues(MatrixError):
     """
     Different value types in a column
     """
-    def __init__(self,err,*args):
-        self.message  = err
+    def __init__(self,lis,typ,*args):
+        self.message  = f"Given {lis} has inconsistent values. \nAll values inside should be '{type(typ).__name__}' type. "+". ".join(args)
 
+class NotSubList(MatrixError):
+    """
+    Given list have values that aren't in the list used as look-up list
+    """
+    def __init__(self,sub,sup,*args):
+        self.message  = f"Given {sub} has values that aren't in matrix's {sup}. \n"+". ".join(args)
+
+class OutOfRangeList(MatrixError):
+    """
+    Given list have values that aren't in the given range
+    """
+    def __init__(self,lis,r,*args):
+        self.message  = f"Given {lis} should have values in range {r} \n"+". ".join(args)
+    
 class InvalidList(MatrixError):
     """
     Invalid values to set for coldtypes,features etc.
@@ -71,7 +85,7 @@ class InvalidList(MatrixError):
     def __init__(self,err,req,attribute,*args):
         import re
         given_dtypes = str(re.findall(r"'(?P<inner>\w+)'","{}".format(err))).replace("'","")
-        self.message = f"'{type(err).__name__}' type {given_dtypes} can't be used as a length {req} list to replace {attribute}.\nMissing {req-len(err)} items "+". ".join(args)
+        self.message = f"'{type(err).__name__}' type {given_dtypes} can't be used as a length {req} list to replace {attribute}. Expected {req} items, got {len(err)}"+". ".join(args)
 
 class ParameterError(MatrixError):
     """

@@ -1,4 +1,4 @@
-def minor(mat,row=None,col=None,returndet=True):
+def minor(mat,row,col,returndet):
     if not isinstance(row,int) or not isinstance(col,int):
         raise ValueError("Both row and col should be integers")
     if not (row>0 and row<=mat.dim[0]) or not (col>0 and col<=mat.dim[1]):

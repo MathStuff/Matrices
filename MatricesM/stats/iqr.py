@@ -1,7 +1,11 @@
-def iqr(mat,col=None,as_quartiles=False,asDict=True):
+def iqr(mat,col,as_quartiles,get,obj,dFrame):
+
     if isinstance(col,str):
-        col=mat.features.index(col)+1
-        
+        col = mat.features.index(col)+1
+    if col != None:
+        if col<=0 or col>mat.d1:
+            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+
     if mat._dfMat:
         temp = mat.copy
         dts = mat.coldtypes[:]
@@ -48,12 +52,18 @@ def iqr(mat,col=None,as_quartiles=False,asDict=True):
             iqr[feats]=up-low
             qmeds[feats]=[low,mat.median(col)[feats],up]
 
-
-    if asDict:
+    #Return a matrix
+    if get==2:
+        cols = mat.d1 if col==None else 1
+        name = 1 if as_quartiles else 0
+        dic = qmeds if as_quartiles else iqr
+        return obj((cols,2),[[i,j] for i,j in dic.items()],features=["Column",["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[str,[float,list][name]],index=None)
+    #Return a dictionary
+    elif get==1:
         if as_quartiles:
             return qmeds
         return iqr
-    
+    #Return a list
     else:
         if as_quartiles:
             items=list(qmeds.values())

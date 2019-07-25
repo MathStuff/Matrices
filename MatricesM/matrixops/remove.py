@@ -7,6 +7,8 @@ def remove(mat,m,n,r=None,c=None):
     """
     if r!=None:
         del mat._matrix[r-1]
+        if mat._dfMat:
+            del mat._Matrix__index[r-1]
         m-=1
 
     if c!=None:

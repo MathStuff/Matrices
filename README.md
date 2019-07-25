@@ -1,5 +1,5 @@
 # <a href="https://pypi.org/project/MatricesM/">MatricesM</a>
-#### Python(>=3.6) library for creating matrices and doing matrix operations related to statistics and algebra mathematics
+#### A stand-alone library for Python 3.6 and higher to create and manipulate matrices used in linear algebra and dataframes in statistics
 #### [Join MathStuff's Slack workspace](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) for questions and discussions.
  
 ### Install using pip:
@@ -22,13 +22,11 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is given), int | list/tuple as [rows,cols]
+matrix_name = Matrix(dim=dimensions,#Required(UNLESS 'listed' is given), int | list/tuple as [rows,cols]
 
                      listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
-                     directory=directory, #Optional, string. Path to the dataset. listed parameter shouldn't get any value if directory is given
-
-                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" or "directory" is given
+                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" is given
 
                      ranged=[*args] | dict;"""
                               ->To apply all the elements give a list | tuple
@@ -40,28 +38,22 @@ matrix_name = Matrix(dim=dimension,#Required(UNLESS 'listed' or 'directory' is g
                                    4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
                                    5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
 
-                     header=hasHeader, #Optional, boolean. Default is 0. Wheter or not the dataset in the "directory" has a header row
-
-                     features=columnNames #Optional, list of strings. If no argument given, columns get named "Col {}".format(colNumber) 
+                     features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
                      
-                     seed=randomSeed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+                     seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
                        
-                     dtype=dataType #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
+                     dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
                      
-                     coldtypes=listOfTypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+                     coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
                      
+                     index=index_column #Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+
+                     indexname=index_name #str; name of the index column
+
                      implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
                      )
-"""
-Using *args = Pass arguments matching with the parameters in order : dim, listed, directory, fill, ranged, seed, header, features, decimal, dtype, coldtypes, implicit
-Using **kwargs = Make sure to use given parameter names OR give a dictionary with keys being parameter names as strings, values being their values
 
- Example:
-         Matrix(3,"1 3 5 2 4 6 3 5 7",dtype=int)                             --> Use both *args and **kwargs
-         Matrix(directory='.../directory/file.csv',header=1,dtype=dataframe) --> Use **kwargs
-         Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
-         Matrix(kwargs=anotherMatrix.kwargs)                                 --> Same as anotherMatrix.copy OR eval(anotherMatrix.obj)
-"""
+
 ```         
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
    
@@ -131,12 +123,8 @@ randomData4 = Matrix([20000,4],
 ----------------------------------------
 ##### Create special matrices
 ```python 
-from MatricesM.constructors.matrices import Identity
-
 #3x3 identity matrix
 id3 = Matrix(listed=Identity(3))
-
-from MatricesM.constructors.matrices import Symmetrical
 
 #A 8x8 symmetrical matrix filled with numbers in range from 0 to 1 with uniform distribution 
 sym1 = Matrix(listed=Symmetrical(8))
@@ -198,27 +186,26 @@ df = Matrix(dim=[10,4],
 
 ```
 ----------------------------------------
-##### Read data from csv files 
-###### If there is a header, set header to any boolean value == True . Float numbers considered to be using dot(.) to separate decimal places and cammas(,) are used to separate columns. Will be updated in the future for more options
+##### Read data from files 
 ```python 
-data_directory = r"Example\Directory\DATAFILE"
+from MatricesM import *
 
-data_matrix = Matrix(directory=data_directory,header=1,dtype=dataframe,coldtypes=[str,float,...]) #Create a dataframe matrix from a csv file
-
-#If you're having issues with setting the dimension, try explicitly providing it as dim=[data_amount,feature_amount]
-#More options for reading the file will be added in the future
+#Create a dataframe matrix from a csv file. read_file accepts 2 optional parameters: encoding, delimiter
+data_matrix = read_file(data_directory) 
 
 #Example dataset: https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009
-winedata = Matrix(directory="...\Data\winequality-red.csv",header=1,dtype=dataframe,coldtypes=[float]*12)
+wine = read_file(".../Data/winequality-red.csv")
 ```
 ----------------------------------------
-##### Get specific parts of the matrix
+##### Get specific parts of the matrix (Assuming default column names)
 ```python
 #All rows' second to forth columns as a matrix
 Matrix[:,1:4] == Matrix.t[1:4,:].t
 
 #Nineth column of every even numbered row as a matrix
-Matrix[::2,8] == Matrix[::2,8:9] == Matrix.col(9)[::2] == Matrix["Col 9"][::2] == Matrix.select(("Col 9"))[::2]
+Matrix[::2,8] == Matrix[::2,8:9] == Matrix["col_9"][::2] == Matrix.col_9[::2] 
+#Using methods
+Matrix.select(("col_9"))[::2] == Matrix.col(9)[::2]
 
 #Forth to seventh rows as a matrix
 Matrix[3:7] 
@@ -227,7 +214,14 @@ Matrix[3:7]
 Matrix[4,7] == Matrix.matrix[4][7]
 
 #Use column names
-Matrix["Col 3","Col 1","Col 2"] == Matrix.select(("Col 3","Col 1","Col 2"))
+Matrix["col_3","col_1","col_2"] == Matrix.select(("col_3","col_1","col_2"))
+
+#Use index column for row indices
+#Return the rows where the index matches the 'value'
+Matrix.ind[value]
+
+#Return the rows from val1's first appearance until val2's first appearance with only 'col_4' column
+Matrix.ind[val1:val2,"col_4"]
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
@@ -243,9 +237,8 @@ filtered = winedata.select(("pH","quality"))
 #Alternative way (2x faster)
 filtered = winedata["pH","quality"] 
 
-
-#Set index column to reverse further actions
-winedata.indexSet()
+#Use 'quality' column as indices
+winedata.index = winedata.quality
 
 #Sort by given column and shuffle the data
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
@@ -261,6 +254,10 @@ winedata[(winedata["quality"]>5) & ((winedata["alcohol"]<11) | (winedata["densit
 #Return all the rows and select 'alcohol' and 'quality' columns where quality is higher than 6
 winedata[winedata["quality"]>6,("alcohol", "quality")]
 
+#Return the rows of all email adresses using gmail.com domain in the column 'mail'
+Matrix.match(expression=r"\w+@gmail.com",
+             columns="mail",
+             as_row=True)
 ```
 ----------------------------------------
 ##### Apply arithmetic operations to individual rows and columns.
@@ -291,7 +288,7 @@ data.replace(old="Pending", #(data["Order1"]=="Pending") & (data["Order2"]=="Pen
 
 #Replace all '' values in the column "Length" with the mean of the "Length" column
 data.replace=(old='', #data["Length"]=="" can also be used
-              new=data.mean("Length",asDict=False),
+              new=data.mean("Length",get=0),
               column="Length"
               )
 
@@ -313,19 +310,52 @@ data.replace(old=data["F5"]<0,
 data[data["Feature1"]<0,"Feature5"] = 0
 
 #Create a matrix with a square filled with 0's in the middle, 5's outside
-s = Matrix(10,fill=5,dtype=int)
-s[3:7,3:7] = 0
-#Matrices can also be used to do the same
-s[3:7,3:7] = Matrix(4,fill=0)
+s = Matrix(5,fill=5,dtype=int)
+s[1:4,1:4] = 0 #Same as using Matrix(3,fill=0)
+#Visually:
+"""
+5 5 5 5 5              5 5 5 5 5
+5 5 5 5 5  Changes to  5 0 0 0 5
+5 5 5 5 5     ---->    5 0 0 0 5
+5 5 5 5 5              5 0 0 0 5
+5 5 5 5 5              5 5 5 5 5
+"""
+
+#Change the values in the 2nd to 4th rows' 1st and 3rd columns to 0 and 99 
+Matrix[1:4,("col_1","col_3")] = [0,9]
+#Visually:
+"""
+3 9 6 10               3 9  6  10
+5 0 4  2   Changes to  0 0 99   2
+5 8 2  2      ---->    0 8 99   2
+6 1 7  0               0 1 99   0
+"""
+
+#Change all values in the 2nd column to 7's
+Matrix.col_2 = 7
+#Visually:
+"""
+3 9 6 10               3 7 6 10
+5 0 4  2   Changes to  5 7 4  2
+5 8 2  2      ---->    5 7 2  2
+6 1 7  0               6 7 7  0
+"""
+
+#Change odd numbered rows' even numbered columns to the values in the given matrix
+Matrix[0::2,1::2] = Matrix(2,fill=999)
+#Visually:
+"""
+3 9 6 10               3 999 6 999
+5 0 4  2   Changes to  5   7 4   2
+5 8 2  2      ---->    5 999 2 999
+6 1 7  0               6   7 7   0
+"""
 ```
 ----------------------------------------
 ##### Concatenate a matrix to your matrix.
 ```python
-#Concatenate a new column named 'discounted' containing the product of the 'Price' and 'Discount' columns
-newcol = marketData["Price"] - marketData["Price"]*(marketData["Discount"]/100)
-newcol.features = ["discounted"]
-marketData.concat(newcol,"col")
-
+#Concatenate a new column named 'Discounted_Price' containing the product of the 'Price' and 'Discount' columns
+marketData["Discounted_Price"] = marketData["Price"] - marketData["Price"]*(marketData["Discount"]/100)
 ```
 ----------------------------------------
 #### Use your matrix's methods and properties
@@ -337,17 +367,19 @@ Matrix.p #Prints the dimensions, wheter or not the matrix is square and the grid
 
 Matrix.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
-Matrix.directory #Returns the directory of the matrix if there is any given
-
 Matrix.matrix #Returns the matrix's rows as lists in a list
 
 Matrix.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
+
+Matrix.d0 #Returns the amount of rows
+
+Matrix.d1 #Returns the amount of columns
 
 Matrix.col(n,as_matrix) #Returns the nth column if n is an integer or returns the column named n, as a list or matrix, set as_matrix to True to get the list as a matrix
 
 Matrix.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
-Matrix.concat(matrix,concat_as) #Merges a matrix to itself. concat_as is set to "row" by default; if concatenation required is as columns, give "col" as the argument
+Matrix.concat(matrix,axis) #Concatenate a matrix to self. Set 'axis' to 0 to concatenate as rows, 1(default) to concatenate as columns
 
 Matrix.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
 
@@ -363,11 +395,15 @@ Matrix.fill #Returns the value or distribution of which the matrix was filled wi
 
 Matrix.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
 
+Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
+
+Matrix.indexname #Returns the index column's name
+
 Matrix.intForm #Returns integer form of the matrix
 
-Matrix.floatForm #Returns integer form of the matrix
+Matrix.floatForm #Returns float form of the matrix
 
-Matrix.ceilForm #Returns a matrix of all the elements' ceiling value
+Matrix.ceilForm #Returns a matrix of all the elements' ceiling values
 
 Matrix.floorForm #Returns the same matrix as "intForm"
 
@@ -380,6 +416,8 @@ Matrix.ROW_LIMIT #Attribute to determine the amount of rows to print while repre
 Matrix.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
 Matrix.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
+
+Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -494,17 +532,17 @@ Matrix.head(n) #Returns the first n rows (if there are less than n rows it retur
 
 Matrix.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
 
-Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, max, 25%, 50%, 75%.
+Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, 25%, 50%, 75%, max.
 
-Matrix.sum(n,asDict) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+Matrix.sum(n,get) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.prod(n,asDict) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. asDict to change wheter or not to return values in a dictionary or a list. If 'n' is given, asDict being False returns the value as it is, not in a list.
+Matrix.prod(n,get) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.find(element,indexStart) #Returns a list of the element's indeces as tuples. Returns None if element not in matrix
 
 Matrix.select(columns) #Returns a matrix where the desired columns are concatenated in order. Only works if 'columns' is a tuple or a list
 
-Matrix.where(condition) #Returns a matrix where the given condition(s) are True. Example: Matrix.where("(Col 1>=0.5) and (Col 2!=0)") 
+Matrix.where(condition) #Returns a matrix where the given condition(s) are True. Example: Matrix.where("(col_1>=0.5) and (col_2!=0)") 
 
 Matrix.match(regex,columns,as_row) #Return the rows or the values in the matrix depending on 'as_row', in the given column names/numbers in 'columns' as a list/tuple or str/int, matching given 'regex' regular expressions
 
@@ -512,7 +550,9 @@ Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression'
 
 Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
-Matrix.indexSet(name,start,returnmat) #Set an indexing column named 'name', starting from 'start' and return self if 'returnmat' is True
+Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
+
+Matrix.namereset() #Reset column names to 'col_1','col_2', ...
 
 Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
@@ -522,35 +562,39 @@ Matrix.sample(size,condition) #Get a sample sized 'size' where the 'condition' i
 
 Matrix.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
-Matrix.count(column,asDict) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s). asDict to change wheter or not to return values in a dictionary or a list.
+Matrix.count(column,get) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s).  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.mean(n,asDict) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages; asDict: True to get return a dictionary of features as keys and means as values, False to get means in a list. If n is given and asDict is False, returns a number.
+Matrix.mean(n,get) #Returns the nth column or column named n's average, give None as argument to get the all columns' averages;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.ranged(n,asDict) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list. If n is given and asDict is False, returns a number.
+Matrix.ranged(n,get) #Returns the nth column or column named n's range, give None as argument to get the all columns' ranges; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.median(n,asDict) #Returns the nth column or column named n's median, give None to get all columns' medians; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.median(n,get) #Returns the nth column or column named n's median, give None to get all columns' medians;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.freq(n,asDict) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.freq(n,get) #Returns the nth column or column named n's elements frequency as a dictionary where elements are keys and how often they repeat as values. If called without arguments, returns every column"s frequencies; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
 
-Matrix.mode(n,asDict) #Returns the nth column or column named n's mode, give None to get all columns' modes; asDict: True to get return a dictionary of features as keys and ranges as values, False to get ranges in a list.
+Matrix.mode(n,get) #Returns the nth column or column named n's mode, give None to get all columns' modes;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
 
-Matrix.iqr(n,as_quartiles,asDict) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True); asDict: True to get return a dictionary of features as keys and iqr's as values, False to get iqr's in a list. If n is given and asDict is False, returns a number(or a list dependent on as_quartiles).
+Matrix.ranked(n,reverse,key,get) #Returns the nth column or column named n's ranks(that are the indices the values would get if they were sorted) give None to get all columns' modes;  Use 'get' to choose what to return,-1 for ranks in-place, 0 for a list, 1 for a dictionary(default), 2 for a list of Matrix object for each column.
 
-Matrix.sdev(n,population,asDict) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and standard deviations as values, False to get standard deviations in a list. If n is given and asDict is False, returns a number.
+Matrix.iqr(n,as_quartiles,get) #Returns the nth column or column named n's iqr, give None to get all columns' iqr values. If first,second and third quartiles is desired, give as_quartiles parameter bool(True);  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
-Matrix.var(n,population,asDict) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise; asDict: True to get return a dictionary of features as keys and variances as values, False to get variances in a list. If n is given and asDict is False, returns a number.
+Matrix.sdev(n,population,get) #Returns the nth column or column named n's standard deviation, if None is given as an argument returns all columns' standard deviations. Give population parameter 1 if calculation is not for samples, 0 otherwise; Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
+
+Matrix.var(n,population,get) #Returns the nth column or column named n's variance, if None is given as an argument returns all columns' variance. Give population parameter 1 if calculation is not for samples, 0 otherwise;  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.cov(col1,col2,population) #Returns the col1 and col2's covariance. Give population parameter True if calculation is not for samples
 
 Matrix.z(col,population) #Returns the z-scores of the desired  column, call without arguments to get the all z-scores as a matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise.
 
-Matrix.corr(column_1,column_2,population) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise
+Matrix.corr(column_1,column_2,population,method) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise; methods available: 'pearson'(default), 'kandell', 'spearman'
 
 Matrix.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
 
 Matrix.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
 
 Matrix.features #Returns the column names if given, can also be used to set column names
+
+Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
 
 Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 

@@ -1,6 +1,10 @@
-def median(mat,col=None,asDict=True):
+def median(mat,col,get,obj,dFrame):
+
     if isinstance(col,str):
         col=mat.features.index(col)+1
+    if col != None:
+        if col<=0 or col>mat.d1:
+            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
 
     if mat._dfMat:
         temp = mat.copy
@@ -40,14 +44,20 @@ def median(mat,col=None,asDict=True):
             meds[feats[rows]]=n
         else:
             meds[feats]=n
-    
-    if asDict:
+
+    #Return a matrix
+    if get == 2:
+        cols = mat.d1 if col==None else 1
+        return obj((cols,2),[[i,j] for i,j in meds.items()],features=["Column","Median"],dtype=dFrame,coldtypes=[str,float],index=None)    
+    #Return a dictionary
+    elif get == 1:
         return meds
-    
-    items=list(meds.values())
-    if len(items)==1:
-        return items[0]
-    
-    if col==None:
-        return items
-    return items[col-1]
+    #Return a list
+    else:
+        items=list(meds.values())
+        if len(items)==1:
+            return items[0]
+        
+        if col==None:
+            return items
+        return items[col-1]

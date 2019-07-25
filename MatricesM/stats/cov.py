@@ -1,4 +1,4 @@
-def cov(mat,col1=None,col2=None,population=1,obj=None):
+def cov(mat,col1,col2,population,obj,dFrame):
     #Change column names to indices
     for i in [col1,col2]:
         if isinstance(i,str):
@@ -15,7 +15,7 @@ def cov(mat,col1=None,col2=None,population=1,obj=None):
             raise ValueError("col1 and col2 are not in the valid range")
 
         c1,c2 = mat.col(col1,0),mat.col(col2,0)
-        m1,m2 = mat.mean(col1,asDict=0),mat.mean(col2,asDict=0)
+        m1,m2 = mat.mean(col1,get=0),mat.mean(col2,get=0)
         try:
             s = sum([(c1[i]-m1)*(c2[i]-m2) for i in range(len(c1))])
         except TypeError:
@@ -38,12 +38,15 @@ def cov(mat,col1=None,col2=None,population=1,obj=None):
             validinds.remove(i)
             n = m+1
             for j in validinds:
-                c1,c2 = mat.col(m+1,0),mat.col(n+1,0)
-                m1,m2 = mat.mean(validfeats[m],asDict=0),mat.mean(validfeats[n],asDict=0)
+                c1,c2 = mat.col(j+1,0),mat.col(n+1,0)
+                m1,m2 = mat.mean(validfeats[m],get=0),mat.mean(validfeats[n],get=0)
                 val = sum([(c1[a]-m1)*(c2[a]-m2) for a in range(len(c1))])/(len(c1)-1+population)
 
                 covmat._matrix[m][n] = val
                 covmat._matrix[n][m] = val
                 n+=1
             m+=1
+        covmat.index = validfeats
+        covmat.features = validfeats
+        covmat.dtype = dFrame
         return covmat

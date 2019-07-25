@@ -1,22 +1,18 @@
-def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True):
+def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
     """
     Set the matrix based on the arguments given
     """
-    from MatricesM.C_funcs.randgen import getuni,getfill,igetuni,igetrand
-    from MatricesM.C_funcs.zerone import pyfill
-    from MatricesM.C_funcs.linalg import Ctranspose
-    from MatricesM.matrix import dataframe
     from random import uniform,seed
     # =============================================================================
     # Argument check
     if lis==None:
         lis = []
     isMethod = bool(type(fill).__name__ == "method")
-    if len(direc)==0 and len(lis)==0:
+    if len(lis)==0:
         if fill == None:
             fill = uniform
         elif isinstance(fill,str):
-            if mat.dtype != dataframe:
+            if mat.dtype.__name__ != "dataframe":
                 raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
         elif isMethod:
             if not (fill.__name__ in ["uniform","gauss","triangular","gammavariate","betavariate","expovariate","lognormvariate"]):
@@ -32,11 +28,11 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
         
     # =============================================================================
     #Save the seed for reproduction
-    if mat.seed==None and len(lis)==0 and len(direc)==0 and isMethod:
+    if mat.seed==None and len(lis)==0 and isMethod:
         randseed = int(uniform(-2**24,2**24))
         mat._Matrix__seed = randseed
     
-    elif isMethod and len(lis)==0 and len(direc)==0:
+    elif isMethod and len(lis)==0:
         seed(mat.seed)
     else:
         mat._Matrix__seed=None
@@ -47,19 +43,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
     if isinstance(lis,str):
         mat._matrix=mat._listify(lis)
         if mat.dim == [0,0]:
-            mat._Matrix__dim=mat._declareDim()
-    #Matrix from a directory
-    elif len(direc)>0 and len(lis)==0:
-        [lis,mat._Matrix__features] = mat._Matrix__fromFile(direc,mat.header,mat.coldtypes)
-        if isinstance(lis,str):
-            mat._matrix = mat._listify(lis)
-        elif isinstance(lis,list):
-            mat._matrix = lis
-        else:
-            return None
-        
-        if mat.dim == [0,0]:
-            mat._Matrix__dim=mat._declareDim()          
+            mat._Matrix__dim=mat._declareDim()       
     #Matrix from a list or other filling methods
     else:
         if len(lis)>0:
@@ -69,20 +53,26 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
                     mat._Matrix__dim=mat._declareDim()
             else:
                 try:
-                    assert mat.dim[0]*mat.dim[1] == len(lis)
+                    if mat.dim != [0,0]:
+                        assert mat.dim[0]*mat.dim[1] == len(lis)
+                        mat._matrix=[]
+                        for j in range(0,len(lis),mat.dim[1]):
+                            mat._matrix.append(lis[j:j+mat.dim[1]]) 
+                    else:
+                        mat._matrix = [lis]
+
                 except Exception as err:
                     print(err)
                 else:
-                    mat._matrix=[]
-                    for j in range(0,len(lis),mat.dim[1]):
-                        mat._matrix.append(lis[j:j+mat.dim[1]])
-            
+                    mat._Matrix__dim=mat._declareDim()
         # =============================================================================
         #Same range for all columns
         elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
 
             if isinstance(fill,(str,int,float,complex)):
+                from MatricesM.C_funcs.randgen import getfill
                 mat._matrix=getfill(d[0],d[1],fill)
+                return None
 
             elif isMethod:
                 if fill.__name__=="uniform":
@@ -92,14 +82,18 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
                     
                     elif fmat:
                         if r==[0,1]:
+                            from MatricesM.C_funcs.zerone import pyfill
                             mat._matrix=pyfill(d[0],d[1],mat.seed)
                         else:
+                            from MatricesM.C_funcs.randgen import getuni
                             mat._matrix=getuni(d[0],d[1],n,m,mat.seed)
                     
                     else:
                         if r==[0,1]:
+                            from MatricesM.C_funcs.randgen import igetrand
                             mat._matrix=igetrand(d[0],d[1],mat.seed)
                         else:
+                            from MatricesM.C_funcs.randgen import igetuni
                             mat._matrix=igetuni(d[0],d[1],n-1,m+1,mat.seed)
                             
                 elif fill.__name__ in ["gauss","betavariate","gammavariate","lognormvariate"]:
@@ -167,6 +161,7 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
                 lis=list(r.values())
 
                 if isinstance(fill,(str,int,float,complex)):
+                    from MatricesM.C_funcs.randgen import getfill
                     mat._matrix=getfill(d[0],d[1],fill)
                     return None
 
@@ -228,7 +223,8 @@ def setMatrix(mat,d=None,r=None,lis=[],direc=r"",fill=None,cmat=False,fmat=True)
                         return None
                 else:
                     raise TypeError(f"Couldn't fill the matrix with fill value:{fill}")
-
+                
+                from MatricesM.C_funcs.linalg import Ctranspose #Change the process so this won't be necessary
                 mat._matrix=Ctranspose(d[1],d[0],temp)
         else:
             return None

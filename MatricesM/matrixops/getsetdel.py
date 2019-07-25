@@ -1,606 +1,515 @@
-def betterslice(oldslice,dim0):
-    s,e,t = 0,dim0,1
+def betterslice(oldslice,dim):
+    s,e,t = 0,dim,1
     vs,ve,vt = oldslice.start,oldslice.stop,oldslice.step
     if vs!=None:
-        if vs>0 and vs<dim0:
+        if vs>0 and vs<dim:
             s = vs
+        elif vs<0 and abs(vs)-1<dim:
+            return slice(vs,ve,t)
     if ve!=None:
-        if ve>0 and ve<dim0:
+        if ve>0 and ve<dim:
             if ve<=s:
                 e = s
             else:
                 e = ve
+        elif ve<0 and abs(ve)-1<dim:
+            e = dim+ve
     if vt!=None:
-        if abs(vt)<=dim0:
+        if abs(vt)<=dim:
             t = vt
         else:
-            t = dim0
+            t = dim
     return slice(s,e,t)
 
-def getitem(mat,pos,obj):
+def getitem(mat,pos,obj,useindex,returninds=False):
+    from MatricesM.validations.validate import consistentlist,sublist,rangedlist
+
+    unique = lambda lis:[i for i in lis[:] if lis.count(i)==1]
+    mat.use_row_index_to_get_item = 0 #Reset ind
+    d0,d1 = mat.dim
+
     #Get 1 row
     if isinstance(pos,int):
-        return obj(listed=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:])
+        if useindex:
+            ind = mat.index
+            mm = mat.matrix
+            rowinds = [i for i in range(d0) if ind[i]==pos]
+            lastinds = [pos for i in rowinds]
+            if returninds:
+                return (rowinds,None)
+            return obj(listed=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+        
+        if returninds:
+            return (pos,None)
+
+        inds = mat.index
+        lastinds = inds if inds in [[],None] else [inds[pos]]
+        return obj(listed=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+
     #Get multiple rows
     elif isinstance(pos,slice):
-        return obj(listed=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:])
-    #Get 1 column
+        if useindex:
+            indices = mat.index
+            start = pos.start if pos.start != None else 0
+            end = pos.stop if pos.stop != None else d1
+            rowrange,mm = [],mat.matrix
+            for i in range(d0):
+                try:
+                    if indices[i]>=start:
+                        if indices[i]>=end:
+                            break
+                        rowrange.append(i)
+                except:
+                    continue
+            if returninds:
+                return (rowrange,None)        
+            lastinds = [indices[i] for i in rowrange]
+            lastmatrix = [mm[i] for i in rowrange]
+            
+            return obj(listed=lastmatrix,features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+        
+        if returninds:
+            return (range(d0)[pos],None)
+
+        inds = mat.index
+        lastinds = inds if inds in [[],None] else inds[pos]
+        return obj(listed=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+    
+    #Get 1 column or use a specific row index
     elif isinstance(pos,str):
-        if pos not in mat.features:
+        if useindex:
+            index = mat.index
+            if not pos in index:
+                raise ValueError(f"{pos} is not a row index")
+            else:
+                mm = mat.matrix
+                rowinds = [i for i in range(d0) if index[i]==pos]
+                if returninds:
+                    return (rowinds,None)
+                return obj(listed=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
+                           dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[pos for _ in range(len(rowinds))],
+                           indexname=mat.indexname)
+
+        if not (pos in mat.features):
+            if returninds:
+                return (None,range(d0))
             raise ValueError(f"{pos} is not in column names")
-        return mat.col(mat.features.index(pos)+1)
+        else:
+            pos = mat.features.index(pos)
+
+        if returninds:
+            return (None,pos)
+
+        inds = mat.index
+        lastinds = inds if inds in [[],None] else inds[:]
+
+        mat =  obj(dim=[d0,1],listed=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],
+                   decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]],index=lastinds,
+                   indexname=mat.indexname,implicit=True)
+
+        mat.NOTES = f"n:{d0},type:{mat.coldtypes[0].__name__},invalid:{d0-mat.count(get=0)}\n\n"
+        return mat
+
+    #Get rows from given indices
+    elif isinstance(pos,list):
+        if useindex:
+            indices = mat.index
+            #######Assertion
+            sublist(pos,indices,"list of indices","indices",throw=True)
+            #######
+            mm = mat.matrix
+            rowinds = [i for i in range(d0) if indices[i] in pos]
+            if returninds:
+                return rowinds
+            return obj(listed=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
+                        dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[indices[a] for a in rowinds],
+                        indexname=mat.indexname)
+
+        #######Assertion
+        consistentlist(pos,int,"indices",throw=True)
+        rangedlist(pos,lambda a:(a<d0) and (a>=0),"indices",f"[0,{d0})",throw=True)
+        #######
+        if returninds:
+            return (pos,None)
+        mm = mat.matrix
+        i = mat.index
+        inds = [i[index] for index in pos] if mat._dfMat else []
+        
+        return obj(listed=[mm[i][:] for i in pos],features=mat.features,coldtypes=mat.coldtypes,dtype=mat.dtype,decimal=mat.decimal,index=inds,indexname=mat.indexname)
 
     #Get certain parts of the matrix
     elif isinstance(pos,tuple):
         pos = list(pos)
-        #Column names given
-        if all([1 if isinstance(i,str) else 0 for i in pos]):
+        #Column names or row indices given
+        if consistentlist(pos,str):
+            #Use as row indices
+            if useindex:
+                indices = mat.index
+                rowinds = [i for i in range(d0) if indices[i] in pos]
+                if returninds:
+                    return (rowinds,None)
+                return obj(listed=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
+                           dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[indices[a] for a in rowinds],
+                           indexname=mat.indexname)
+
+            #Use as column names
             colinds = [mat.features.index(i) for i in pos]
-            temp = obj((mat.dim[0],len(pos)),fill=0,features=list(pos),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds])
-            for row in range(mat.dim[0]):
+            if returninds:
+                return (None,colinds)
+
+            inds = mat.index
+            lastinds = inds if inds in [[],None] else inds[:]
+            
+            temp = obj((d0,len(pos)),fill=0,features=list(pos),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds],index=lastinds,indexname=mat.indexname)
+            
+            mm = mat.matrix
+            for row in range(d0):
                 c = 0
                 for col in colinds:
-                    temp._matrix[row][c] = mat._matrix[row][col]
+                    temp._matrix[row][c] = mm[row][col]
                     c+=1
             return temp
         
         #Tuple given    
         if len(pos)==2:
-            # (row_index,column_name)
-            if isinstance(pos[1],str):
-                pos = list(pos)
-                pos[1] = mat.features.index(pos[1])
-            # (row_index,tuple_of_column_names)
-            elif isinstance(pos[1],tuple):
-                if all([1 if isinstance(i,str) else 0 for i in pos[1]]):
-                    colinds = [mat.features.index(i) for i in pos[1]]
-
-                    if isinstance(pos[0],slice):
-                        newslice = betterslice(pos[0],mat.dim[0])
-                        rowrange = range(newslice.start,min(newslice.stop,mat.dim[0]),newslice.step)
-                    if isinstance(pos[0],int):
-                        rowrange = [pos[0]]
-                    if isinstance(pos[0],obj):
-                        rowrange = [i[0] for i in pos[0].find(1,0)]
-
-                    temp = obj((len(rowrange),len(pos[1])),fill=0,features=list(pos[1]),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds])
-                    r = 0
-                    for row in rowrange:
-                        c = 0
-                        for col in colinds:
-                            temp._matrix[r][c] = mat._matrix[row][col]
-                            c+=1
-                        r+=1
-                    return temp
+            pos = list(pos)
+            # Matrix[slice,column_index]
+            if isinstance(pos[0],slice):
+                if useindex:
+                    indices = mat.index
+                    start = pos[0].start if pos[0].start != None else 0
+                    end = pos[0].stop if pos[0].stop != None else mat.d1
+                    rowrange = []
+                    for i in range(mat.d0):
+                        try:
+                            if indices[i]>=start:
+                                if indices[i]>=end:
+                                    break
+                                rowrange.append(i)
+                        except:
+                            continue
                 else:
-                    raise ValueError(f"{pos[1]} has non-string values")
-            
+                    newslice = betterslice(pos[0],d0)
+                    rowrange = list(range(newslice.start,newslice.stop,newslice.step))
+            # Matrix[int,column_index]
+            elif isinstance(pos[0],int):
+                if useindex:
+                    indices = mat.index
+                    rowrange = [i for i in range(mat.d0) if indices[i]==pos[0]]
+                else:
+                    rowrange = [pos[0]]
+            # Matrix[list,column_index]
+            elif isinstance(pos[0],list):
+                if useindex:
+                    indices = mat.index
+                    #######Assertion
+                    sublist(pos[0],indices,"list of indices","indices",throw=True)
+                    #######
+                    rowrange = [i for i in range(d0) if indices[i] in pos[0]]
+                else:
+                    #######Assertion
+                    consistentlist(pos[0],int,"indices",throw=True)
+                    rangedlist(pos[0],lambda a:(a<d0) and (a>=0),"indices",f"[0,{d0})",throw=True)
+                    #######
+                    rowrange = pos[0]
+            # Matrix(Matrix,column_index]
+            elif isinstance(pos[0],obj):
+                if useindex:
+                    return None
+                rowrange = [i[0] for i in pos[0].find(1,0)]
+            else:
+                raise TypeError(f"{pos[0]} can't be used as row index")
+            #########################
+            # Matrix[row_index,str]
+            if isinstance(pos[1],str):
+                pos[1] = mat.features.index(pos[1])
+
+            # Matrix[row_index,slice]
+            elif isinstance(pos[1],slice):
+                default_st = pos[1].start if pos[1].start!=None else 0
+                default_en = pos[1].stop if pos[1].stop!=None else d1
+                start = mat.features.index(pos[1].start) if isinstance(pos[1].start,str) else default_st
+                end = mat.features.index(pos[1].stop) if isinstance(pos[1].stop,str) else default_en
+                pos[1] = betterslice(slice(start,end),d1)
+
+            # Matrix[row_index,Tuple(str)]
+            elif isinstance(pos[1],(tuple,list)):
+                #######Assertion
+                consistentlist(pos[1],(int,str),"indices",throw=True)
+                colinds = [mat.features.index(i) if isinstance(i,str) else i for i in pos[1]]
+                rangedlist(colinds,lambda a:(a<d1) and (a>=0),"indices",f"[0,{d1})",throw=True)
+                #######
+                inds = mat.index
+                indices = [inds[row] for row in rowrange] if mat._dfMat else []
+                temp = []
+                mm = mat.matrix
+                r=0
+                rowrange = unique(rowrange)
+
+                if returninds:
+                    return (rowrange,colinds)
+
+                for row in rowrange:
+                    temp.append([])
+                    for col in colinds:
+                        temp[r].append(mm[row][col])
+                    r+=1
+
+                return obj((len(rowrange),len(colinds)),temp,
+                            features=[mat.features[i] for i in colinds],
+                            decimal=mat.decimal,dtype=mat.dtype,
+                            coldtypes=[mat.coldtypes[i] for i in colinds],
+                            index=indices,
+                            indexname=mat.indexname)
+
             t = mat.coldtypes[pos[1]]
+            mm = mat.matrix
+            inds = mat.index
+            rowrange = unique(rowrange)
+            lastinds = [inds[i] for i in rowrange] if mat._dfMat else []
+
             if type(t) != list:
                 t = [t]
-            # mat[ slice, slice ] 
-            if isinstance(pos[0],slice) and isinstance(pos[1],slice):
-                return obj(listed=[i[pos[1]] for i in mat._matrix[pos[0]]],features=mat.features[pos[1]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t)
-            # mat[ slice, int ] 
-            elif isinstance(pos[0],slice) and isinstance(pos[1],int):
-                return obj(listed=[[i[pos[1]]] for i in mat._matrix[pos[0]]],features=[mat.features[pos[1]]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t)
-            # mat[ int, slice ]
-            elif isinstance(pos[0],int) and isinstance(pos[1],slice):
-                return obj(listed=[mat._matrix[pos[0]][pos[1]]],features=mat.features[pos[1]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t)
-            # mat[ int, int]
-            elif isinstance(pos[0],int) and isinstance(pos[1],int):
-                return mat._matrix[pos[0]][pos[1]]
+
+            if returninds:
+                if isinstance(pos[1],slice):
+                    return (rowrange,range(d1)[pos[1]])
+                return (rowrange,pos[1])
+
+            if isinstance(pos[0],int) and isinstance(pos[1],int):
+                return mat._matrix[rowrange[0]][pos[1]]
+                
+            elif isinstance(pos[1],int):
+                return obj(listed=[[mm[i][pos[1]]] for i in rowrange],features=[mat.features[pos[1]]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t,index=lastinds,indexname=mat.indexname)
+            
+            elif isinstance(pos[1],slice):
+                return obj(listed=[mm[i][pos[1]] for i in rowrange],features=mat.features[pos[1]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t,index=lastinds,indexname=mat.indexname)
+            
+            # Matrix[Matrix,column_index]
             elif isinstance(pos[0],obj):
                 temp = []
-                if isinstance(pos[1],int):
-                    if pos[1]>=mat.dim[1] or pos[1]<0:
+                if isinstance(pos[1],int): #Force slice
+                    if pos[1]>=d1 or pos[1]<0:
                         raise IndexError(f"{pos[1]} can't be used as column index")
                     pos[1] = slice(pos[1],pos[1]+1)
 
-                for i in range(mat.dim[0]):
-                    if pos[0]._matrix[i][0]==1:
-                        temp.append(mat._matrix[i][pos[1]])
+                mm = mat.matrix
 
-                return obj(listed=temp,features=mat.features[pos[1]],dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes[pos[1]])
+                for i in rowrange:
+                    temp.append(mm[i][pos[1]])
+
+                return obj(listed=temp,features=mat.features[pos[1]],dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes[pos[1]],index=lastinds,indexname=mat.indexname)
         else:
             raise IndexError(f"{pos} can't be used as indices")
 
     #0-1 filled matrix given as indeces
     elif isinstance(pos,obj):
-        temp = [mat._matrix[i] for i in range(mat.dim[0]) if pos._matrix[i][0]==1]
-        return obj(listed=temp,features=mat.features,dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes)
+        if useindex:
+            return None
+        rowrange = [i for i in range(mat.d0) if pos._matrix[i][0]==1]
+        rowrange = unique(rowrange)
 
-def setitem(mat,pos,item,obj):
-    #Change rows
-    #Lists should be given as [[1,2,...],[3,4,...],...]
-    from MatricesM.errors.errors import MatrixError,InconsistentValues,DimensionError
-    if isinstance(pos,slice):
-        newslice = betterslice(pos,mat.dim[0])
-        rowrange = range(newslice.start,min(newslice.stop,mat.dim[0]),newslice.step)
+        if returninds:
+            return (rowrange,None)
 
-        if isinstance(item,list):        
-            typ = type(item[0])
-            if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                raise InconsistentValues("Given list has varying types of values") 
-            
-            elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                rrange_len,item_len,ind_len,inneritem_len = len(rowrange),len(item),mat.dim[1],len(item[0])
-                
-                if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                    raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-            
-            else:#Single values given in a list, 
-                item = [item for i in rowrange]
+        mm = mat.matrix
+        temp = [mm[i] for i in rowrange]
+        indices = mat.index 
+        lastinds = [indices[i] for i in rowrange] if mat._dfMat else []
+        return obj(listed=temp,features=mat.features,dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes,index=lastinds,indexname=mat.indexname)
 
-        elif isinstance(item,obj):
-            if item.dim[1] != mat.dim[1]  or item.dim[0] != len(rowrange):
-                raise DimensionError(f"Given matrix's dimensions should be {len(rowrange)}x{mat.dim[1]}")
-            item = item.matrix
-        #If given 'item' is not in a list or a matrix
-        else:
-            item = [[item for j in range(mat.dim[1])] for i in rowrange]
+def setitem(mat,pos,item,obj,useindex):
+    from MatricesM.errors.errors import DimensionError
+    from MatricesM.validations.validate import consistentlist,exactdimension
 
-        mat._matrix[pos] = item 
+    mat.use_row_index_to_get_item = 0 #Reset ind
+    d0,d1 = mat.dim
 
-    #Change a row
-    #Lists should be given as [1,2,...]
-    elif isinstance(pos,int):
-        if pos not in range(mat.dim[0]):
-            raise IndexError(f"{pos} index is out of range")
-
-        if isinstance(item,obj):
-            if item.dim[0] != 1:
-                raise ValueError("Given matrix should have 1 row")
-            item = item.matrix[0]
-
-        elif isinstance(item,list):
-            if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                raise InconsistentValues("Given list has varying types of values") 
-            if len(item)!=mat.dim[1]: 
-                raise AssertionError(f"Expected length of the list to be :{mat.dim[1]}, but got {len(item)}")
-        
-        #If given 'item' is not in a list or a matrix
-        else:
-            item = [item for j in range(mat.dim[1])]
-
-        mat._matrix[pos] = item
-
-    #Change a column
-    elif isinstance(pos,str):
-        if not pos in mat.features:
-            raise ValueError(f"{pos} is not a column name")
-        if isinstance(item,list):        
-            typ = type(item[0])
-            if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                raise InconsistentValues("Given list has varying types of values") 
-            
-            elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                rrange_len,item_len,ind_len,inneritem_len = mat.dim[0],len(item),1,len(item[0])
-                
-                if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                    raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-            
-            else:#Single values given in a list, 
-                item = [item for i in range(mat.dim[0])]
-
-        elif isinstance(item,obj):
-            if item.dim[1] == 1  ^ item.dim[0] == 1:
-                raise ValueError("Given matrix should have 1 column or row")
-            if item.dim[0] == 1:
-                item = item.matrix[0]
+    def fix_given_item(item,rowrange:list,colrange:list,axis:[0,1]=0):
+        rl,cl = len(rowrange),len(colrange)
+        lislen = [cl,rl][axis]
+        #List given
+        if isinstance(item,list):
+            #Lists of lists given
+            if consistentlist(item,list):
+                #No changes needed  
+                exactdimension(item,rl,cl,throw=True)
+            #List of values given 
+            elif len(item)==lislen:
+                if axis:
+                    item = [[item[i] for _ in colrange] for i in rowrange]
+                else:
+                    item = [item[:] for _ in rowrange]
             else:
-                item = item.col(1,0)
-        #If given 'item' is not in a list or a matrix
-        else:
-            item = [item for i in range(mat.dim[0])]
+                raise DimensionError(f"Given list's length should be {lislen}")
+                
+        #Matrix given
+        elif isinstance(item,obj):
+            if (item.dim[1] != cl) or (item.dim[0] != rl):
+                raise DimensionError(f"Given matrix's dimensions should be {rl}x{cl}")
+            item = item.matrix
 
-        try:
-            ind = mat.features.index(pos)
-            for i in range(mat.dim[0]):
-                mat._matrix[i][ind] = item[i]
-        except:
-            raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
+        #Single value given
+        else:
+            item = [[item for j in colrange] for i in rowrange]
+        return item
+    
+    rowrange,colrange = getitem(mat,pos,obj,useindex,returninds=True)
+    rowrange = rowrange if isinstance(rowrange,(list,range)) else [rowrange]
+    colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
+    rows = rowrange if rowrange!=[None] else range(d0)
+    cols = colrange if colrange!=[None] else range(d1)
+    #Slice or list of row indices
+    if isinstance(pos,(slice,list,int)):
+        #####Fix item's dimensions#####
+        item = fix_given_item(item,rows,cols)
+        ###############################
+        r = 0
+        for row in rows:
+            mat._matrix[row] = item[r][:]
+            r+=1 
+
+    #Change a column, add a column or change a column's values of given row indices
+    elif isinstance(pos,str):
+        new_col = 0
+        if not (pos in mat.features) and not useindex:
+            new_col = 1
+        if not new_col:
+            if useindex:#Change rows with given index
+                #####Fix item's dimensions#####
+                item = fix_given_item(item,rows,cols)
+                ###############################
+                r = 0
+                for i in rows:
+                    mat._matrix[i] = item[r][:]
+                    r+=1
+            else:#Change a column
+                #####Fix item's dimensions#####
+                item = fix_given_item(item,rows,cols,1)
+                ###############################
+                ind = mat.features.index(pos)
+                for i in rows:
+                    mat._matrix[i][ind] = item[i][0]
+        else:
+            #####Fix item's dimensions#####
+            item = fix_given_item(item,rows,[None],1)
+            ###############################
+            for i in rows:
+                mat._matrix[i].append(item[i][0])
+            mat._Matrix__features.append(pos)
+            mat._Matrix__coldtypes.append(type(item[i][0]))
+            mat._Matrix__dim = [d0,d1+1]
+
 
     #Change certain parts of the matrix
     elif isinstance(pos,tuple):
         #Change given columns
-        pos = list(pos)
-        if all([1 if isinstance(i,str) else 0 for i in pos]):
-            colrange = [mat.features.index(v) for v in pos]
-            if isinstance(item,list):        
-                typ = type(item[0])
-                if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                    raise InconsistentValues("Given list has varying types of values") 
-                
-                elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                    rrange_len,item_len,ind_len,inneritem_len = mat.dim[0],len(item),len(colrange),len(item[0])
-                    
-                    if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                        raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-                
-                else:#Single values given in a list, 
-                    item = [item for i in range(mat.dim[0])]
-
-            elif isinstance(item,obj):
-                item = item.matrix
-            #If given 'item' is not in a list or a matrix
-            else:
-                item = [[item for i in range(len(colrange))] for j in range(mat.dim[0])]
-
-            try:
-                row = 0
-                for r in range(mat.dim[0]):
-                    i = 0
-                    for c in colrange:
-                        mat._matrix[r][c] = item[row][i]
-                        i+=1
-                    row+=1
-            except:
-                raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
+        if consistentlist(pos,str):
+            #####Fix item's dimensions#####
+            item = fix_given_item(item,rows,cols,1)
+            ###############################
+            i = 0
+            for r in rows:
+                j = 0
+                for c in cols:
+                    mat._matrix[r][c] = item[i][j]
+                    j+=1
+                i+=1
 
         #Tuple with row indices first, column indices/names second
         elif len(pos)==2:
-            pos = list(pos)
-            newpos = []
-            ind = 0
-            for p in pos:
-                if type(p) == slice:
-                    newpos.append(betterslice(p,mat.dim[0]))
-                else:
-                    newpos.append(p)
-                ind += 1
-            pos = newpos
+            #Assert second index contains column name
+            if consistentlist(pos[1],str):
+                #####Fix item's dimensions#####
+                item = fix_given_item(item,rows,cols,1)
+                ###############################
+                i = 0
+                for r in rows:
+                    j = 0
+                    for c in cols:
+                        mat._matrix[r][c] = item[i][j]
+                        j+=1
+                    i+=1
 
-            # (row_index,column_name)
-            if isinstance(pos[1],str):
-                pos[1] = mat.features.index(pos[1])
-
-            # (row_index,tuple_of_column_names)
-            if isinstance(pos[1],tuple):
-                rowrange = range(1)
-                #Check row indices
-                if isinstance(pos[0],slice):
-                    newslice = betterslice(pos[0],mat.dim[0])
-                    rowrange = range(newslice.start,min(newslice.stop,mat.dim[0]),newslice.step)
-                
-                elif isinstance(pos[0],int):
-                    rowrange = [pos[0]]
-                
-                elif isinstance(pos[0],obj):
-                    rowrange = [i[0] for i in pos[0].find(1,0)]
-
-                else:
-                    raise TypeError("Row indices should be either an integer, a slice or a boolean matrix")
-                
-                #Assert second index contains column names
-                if all([1 if isinstance(i,str) else 0 for i in pos[1]]):
-                    if isinstance(item,list):
-                        
-                        typ = type(item[0])
-                        if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                            raise InconsistentValues("Given list has varying types of values") 
-                        
-                        elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                            rrange_len,item_len,ind_len,inneritem_len = len(rowrange),len(item),len(pos[1]),len(item[0])
-                            
-                            if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                                raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-                        
-                        else:#Single values given in a list, 
-                            item = [item for i in rowrange]
-
-                    elif isinstance(item,obj):
-                        item = item.matrix
-                    #If given 'item' is not in a list or a matrix
-                    else:
-                        item = [[item for i in range(len(pos[1]))] for j in rowrange]
-                    
-                else:
-                    raise ValueError(f"{pos[1]} has non-string values")
-
-                #Replace values
-                try:
-                    colinds = [mat.features.index(i) for i in pos[1]]
-                    r1=0
-                    for r in rowrange:
-                        c1=0
-                        for c in colinds:
-                            mat._matrix[r][c] = item[r1][c1]
-                            c1+=1
-                        r1+=1
-                except:
-                    raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
-
-            # mat[ slice, slice ]
-            elif isinstance(pos[0],slice) and isinstance(pos[1],slice):
-                #Get indices
-                rowrange = range(pos[0].start,min(pos[0].stop,mat.dim[0]),pos[0].step)
-                colrange = range(pos[1].start,min(pos[1].stop,mat.dim[1]),pos[1].step)
-
-                #If given 'item' is not in a list or a matrix
-                if isinstance(item,list):
-                    typ = type(item[0])
-                    if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                        raise InconsistentValues("Given list has varying types of values") 
-                    
-                    elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                        rrange_len,item_len,ind_len,inneritem_len = len(rowrange),len(item),len(colrange),len(item[0])
-                        
-                        if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                            raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-                    
-                    else:#Single values given in a list, 
-                        item = [item[:] for i in rowrange]
-                
-                elif isinstance(item,obj):
-                    item = item.matrix
-
-                else:
-                    item = [[item for i in colrange] for j in rowrange]
-                
-                #Replace values
-                try:
-                    row=0
-                    for r in rowrange:
-                        col=0
-                        for c in colrange:
-                            mat._matrix[r][c] = item[row][col]
-                            col+=1
-                        row+=1
-                
-                except:
-                    raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
-
-            # mat[ slice, int ] 
-            elif isinstance(pos[0],slice) and isinstance(pos[1],int):
-                #Get indices
-                rowrange = range(pos[0].start,min(pos[0].stop,mat.dim[0]),pos[0].step)
-                #If given 'item' is not in a list or a matrix
-                if isinstance(item,list): #Item is a list
-                    typ = type(item[0])
-                    if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                        raise InconsistentValues("Given list has varying types of values") 
-                    
-                    elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                        rrange_len,item_len,ind_len,inneritem_len = len(rowrange),len(item),1,len(item[0])
-                        
-                        if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                            raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-                    
-                    else:#Single values given in a list, 
-                        item = [[i] for i in item]
-
-                elif isinstance(item,obj):
-                    if item.dim[1]!=1:
-                        raise DimensionError("Given matrix should be a column matrix")
-                    item = item.matrix
-
-                else:  #Item is a single value
-                    item = [[item] for j in rowrange]
-                
-                #Replace values
-                try:
-                    row=0
-                    for r in rowrange:
-                        mat._matrix[r][pos[1]] = item[row][0]
-                        row+=1
-                except:
-                    raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
-
-            # mat[ int, slice ]
-            elif isinstance(pos[0],int) and isinstance(pos[1],slice):
-                #Get indices
-                colrange = range(pos[1].start,min(pos[1].stop,mat.dim[1]),pos[1].step)
-                #If given 'item' is not in a list or a matrix
-                if isinstance(item,list): #Item is a list
-                    typ = type(item[0])
-                    if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                        raise InconsistentValues("Given list has varying types of values") 
-                    
-                    elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                        rrange_len,item_len,ind_len,inneritem_len = 1,len(item),len(colrange),len(item[0])
-                        
-                        if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                            raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-                    
-                    else:#Single values given in a list, 
-                        pass
-
-                elif isinstance(item,obj):
-                    if item.dim[0]!=1:
-                        raise DimensionError("Given matrix should be a row matrix")
-                    item = item.matrix[0]
-
-                else:  #Item is a single value
-                    item = [item for j in colrange]
-                
-                #Replace values
-                try:
-                    col=0
-                    for c in colrange:
-                        mat._matrix[pos[0]][c] = item[col]
-                        col+=1
-                except:
-                    raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
-
-            # mat[ int, int ]
-            elif isinstance(pos[0],int) and isinstance(pos[1],int):
-                mat._matrix[pos[0]][pos[1]] = item
-
-            #0-1 filled matrix given as indeces
-            elif isinstance(pos[0],obj):
-                if pos[0].dim[1]!=1:
-                    raise DimensionError("Boolean matrix should be a column matrix")
-
-                #Get row indices from the bool matrix
-                inds = [i[0] for i in pos[0].find(1,0)]
-
-                #Set column indices
-                #[bool_matrix,int]
-                if isinstance(pos[1],int):
-                    cols = [pos[1]]
-                #[bool_matrix,column name]
-                elif isinstance(pos[1],str):
-                    cols = [mat.features.index(pos[1])]
-                #[bool_matrix,tuple_of_column_names]
-                elif isinstance(pos[1],tuple):
-                    cols = [mat.features.index(i) for i in pos[1]]
-                else:
-                    raise TypeError(f"{pos[1]} can't be used as column indices")
-
-                #Given item is list of lists   
-                if isinstance(item,list): #Item is a list
-                    typ = type(item[0])
-                    if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                        raise InconsistentValues("Given list has varying types of values") 
-                    
-                    elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                        rrange_len,item_len,ind_len,inneritem_len = len(inds),len(item),len(colrange),len(item[0])
-                        
-                        if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                            raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-                    
-                    else:#Single values given in a list, 
-                        item = [item for _ in range(len(inds))]
-
-                elif isinstance(item,obj):
-                    if item.dim[0]!=len(inds) or item.dim[1]!=len(colrange):
-                        raise DimensionError(f"Given matrix's dimensions should be {len(inds)}x{len(colrange)}")
-                    item = item.matrix
-
-                else:  #Item is a single value
-                    item = [[item for j in cols] for _ in range(len(inds))]
-
-                try:
-                    r=0
-                    for row in inds:
-                        c=0
-                        for col in cols:
-                            mat._matrix[row][col] = item[r][c]
-                            c+=1
-                        r+=1
-                except:
-                    raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
+            #Matrix[ slice|int, slice|int ] | Matrix[ Matrix,col_index ]
+            elif (isinstance(pos[0],(slice,int)) and isinstance(pos[1],(slice,int))) or isinstance(pos[0],obj):
+                #####Fix item's dimensions#####
+                item = fix_given_item(item,rows,cols)
+                ###############################
+                i = 0
+                for r in rows:
+                    j = 0
+                    for c in cols:
+                        mat._matrix[r][c] = item[i][j]
+                        j+=1
+                    i+=1
 
             else:
                 raise AssertionError(f"item: {item} can't be set to index: {pos}.\n\tUse ._matrix property to change individual elements")
         else:
             raise IndexError(f"{pos} can't be used as indices")
 
-    #0-1 filled matrix given as indeces, change the whole row with given items
+    #Matrix[ Matrix ]
     elif isinstance(pos,obj):
-        if pos.dim[1]!=1:
-            raise DimensionError("Boolean matrix should be a column matrix")
-        inds = [i[0] for i in pos.find(1,0)]
-
-        if isinstance(item,list): #Item is a list
-            typ = type(item[0])
-            if not all([1 if isinstance(i,typ) else 0 for i in item]): #Differing data types given in the list
-                raise InconsistentValues("Given list has varying types of values") 
-            
-            elif all([1 if isinstance(i,list) else 0 for i in item]): #Lists of values given in a list    
-                rrange_len,item_len,ind_len,inneritem_len = len(inds),len(item),mat.dim[1],len(item[0])
-                
-                if len(item_len)!=len(rrange_len) and len(inneritem_len)!=len(ind_len): #Given list of lists should have all the items to replace the old ones with
-                    raise DimensionError(f"Given {item} was expected to have dimensions:{rrange_len}x{ind_len}, got {item_len}x{inneritem_len} instead.")
-            
-            else:#Single values given in a list, 
-                item = [item for _ in range(len(inds))]
-
-        elif isinstance(item,obj):
-            if item.dim[0]!=len(inds) or item.dim[1]!=mat.dim[1]:
-                raise DimensionError(f"Given matrix's dimensions should be {len(inds)}x{mat.dim[1]}")
-            item = item.matrix
-
-        else:  #Item is a single value
-            item = [[item for j in range(mat.dim[1])] for _ in range(len(inds))]
-
-        try:
-            r=0
-            for row in inds:
-                mat._matrix[row] = item[r]
-                r+=1
-        except:
-            raise IndexError(f"Given list: {item} doesn't have enough items to replace the old values with")
-
+        #####Fix item's dimensions#####
+        rows = rows if len(rows)!=0 else list(range(d0))
+        item = fix_given_item(item,rows,cols)
+        ###############################
+        i = 0
+        for row in rows:
+            mat._matrix[row] = item[i][:]
+            i+=1
+        
     else:
         raise AssertionError(f"item: {item} can't be set to index: {pos}.\n\tUse ._matrix property to change individual elements")
 
     return mat
 
-def delitem(mat,val,obj):
-        #A string passed == delete a column
-        if isinstance(val,str):
-            #Assertion
-            if not val in mat.features:
-                raise ValueError(f"'{val}' isn't a column name")
-            #Indices
-            colind = mat.features.index(val)
-            #Remove the desired column
-            for i in range(mat.dim[0]):
-                del mat.matrix[i][colind]
-            #Set new dimensions
-            mat._Matrix__dim = [mat.dim[0],mat.dim[1]-1]
-            del mat.features[colind]
-            del mat.coldtypes[colind]
+def delitem(mat,pos,obj,useind):
+    from MatricesM.validations.validate import consistentlist
 
-        #An integer passed == delete a row
-        elif isinstance(val,int):
-            #Assertion
-            if not (val>=0 and val<mat.dim[0]):
-                raise ValueError("Row index out of range")
-            #Remove the desired row
-            del mat.matrix[val]
-            #Set new dimensions
-            mat._Matrix__dim = [mat.dim[0]-1,mat.dim[1]]
+    mat.use_row_index_to_get_item = 0 #Reset ind
+    d0,d1 = mat.dim
 
-        #Slice object passed == delete 1 or more rows
-        elif isinstance(val,slice):
-            from math import ceil
-            #Check how many rows will be deleted
-            newslice = betterslice(val,mat.dim[0])
-            s,e,t = newslice.start,newslice.stop,newslice.step
-            #Remove rows
-            mat._matrix = [mat._matrix[i] for i in range(mat.dim[0]) if not i in range(mat.dim[0])[val]]
-            #Set new dimensions
-            mat._Matrix__dim = [mat.dim[0]-ceil((e-s)/t),mat.dim[1]]
+    rowrange,colrange = getitem(mat,pos,obj,useind,returninds=True)
+    rowrange = rowrange if isinstance(rowrange,(list,range)) else [rowrange]
+    colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
+    rows = rowrange if rowrange!=[None] else range(d0)
+    cols = colrange if colrange!=[None] else range(d1)
 
-        #Multiple arguments passed == delete 1 or more rows and columns
-        elif isinstance(val,tuple):
-            #Column names given == delete all rows of the given columns
-            if all([1 if isinstance(i,str) else 0 for i in val]):
-                #Indices
-                colinds = [mat.features.index(i) for i in val if i in mat.features]
-                #Remove columns
-                for r in range(mat.dim[0]):
-                    mat._matrix[r] = [mat._matrix[r][i] for i in range(mat.dim[1]) if not i in colinds]
-                #Remove column names and dtypes        
-                mat._Matrix__features = [mat.features[i] for i in range(mat.dim[1]) if not i in colinds]
-                mat._Matrix__coldtypes = [mat.coldtypes[i] for i in range(mat.dim[1]) if not i in colinds]
-                #Set new dimensions
-                mat._Matrix__dim = [mat.dim[0],mat.dim[1]-len(colinds)]
+    allrows = bool(rows in [range(d0),list(range(d0))])
+    allcols = bool(cols in [range(d1),list(range(d1))])
 
-            #Columns can't be deleted just for some rows
-            else:
-                if isinstance(val[0],slice):
-                    if betterslice(val[0],mat.dim[0]) != slice(0,mat.dim[0],1):
-                        raise TypeError("Rows or columns should be deleted entirely not at all. Use 'replace' method to change individual values in rows")
-                    else:
-                        if isinstance(val[1],slice):
-                            cols = mat.features[val[1]]
-                        for col in cols:
-                            mat.__delitem__(col)
-                else:
-                    raise TypeError("Rows or columns should be deleted entirely not at all. Use 'replace' method to change individual values in rows")
-                    
-        #Boolean matrix given as indeces == remove 0 or more rows
-        elif isinstance(val,obj):
-            #Assertion
-            if val.dim[0] != mat.dim[0]:
-                raise ValueError("Dimensions don't match")
-            #Remove rows and keep track of how many of them are deleted
-            rowinds = [i[0] for i in val.find(1,0)]
-            deleted = len(rowinds)
-            mat._matrix = [mat._matrix[i] for i in range(mat.dim[0]) if i not in rowinds]
-            #Set new dimensions
-            mat._Matrix__dim = [mat.dim[0]-deleted,mat.dim[1]]
+    #All values deleted
+    if allrows and allcols:
+        mat._Matrix__dim = [0,0]
+        mat._matrix = []
+        mat._Matrix__coldtypes = []
+        mat._Matrix__features = []
+        mat._Matrix__index = []
+    
+    #Rows deleted
+    elif allcols:
+        if mat._dfMat:
+            for row in rows:
+                del mat._matrix[row]
+                del mat.index[row]
+
+        for row in rows:
+            del mat._matrix[row]
+
+        mat._Matrix__dim = [d0-len(rows),d1]
+
+    #Columns deleted
+    elif allrows:
+        for col in cols:
+            del mat._Matrix__coldtypes[col]
+            del mat._Matrix__features[col]
+            for row in rows:
+                del mat._matrix[row][col]
+                
+        mat._Matrix__dim = [d0,d1-len(cols)]
+    
+    #Can't delete smaller parts 
+    else:
+        raise ValueError(f"Can't delete parts of the matrix that aren't complete columns or rows")

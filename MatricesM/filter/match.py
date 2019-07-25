@@ -37,16 +37,25 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                     match = re.findall(reg,str(m[i][j]))
                     if len(match)>0:
                         results[feats[j]].append((i,match))
+                        
             return results
         
         #Return rows in a matrix
         temp = []
+        inds = []
         for i in range(mat.dim[0]):
             for j in range(mat.dim[1]):
                 match = re.findall(reg,str(m[i][j]))
                 if len(match)>0:
-                    temp.append(m[i])
-        return obj(listed=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,decimal=mat.decimal)
+                    found_row = m[i]
+                    if not (found_row in temp):
+                        temp.append(found_row)
+                        inds.append(i)
+
+        oldinds = mat.index
+        foundinds = [oldinds[i] for i in inds] if mat._dfMat else []
+        return obj(listed=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,
+                   decimal=mat.decimal,index=foundinds,indexname=mat.indexname)
 
     #Search given column
     elif isinstance(cols,str):
@@ -58,18 +67,27 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                 match = re.findall(reg,str(col[i]))
                 if len(match)>0:
                     results.append([(i,match)])
+
             return obj(listed=results,features=[cols],dtype=mat.dtype,coldtypes=[tuple])
         
         #Return rows in a matrix
         temp = []
         col = mat.col(cols,0)
         m = mat.matrix
+        inds = []
         for i in range(mat.dim[0]):
             match = re.findall(reg,str(col[i]))
             if len(match)>0:
-                temp.append(m[i])
+                found_row = m[i]
+                if not (found_row in temp):
+                    inds.append(i)
+                    temp.append(found_row)
 
-        return obj(listed=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,decimal=mat.decimal)
+        oldinds = mat.index
+        foundinds = [oldinds[i] for i in inds] if mat._dfMat else []
+
+        return obj(listed=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,
+                   decimal=mat.decimal,index=foundinds,indexname=mat.indexname)
         
 
 
