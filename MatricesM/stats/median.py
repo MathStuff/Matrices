@@ -35,10 +35,10 @@ def median(mat,col,get,obj,dFrame):
             feats = mat.features[col-1]
             
     meds={}
+    tm = temp.matrix
     for rows in range(temp.dim[0]):
-
-        r = [j for j in temp.matrix[rows] if isinstance(j,(int,float))]
-        n=sorted(r)[mat.dim[0]//2]
+        r = [j for j in tm[rows] if isinstance(j,(int,float))]
+        n=sorted(r)[len(r)//2]
         
         if len(feats)!=0 and isinstance(feats,list):
             meds[feats[rows]]=n

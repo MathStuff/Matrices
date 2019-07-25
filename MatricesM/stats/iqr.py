@@ -38,10 +38,11 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
     qmeds={}
     for rows in range(temp.dim[0]):
         r = [i for i in temp.matrix[rows] if isinstance(i,(int,float))]
-        low=sorted(r)[:temp.dim[1]//2]
+        valid_length = len(r)
+        low=sorted(r)[:valid_length//2]
         low=low[len(low)//2]
         
-        up=sorted(r)[temp.dim[1]//2:]
+        up=sorted(r)[valid_length//2:]
         up=up[len(up)//2]
         
         if len(feats)!=0 and isinstance(feats,list):
