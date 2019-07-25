@@ -39,13 +39,16 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 ns=""
                 for i in range(mat.d0):
                     num = m[i][dt]
-                    ns+=str(round(num.real,decimals))
-                    im=num.imag
-                    if im<0:
-                        ns+=str(round(im,decimals))+"j "
+                    if isinstance(num,complex):
+                        ns+=str(round(num.real,decimals))
+                        im=num.imag
+                        if im<0:
+                            ns+=str(round(im,decimals))+"j "
+                        else:
+                            ns+="+"+str(round(im,decimals))+"j "
                     else:
-                        ns+="+"+str(round(im,decimals))+"j "
-                            
+                        ns+=str(num)
+                        
                 pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
                 colbounds.append(max([len(a) for a in re.findall(pattern,ns)]))
 
