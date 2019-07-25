@@ -961,18 +961,7 @@ class Matrix:
         fill_str,cdtype_str = self.fill,str([i.__name__ for i in self.coldtypes]).replace("'","")
         if type(self.fill).__name__ == "method":
             fill_str=self.fill.__name__
-        return f"""Matrix(dim={self.dim},
-                   listed={self._matrix},
-                   ranged={self.initRange},
-                   fill={fill_str},
-                   features={self.features},
-                   decimal={self.decimal},
-                   seed={self.seed},
-                   dtype={self.dtype.__name__},
-                   coldtypes={cdtype_str},
-                   index={self.index},
-                   indexname={self.indexname})
-                """
+        return f"Matrix(dim={self.dim},listed={self._matrix},ranged={self.initRange},fill={fill_str},features={self.features},decimal={self.decimal},seed={self.seed},dtype={self.dtype.__name__},coldtypes={cdtype_str},index={self.index},indexname='{self.indexname}')"
  
     @property
     def seed(self):
