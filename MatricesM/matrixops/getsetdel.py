@@ -41,8 +41,10 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         
         if returninds:
             return (pos,None)
-        
-        return obj(listed=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[mat.index[pos]],indexname=mat.indexname)
+
+        inds = mat.index
+        lastinds = inds if inds in [[],None] else [inds[pos]]
+        return obj(listed=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
 
     #Get multiple rows
     elif isinstance(pos,slice):
@@ -68,8 +70,10 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         
         if returninds:
             return (range(d0)[pos],None)
-        
-        return obj(listed=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=mat.index[pos],indexname=mat.indexname)
+
+        inds = mat.index
+        lastinds = inds if inds in [[],None] else inds[pos]
+        return obj(listed=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
     
     #Get 1 column or use a specific row index
     elif isinstance(pos,str):
@@ -96,9 +100,13 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         if returninds:
             return (None,pos)
 
+        inds = mat.index
+        lastinds = inds if inds in [[],None] else inds[:]
+
         mat =  obj(dim=[d0,1],listed=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],
-                   decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]],index=mat.index[:],
+                   decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]],index=lastinds,
                    indexname=mat.indexname,implicit=True)
+
         mat.NOTES = f"n:{d0},type:{mat.coldtypes[0].__name__},invalid:{d0-mat.count(get=0)}\n\n"
         return mat
 
@@ -149,7 +157,11 @@ def getitem(mat,pos,obj,useindex,returninds=False):
             if returninds:
                 return (None,colinds)
 
-            temp = obj((d0,len(pos)),fill=0,features=list(pos),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds],index=mat.index[:],indexname=mat.indexname)
+            inds = mat.index
+            lastinds = inds if inds in [[],None] else inds[:]
+            
+            temp = obj((d0,len(pos)),fill=0,features=list(pos),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds],index=lastinds,indexname=mat.indexname)
+            
             mm = mat.matrix
             for row in range(d0):
                 c = 0
@@ -302,8 +314,9 @@ def getitem(mat,pos,obj,useindex,returninds=False):
 
         mm = mat.matrix
         temp = [mm[i] for i in rowrange]
-        indices = mat.index
-        return obj(listed=temp,features=mat.features,dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes,index=[indices[i] for i in rowrange],indexname=mat.indexname)
+        indices = mat.index 
+        lastinds = [indices[i] for i in rowrange] if mat._dfMat else []
+        return obj(listed=temp,features=mat.features,dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes,index=lastinds,indexname=mat.indexname)
 
 def setitem(mat,pos,item,obj,useindex):
     from MatricesM.errors.errors import DimensionError
@@ -314,6 +327,7 @@ def setitem(mat,pos,item,obj,useindex):
 
     def fix_given_item(item,rowrange:list,colrange:list,axis:[0,1]=0):
         rl,cl = len(rowrange),len(colrange)
+        lislen = [cl,rl][axis]
         #List given
         if isinstance(item,list):
             #Lists of lists given
@@ -321,26 +335,23 @@ def setitem(mat,pos,item,obj,useindex):
                 #No changes needed  
                 exactdimension(item,rl,cl,throw=True)
             #List of values given 
-            elif len(item)==cl:
+            elif len(item)==lislen:
                 if axis:
-                    item = [[item[i] for _ in rowrange] for i in colrange]
+                    item = [[item[i] for _ in colrange] for i in rowrange]
                 else:
                     item = [item[:] for _ in rowrange]
             else:
-                raise DimensionError(f"Given list's length should be {cl}")
+                raise DimensionError(f"Given list's length should be {lislen}")
                 
         #Matrix given
         elif isinstance(item,obj):
-            if item.dim[1] != cl  or item.dim[0] != rl:
+            if (item.dim[1] != cl) or (item.dim[0] != rl):
                 raise DimensionError(f"Given matrix's dimensions should be {rl}x{cl}")
             item = item.matrix
 
         #Single value given
         else:
-            if axis:
-                item = [[item for j in rowrange] for i in colrange]
-            else:
-                item = [[item for j in colrange] for i in rowrange]
+            item = [[item for j in colrange] for i in rowrange]
         return item
     
     rowrange,colrange = getitem(mat,pos,obj,useindex,returninds=True)
@@ -348,7 +359,6 @@ def setitem(mat,pos,item,obj,useindex):
     colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
     rows = rowrange if rowrange!=[None] else range(d0)
     cols = colrange if colrange!=[None] else range(d1)
-    
     #Slice or list of row indices
     if isinstance(pos,(slice,list,int)):
         #####Fix item's dimensions#####
@@ -402,7 +412,7 @@ def setitem(mat,pos,item,obj,useindex):
             for r in rows:
                 j = 0
                 for c in cols:
-                    mat._matrix[r][c] = item[j][i]
+                    mat._matrix[r][c] = item[i][j]
                     j+=1
                 i+=1
 
@@ -417,7 +427,7 @@ def setitem(mat,pos,item,obj,useindex):
                 for r in rows:
                     j = 0
                     for c in cols:
-                        mat._matrix[r][c] = item[j][i]
+                        mat._matrix[r][c] = item[i][j]
                         j+=1
                     i+=1
 
@@ -442,6 +452,7 @@ def setitem(mat,pos,item,obj,useindex):
     #Matrix[ Matrix ]
     elif isinstance(pos,obj):
         #####Fix item's dimensions#####
+        rows = rows if len(rows)!=0 else list(range(d0))
         item = fix_given_item(item,rows,cols)
         ###############################
         i = 0
