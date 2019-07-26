@@ -28,7 +28,7 @@ def describe(mat,obj,dFrame):
         temp.append([dtypes[i],counts[name],mean[name],sdev[name],ranges[name][0],iqrs[name][0],iqrs[name][1],iqrs[name][2],ranges[name][1]])
 
     desc_mat._matrix = temp
-    desc_mat.decimal = mat.PRECISION
+    desc_mat.decimal = mat.decimal
 
     unused_names = ",".join([name for name in mat.features if not name in valid_feats_names])
     unused = f"{mat.d1-len(valid_feats_names)} Unused columns : \n\t{unused_names}" if len(unused_names) else "" 

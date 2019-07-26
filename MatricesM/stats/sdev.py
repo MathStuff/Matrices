@@ -66,8 +66,8 @@ def sdev(mat,col,population,get,obj,dFrame):
 
     #Return a matrix
     if get==2:
-        cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in sd.items()],features=["Column","Standart_Deviation"],dtype=dFrame,coldtypes=[str,complex],index=None)
+        cols = list(sd.keys())
+        return obj((cols,1),[i for i in sd.values()],features=["Standart_Deviation"],dtype=dFrame,coldtypes=[complex],index=cols,indexname="Column")
     #Return a dictionary
     elif get==1:
         return sd

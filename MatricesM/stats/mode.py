@@ -41,7 +41,7 @@ def mode(mat,col,get,obj,dFrame):
 
     #Return a tuple of matrices
     if get==2:
-        return tuple([obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat+" Mode(s)","Frequency"],dtype=dFrame,coldtypes=[str,int],index=None) for feat,c in mode.items()])
+        return tuple([obj((len(list(c.keys())),1),[i for i in c.values()],features=["Frequency"],dtype=dFrame,coldtypes=[int],index=list(c.keys()),indexname=feat+" Mode(s)") for feat,c in mode.items()])
     #Return a dictionary
     elif get==1:
         return mode

@@ -47,8 +47,8 @@ def median(mat,col,get,obj,dFrame):
 
     #Return a matrix
     if get == 2:
-        cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in meds.items()],features=["Column","Median"],dtype=dFrame,coldtypes=[str,float],index=None)    
+        cols = list(meds.keys())
+        return obj((len(cols),1),[i for i in meds.values()],features=["Median"],dtype=dFrame,coldtypes=[float],index=cols,indexname="Column")
     #Return a dictionary
     elif get == 1:
         return meds

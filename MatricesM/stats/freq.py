@@ -33,7 +33,7 @@ def freq(mat,col,get,obj,dFrame):
 
     #Return matrices
     if get==2:
-        return [obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat,"Frequencies"],dtype=dFrame,coldtypes=[str,int],index=None) for feat,c in res.items()]
+        return tuple(obj((len(list(c.keys())),1),[i for i in c.values()],features=["Frequencies"],dtype=dFrame,coldtypes=[int],index=list(c.keys()),indexname=feat) for feat,c in res.items())
     #Return a dictionary
     elif get==1:
         return res

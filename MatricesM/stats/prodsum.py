@@ -1,9 +1,42 @@
-def _prodsum(mat,col,get,obj,dFrame,isSum):
-    def p(lis):
+def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
+    import math
+
+    def sums(lis,limit,length):
+        i = 0
+        total=0
+        try:
+            while i<length:
+                num = lis[i]
+                if isinstance(num,valid_types):
+                    total+=num
+                i+=1
+        except OverflowError:
+            return math.inf
+        except:
+            return math.nan
+        else:
+            if total > limit:
+                return math.inf
+            return total
+
+    def prod(lis,limit,length):
+        i = 0
         prd=1
-        for i in lis:
-            prd*=i
-        return prd
+        try:
+            while i<length:
+                num = lis[i]
+                if isinstance(num,valid_types):
+                    prd*=num
+                i+=1
+        except OverflowError:
+            return math.inf
+        except:
+            return math.nan
+        else:
+            if prd > limit:
+                return math.inf
+            return prd
+
 
     if isinstance(col,str):
         col = feats.index(col)
@@ -13,15 +46,20 @@ def _prodsum(mat,col,get,obj,dFrame,isSum):
 
     colds = mat.coldtypes[:]
     feats = mat.features[:]
+    valid_types = (int,float,complex)
+    d0,d1 = mat.dim
 
     if isSum:
-        p = sum
-    vals = {feats[i]:p(mat.col(i+1,0)) for i in [j for j in range(mat.dim[1]) if colds[j] in [int,float,complex]]}
+        func = sums
+    else:
+        func = prod
+        
+    vals = {feats[i]:func(mat.col(i+1,0),inf_limit,d0) for i in [j for j in range(mat.dim[1]) if colds[j] in valid_types]}
     
     #Return a matrix
     if get == 2:
-        cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in vals.items()],features=["Column",["Product","Sum"][isSum]],dtype=dFrame,coldtypes=[str,complex],index=None)
+        cols = list(vals.keys())
+        return obj((len(cols),1),[i for i in vals.values()],features=[["Product","Sum"][isSum]],dtype=dFrame,coldtypes=[complex],index=cols,indexname="Column")
     #Return a dictionary
     elif get == 1:
         return vals
