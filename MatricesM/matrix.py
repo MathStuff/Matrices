@@ -169,9 +169,11 @@ class Matrix:
     implicit: bool; Skip matrix setting operations if dimensions and elements are given
 
     NOTE:
-        - Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        --> Use **kwargs with a dictionary
+        --> Using **kwargs with a dictionary
 
-        - Check https://github.com/MathStuff/MatricesM  for further explanation and examples
+            >>> Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        
+
+        --> Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int]]=None,
@@ -503,7 +505,7 @@ class Matrix:
         mm = self._matrix
         return [mm[r][column-1] for r in range(self.d0)]
     
-    def row(self,row:Union[int,str]=None,as_matrix:bool=True):
+    def row(self,row:int=None,as_matrix:bool=True):
         """
         Get a specific row of the matrix
         row:integer>=1 and <=row_amount
@@ -1642,7 +1644,7 @@ class Matrix:
 # =============================================================================
     """Filtering methods"""
 # =============================================================================     
-    def select(self,columns:Union[List[str],Tuple[str]]=None):
+    def select(self,columns:Union[List[str],Tuple[str],str]):
         """
         Returns a matrix with chosen columns
         
@@ -1650,6 +1652,8 @@ class Matrix:
         """
         if columns == None:
             return None
+        if isinstance(columns,str):
+            columns = (columns,)
         temp = self.col(self.features.index(columns[0])+1)
         for col in columns[1:]:
             temp.concat(self.col(self.features.index(col)+1))
@@ -1800,7 +1804,8 @@ class Matrix:
             return applyop(self,expressions,columns,conditions,self.features[:])
         applyop(self,expressions,columns,conditions,self.features[:])
 
-    def replace(self,old:Any,new:Any,
+    def replace(self,old:Any,
+                new:Any,
                 column:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=None,
                 condition:Optional[object]=None,
                 returnmat:bool=False):
@@ -1924,9 +1929,9 @@ class Matrix:
 
         Example:
             #Return the rows of all email adresses using gmail.com domain in the column 'mail'
-            >>> Matrix.match(expression=r"\w+@gmail.com",
-                             columns="mail",
-                             as_row=True)
+                >>> Matrix.match(expression=r"\w+@gmail.com",
+                                columns="mail",
+                                as_row=True)
         NOTE:
             #This method is CURRENTLY faster in most cases than using boolean matrices as indices:
                 >>> Matrix[Matrix[column]==value] --> Using boolean matrices as indices
@@ -2263,13 +2268,13 @@ class Matrix:
         Using row indices:
             --> Use it after sorting the dataframe for the best results for slices
 
-            Matrix.ind["pending"]                      --> Returns all the rows where the row index is 'pending'
+            >>> Matrix.ind["pending"]                      --> Returns all the rows where the row index is 'pending'
 
-            Matrix.ind[1990,"Score"]                   --> Returns the 'Score' column of all the rows with index 1990
+            >>> Matrix.ind[1990,"Score"]                   --> Returns the 'Score' column of all the rows with index 1990
 
-            Matrix.ind[50:150]                         --> Return the rows with index higher than 50 and less than 150, starts and stops with limits' first appearances
+            >>> Matrix.ind[50:150]                         --> Return the rows with index higher than 50 and less than 150, starts and stops with limits' first appearances
                                                        
-            Matrix.ind["Average":,"Final_Score"] --> Return the rows' 'Final_Score' columns where indices start from 'Average'
+            >>> Matrix.ind["Average":,"Final_Score"]       --> Return the rows' 'Final_Score' columns where indices start from 'Average'
             
         """
         from MatricesM.matrixops.getsetdel import getitem
