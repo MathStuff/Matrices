@@ -127,8 +127,9 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 string += " "*(bounds[cols]-s)+name+"  "
 
             string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
-        #Add index name row
-            string += "\n" + mat.indexname + " "*indbound + "+" + "-"*(sum(bounds) + 2*(d1) - len(mat.indexname) - 2)
+
+            #Add index name row
+            string += "\n" + mat.indexname + " "*(indbound-len(mat.indexname)) + "+" + "-"*(sum(bounds) + 2*(d1-1) )
 
         else:
             string += "\n"
