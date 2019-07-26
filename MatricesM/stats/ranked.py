@@ -40,6 +40,7 @@ def _rank(mat,col,rev,key,get,start):
         for rankmat in ranks.values():
             temp[feats[col]] = rankmat["Rank"].matrix
             col+=1
+        temp._Matrix__coldtypes = [int for _ in range(temp.d1)]
         return temp
     #Return matrices in a tuple
     elif get == 2:
