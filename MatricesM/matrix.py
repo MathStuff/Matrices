@@ -474,19 +474,32 @@ class Matrix:
         column:integer>=1 and <=column_amount | column name
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
         """
+        #Column number given
         if isinstance(column,int):
             if not (column<=self.d1 and column>0):
                 raise InvalidColumn(column,"Column index out of range")
+            
+            #Return matrix
+            if as_matrix:
+                return self[self.features[column-1]]
+
+        #Column name given
         elif isinstance(column,str):
             name = column
             if not column in self.features:
-                raise  InvalidColumn(column,f"'{column}' is not in column names")
+                raise InvalidColumn(column,f"'{column}' is not in column names")
+
+            #Return matrix
+            if as_matrix:
+                return self[column]
+
             column = self.features.index(column)+1
+
+        #Invalid type
         else:
             raise InvalidColumn(column)
 
-        if as_matrix:
-            return self[:,column-1]
+        #Return list
         mm = self._matrix
         return [mm[r][column-1] for r in range(self.d0)]
     
@@ -2091,23 +2104,23 @@ class Matrix:
         from MatricesM.stats.freq import freq
         return freq(self,col,get,Matrix,dataframe)   
 
-    def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1,inf_limit=2**512):
         """
         Return the sum of the desired column, give no arguments to get all columns'.
         col: int|str|None ; Column index or name
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
         from MatricesM.stats.prodsum import _prodsum
-        return _prodsum(self,col,get,Matrix,dataframe,1)
+        return _prodsum(self,col,get,Matrix,dataframe,1,inf_limit)
 
-    def prod(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def prod(self,col:Union[int,str,None]=None,get:[0,1,2]=1,inf_limit=2**512):
         """
         Return the product of the desired column, give no arguments to get all columns'.
         col: int|str|None ; Column index or name
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
         from MatricesM.stats.prodsum import _prodsum
-        return _prodsum(self,col,get,Matrix,dataframe,0)
+        return _prodsum(self,col,get,Matrix,dataframe,0,inf_limit)
 
     def count(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
