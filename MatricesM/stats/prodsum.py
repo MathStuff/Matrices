@@ -15,7 +15,7 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
         except:
             return math.nan
         else:
-            if total > limit:
+            if abs(total) > limit:
                 return math.inf
             return total
 
@@ -33,7 +33,7 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
         except:
             return math.nan
         else:
-            if prd > limit:
+            if abs(prd) > limit:
                 return math.inf
             return prd
 
