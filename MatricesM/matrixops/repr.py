@@ -3,7 +3,7 @@ def _repr(mat,notes,dFrame):
     
     d0,d1 = mat.dim
     feats = mat.features
-    available = gts().columns - 4
+    available = gts().columns - 3
     
     shuffled_col_inds = []
     usedcols = []
@@ -19,18 +19,18 @@ def _repr(mat,notes,dFrame):
         shuffled_col_inds.append(d1//2 + 1)
 
     string_bounds = mat._stringfy(mat.coldtypes,True)
-    string_bounds = list(map(lambda a:a+cmat+2,string_bounds[1:]))
     total_col_size = string_bounds[0]+1
-
+    string_bounds = list(map(lambda a:a+cmat+2,string_bounds[1:]))
+    
     if (not isinstance(string_bounds,list)) or (len(feats)==0):
         return "Empty Matrix"
 
-    if sum(string_bounds)>available:
+    if sum(string_bounds)+total_col_size>available:
     #Check how many columns will fit
         for i in shuffled_col_inds:
-            bound = string_bounds[i]
+            bound = max(string_bounds[i],5)
             new = total_col_size + bound
-            if new < available:
+            if new <= available:
                 total_col_size += bound
                 used_col_amount += 1
                 usedcols.append(i)
