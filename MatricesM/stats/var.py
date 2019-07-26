@@ -14,8 +14,8 @@ def var(mat,col,population,get,obj,dFrame):
     
     #Return a matrix
     if get==2:
-        cols = list(vs.values())
-        return obj((cols,1),[i for i in vs.values()],features=["Variance"],dtype=dFrame,coldtypes=[complex],index=cols,indexname="Column")
+        cols = list(vs.keys())
+        return obj((len(cols),1),[i for i in vs.values()],features=["Variance"],dtype=dFrame,coldtypes=[complex],index=cols,indexname="Column")
     #Return a dictionary
     elif get==1:
         return vs
