@@ -171,20 +171,20 @@ class Matrix:
     NOTE:
         --> Using **kwargs with a dictionary
 
-            >>> Matrix(kwargs={'dim':4,'fill':triangular,'ranged'=(0,10,6)})        
+            >>> Matrix(kwargs={'dim':4,'fill':triangular,'ranged':(0,10,6)})        
 
         --> Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int]]=None,
-                 listed:Union[List[List[Any]],List[Any]]=[],
+                 listed:Union[List[List[Any]],List[Any],str]=[],
                  fill:Any=uniform,
                  ranged:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=[0,1],
                  seed:int=None,
                  features:List[str]=[],
                  decimal:int=4,
                  dtype:Union[int,float,complex,dataframe]=float,
-                 coldtypes:List[Any]=[],
+                 coldtypes:List[type]=[],
                  index:Union[List[Any],Tuple[Any]]=[],
                  indexname:str="",
                  implicit:bool=False,
