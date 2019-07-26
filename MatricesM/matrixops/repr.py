@@ -3,7 +3,7 @@ def _repr(mat,notes,dFrame):
     
     d0,d1 = mat.dim
     feats = mat.features
-    available = gts().columns - 1
+    available = gts().columns - 4
     
     shuffled_col_inds = []
     usedcols = []
@@ -12,15 +12,15 @@ def _repr(mat,notes,dFrame):
     upper = d1//2 + 1 if d1%2 else d1//2
     cmat = 4 if mat._cMat else 0
 
-    for ind in range(1,d1):
+    for ind in range(upper):
         shuffled_col_inds.append(ind)
-        shuffled_col_inds.append(d1-ind)
-    if not d1%2:
+        shuffled_col_inds.append(d1-ind-1)
+    if d1%2:
         shuffled_col_inds.append(d1//2 + 1)
 
     string_bounds = mat._stringfy(mat.coldtypes,True)
-    string_bounds = [string_bounds[0]+1] + list(map(lambda a:a+cmat+2,string_bounds[1:]))
-    total_col_size = string_bounds[0]
+    string_bounds = list(map(lambda a:a+cmat+2,string_bounds[1:]))
+    total_col_size = string_bounds[0]+1
 
     if (not isinstance(string_bounds,list)) or (len(feats)==0):
         return "Empty Matrix"
@@ -29,11 +29,11 @@ def _repr(mat,notes,dFrame):
     #Check how many columns will fit
         for i in shuffled_col_inds:
             bound = string_bounds[i]
-            new = total_col_size + bound + 5
-            if new <= available:
+            new = total_col_size + bound
+            if new < available:
                 total_col_size += bound
                 used_col_amount += 1
-                usedcols.append(i-1)
+                usedcols.append(i)
             else:
                 break
     else:
@@ -60,16 +60,16 @@ def _repr(mat,notes,dFrame):
         return mat._stringfy(coldtypes=mat.coldtypes[:]) + "\n\n" + notes
 
     halfrow = rowlimit//2
-    if rowlimit%2 != 0:
-        halfrow = rowlimit//2 + 1
+    if rowlimit%2:
+        halfrow += 1
 
     halfcol = collimit//2
-    if collimit%2 != 0:
-        halfcol = collimit//2 + 1
+    if collimit%2:
+        halfcol += 1
     
     srted = sorted(usedcols)
     first = srted[:halfcol]
-    second = srted[-(collimit//2):]
+    second = srted[halfcol:]
     #Too many rows
     if d0>rowlimit:
         #Too many columns
@@ -86,8 +86,8 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Add  ...  to represent missing column's existence
-            topLeft.add(["..."]*(halfrow),col=halfcol + 1,dtype=str,feature="")
-            bottomLeft.add(["..."]*(rowlimit//2),col=halfcol + 1,dtype=str,feature="")
+            topLeft.add(["..."]*topLeft.d0,col=halfcol + 1,dtype=str,feature="")
+            bottomLeft.add(["..."]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature="")
             
             #Concat left part with right, dots in the middle
             topLeft.concat(topRight,axis=1)
@@ -95,7 +95,7 @@ def _repr(mat,notes,dFrame):
             topLeft.concat(bottomLeft,axis=0)
             
             #Add dots as middle row
-            topLeft.add(["..."]*(collimit+1),row=halfrow+1,index="...")
+            topLeft.add(["..."]*topLeft.d1,row=halfrow+1,index="...")
 
             return topLeft._stringfy(coldtypes=topLeft.coldtypes) + "\n\n" + notes
 
@@ -106,9 +106,8 @@ def _repr(mat,notes,dFrame):
             top = mat[:halfrow,:end].roundForm(mat.decimal)
             bottom = mat[mat.d0-(rowlimit//2):,:end].roundForm(mat.decimal)
             if d1>1 and end == 1:
-                top.add(["..."]*(halfrow),col=2,dtype=str,feature="")
-                bottom.add(["..."]*(rowlimit//2),col=2,dtype=str,feature="")
-                end = 2
+                top.add(["..."]*top.d0,col=2,dtype=str,feature="")
+                bottom.add(["..."]*bottom.d0,col=2,dtype=str,feature="")
             #Set new dtypes
             for i in [top,bottom]:
                 if i.dtype != dFrame:
@@ -118,7 +117,7 @@ def _repr(mat,notes,dFrame):
             top.concat(bottom,axis=0)
 
             #Add middle part
-            top.add(["..."]*end,row=halfrow+1,index="...")
+            top.add(["..."]*top.d1,row=halfrow+1,index="...")
 
             return top._stringfy(coldtypes=top.coldtypes) + "\n\n" + notes
             
