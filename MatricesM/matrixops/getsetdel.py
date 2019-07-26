@@ -24,7 +24,6 @@ def betterslice(oldslice,dim):
 def getitem(mat,pos,obj,useindex,returninds=False):
     from MatricesM.validations.validate import consistentlist,sublist,rangedlist
 
-    unique = lambda lis:[i for i in lis[:] if lis.count(i)==1]
     mat.use_row_index_to_get_item = 0 #Reset ind
     d0,d1 = mat.dim
 
@@ -244,7 +243,6 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 temp = []
                 mm = mat.matrix
                 r=0
-                rowrange = unique(rowrange)
 
                 if returninds:
                     return (rowrange,colinds)
@@ -265,7 +263,6 @@ def getitem(mat,pos,obj,useindex,returninds=False):
             t = mat.coldtypes[pos[1]]
             mm = mat.matrix
             inds = mat.index
-            rowrange = unique(rowrange)
             lastinds = [inds[i] for i in rowrange] if mat._dfMat else []
 
             if type(t) != list:
@@ -307,7 +304,6 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         if useindex:
             return None
         rowrange = [i for i in range(mat.d0) if pos._matrix[i][0]==1]
-        rowrange = unique(rowrange)
 
         if returninds:
             return (rowrange,None)
