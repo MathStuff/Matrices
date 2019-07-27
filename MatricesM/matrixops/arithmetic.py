@@ -1,4 +1,4 @@
-def matmul(mat,other,obj,m):
+def matmul(mat,other,obj,m,dFrame):
     from MatricesM.C_funcs.linalg import matmultip
     from MatricesM.errors.errors import MatrixError
     if not type(other) == obj:
@@ -11,7 +11,9 @@ def matmul(mat,other,obj,m):
         cm = 1
     temp = matmultip(mat.dim[0],other.dim[0],other.dim[1],mat.matrix,o,cm)         
     #Return proper the matrix
-    if other._cMat or mat._cMat:
+    if mat._dfMat or other._dfMat:
+        t = dFrame
+    elif other._cMat or mat._cMat:
         t = complex
     elif other._fMat or mat._fMat:
         t = float
@@ -290,7 +292,7 @@ def tdiv(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features,decimal=mat.decimal[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
+            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:

@@ -2360,7 +2360,7 @@ class Matrix:
 # =============================================================================
     def __matmul__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import matmul
-        return matmul(self,other,Matrix,self.matrix)
+        return matmul(self,other,Matrix,self.matrix,dataframe)
     
     def __add__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.arithmetic import add
