@@ -19,7 +19,7 @@ def matmul(mat,other,obj,m,dFrame):
         t = float
     else:
         t = int
-    return obj(dim=[mat.dim[0],other.dim[1]],listed=temp,features=other.features[:],decimal=other.decimal,dtype=t,implicit=True)
+    return obj(dim=[mat.dim[0],other.dim[1]],data=temp,features=other.features[:],decimal=other.decimal,dtype=t,implicit=True)
     
 def add(mat,other,obj,m,dFrame):
     if isinstance(other,obj):
@@ -39,7 +39,7 @@ def add(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)    
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)    
             #--------------------------------------------------------------------------
             
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
@@ -58,7 +58,7 @@ def add(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
 
@@ -75,7 +75,7 @@ def add(mat,other,obj,m,dFrame):
             else:
                 t = int
             temp=[[m[rows][cols]+other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     else:
         print("Can't add")
@@ -99,7 +99,7 @@ def sub(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
@@ -117,7 +117,7 @@ def sub(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
 
@@ -134,7 +134,7 @@ def sub(mat,other,obj,m,dFrame):
             else:
                 t = int
             temp=[[m[rows][cols]-other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     else:
         print("Can't subtract")
@@ -158,7 +158,7 @@ def mul(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
@@ -176,7 +176,7 @@ def mul(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
 
     elif isinstance(other,list):
@@ -193,7 +193,7 @@ def mul(mat,other,obj,m,dFrame):
             else:
                 t = int
             temp=[[m[rows][cols]*other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     else:
         print("Can't multiply")
@@ -219,7 +219,7 @@ def fdiv(mat,other,obj,m,dFrame):
                 t = dFrame
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)   
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)   
         
     elif isinstance(other,int) or isinstance(other,float):
         try:
@@ -235,7 +235,7 @@ def fdiv(mat,other,obj,m,dFrame):
                 t = dFrame
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
             
     elif isinstance(other,list):
@@ -264,7 +264,7 @@ def fdiv(mat,other,obj,m,dFrame):
                     t = dFrame
                 else:
                     t = int
-                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+                return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
                 #--------------------------------------------------------------------------
     else:
         print("Can't divide")
@@ -292,7 +292,7 @@ def tdiv(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
@@ -312,7 +312,7 @@ def tdiv(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = integer
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
         if mat._dfMat:
@@ -336,7 +336,7 @@ def tdiv(mat,other,obj,m,dFrame):
                 print("Can't divide") 
                 return mat
             else:
-                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+                return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
                 #--------------------------------------------------------------------------
     else:
         print("Can't divide")
@@ -365,7 +365,7 @@ def mod(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
         
     elif isinstance(other,int) or isinstance(other,float):
         try:
@@ -383,7 +383,7 @@ def mod(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     elif isinstance(other,list):
         if mat._dfMat:
@@ -408,7 +408,7 @@ def mod(mat,other,obj,m,dFrame):
                 print("Can't get modular") 
                 return mat
             else:
-                return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=mat.dtype,implicit=True,index=mat.index[:],indexname=mat.indexname)
+                return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=mat.dtype,implicit=True,index=mat.index[:],indexname=mat.indexname)
                 #--------------------------------------------------------------------------
     else:
         print("Can't get modular")
@@ -432,7 +432,7 @@ def pwr(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],decimal=mat.decimal,dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname) 
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
@@ -449,7 +449,7 @@ def pwr(mat,other,obj,m,dFrame):
                 t = float
             else:
                 t = int
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
 
     elif isinstance(other,list):
@@ -467,7 +467,7 @@ def pwr(mat,other,obj,m,dFrame):
             else:
                 t = int
             temp=[[m[rows][cols]**other[cols] for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
-            return obj(dim=mat.dim,listed=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
+            return obj(dim=mat.dim,data=temp,features=mat.features[:],dtype=t,implicit=True,index=mat.index[:],indexname=mat.indexname)
             #--------------------------------------------------------------------------
     else:
         print("Can't raise to the given power")

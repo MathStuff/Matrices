@@ -11,6 +11,6 @@ def samples(mat,size,conds,obj):
     sample_inds = sample(list(range(filtered.d0)),size)
 
     indices = [i[row] for row in sample_inds] if mat._dfMat else []
-    return obj(listed=[mm[row][:] for row in sample_inds],decimal=mat.decimal,
+    return obj(data=[mm[row][:] for row in sample_inds],decimal=mat.decimal,
                dtype=mat.dtype,features=mat.features[:],coldtypes=mat.coldtypes[:],
                index=indices,indexname=mat.indexname)
