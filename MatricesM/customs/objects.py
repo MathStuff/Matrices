@@ -93,3 +93,12 @@ class date:
 
     def __repr__(self):
         return "".join(re.findall(self.date,self.pattern))
+
+class Group:
+    def __init__(self,matrix_list,names):
+        self.groups = [val[0] for val in matrix_list]
+        self.table = [val[1] for val in matrix_list]
+        self.grouped_by = names
+
+
+    
