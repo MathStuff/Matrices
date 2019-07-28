@@ -19,6 +19,9 @@ def _repr(mat,notes,dFrame):
         shuffled_col_inds.append(d1//2 + 1)
 
     string_bounds = mat._stringfy(mat.coldtypes,True)
+    if string_bounds == "Empty matrix":
+        return string_bounds
+        
     total_col_size = string_bounds[0]+1
     string_bounds = list(map(lambda a:a+cmat+2,string_bounds[1:]))
     
@@ -86,12 +89,21 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Add  ...  to represent missing column's existence
-            topLeft.add(["..."]*topLeft.d0,col=halfcol + 1,dtype=str,feature="")
-            bottomLeft.add(["..."]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature="")
+            topLeft.add(["..."]*topLeft.d0,col=halfcol + 1,dtype=str,feature="...")
+            bottomLeft.add(["..."]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature="...")
             
-            #Concat left part with right, dots in the middle
+            #Concat left parts with rights, dots in the middle
             topLeft.concat(topRight,axis=1)
             bottomLeft.concat(bottomRight,axis=1)
+
+            #Fix indices       
+            if mat._dfMat:
+                topLeft.index = mat.index[:halfrow]
+                bottomLeft.index = mat.index[mat.d0-(rowlimit//2):]
+            else:
+                bottomLeft.index = list(range(mat.d0-(rowlimit//2),mat.d0))
+
+            #Concat bottom to top
             topLeft.concat(bottomLeft,axis=0)
             
             #Add dots as middle row
@@ -106,12 +118,19 @@ def _repr(mat,notes,dFrame):
             top = mat[:halfrow,:end].roundForm(mat.decimal)
             bottom = mat[mat.d0-(rowlimit//2):,:end].roundForm(mat.decimal)
             if d1>1 and end == 1:
-                top.add(["..."]*top.d0,col=2,dtype=str,feature="")
-                bottom.add(["..."]*bottom.d0,col=2,dtype=str,feature="")
+                top.add(["..."]*top.d0,col=2,dtype=str,feature="...")
+                bottom.add(["..."]*bottom.d0,col=2,dtype=str,feature="...")
             #Set new dtypes
             for i in [top,bottom]:
                 if i.dtype != dFrame:
                     i.dtype = dFrame
+
+            #Fix indices       
+            if mat._dfMat:
+                top.index = mat.index[:halfrow]
+                bottom.index = mat.index[mat.d0-(rowlimit//2):]
+            else:
+                bottom.index = list(range(mat.d0-(rowlimit//2),mat.d0))
 
             #Concat last items
             top.concat(bottom,axis=0)
@@ -127,7 +146,7 @@ def _repr(mat,notes,dFrame):
         if first == second:
             left = mat[:,0].roundForm(mat.decimal)
             if d1>1:
-                left.add(["..."]*d0,col=2,dtype=str,feature="")
+                left.add(["..."]*d0,col=2,dtype=str,feature="...")
             if not mat._dfMat:
                 left.dtype = dFrame
 
@@ -142,7 +161,7 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Add and concat rest of the stuff
-            left.add(["..."]*d0,col=halfcol + 1,dtype=str,feature="")
+            left.add(["..."]*d0,col=halfcol + 1,dtype=str,feature="...")
             left.concat(right,axis=1)
 
         return left._stringfy(coldtypes=left.coldtypes) + "\n\n" + notes
