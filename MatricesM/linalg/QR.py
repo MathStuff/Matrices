@@ -1,6 +1,4 @@
 def QR(mat,obj):
-    from MatricesM.matrix import dataframe
-
     if mat.isSquare:
         if mat.isSingular:
             return (None,None)
@@ -24,10 +22,12 @@ def QR(mat,obj):
             u=[u[i]-p[i] for i in range(len(u))]
             
         U.append(u.copy())
-    if mat.dtype in [float,int,dataframe]:
-        dt = float
-    else:
+        
+    if mat._cMat:
         dt = complex
+    else:
+        dt = float
+
     matU = obj((len(U),len(U[0])),U,dtype=dt,implicit=True).t
     #Orthonormalize by diving the columns by their norms
     Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
