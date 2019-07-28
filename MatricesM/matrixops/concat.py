@@ -27,5 +27,5 @@ def concat(mat,matrix,axis):
             mat._Matrix__features = mat.features + [i if i not in mat.features else "_"+i for i in matrix.features]
             mat._Matrix__coldtypes = mat.coldtypes + [i for i in matrix.coldtypes]
         else:
-            if mat._dfMat:
+            if mat._dfMat or len(mat.index)==mat.d0:
                 mat._Matrix__index = mat.index + [ind for ind in matrix.index]
