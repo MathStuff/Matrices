@@ -44,17 +44,17 @@ p=Matrix(5,ranged=[0,100])
 q=Matrix(4,dtype=float)
 q1=Matrix(9,decimal=2,dtype=float)
 q2=Matrix(6,decimal=6,dtype=float)
-y=Matrix(3,listed=[3,5,7,8,3,4,5,2,5])
+y=Matrix(3,data=[3,5,7,8,3,4,5,2,5])
 c1=Matrix(5,dtype=complex)
 c2=Matrix([7,3],ranged=[-10,10],dtype=complex)
 # =============================================================================
 # String inputs Matrices
 # =============================================================================
-proj=Matrix(20,listed=projectGrid,dtype=int)
-validStr1=Matrix(dim=[2,3],listed=" 34-52\n33a c9d88 hello\n--3-")
-validStr2=Matrix(listed="312as45\ndid12,,,44\ncc352as45\ndid12,,,44\ncc3-5")
-validStr3=Matrix(listed="\n\n\ndd34 5\n\n44\nn659")
-validStr4=Matrix(dim=[22,3],listed="""ulke,boy,kilo,yas,cinsiyet
+proj=Matrix(20,data=projectGrid,dtype=int)
+validStr1=Matrix(dim=[2,3],data=" 34-52\n33a c9d88 hello\n--3-")
+validStr2=Matrix(data="312as45\ndid12,,,44\ncc352as45\ndid12,,,44\ncc3-5")
+validStr3=Matrix(data="\n\n\ndd34 5\n\n44\nn659")
+validStr4=Matrix(dim=[22,3],data="""ulke,boy,kilo,yas,cinsiyet
 tr,130,30,10,e
 tr,125,36,11,e
 tr,135,34,10,k
@@ -81,10 +81,10 @@ fr,166,56,42,k
 # =============================================================================
 # Identity Matrices
 # =============================================================================
-id1=Matrix(listed=Identity())
-id2=Matrix(listed=Identity(5))
+id1=Matrix(data=Identity())
+id2=Matrix(data=Identity(5))
 id3=id2[:3,:3]
-id4=Matrix(listed=Identity(6))
+id4=Matrix(data=Identity(6))
 
 # =============================================================================
 """PRINT THE MATRICES """
@@ -250,8 +250,8 @@ print(f3)
 
 print("################")
       
-print("e+=Matrix(listed=Identity(e.dim[0]))*99")
-e+=Matrix(listed=Identity(e.dim[0]))*99
+print("e+=Matrix(data=Identity(e.dim[0]))*99")
+e+=Matrix(data=Identity(e.dim[0]))*99
 print(e)
 print("\ne-=33:")
 e-=33
