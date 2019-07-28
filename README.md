@@ -24,7 +24,7 @@
 
 Matrix(dim=dimensions,#Required(UNLESS 'data' is given), int | list/tuple as [rows,cols]
 
-       data=elements, #Optional, list of numbers | list of lists containing numbers | string | dictionary. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
+       data=data, #Optional, list of numbers | list of lists containing numbers | string | dictionary. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
        fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "data" is given
 
@@ -50,17 +50,17 @@ Matrix(dim=dimensions,#Required(UNLESS 'data' is given), int | list/tuple as [ro
 
        index=index_column #Optional, Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
 
-       indexname=index_name #Optional, str; name of the index column
+       indexname=index_col_name #Optional, str; name of the index column
 
        implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
       )
 
-#Alternative way for creating dataframes, inherits from Matrix class
+#Alternative way for creating dataframes, inherits from Matrix class, dtype is passed as dataframe to Matrix
 dataframe(data=data,
           features=column_names,
-          coldtypes=column_data_types,
-          decimal=3,
-          index=indices,
+          coldtypes=column_dtypes,
+          decimal=decimals_to_round, #Decimal defaults to 3
+          index=index_column,
           indexname=index_col_name, 
           **kwargs #Rest of the arguments passed to Matrix's __init__
          )
@@ -158,7 +158,7 @@ df = dataframe(data=data,
                features=["Name","Height","Weight"],
                decimal=1)
                
-#Alternatively        
+#Same as:        
 df = Matrix(data=data,
             dtype=dataframe,
             features=["Name","Height","Weight"],
