@@ -2073,7 +2073,7 @@ class Matrix:
                        index=feats,
                        NOTES=f"Size: {self.dim}")
 
-    def uniques(self,column=None):
+    def uniques(self,column:Union[str,None]=None):
         """
         Return a list of unique values in a column
         column: str|None; column name, None to return a list of lists
@@ -2082,20 +2082,29 @@ class Matrix:
             return [list(col.keys()) for col in self.freq(get=0)]
         return list(self.freq(column)[column].keys())
 
-    def groupBy(self,column,group):
+    def groupBy(self,column:Union[str,List[str],None]=None):
         """
         Group values in 'column' of a dataframe by row indices/labels
-        column: str; column name
-        group: Any; value in the desired column, None to group all unique values in individual dataframes
+        column: str|list of strings|None; column name(s), None to use index column
 
-        Returns a dataframe or a tuple of dataframes
+        Returns a dataframe or a Group object
+
+        NOTE:
+            If there are list type indices passed to 'groups', method will try to find matching indices with the values INSIDE the list
+            In such case, pass the argument in a list to use the list itself as a row index
+        
         """
         from MatricesM.filter.grouping import grouping
-        return grouping(self,column,Matrix,dataframe)
+        return grouping(self,column)
 
     def oneHot(self,column):
         pass
 
+    def index_update(self,prefix,suffix):
+        pass
+
+    def name_update(self,prefix,suffix):
+        pass
 # =============================================================================
     """Logical-bitwise magic methods """
 # =============================================================================
@@ -2149,9 +2158,6 @@ class Matrix:
         """
         inds=self.find(val)
         return bool(inds)
-
-    def __len__(self):
-        return self.d0*self.d1    
 
     def __getitem__(self,pos:Union[object,int,str,slice,list,Tuple[Union[str,int,slice,list,Tuple[str]]]]):
         """
