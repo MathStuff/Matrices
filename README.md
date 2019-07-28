@@ -22,37 +22,48 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimensions,#Required(UNLESS 'listed' is given), int | list/tuple as [rows,cols]
+Matrix(dim=dimensions,#Required(UNLESS 'data' is given), int | list/tuple as [rows,cols]
 
-                     listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
+       data=elements, #Optional, list of numbers | list of lists containing numbers | string | dictionary. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
-                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" is given
+       fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "data" is given
 
-                     ranged=[*args] | dict;"""
-                              ->To apply all the elements give a list | tuple
-                              ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
-                              ->Arguments should follow one of the following rules:
-                                   1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
-                                   2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                                   3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
-                                   4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
-                                   5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
+       ranged=[*args] | dict;"""
+                        ->To apply all the elements give a list | tuple
+                        ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
+                        ->Arguments should follow one of the following rules:
+                              1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
+                              2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                              3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
+                              4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
+                              5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
 
-                     features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
-                     
-                     seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
-                       
-                     dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
-                     
-                     coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
-                     
-                     index=index_column #Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+       features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
+      
+       seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+         
+       dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
+      
+       coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+      
+       decimal=decimals_to_round #Optional, int (default is 4). Decimal digits to round to while printing
 
-                     indexname=index_name #str; name of the index column
+       index=index_column #Optional, Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
 
-                     implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
-                     )
+       indexname=index_name #Optional, str; name of the index column
 
+       implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
+      )
+
+#Alternative way for creating dataframes, inherits from Matrix class
+dataframe(data=data,
+          features=column_names,
+          coldtypes=column_data_types,
+          decimal=3,
+          index=indices,
+          indexname=index_col_name, 
+          **kwargs #Rest of the arguments passed to Matrix's __init__
+         )
 
 ```         
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
@@ -124,10 +135,10 @@ randomData4 = Matrix([20000,4],
 ##### Create special matrices
 ```python 
 #3x3 identity matrix
-id3 = Matrix(listed=Identity(3))
+id3 = Matrix(data=Identity(3))
 
 #A 8x8 symmetrical matrix filled with numbers in range from 0 to 1 with uniform distribution 
-sym1 = Matrix(listed=Symmetrical(8))
+sym1 = Matrix(data=Symmetrical(8))
 
 ``` 
 ----------------------------------------
@@ -136,14 +147,19 @@ sym1 = Matrix(listed=Symmetrical(8))
 #Creates a matrix with the given list of numbers
 filled_rows = [[1,2,3],[4,5,6],[7,8,9]]
 
-C = Matrix(listed=filled_rows) 
+C = Matrix(data=filled_rows) 
 
 #Create a dataframe from a list
 data = [["James",180.4,85],
         ["Tom",172,73],
         ["Sophia",168.25,65]]
-        
-df = Matrix(listed=data,
+
+df = dataframe(data=data,
+               features=["Name","Height","Weight"],
+               decimal=1)
+               
+#Alternatively        
+df = Matrix(data=data,
             dtype=dataframe,
             features=["Name","Height","Weight"],
             decimal=1)
@@ -173,13 +189,13 @@ data="""1,K,60,69900,6325
 
 #As an integer matrix
 intMat = Matrix(dim=[10,4],
-                listed=data,
+                data=data,
                 features=["id","age","num1","num2"],
                 dtype=int) 
 
 #Or as a dataframe
 df = Matrix(dim=[10,4],
-            listed=data,
+            data=data,
             features=["id","age","num1","num2"],
             dtype=dataframe,
             coldtypes=[int]*4)
@@ -188,8 +204,6 @@ df = Matrix(dim=[10,4],
 ----------------------------------------
 ##### Read data from files 
 ```python 
-from MatricesM import *
-
 #Create a dataframe matrix from a csv file. read_file accepts 2 optional parameters: encoding, delimiter
 data_matrix = read_file(data_directory) 
 
@@ -367,7 +381,7 @@ Matrix.p #Prints the dimensions, wheter or not the matrix is square and the grid
 
 Matrix.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
-Matrix.matrix #Returns the matrix's rows as lists in a list
+Matrix.matrix #Returns the matrix's rows as lists in a list. >>> dataframe.data Returns the same thing if dataframe was used instead of Matrix
 
 Matrix.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
@@ -534,6 +548,10 @@ Matrix.tail(n) #Returns the last n rows (if there are less than n rows it return
 
 Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, 25%, 50%, 75%, max.
 
+Matrix.info #Returns information about columns: Dtype, Valid data amount, Invalid data amount, Unique data amount
+
+Matrix.uniques(column) #Returns the unique set of the 'column'; If 'column' is None, all columns' unique values are returned in a list of lists 
+
 Matrix.sum(n,get) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.prod(n,get) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
@@ -649,9 +667,9 @@ newMatrix = eval(oldMatrix.obj)
 
    #round call is currently required for the next examples due to <~%1e-5 error rate on some calculations
    
-   round(A @ Matrix(listed=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
+   round(A @ Matrix(data=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
    
-   round(A @ A.inv)== Matrix(listed=Identity(A.dim[0]))
+   round(A @ A.inv)== Matrix(data=Identity(A.dim[0]))
    
    round(A,4) == round(A.sym + A.anti,4)
    
