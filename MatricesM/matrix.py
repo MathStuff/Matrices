@@ -5,137 +5,23 @@ Created on Wed Oct 31 17:26:48 2018
 @author: Semih
 """
 
-from MatricesM.validations.validate import *
-from MatricesM.errors.errors import *
-from MatricesM.constructors.matrices import *
+from MatricesM.validations import *
+from MatricesM.errors import *
+from MatricesM.constructors import *
+from MatricesM.customs import *
 
 import re
-from typing import *
+from typing import Union,Tuple,List,Any,Dict,Optional
 
 from random import random,randint,uniform,triangular,\
                    gauss,gammavariate,betavariate,   \
                    expovariate,lognormvariate,seed
 
-def read_file(directory:str,encoding:str="utf8",delimiter:str=","):
-    """
-    Read data from files
-    """
-    from MatricesM.setup.fileops import readAll
-    directory = directory.replace("\\","/")
-    (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
-    return Matrix(listed=data,features=feats,dtype=dataframe,coldtypes=cdtypes,DIRECTORY=directory)
-
-def roundto(val:Any,decimal:int=8,force:bool=False):
-    """
-    Better round function which works with complex numbers and lists
-    val:Any; value to round
-    decimal:int>=0; decimal places to round to
-    force:bool; force value rounding as complex number rounding
-    """
-    if isinstance(val,complex) or force:
-        return complex(round(val.real,decimal),round(val.imag,decimal))
-    elif isinstance(val,(int,float)):
-        return round(val,decimal)
-    elif isinstance(val,list):
-        return [roundto(value,decimal) for value in val]
-    else:
-        return TypeError(f"Can't round type {type(val)}.")
-
-class date:
-    """
-    Date object, define patterns for the date and time data
-    data: str; string format of the data
-    pattern: str; string to format the data with. 
-    
-    Usage:
-        day "d"
-        month "m"
-        year "y"
-
-        hour "h"
-        minute "n"
-        second "s"
- 
-        milli "3"
-        micro "6"
-        nano "9"
-
-        timezone "t"
-
-        Create a pattern using the terms above. Example:
-
-            Example pattern             Expected input pattern                     Expected input sample
-
-             yyyy/mm/dd             -->  Year/Month/Day                        -->  2019/10/25
-             dd hh:nn:ss            -->  Day Hours:Minutes:Seconds             -->  25 16:32:55
-             yyyymmdd,ttttt,hh:nn   -->  YearMonthDay,timezone,Hours:Minutes   -->  19980409,UTC+3,21:45
-
-    """
-    def __init__(self,date:str,pattern:str,delimiters:List[str],config:str="default"):
-        self.date = date
-        self.delimiters = delimiters
-        self.pattern = self.fixpattern(pattern)
-    
-    @staticmethod
-    def fixpattern(pattern,cfg):
-        if cfg == "default":
-            day,month,year = "d","m","y"
-            hour,minute,second = "h","n","s"
-            milli,micro,nano = "3","6","9"
-            tzone = "t"
-            terms = [day,month,year,hour,minute,second,milli,micro,nano,tzone]
-            delims = self.delimiters[:]
-
-            #Assert given delimiters are valid
-            for delimiter in delims:
-                if delimiter in terms:
-                    raise ValueError(f"Character {delimiter} can't be used as a delimiter")
-
-            input_pattern_term_indices = {"d":0,"m":0,"y":0,"h":0,"n":0,"s":0,"3":0,"6":0,"9":0}
-            delimiter_indices = {i:[] for i in delims}
-            #Check for terms' every appearance
-            for term in terms:
-                #Regex pattern for repeated characters
-                term_pattern = term + "+"
-                
-                #Find out what repeated characters patterns are
-                partition = {i:[] for i in sorted(re.findall(term_pattern,pattern),reverse=True)}
-                
-                #Store starting and the ending points of the found patterns
-                for part in list(partition.keys()):
-                    pattern_copy = pattern[:]
-                    while True:
-                        lap = 0
-                        try:
-                            #Start getting all indices of the pattern
-                            while part in pattern_copy:
-                                l = len(part)
-                                ind = pattern_copy.index(part)
-                                #Replace the used part with question marks
-                                pattern_copy = pattern_copy[:ind] + pattern_copy[ind+l:]
-                        except:
-                            #Store them
-                            input_pattern_term_indices[term][part].append((ind+l*lap,ind+l*(lap+1)))
-                            lap += 1
-                        else:
-                            #All indices stored, get to the next pattern
-                            break
-                #Should have input_pattern_term_indices -> {"d":{"ddd":[(1,4),(5,8)],"d":[(15,16)]},"m":...}
-                
-                #Create a regex pattern for the entire pattern using collected indices
-                pass
-
-    def __repr__(self):
-        return "".join(re.findall(self.date,self.pattern))
-
-class dataframe:
-    pass
-
 class Matrix:
     """
     dim: int OR list|tuple of 2 integers; dimensions of the matrix. Giving an integer creates assumes square matrix
     
-    listed: str|list of lists of values|list of values; Elements of the matrix.
+    data: str|list of lists of values|list of values; Elements of the matrix.
 
     fill: Any; Fills the matrix with chosen distribution or the value, default is uniform distribution
           Available distributions:
@@ -177,33 +63,18 @@ class Matrix:
     """
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int]]=None,
-                 listed:Union[List[List[Any]],List[Any],str]=[],
+                 data:Union[List[List[Any]],List[Any],str]=[],
                  fill:Any=uniform,
                  ranged:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=[0,1],
                  seed:int=None,
-                 features:List[str]=[],
                  decimal:int=4,
                  dtype:Union[int,float,complex,dataframe]=float,
+                 features:List[str]=[],
                  coldtypes:List[type]=[],
                  index:Union[List[Any],Tuple[Any]]=[],
                  indexname:str="",
                  implicit:bool=False,
-                 **kwargs):  
-
-        #Basic attributes
-        self.__features = features                  #Column names
-        self.__dim = dim                            #Dimensions
-        self._matrix = listed                       #Values
-        self.__fill = fill                          #Filling method for the matrix
-        self.__initRange = ranged                   #Given range for 'fill'
-        self.__seed = seed                          #Seed to pick values from 
-        self.__decimal = decimal                    #How many digits to display in decimal places
-        self.__dtype = dtype                        #Type of the matrix
-        self.__coldtypes = coldtypes                #Column dtypes
-        self.__index = index                        #Column to use as index column
-        self.__indexname = indexname                #Index column's name
-        self.__implicit = implicit                  #Implicity value
-        self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
+                 **kwargs):
 
         #Constants to use for printing,rounding etc.
         self.PRECISION = 6                          #Decimals to round
@@ -212,28 +83,25 @@ class Matrix:
         self.EIGEN_ITERS = 100                      #QR algorithm iterations for eigenvalues
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
 
-        ###################################
-        attributes = ["dim","listed","fill","ranged","seed","features","decimal","dtype",
-                      "coldtypes","index","indexname","implicit"]
-        options = ["PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
-        ###################################
+        #Basic attributes
+        self.__features = features                  #Column names
+        self.__coldtypes = coldtypes                #Column dtypes 
+        self.__dim = dim                            #Dimensions
+        self._matrix = data                         #Values
+        self.__fill = fill                          #Filling method for the matrix
+        self.__initRange = ranged                   #Given range for 'fill'
+        self.__seed = seed                          #Seed to pick values from 
+        self.__decimal = decimal                    #How many digits to display in decimal places
+        self.__dtype = dtype                        #Type of the matrix
+        self.__index = index                        #Column to use as index column
+        self.__indexname =  indexname               #Index column's name
+        self.__implicit = implicit                  #Implicity value
+        self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
-        #Override the attributes given in kwargs with new values
-        for key,val in kwargs.items():
-            if isinstance(val,dict) and key=="kwargs":
-                for k,v in val.items():
-                    if k=="listed":
-                        self._matrix = v
-                    elif k=="ranged":
-                        self.__initRange = v
-                    elif k in attributes:
-                        exec(f"self._Matrix__{k}=v")
-                    elif k in options:
-                        exec(f"self.{k}=v")
-                    else:
-                        raise ParameterError(k,attributes+options)
-            else:
-                exec(f"self.{key}=val")
+        ######Override attributes#######
+        if kwargs != {}:
+            override_attributes(self,kwargs)
+        ################################
 
         #Set/fix attributes
         self._setDim(self.__dim)           #Fix dimensions
@@ -255,7 +123,7 @@ class Matrix:
             '_Matrix__initRange','_Matrix__dtype','_Matrix__coldtypes','_Matrix__seed',
             '_Matrix__decimal','_Matrix_initRange','_Matrix__implicit','_Matrix__index',
             '_Matrix__indexname','_matrix','p','grid','copy','string','features', 
-            'dim','d0','d1','fill','initRange','rank','perma', 'trace', 'matrix',
+            'dim','fill','initRange','rank','perma', 'trace', 'matrix','d0','d1',
             'det','diags','eigenvalues', 'eigenvectors','obj', 'seed', 'decimal',
             'dtype', 'coldtypes','isSquare', 'isIdentity', 'isSingular', 'isSymmetric', 
             'isAntiSymmetric','isPerSymmetric','isHermitian','isTriangular','isUpperTri',
@@ -267,26 +135,27 @@ class Matrix:
             'echelon', 'rrechelon','conj', 't', 'ht', 'adj', 'inv', 'pseudoinv','LU', 
             'U','L', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm',
             'intForm', 'floatForm', 'describe', 'info', 'kwargs','index','indexname',
-            '_dfMat','_cMat','_fMat',
+            '_dfMat','_cMat','_fMat','use_row_index_to_get_item',
             "PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
             if attr in property_names:
                 return object.__getattr__(self,attr)
-
-            if (attr in ["use_row_index_to_get_item"]):
-                if fromset:
-                    return 1
-                return 0
-
+                
             return (self[attr],True)[fromset]
 
         except:
             return None
 
-    def __setattr__(self,attr:str,val:Any):
+    def __setattr__(self,attr:str,val:Any,force=False):
+        if attr == 'use_row_index_to_get_item':
+            if force:
+                object.__setattr__(self,attr,val)
+            return None
+
         if isinstance(self.__getattr__(attr,1),bool):
             self.__setitem__(attr,val)
         else:
             object.__setattr__(self,attr,val)
+            
 
     def setup(self,first:bool,implicit:bool=False):
         #Matrix fix
@@ -350,7 +219,7 @@ class Matrix:
                     raise ValueError(f"Invalid index list; expected {d0} values, got {len(ind)}")
 
             elif ind == []:
-                self.__index = ["" for _ in range(self.d0)]
+                self.__index = ["" for _ in range(d0)]
             else:
                 raise TypeError(f"Type {type(ind).__name__} can't be used as indices")
             
@@ -392,17 +261,17 @@ class Matrix:
             self.__dim = [0,0]
         
     def setMatrix(self,
-                  d:Union[int,list,tuple,None]=None,
-                  r:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=None,
+                  dim:Union[int,list,tuple,None]=None,
+                  ranged:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=None,
                   lis:Union[List[List[Any]], List[Any]]=[],
-                  f:Any=uniform,
+                  fill:Any=uniform,
                   cmat:bool=False,
                   fmat:bool=True):
         """
         Set the matrix based on the arguments given
         """
         from MatricesM.setup.matfill import _setMatrix
-        _setMatrix(self,d,r,lis,f,cmat,fmat)
+        _setMatrix(self,dim,ranged,lis,fill,cmat,fmat,uniform=uniform,seed=seed)
         
 # =============================================================================
     """Attribute recalculation methods"""
@@ -583,7 +452,7 @@ class Matrix:
     def ind(self):
         if not self._dfMat:
             raise TypeError("Can't use 'ind' with non-dataframe matrices")
-        self.use_row_index_to_get_item = 1
+        self.__setattr__('use_row_index_to_get_item',1,force=True)
         return self
         
     def swap(self,index1:Union[int,str],index2:Union[int,str],axis:[0,1]):
@@ -673,7 +542,7 @@ class Matrix:
         Returns the inversed matrix
         """
         from MatricesM.linalg.inverse import inverse
-        return inverse(self,Matrix(listed=Identity(self.d0)))
+        return inverse(self,Matrix(data=Identity(self.d0)))
 
     def _Rank(self):
         """
@@ -766,8 +635,7 @@ class Matrix:
         return list(self.__dim)
     @dim.setter
     def dim(self,val:Union[int,List[int],Tuple[int]]):
-        amount = self.d0*self.d1
-
+        amount = self.__dim[0]*self.__dim[1]
         if isinstance(val,int):
             assert val>0 , "Dimensions can't be <=0"
             val=[val,val]
@@ -781,14 +649,14 @@ class Matrix:
         m = self.matrix
         els=[m[i][j] for i in range(self.d0) for j in range(self.d1)]
         temp=[[els[c+val[1]*r] for c in range(val[1])] for r in range(val[0])]
-        self.__init__(dim=list(val),listed=temp,dtype=self.dtype,implicit=True)
+        self.__init__(dim=list(val),data=temp,dtype=self.dtype,implicit=True)
     
     @property
     def d0(self):
-        return self.dim[0]
+        return self.__dim[0]
     @property
     def d1(self):
-        return self.dim[1]
+        return self.__dim[1]
 
     @property
     def fill(self):
@@ -809,36 +677,59 @@ class Matrix:
     def initRange(self):
         return self.__initRange
     @initRange.setter
-    def initRange(self,value:Union[List[Union[float,int]],Tuple[Union[float,int]]]):
-        if not (isinstance(value,list) or isinstance(value,tuple)):
-            raise TypeError("initRange should be a list or a tuple")
-        
-        if ( self.fill in [uniform,gauss,gammavariate,betavariate,lognormvariate] ) \
-           or ( isinstance(self.fill,(int,float,complex)) ):
-            if len(value)!=2:
-                return IndexError("""initRange|ranged should be in the following formats:
-                                       fill is gauss|lognormvariate --> [mean,standard_deviation]
-                                       fill is (gamma|beta)variate --> [alpha,beta]
-                                       fill is uniform --> [minimum,maximum]""")
-            if not (isinstance(value[0],(float,int))) and not (isinstance(value[1],(float,int))):
-                return ValueError("list contains non integer and non float numbers")
-        
-        elif self.fill in [triangular]:
-            if len(value)!=3:
-                return IndexError("initRange|ranged should be in the form of [minimum,maximum,mode]")
-            if not (isinstance(value[0],(float,int))) and not (isinstance(value[1],(float,int))) \
-               and not (isinstance(value[2],(float,int))):
-                return ValueError("list contains non integer and non float numbers")
-        
-        elif self.fill in [expovariate]:
-            if len(value)!=1:
-                return IndexError("initRange|ranged should be in the form of [lambda]")
+    def initRange(self,value:Union[ List[Union[float,int]], Tuple[Union[float,int]], Dict[str,Union[Tuple,List]] ]):
+
+        #Check given lists compatability with matrix's 'fill' attribute
+        def list_checker(value,fill):
+            if ( fill in [uniform,gauss,gammavariate,betavariate,lognormvariate] ) \
+            or ( isinstance(fill,(int,float,complex)) ):
+                if len(value)!=2:
+                    raise IndexError("""initRange|ranged should be in the following formats:
+                                        fill is gauss|lognormvariate --> [mean,standard_deviation]
+                                        fill is (gamma|beta)variate --> [alpha,beta]
+                                        fill is uniform --> [minimum,maximum]""")
+                if not (isinstance(value[0],(float,int))) and not (isinstance(value[1],(float,int))):
+                    raise ValueError("list contains non integer and non float numbers")
             
+            elif fill in [triangular]:
+                if len(value)!=3:
+                    raise IndexError("initRange|ranged should be in the form of [minimum,maximum,mode]")
+                if not (isinstance(value[0],(float,int))) and not (isinstance(value[1],(float,int))) \
+                and not (isinstance(value[2],(float,int))):
+                    raise ValueError("list contains non integer and non float numbers")
+            
+            elif fill in [expovariate]:
+                if len(value)!=1:
+                    raise IndexError("initRange|ranged should be in the form of [lambda]")
+                
+            else:
+                raise TypeError("Invalid 'fill' attribute to use 'initRange' with, change 'fill' to use this setter")
+
+
+        if isinstance(value,dict):
+            names,ranges = list(value.keys()),list(value.values())
+            fill = self.fill
+
+            if len(names) != self.d1:
+                raise IndexError(f"Expected {self.d1} items in dictionary, got {len(names)} instead.")
+            if not all([1 if name in self.features else 0 for name in names]):
+                raise NameError("Dictionary keys should match column names")
+            
+            for lis in ranges:
+                if not isinstance(lis,(tuple,list)):
+                    raise TypeError(f"Values in dictionary should be lists or tuples")
+                list_checker(lis,fill)
+
+            self.__initRange = value
+
+        elif isinstance(value,(list,tuple)):
+            list_checker(value,self.fill)
+            self.__initRange = list(value)
+
         else:
-            raise TypeError("Invalid 'fill' attribute to use 'initRange' with, change 'fill' to use this setter")
-        l=list(value)
-        self.__initRange=l
-        self.setMatrix(self.__dim,l,[],self.__fill,self._cMat,self._fMat)
+            raise TypeError(f"Can't use type '{type(value)} as a list,tuple or a dictionary")
+
+        self.setMatrix(self.__dim,self.__initRange,[],self.__fill,self._cMat,self._fMat)
 
     @property
     def rank(self):
@@ -980,7 +871,7 @@ class Matrix:
         dm,m,r,fs,d = self.dim,self.matrix,self.initRange,self.features,self.decimal
         s,dt,i,n = self.seed,self.dtype.__name__,self.index,self.indexname
 
-        return f"Matrix(dim={dm},listed={m},ranged={r},fill={f},features={fs},decimal={d},seed={s},dtype={dt},coldtypes={cd},index={i},indexname='{n}')"
+        return f"Matrix(dim={dm},data={m},ranged={r},fill={f},features={fs},decimal={d},seed={s},dtype={dt},coldtypes={cd},index={i},indexname='{n}')"
  
     @property
     def seed(self):
@@ -1015,7 +906,7 @@ class Matrix:
         else:
             self.__dtype = val
             self.__init__(dim=self.dim,
-                          listed=self._matrix,
+                          data=self._matrix,
                           ranged=self.initRange,
                           fill=self.fill,
                           features=self.features,
@@ -1409,7 +1300,7 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return (self@self).roundForm(4).matrix == Matrix(listed=Identity(self.d0)).matrix
+        return (self@self).roundForm(4).matrix == Matrix(data=Identity(self.d0)).matrix
     
     @property
     def isIncidence(self):
@@ -1624,7 +1515,7 @@ class Matrix:
         if self._cMat:
             return self
         if self._dfMat:
-            return Matrix(self.dim,listed=[a[:] for a in self.matrix],features=self.features,
+            return Matrix(self.dim,data=[a[:] for a in self.matrix],features=self.features,
                           coldtypes=[float if i in [int,float] else i for i in self.coldtypes],
                           decimal=self.decimal,seed=self.seed,dtype=dataframe,index=self.index,
                           indexname=self.indexname,implicit=True)
@@ -1759,7 +1650,7 @@ class Matrix:
         temp,found_inds = results
         lastinds = [indices[i] for i in found_inds] if self._dfMat else []
 
-        return Matrix(listed=temp,
+        return Matrix(data=temp,
                       features=self.features[:],
                       dtype=self.dtype,
                       coldtypes=self.coldtypes[:],
@@ -1864,7 +1755,7 @@ class Matrix:
         """
         if column == None:
             if self._dfMat:
-                temp = Matrix(listed=self.index,dtype=dataframe,index=None).t. \
+                temp = Matrix(data=self.index,dtype=dataframe,index=None).t. \
                        concat(self.copy,returnmat=True).sortBy("col_1",key=key,reverse=reverse,returnmat=True)
                 self.__index = temp.col("col_1",0)
                 self._matrix = temp[:,1:].matrix
@@ -2104,7 +1995,9 @@ class Matrix:
         """
         Returns the frequency of every element on desired column(s)
         col:column index>=1 or column name
-        get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a list of Matrices for every column individually
+        get: 0|1|2 ; 0 to return a dictionary (uniques as keys, freq as values),
+                     1 to return a dictionary (column names as keys, option 0 as values),
+                     2 to return a list of Matrices for every column individually
         """
         from MatricesM.stats.freq import freq
         return freq(self,col,get,Matrix,dataframe)   
@@ -2180,11 +2073,29 @@ class Matrix:
                        index=feats,
                        NOTES=f"Size: {self.dim}")
 
-    def groupBy(self):
+    def uniques(self,column=None):
+        """
+        Return a list of unique values in a column
+        column: str|None; column name, None to return a list of lists
+        """
+        if column == None:
+            return [list(col.keys()) for col in self.freq(get=0)]
+        return list(self.freq(column)[column].keys())
+
+    def groupBy(self,column,group):
+        """
+        Group values in 'column' of a dataframe by row indices/labels
+        column: str; column name
+        group: Any; value in the desired column, None to group all unique values in individual dataframes
+
+        Returns a dataframe or a tuple of dataframes
+        """
+        from MatricesM.filter.grouping import grouping
+        return grouping(self,column,Matrix,dataframe)
+
+    def oneHot(self,column):
         pass
 
-    def oneHot(self):
-        pass
 # =============================================================================
     """Logical-bitwise magic methods """
 # =============================================================================
@@ -2338,7 +2249,7 @@ class Matrix:
     @property
     def kwargs(self):
         return {"dim":self.dim[:],
-                "listed":[a[:] for a in self._matrix],
+                "data":[a[:] for a in self._matrix],
                 "fill":self.fill,
                 "ranged":self.initRange,
                 "seed":self.seed,
@@ -2350,6 +2261,8 @@ class Matrix:
                 "indexname":self.indexname,
                 "implicit":True}
 
+    def __len__(self):
+        return self.__dim[0]*self.__dim[1]
     def __call__(self,*args,**kwargs):
         if len(args)==0 and len(kwargs.keys())==0:
             return Matrix
@@ -2436,5 +2349,35 @@ class Matrix:
         from MatricesM.matrixops.rounding import _abs
         return _abs(self,Matrix,self.matrix,dataframe)
 
-# =============================================================================
+###############################################################################
 
+class dataframe(Matrix):
+    def __init__(self,data:Union[List[Any],List[List[Any]],str]=[],
+                 features:List[str]=[],
+                 coldtypes:List[type]=[],
+                 decimal:int=3,
+                 index:Union[List[Any],Tuple[Any]]=[],
+                 indexname:str="",
+                 **kwargs):
+
+        super().__init__(self,data=data,
+                         dtype=dataframe,coldtypes=coldtypes,
+                         decimal=decimal,features=features,
+                         index=index,indexname=indexname,
+                         kwargs=kwargs)
+    
+    @property
+    def ind(self):
+        self.__setattr__('use_row_index_to_get_item',1,force=True)
+        return self
+    
+    @property
+    def data(self):
+        return self._matrix
+
+    def __call__(self,*args,**kwargs):
+        if len(args)==0 and len(kwargs.keys())==0:
+            return dataframe
+        return dataframe(*args,**kwargs)
+
+###############################################################################
