@@ -1,13 +1,41 @@
-def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
-    """
-    Set the matrix based on the arguments given
-    """
-    from random import uniform,seed
+def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
     # =============================================================================
-    # Argument check
-    if lis==None:
-        lis = []
+    #Check dimension given
+    if isinstance(d,int):
+        mat._setDim(d)
+    #Argument assertions
     isMethod = bool(type(fill).__name__ == "method")
+
+    if lis in [None,"",{}]:
+        lis = []
+    if not isinstance(lis,(list,str,dict)):
+        raise TypeError("'data' parameter only accepts lists,strings and dictionaries")
+    
+    #Dictionary given
+    if isinstance(lis,dict):
+        from MatricesM.C_funcs.linalg import Ctranspose
+
+        names,values = list(lis.keys()),list(lis.values())
+        if len(values) == 0:
+            raise ValueError("No data found")
+        
+        if not all([1 if isinstance(val,list) else 0 for val in values]):
+            raise IndexError("Dictionary's values should be lists")
+
+        col_length = len(values[0])
+        if col_length == 0:
+            raise IndexError("Can't use empty lists as columns")
+        if not all([1 if len(val)==col_length else 0 for val in values[1:]]):
+            raise IndexError("Dictionary's values should be same length lists")
+            
+        transposed = Ctranspose(len(names),col_length,values)
+
+        mat._matrix = transposed
+        mat._Matrix__dim=mat._declareDim()
+        mat.features = names
+        return None
+
+    #Empty list given
     if len(lis)==0:
         if fill == None:
             fill = uniform
@@ -17,9 +45,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
         elif isMethod:
             if not (fill.__name__ in ["uniform","gauss","triangular","gammavariate","betavariate","expovariate","lognormvariate"]):
                 raise FillError(fill)
-    #Check dimension given
-    if isinstance(d,int):
-        mat._setDim(d)
+    
     #Set new range    
     if r==None:
         r=mat.initRange
