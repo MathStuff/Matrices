@@ -18,7 +18,21 @@ def _repr(mat,notes,dFrame):
     if d1%2:
         shuffled_col_inds.append(d1//2 + 1)
 
-    string_bounds = mat._stringfy(mat.coldtypes,True)
+    rowlimit = min(d0,mat.ROW_LIMIT)
+    halfrow = rowlimit//2
+    if rowlimit%2:
+        halfrow += 1
+
+    #Get column tab lengths to decide which columns to print
+    #All rows can be printed
+    if rowlimit==d0:
+        string_bounds = mat._stringfy(mat.coldtypes,True)
+    #Too many rows, use only the head and tail rows' tab lengths
+    else:
+        top_bounds = mat[:halfrow]._stringfy(mat.coldtypes,True)
+        bottom_bounds = mat[d0-(rowlimit//2):]._stringfy(mat.coldtypes,True)
+        string_bounds = [max(top_bounds[i],bottom_bounds[i]) for i in range(d1+1)]
+
     if string_bounds == "Empty matrix":
         return string_bounds
         
@@ -46,7 +60,7 @@ def _repr(mat,notes,dFrame):
         return "\nWindow \ntoo \nsmall"
 
     #Check limits
-    rowlimit,collimit = min(d0,mat.ROW_LIMIT),min(d1,mat.COL_LIMIT,used_col_amount)
+    collimit = min(d1,used_col_amount)
     for i in [rowlimit,collimit]:
         if not isinstance(i,int):
             raise TypeError("ROW/COL limit can't be non-integer values")
@@ -62,10 +76,6 @@ def _repr(mat,notes,dFrame):
     if d0<=rowlimit and d1<=collimit:
         return mat._stringfy(coldtypes=mat.coldtypes[:]) + "\n\n" + notes
 
-    halfrow = rowlimit//2
-    if rowlimit%2:
-        halfrow += 1
-
     halfcol = collimit//2
     if collimit%2:
         halfcol += 1
@@ -80,8 +90,8 @@ def _repr(mat,notes,dFrame):
             #Divide matrix into 4 parts
             topLeft = mat[:halfrow,first].roundForm(mat.decimal)
             topRight = mat[:halfrow,second].roundForm(mat.decimal)
-            bottomLeft = mat[mat.d0-(rowlimit//2):,first].roundForm(mat.decimal)
-            bottomRight = mat[mat.d0-(rowlimit//2):,second].roundForm(mat.decimal)
+            bottomLeft = mat[d0-(rowlimit//2):,first].roundForm(mat.decimal)
+            bottomRight = mat[d0-(rowlimit//2):,second].roundForm(mat.decimal)
 
             #Change dtypes to dFrames filled with strings
             for i in [topLeft,topRight,bottomLeft,bottomRight]:
@@ -99,9 +109,9 @@ def _repr(mat,notes,dFrame):
             #Fix indices       
             if mat._dfMat:
                 topLeft.index = mat.index[:halfrow]
-                bottomLeft.index = mat.index[mat.d0-(rowlimit//2):]
+                bottomLeft.index = mat.index[d0-(rowlimit//2):]
             else:
-                bottomLeft.index = list(range(mat.d0-(rowlimit//2),mat.d0))
+                bottomLeft.index = list(range(d0-(rowlimit//2),d0))
 
             #Concat bottom to top
             topLeft.concat(bottomLeft,axis=0)
@@ -116,7 +126,7 @@ def _repr(mat,notes,dFrame):
             end = 1 if collimit==1 else d1
             #Get needed parts
             top = mat[:halfrow,:end].roundForm(mat.decimal)
-            bottom = mat[mat.d0-(rowlimit//2):,:end].roundForm(mat.decimal)
+            bottom = mat[d0-(rowlimit//2):,:end].roundForm(mat.decimal)
             if d1>1 and end == 1:
                 top.add(["..."]*top.d0,col=2,dtype=str,feature="...")
                 bottom.add(["..."]*bottom.d0,col=2,dtype=str,feature="...")
@@ -128,9 +138,9 @@ def _repr(mat,notes,dFrame):
             #Fix indices       
             if mat._dfMat:
                 top.index = mat.index[:halfrow]
-                bottom.index = mat.index[mat.d0-(rowlimit//2):]
+                bottom.index = mat.index[d0-(rowlimit//2):]
             else:
-                bottom.index = list(range(mat.d0-(rowlimit//2),mat.d0))
+                bottom.index = list(range(d0-(rowlimit//2),d0))
 
             #Concat last items
             top.concat(bottom,axis=0)
