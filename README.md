@@ -552,6 +552,8 @@ Matrix.info #Returns information about columns: Dtype, Valid data amount, Invali
 
 Matrix.uniques(column) #Returns the unique set of the 'column'; If 'column' is None, all columns' unique values are returned in a list of lists 
 
+Matrix.groupBy(columns) #Return a 'Group' object containing the Matrix grouped by given 'columns'.
+
 Matrix.sum(n,get) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
 Matrix.prod(n,get) #Returns the product of the elements in the column with name/index 'n'. If 'n' is None, all column products are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
