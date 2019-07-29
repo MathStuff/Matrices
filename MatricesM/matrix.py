@@ -2095,7 +2095,7 @@ class Matrix:
         
         """
         from MatricesM.filter.grouping import grouping
-        return grouping(self,column)
+        return grouping(self,column,dataframe)
 
     def oneHot(self,column):
         pass
