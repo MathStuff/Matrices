@@ -77,9 +77,8 @@ class Matrix:
                  **kwargs):
 
         #Constants to use for printing,rounding etc.
+        self.ROW_LIMIT = 30                         #Upper limit for amount of rows to be printed with __repr__
         self.PRECISION = 6                          #Decimals to round
-        self.ROW_LIMIT = 30                         #Upper limit for amount of rows to print
-        self.COL_LIMIT = 12                         #Upper limit for amount of columns to print
         self.EIGEN_ITERS = 100                      #QR algorithm iterations for eigenvalues
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
 
@@ -136,7 +135,7 @@ class Matrix:
             'U','L', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm',
             'intForm', 'floatForm', 'describe', 'info', 'kwargs','index','indexname',
             '_dfMat','_cMat','_fMat','use_row_index_to_get_item',
-            "PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
+            "PRECISION","ROW_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
             if attr in property_names:
                 return object.__getattr__(self,attr)
                 
