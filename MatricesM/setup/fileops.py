@@ -29,12 +29,11 @@ def readAll(d,encoding,delimiter):
             header = csv.Sniffer().has_header(sample_head)
 
             with open(d,"r",encoding=encoding) as f:
-                fread  = list(csv.reader(f,delimiter=delimiter))
+                data = [line for line in csv.reader(f,delimiter=delimiter)]
                 if header:
-                    feats = fread[0]
-                    fread = fread[1:]
-                data = [[row[i] for i in range(len(row))] for row in fread]
-
+                    feats = data[0][:]
+                    del data[0]
+                
 
         else:
             with open(d,"r",encoding=encoding) as f:
@@ -51,7 +50,7 @@ def readAll(d,encoding,delimiter):
                     data.append(row)
 
         #Choose dtypes for columns           
-        samples = sample(data,5) if len(data)>5 else data
+        samples = sample(data,30) if len(data)>30 else data
 
         ints = [[is_int(d) for d in row] for row in samples]
         floats = [[is_float(d) for d in row] for row in samples]
