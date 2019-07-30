@@ -566,7 +566,9 @@ Matrix.where(condition) #Returns a matrix where the given condition(s) are True.
 
 Matrix.match(regex,columns,as_row) #Return the rows or the values in the matrix depending on 'as_row', in the given column names/numbers in 'columns' as a list/tuple or str/int, matching given 'regex' regular expressions
 
-Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
+Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. Executed as: value=eval('value'+operation)
+
+Matrix.transform(function,columns,conditions,returnmat #Pass values into the given 'function' and change them to what it outputs. Rest of the parameters works same as 'apply' method. Executed as: value = function(value)
 
 Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
