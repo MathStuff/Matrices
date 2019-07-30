@@ -62,7 +62,7 @@ class Matrix:
         --> Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     """
     def __init__(self,
-                 dim:Union[int,List[int],Tuple[int]]=None,
+                 dim:Union[int,List[int],Tuple[int],None]=None,
                  data:Union[List[List[Any]],List[Any],str]=[],
                  fill:Any=uniform,
                  ranged:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=[0,1],
@@ -134,7 +134,7 @@ class Matrix:
             'echelon', 'rrechelon','conj', 't', 'ht', 'adj', 'inv', 'pseudoinv','LU', 
             'U','L', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm',
             'intForm', 'floatForm', 'describe', 'info', 'kwargs','index','indexname',
-            '_dfMat','_cMat','_fMat','use_row_index_to_get_item',
+            '_dfMat','_cMat','_fMat',
             "PRECISION","ROW_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
             if attr in property_names:
                 return object.__getattr__(self,attr)
@@ -144,12 +144,7 @@ class Matrix:
         except:
             return None
 
-    def __setattr__(self,attr:str,val:Any,force=False):
-        if attr == 'use_row_index_to_get_item':
-            if force:
-                object.__setattr__(self,attr,val)
-            return None
-
+    def __setattr__(self,attr:str,val:Any):
         if isinstance(self.__getattr__(attr,1),bool):
             self.__setitem__(attr,val)
         else:
@@ -306,7 +301,50 @@ class Matrix:
         """
         from MatricesM.setup.stringfy import _stringfy
         return _stringfy(self,coldtypes,returnbounds,grid)
-    
+
+# =============================================================================
+    """Row labels used as indices"""
+# =============================================================================
+    @property
+    class ind:
+        def __init__(self,mat):
+            self.mat = mat
+            self.df = mat._dfMat
+
+        def __getitem__(self,pos):
+            """
+            Using row indices/labels:
+                --> Use it after sorting the dataframe for the best results for slices
+
+                >>> Matrix.ind["pending"]                      --> Returns all the rows where the row index is 'pending'
+
+                >>> Matrix.ind[1990,"Score"]                   --> Returns the 'Score' column of all the rows with index 1990
+
+                >>> Matrix.ind[50:150]                         --> Return the rows with index higher than 50 and less than 150, starts and stops with limits' first appearances
+                                                        
+                >>> Matrix.ind["Average":,"Final_Score"]       --> Return the rows' 'Final_Score' columns where indices start from 'Average'
+                
+            """
+            if not self.df:
+                raise TypeError("Can't use 'ind' with non-dataframe matrices")
+            from MatricesM.matrixops.getsetdel import getitem
+            return getitem(self.mat,pos,Matrix,1)
+
+        def __setitem__(self,pos,val):
+            if not self.df:
+                raise TypeError("Can't use 'ind' with non-dataframe matrices")
+            from MatricesM.matrixops.getsetdel import setitem
+            setitem(self.mat,pos,item,Matrix,1)
+
+        def __delitem__(self,val:object):
+            """
+            Works 'similar' to __getitem__ , but can only be used to delete entire columns and/or rows
+            Example:
+                >>> del Matrix['col_2']     #Delete 2nd column of the matrix
+            """
+            from MatricesM.matrixops.getsetdel import delitem
+            delitem(self.mat,val,Matrix,1)  
+
 # =============================================================================
     """Row/Column methods"""
 # =============================================================================
@@ -450,58 +488,34 @@ class Matrix:
         from MatricesM.matrixops.matdelDim import delDim
         delDim(self,num)
 
-    @property
-    def ind(self):
-        if not self._dfMat:
-            raise TypeError("Can't use 'ind' with non-dataframe matrices")
-        self.__setattr__('use_row_index_to_get_item',1,force=True)
-        return self
-        
-    def swap(self,index1:Union[int,str],index2:Union[int,str],axis:[0,1]):
+    def swap(self,index1:Union[int,str],index2:Union[int,str],axis:[0,1]=1,returnmat:bool=False):
         """
         Swap two rows or columns
 
-        index1:int|str; first row index OR column index|name
-        index2:int|str; second row index OR column index|name
+        index1:int>0|str; first row index OR column index|name
+        index2:int>0|str; second row index OR column index|name
         axis:0|1; 0 for row swap, 1 for column swap
+        returnmat:bool; wheter or not to return self after evaluation
         """
-        pass
+        feats = self.features[:]
+        for index in [index1,index2]:
+            if isinstance(index,str):
+                index = feats.index(index)
+            assert index>0 and index<=self.d0
+        assert axis in [0,1], "axis should be 0 for row swap, 1 for column swap"
 
-    def rename(self,old:Union[str,Tuple[str],List[str]],new:Union[str,Tuple[str],List[str]]):
-        """
-        Rename columns
-
-        old:str OR tuple|list of strings; Old name(s) of the column(s)
-        new:str OR tuple|list of strings; New name(s) for the column(s)
-        """
-        def namecheck(o,n,f):
-            if not o in f:
-                raise ValueError(f"'{o}' not in column names")
-            try:
-                n = str(n)
-            except:
-                raise TypeError(f"Can't use '{n}' as a column name")
-            else:
-                return (o,n)
-
-        feats = self.features
-        if isinstance(old,str):
-            old,new = namecheck(old,new,feats)
-            self.__features[feats.index(old)] = new
-
-        elif isinstance(old,(tuple,list)):
-            if not isinstance(new,(tuple,list)):
-                raise TypeError("'new' only accepts tuples or lists if 'old' is a tuple or a list")
-            if len(new) != len(old):
-                raise AssertionError(f"Expected {len(old)} items for 'new', got {len(new)}")
-
-            for o,n in list(zip(old,new)):
-                old,new = namecheck(o,n,feats)
-                ind = feats.index(old)
-                self.__features[ind] = new
+        if axis==0:
+            self._matrix[index1],self._matrix[index2] = self._matrix[index2][:],self._matrix[index1][:]
+            if self._dfMat:
+                self.__index[index1],self.__index[index2] = self.__index[index2],self.__index[index1]
         else:
-            raise TypeError(f"Type '{type(old).__name__}' can't be used to change column names")
+            self[feats[index1]],self[feats[index2]] = self[feats[index2]],self[feats[index1]]
+            self.__coldtypes[index1],self.__coldtypes[index2] = self.__coldtypes[index2],self.__coldtypes[index1]
+            self.__features[index1],self.__features[index2] = self.__features[index2],self.__features[index1]
 
+        if returnmat:
+            return self
+            
 # =============================================================================
     """Methods for special matrices and properties"""
 # =============================================================================     
@@ -1891,13 +1905,6 @@ class Matrix:
         from MatricesM.filter.match import _match
         return _match(self,expression,columns,as_row,Matrix)
 
-    def indexreset(self,start=0):
-        self.__index = list(range(start,self.d0+start))
-        self.__indexname = ""
-    
-    def namereset(self,start=0):
-        self.__features = [f"col_{i}" for i in range(1,mat.d1+1)]
-
 # =============================================================================
     """Statistical methods"""
 # =============================================================================      
@@ -2174,14 +2181,123 @@ class Matrix:
         from MatricesM.filter.grouping import grouping
         return grouping(self,column,dataframe)
 
-    def oneHot(self,column):
-        pass
+    def oneHotEncode(self,column:str,concat:bool=True):
+        """
+        One-hot encode a given column 
 
-    def index_update(self,prefix,suffix):
-        pass
+        column: str; column name to encode
+        concat: bool; wheter or not to concatanate the encoded matrix
+        """
+        if not column in self.features:
+            raise NameError(f"{column} is not a column name")
 
-    def name_update(self,prefix,suffix):
-        pass
+        temp = [[0 for j in range(len(self.uniques(column)))] for i in range(self.d0)]
+
+        for i,value in enumerate(self.col(column,0)):
+            temp[i][uniq.index(value)] = 1
+        encoded_matrix = Matrix(data=temp,features=uniq,dtype=int)
+
+        if concat:
+            self.concat(encoded_matrix)
+        else:
+            return encoded_matrix
+
+    def indexreset(self,start=0):
+        self.__index = list(range(start,self.d0+start))
+        self.__indexname = ""
+    
+    def namereset(self,start=0):
+        self.__features = [f"col_{i}" for i in range(1,mat.d1+1)]
+
+    def index_update(self,prefix:str="",suffix:str="",changechar:Union[Tuple[str],List[str],None]=None):
+        """
+        Update string type row labels
+        
+        prefix: str; string to add to the begining of the row label
+        suffix: str; string to add to the end of the row label
+        changechar: list or tuple of strings| None; character to change into other given character
+
+        Example:
+            #Add 'Label_' prefix to the row labels, then change ' ' characters into '_' character
+                >>> Matrix.index_update(prefix='Label_',
+                                        changechar=(' ','_')) 
+        """
+        if not mat._dfMat:
+            raise TypeError("Can't update indices of a non-dataframe matrix")
+        if not isinstance(changechar,(tuple,list)) and changechar != None:
+            raise TypeError("'changechar' should be a tuple/list with 2 strings or None")
+        else:
+            if changechar != None:
+                assert len(changechar)==2 , "Given list/tuple should have 2 strings"
+                assert isinstance(changechar[0],str) and isinstance(changechar[1],str) , "tuple/list have to have strings"
+        assert isinstance(prefix,str) and isinstance(suffix,str) , "Prefix and suffix should be strings"
+
+        temp = [(prefix+name+suffix) for name in self.index[:] if isinstance(name,str)]
+        if changechar != None:
+            temp = [name.replace(changechar[0],changechar[1]) for name in temp] 
+        self.__index = temp
+
+    def name_update(self,prefix:str="",suffix:str="",changechar:Union[Tuple[str],List[str],None]=None):
+        """
+        Update column names
+
+        prefix: str; string to add to the begining of the column name
+        suffix: str; string to add to the end of the column name
+        changechar: list or tuple of strings| None; character to change into other given character
+
+        Example:
+            #Add '_Name' suffix to the row labels, then change ' ' characters into '' character
+                >>> Matrix.name_update(suffix='_Name',
+                                       changechar=(' ','')) 
+        """
+        if not isinstance(changechar,(tuple,list)) and changechar != None:
+            raise TypeError("'changechar' should be a tuple/list with 2 strings or None")
+        else:
+            if changechar != None:
+                assert len(changechar)==2 , "Given list/tuple should have 2 strings"
+                assert isinstance(changechar[0],str) and isinstance(changechar[1],str) , "tuple/list have to have strings"
+        assert isinstance(prefix,str) and isinstance(suffix,str) , "Prefix and suffix should be strings"
+
+        temp = [(prefix+name+suffix) for name in self.features[:]]
+        if changechar != None:
+            temp = [name.replace(changechar[0],changechar[1]) for name in temp] 
+        self.__features = temp
+
+    def rename(self,old:Union[str,Tuple[str],List[str]],new:Union[str,Tuple[str],List[str]]):
+        """
+        Rename columns
+
+        old:str OR tuple|list of strings; Old name(s) of the column(s)
+        new:str OR tuple|list of strings; New name(s) for the column(s)
+        """
+        def namecheck(o,n,f):
+            if not o in f:
+                raise ValueError(f"'{o}' not in column names")
+            try:
+                n = str(n)
+            except:
+                raise TypeError(f"Can't use '{n}' as a column name")
+            else:
+                return (o,n)
+
+        feats = self.features
+        if isinstance(old,str):
+            old,new = namecheck(old,new,feats)
+            self.__features[feats.index(old)] = new
+
+        elif isinstance(old,(tuple,list)):
+            if not isinstance(new,(tuple,list)):
+                raise TypeError("'new' only accepts tuples or lists if 'old' is a tuple or a list")
+            if len(new) != len(old):
+                raise AssertionError(f"Expected {len(old)} items for 'new', got {len(new)}")
+
+            for o,n in list(zip(old,new)):
+                old,new = namecheck(o,n,feats)
+                ind = feats.index(old)
+                self.__features[ind] = new
+        else:
+            raise TypeError(f"Type '{type(old).__name__}' can't be used to change column names")
+
 # =============================================================================
     """Logical-bitwise magic methods """
 # =============================================================================
@@ -2258,22 +2374,10 @@ class Matrix:
             Indices for single values:
                 Matrix[int,int]  --> Return the value in the matrix using row and column indices
                 Matrix[int,str]  --> Return the value in the matrix using row index and column name
-
-        Using row indices:
-            --> Use it after sorting the dataframe for the best results for slices
-
-            >>> Matrix.ind["pending"]                      --> Returns all the rows where the row index is 'pending'
-
-            >>> Matrix.ind[1990,"Score"]                   --> Returns the 'Score' column of all the rows with index 1990
-
-            >>> Matrix.ind[50:150]                         --> Return the rows with index higher than 50 and less than 150, starts and stops with limits' first appearances
-                                                       
-            >>> Matrix.ind["Average":,"Final_Score"]       --> Return the rows' 'Final_Score' columns where indices start from 'Average'
-            
         """
+
         from MatricesM.matrixops.getsetdel import getitem
-        useind = self.use_row_index_to_get_item or 0
-        return getitem(self,pos,Matrix,useind)
+        return getitem(self,pos,Matrix,0)
 
     def __setitem__(self,pos:Union[object,int,str,slice,Tuple[Union[str,int,slice,Tuple[str]]]],item:Any):
         """
@@ -2294,8 +2398,7 @@ class Matrix:
             Check README.md and exampleMatrices.py for more examples
         """
         from MatricesM.matrixops.getsetdel import setitem
-        useind = self.use_row_index_to_get_item or 0
-        setitem(self,pos,item,Matrix,useind)
+        setitem(self,pos,item,Matrix,0)
 
     def __delitem__(self,val:object):
         """
@@ -2304,8 +2407,7 @@ class Matrix:
             >>> del Matrix['col_2']     #Delete 2nd column of the matrix
         """
         from MatricesM.matrixops.getsetdel import delitem
-        useind = self.use_row_index_to_get_item or 0
-        delitem(self,val,Matrix,useind)
+        delitem(self,val,Matrix,0)
 
     def __repr__(self):
         """
@@ -2448,12 +2550,7 @@ class dataframe(Matrix):
                          decimal=decimal,features=features,
                          index=index,indexname=indexname,
                          kwargs=kwargs)
-    
-    @property
-    def ind(self):
-        self.__setattr__('use_row_index_to_get_item',1,force=True)
-        return self
-    
+      
     @property
     def data(self):
         return self._matrix
