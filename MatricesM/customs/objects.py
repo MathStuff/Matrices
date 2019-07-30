@@ -2,10 +2,17 @@ from typing import List
 
 class dataframe:
     pass
-    
+
 class null:
-    pass
-    
+    def __repr__(self):
+        return 'null'
+    def __str__(self):
+        return 'null'
+    def __call__(self):
+        return null
+        
+null = null()
+
 class date:
     """
     Date object, define patterns for the date and time data
