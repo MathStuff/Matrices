@@ -1,4 +1,4 @@
-def applyop(mat,e,cols,conds,feats=None,apply_method=True):
+def applyop(mat,e,cols,conds,feats,apply_method,obj):
 
     if type(cols) not in [tuple,list]:
         cols = (cols,)
@@ -9,11 +9,20 @@ def applyop(mat,e,cols,conds,feats=None,apply_method=True):
 
     #Get indeces which rows to operate on
     if conds != None:
-        from MatricesM.filter.where import wheres
-        inds = wheres(mat,conds,feats)[1]
+        if isinstance(conds,str):
+            from MatricesM.filter.where import wheres
+            inds = wheres(mat,conds,feats)[1]
+        elif isinstance(conds,obj):
+            if conds.d1 != 1:
+                raise ValueError("Given matrix should be a column matrix")
+            inds = conds.find(1,0,True)
+        else:
+            raise TypeError(f"'{type(conds).__name__}' can't be used to get row indices")
+    else:
+        inds = list(range(mat.dim[0]))
 
     #Matrix and dimension base
-    [filtered,inds] = (mat._matrix,list(range(mat.dim[0])))
+    filtered = mat._matrix
     #Get indeces of which columns to operate on
     featinds = [feats.index(i) for i in cols]
 
@@ -38,8 +47,11 @@ def applyop(mat,e,cols,conds,feats=None,apply_method=True):
         for i in inds:
             for j in range(len(featinds)):
                 for op in ops[j]:
-                    ind = featinds[j]
-                    exec(f"filtered[i][ind]=eval('filtered[i][ind]'+op)")
+                    try:
+                        ind = featinds[j]
+                        exec(f"filtered[i][ind]=eval('filtered[i][ind]'+op)")
+                    except:
+                        continue
         
         return mat
 
@@ -50,6 +62,8 @@ def applyop(mat,e,cols,conds,feats=None,apply_method=True):
         #Execute the operations
         for i in inds:
             for j in featinds:
-                mat._matrix[i][j] = e(mat._matrix[i][j])
-
+                try:
+                    filtered[i][j] = e(filtered[i][j])
+                except:
+                    continue
         return mat
