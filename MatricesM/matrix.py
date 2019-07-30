@@ -499,8 +499,9 @@ class Matrix:
         """
         feats = self.features[:]
         for index in [index1,index2]:
-            if isinstance(index,str):
-                index = feats.index(index)
+            if axis==1:
+                if isinstance(index,str):
+                    index = feats.index(index)
             assert index>0 and index<=self.d0
         assert axis in [0,1], "axis should be 0 for row swap, 1 for column swap"
 
@@ -2206,8 +2207,8 @@ class Matrix:
         self.__index = list(range(start,self.d0+start))
         self.__indexname = ""
     
-    def namereset(self,start=0):
-        self.__features = [f"col_{i}" for i in range(1,mat.d1+1)]
+    def namereset(self,start=1):
+        self.__features = [f"col_{i}" for i in range(start,self.d1+start)]
 
     def index_update(self,prefix:str="",suffix:str="",changechar:Union[Tuple[str],List[str],None]=None):
         """
@@ -2222,7 +2223,7 @@ class Matrix:
                 >>> Matrix.index_update(prefix='Label_',
                                         changechar=(' ','_')) 
         """
-        if not mat._dfMat:
+        if not self._dfMat:
             raise TypeError("Can't update indices of a non-dataframe matrix")
         if not isinstance(changechar,(tuple,list)) and changechar != None:
             raise TypeError("'changechar' should be a tuple/list with 2 strings or None")
@@ -2234,7 +2235,7 @@ class Matrix:
 
         temp = [(prefix+name+suffix) for name in self.index[:] if isinstance(name,str)]
         if changechar != None:
-            temp = [name.replace(changechar[0],changechar[1]) for name in temp] 
+            temp = [name.replace(changechar[0],changechar[1]) for name in temp if isinstance(name,str)] 
         self.__index = temp
 
     def name_update(self,prefix:str="",suffix:str="",changechar:Union[Tuple[str],List[str],None]=None):
