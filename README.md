@@ -399,6 +399,8 @@ Matrix.add(values,row,col,feature,dtype) #Adds list to given index in row or col
 
 Matrix.remove(row,col) #Removes the desired row and/or column
 
+Matrix.swap(index1,index2,axis) #Swap the row or column in index1 with index2. Set 'axis' 0 to use indices for rows, 1 to use as column indices. Column names can be used with axis=1.
+
 Matrix.copy #Returns a copy of the matrix
 
 Matrix.obj #Returns the string form of the Matrix object which can be evaluated to create the same matrix
@@ -408,10 +410,6 @@ Matrix.seed #Returns the seed used to generate the random numbers in the matrix,
 Matrix.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace if set to a new value
 
 Matrix.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
-
-Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
-
-Matrix.indexname #Returns the index column's name
 
 Matrix.intForm #Returns integer form of the matrix
 
@@ -541,6 +539,23 @@ Matrix.isZero #Returns True if the all the elements in the matrix is 0
 ```
 ##### Statistical properties 
 ```python 
+Matrix.features #Returns the column names if given, can also be used to set column names
+
+Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
+
+Matrix.name_update(prefix,suffix,changechar) #Add prefix and/or suffix to column names, change characters in column names with 'changechar'.
+
+Matrix.namereset() #Reset column names to 'col_1','col_2', ...
+
+Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
+
+Matrix.indexname #Returns the index column's name
+
+Matrix.index_update(prefix,suffix,changechar) #Add prefix and/or suffix to string type row labels, change string characters with 'changechar'.
+
+Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
+
+Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
 Matrix.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
 
@@ -572,17 +587,11 @@ Matrix.transform(function,columns,conditions,returnmat #Pass values into the giv
 
 Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
 
-Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
-
-Matrix.namereset() #Reset column names to 'col_1','col_2', ...
-
 Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
 Matrix.shuffle(iterations,returnmat) #Shuffle the rows 'iterations' times and return self if 'returnmat'==True
 
 Matrix.sample(size,condition) #Get a sample sized 'size' where the 'condition' is True
-
-Matrix.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
 Matrix.count(column,get) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s).  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
@@ -614,11 +623,7 @@ Matrix.normalize(column,inplace) #Normalize the data in the desired column, None
 
 Matrix.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
 
-Matrix.features #Returns the column names if given, can also be used to set column names
-
-Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
-
-Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
+Matrix.oneHotEncode(column,concat) #One-hot encode a 'column', 'concat' to decide wheter or not to concatenate the encoded matrix or return it
 
 ```
 
