@@ -545,7 +545,7 @@ Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be giv
 
 Matrix.name_update(prefix,suffix,changechar) #Add prefix and/or suffix to column names, change characters in column names with 'changechar'.
 
-Matrix.namereset() #Reset column names to 'col_1','col_2', ...
+Matrix.namereset(start=1) #Reset column names to 'col_1','col_2', ... . Start is 1 by default
 
 Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
 
