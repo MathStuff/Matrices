@@ -1661,8 +1661,8 @@ class Matrix:
               conditions:Union[str,None]=None,
               returnmat:bool=False):
         """
-        Apply arithmetic or logical operations to values in desired columns individually inplace
-        
+        Apply arithmetic, logical, indexing etc. operations to values in desired columns individually inplace
+
         expressions: str(1 column only)|tuple|list of strings; Operations to do for each column given.
             ->Multiple operations can be applied if given in a single string. 
             ->One white space required between each operation and no space should 
@@ -1673,6 +1673,9 @@ class Matrix:
         conditions: str|None; Conditions of rows to apply changes to
 
         returnmat: bool; True to return self after evaluation, False to return None
+
+        Given operation is applied as:
+            >>> exec("values[row][col] = eval('values[row][col]'+operation)")
 
         Example:
 
@@ -1688,11 +1691,35 @@ class Matrix:
                 >>> filtered['Price'] -= 5
                 >>> filtered['Discount'] += 10
                 >>> market_base[(market_base.Price>100) & (market_base.Discount<5)] = filtered
+
+            #Turn strings in "Name" column into their lengths
+                >>> Matrix.apply(".__len__()","Name")
+
         """
         from MatricesM.filter.apply import applyop
         if returnmat:
             return applyop(self,expressions,columns,conditions,self.features[:])
-        applyop(self,expressions,columns,conditions,self.features[:])
+        applyop(self,expressions,columns,conditions,self.features[:],True)
+
+    def transform(self,function:object,
+                  columns:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=(None,),
+                  conditions:Union[str,None]=None,
+                  returnmat:bool=False):
+        """
+        Pass values in the matrix to fuctions and replace them with the outputs
+
+        function: function; A function to pass values to
+
+        columns: str(1 column only)|tuple|list|None; Column names to apply the given expression
+
+        conditions: str|None; Conditions of rows to apply changes to
+
+        returnmat: bool; True to return self after evaluation, False to return None
+        """
+        from MatricesM.filter.apply import applyop
+        if returnmat:
+            return applyop(self,function,columns,conditions,self.features[:])
+        applyop(self,function,columns,conditions,self.features[:],False)
 
     def replace(self,old:Any,
                 new:Any,
@@ -1723,7 +1750,7 @@ class Matrix:
 
                 #Replace all '' values in the column "Length" with the mean of the "Length" column
                 >>> data.replace=(old='', #data["Length"]=="" can also be used
-                                  new=data.mean("Length",asDict=False),
+                                  new=data.mean("Length",get=0),
                                   column="Length")
 
                 #Replace all "FF" values in "Grade" column with "AA" in the column "Grade" where "Year"<=2019
@@ -1747,6 +1774,7 @@ class Matrix:
     def sortBy(self,column:Union[str,None]=None,key=lambda a:a[1],reverse:bool=False,returnmat:bool=False):
         """
         Sort the rows by the desired column
+
         column:str|None; column name as string, None to sort by index column
         key:function; function to use while sorting
         reverse:bool; wheter or not to sort the matrix in reversed order
@@ -1776,6 +1804,7 @@ class Matrix:
     def shuffle(self,iterations:int=1,returnmat:bool=False):
         """
         Shuffle the rows of the matrix
+
         iterations : int; Times to shuffle
         returnmat:bool; wheter or not to return self        
         """
@@ -1847,6 +1876,7 @@ class Matrix:
     def normalize(self,col:Union[int,str,None]=None,inplace:bool=True):
         """
         Normalizes the data to be valued between 0 and 1
+
         col:integer>=1 | column name as string | None
         inplace: bool ; True to apply changes to matrix, False to return a new matrix
         """
@@ -1856,6 +1886,7 @@ class Matrix:
     def stdize(self,col:Union[int,str,None]=None,inplace:bool=True):
         """
         Standardization to get mean of 0 and standard deviation of 1
+
         col:integer>=1 | column name as string
         inplace: bool ; True to apply changes to matrix, False to return a new matrix
         """ 
@@ -1865,6 +1896,7 @@ class Matrix:
     def ranged(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Range of the columns
+
         col:integer>=1 | column name as string
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """    
@@ -1874,6 +1906,7 @@ class Matrix:
     def max(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Highest value(s) in the desired column(s)
+
         col:integer>=1 | column name as string
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
@@ -1883,6 +1916,7 @@ class Matrix:
     def min(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Lowest value(s) in the desired column(s)
+
         col:integer>=1 | column name as string
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
@@ -1892,6 +1926,7 @@ class Matrix:
     def mean(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Mean of the columns
+
         col:integer>=1 | column name as string
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """  
@@ -1901,6 +1936,7 @@ class Matrix:
     def mode(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Returns the columns' most repeated elements in a dictionary
+
         col:integer>=1 | column name as string
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a tuple of Matrices for every column individually
         """
@@ -1910,6 +1946,7 @@ class Matrix:
     def median(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Returns the median of the columns
+
         col:integer>=1 | column name as string
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """ 
@@ -1919,6 +1956,7 @@ class Matrix:
     def sdev(self,col:Union[int,str,None]=None,population:[0,1]=1,get:[0,1,2]=1):
         """
         Standard deviation of the columns
+
         col:integer>=1 | column name as string
         population: 1 for σ, 0 for s value (default 1)
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
@@ -1929,6 +1967,7 @@ class Matrix:
     def var(self,col:Union[int,str,None]=None,population:[0,1]=1,get:[0,1,2]=1):
         """
         Variance in the columns
+
         col:integer>=1 |None|column name as string ; Index/name of the column, None to get all columns 
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
@@ -1939,6 +1978,7 @@ class Matrix:
     def ranked(self,col:Union[int,str,None]=None,reverse:bool=False,key=lambda a:a[1],get:[-1,0,1,2]=1,start:int=0):
         """
         Ranks of the values in the columns when they are sorted
+
         col:int|str|None; column number/name, None for all columns
         reverse:bool; wheter or not to use reversed sorting
         key:function; function to use while sorting
@@ -1950,6 +1990,7 @@ class Matrix:
     def z(self,col:Union[int,str,None]=None,population:[0,1]=1):
         """
         z-scores of the elements
+
         column:integer>=1 |None|column name as string ; z-scores of the desired column
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
 
@@ -1961,6 +2002,7 @@ class Matrix:
     def iqr(self,col:Union[int,str,None]=None,as_quartiles:bool=False,get:[0,1,2]=1):
         """
         Returns the interquartile range(IQR)
+
         col:integer>=1 and <=column amount | column name
         
         as_quartiles:
@@ -2004,6 +2046,7 @@ class Matrix:
     def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1,inf_limit=2**512):
         """
         Return the sum of the desired column, give no arguments to get all columns'.
+
         col: int|str|None ; Column index or name
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
@@ -2013,6 +2056,7 @@ class Matrix:
     def prod(self,col:Union[int,str,None]=None,get:[0,1,2]=1,inf_limit=2**512):
         """
         Return the product of the desired column, give no arguments to get all columns'.
+
         col: int|str|None ; Column index or name
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
@@ -2022,6 +2066,7 @@ class Matrix:
     def count(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
         Return the count of the valid values in column(s), give no arguments to get all columns'.
+
         col: int|str|None ; Column index or name
         get: 0|1|2 ; 0 to return a list, 1 to return a dictionary, 2 to return a Matrix
         """
@@ -2031,6 +2076,7 @@ class Matrix:
     def cov(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
         """
         Covariance of two columns
+
         col1,col2: integers>=1 |str|None; column numbers/names. For covariance matrix give None to both
         population: 0 or 1 ; 0 for samples, 1 for population
         """
@@ -2040,6 +2086,7 @@ class Matrix:
     def corr(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1,method:["pearson","kendall","spearman"]="pearson"):
         """
         Correlation of 2 columns
+
         col1,col2: integers>=1 |str|None; column numbers/names. For correlation matrix give None to both
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         """
@@ -2075,6 +2122,7 @@ class Matrix:
     def uniques(self,column:Union[str,None]=None):
         """
         Return a list of unique values in a column
+
         column: str|None; column name, None to return a list of lists
         """
         if column == None:
@@ -2084,6 +2132,7 @@ class Matrix:
     def groupBy(self,column:Union[str,List[str],None]=None):
         """
         Group values in 'column' of a dataframe by row indices/labels
+
         column: str|list of strings|None; column name(s), None to use index column
 
         Returns a dataframe or a Group object
