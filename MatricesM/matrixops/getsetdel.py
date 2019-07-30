@@ -24,7 +24,6 @@ def betterslice(oldslice,dim):
 def getitem(mat,pos,obj,useindex,returninds=False):
     from MatricesM.validations.validate import consistentlist,sublist,rangedlist
 
-    mat.__setattr__('use_row_index_to_get_item',0,True) #Reset ind
     d0,d1 = mat.dim
 
     #Get 1 row
@@ -318,7 +317,6 @@ def setitem(mat,pos,item,obj,useindex):
     from MatricesM.errors.errors import DimensionError
     from MatricesM.validations.validate import consistentlist,exactdimension
 
-    mat.__setattr__('use_row_index_to_get_item',0,True) #Reset ind
     d0,d1 = mat.dim
 
     def fix_given_item(item,rowrange:list,colrange:list,axis:[0,1]=0):
@@ -464,7 +462,6 @@ def setitem(mat,pos,item,obj,useindex):
 def delitem(mat,pos,obj,useind):
     from MatricesM.validations.validate import consistentlist
 
-    mat.__setattr__('use_row_index_to_get_item',0,True) #Reset ind
     d0,d1 = mat.dim
 
     rowrange,colrange = getitem(mat,pos,obj,useind,returninds=True)
@@ -486,25 +483,33 @@ def delitem(mat,pos,obj,useind):
     
     #Rows deleted
     elif allcols:
+        rows = sorted(rows)
+        i = 0
         if mat._dfMat:
             for row in rows:
-                del mat._matrix[row]
-                del mat.index[row]
+                del mat._matrix[row-i]
+                del mat._Matrix__index[row-i]
+                i+=1
+        else:
+            for row in rows:
+                del mat._matrix[row-i]
+                i+=1
 
-        for row in rows:
-            del mat._matrix[row]
-
-        mat._Matrix__dim = [d0-len(rows),d1]
+        mat._Matrix__dim = [d0-i,d1]
 
     #Columns deleted
     elif allrows:
+        rows = sorted(rows)
+        cols = sorted(cols)
+        j = 0
         for col in cols:
-            del mat._Matrix__coldtypes[col]
-            del mat._Matrix__features[col]
+            del mat._Matrix__features[col-j]
+            del mat._Matrix__coldtypes[col-j]
             for row in rows:
-                del mat._matrix[row][col]
-                
-        mat._Matrix__dim = [d0,d1-len(cols)]
+                del mat._matrix[row][col-j]
+            j+=1
+
+        mat._Matrix__dim = [d0,d1-j]
     
     #Can't delete smaller parts 
     else:
