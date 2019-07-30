@@ -395,30 +395,31 @@ class Matrix:
             feature:Union[str,None]=None,
             dtype:Any=None,
             index:Any="",
-            returnmat:bool=False):
+            returnmat:bool=False,
+            fillnull=False):
         """
         Add a row or a column of numbers
-        lis: list of numbers desired to be added to the matrix
-        row: natural number
-        col: natural number 
-        row>=1 and col>=1
 
-        feature: new column's name
-        dtype: type of data the new column will hold, doesn't work if a row is inserted
-
+        lis: list; list of objects desired to be added to the matrix
+        row: int>=1; row index
+        col: int>=1; column index
+        feature:str; new column's name
+        dtype: type; type of data the new column will hold, doesn't work if a row is inserted
         returnmat:bool; wheter or not to return self
+        fillnull:bool; wheter or not to use null object to fill values in missing indices
 
         To append a row, use row=self.d0
         To append a column, use col=self.d1
         """
         from MatricesM.matrixops.add import add
-        add(self,lis,row,col,feature,dtype,index)
+        add(self,lis,row,col,feature,dtype,index,fillnull)
         if returnmat:
             return self
 
     def remove(self,row:int=None,col:int=None,returnmat:bool=False):
         """
         Deletes the given row and/or column
+
         row:int>=1
         col:int>=1
         returnmat:bool; wheter or not to return self
@@ -428,15 +429,17 @@ class Matrix:
         if returnmat:
             return self  
 
-    def concat(self,matrix:object,axis:[0,1]=1,returnmat:bool=False):
+    def concat(self,matrix:object,axis:[0,1]=1,returnmat:bool=False,fillnull=False):
         """
         Concatenate matrices row or columns vice
+
         matrix:Matrix; matrix to concatenate to self
         axis:0|1; 0 to add 'matrix' as rows, 1 to add 'matrix' as columns
         returnmat:bool; wheter or not to return self
+        fillnull:bool; wheter or not to use null object to fill values in missing indices
         """
         from MatricesM.matrixops.concat import concat
-        concat(self,matrix,axis)
+        concat(self,matrix,axis,fillnull)
         if returnmat:
             return self
             
@@ -1720,7 +1723,7 @@ class Matrix:
         returnmat: bool; True to return self after evaluation, False to return None
 
         Examples:
-        
+
             #Apply 'sum' function to 'Scores_list' column
                 >>> Matrix.transform(function=sum,
                                      columns='Scores_list')
@@ -1766,7 +1769,7 @@ class Matrix:
         returnmat: bool; True to return self after evaluation, False to return None
         
         Example:
-                #Replace all 0's with 1's
+                #Replace all 0's in all columns with 1's
                 >>> data.replace(old=0,new=1)
 
                 #Replace all "Pending" values to "Done" in "Order1" and "Order2" columns
@@ -1775,7 +1778,7 @@ class Matrix:
                                  column=("Order1","Order2"))
 
                 #Replace all '' values in the column "Length" with the mean of the "Length" column
-                >>> data.replace=(old='', #data["Length"]=="" can also be used
+                >>> data.replace=(old='',
                                   new=data.mean("Length",get=0),
                                   column="Length")
 
@@ -1793,7 +1796,7 @@ class Matrix:
 
         """
         from MatricesM.filter.replace import _replace
-        _replace(self,old,new,column,condition)
+        _replace(self,old,new,column,condition,Matrix)
         if returnmat:
             return self
         
