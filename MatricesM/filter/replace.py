@@ -1,13 +1,13 @@
-def _replace(mat,old,new,col=None,cond=None):
+def _replace(mat,old,new,col,cond,obj):
     #Assert parameters
     if not isinstance(col,(str,tuple,list)) and col!=None:
         raise TypeError("column parameter only accepts str|tuple|list|None")
-    if not isinstance(cond,type(mat)) and cond!=None:
+    if not isinstance(cond,obj) and cond!=None:
         raise TypeError("conditions should be a boolean matrix or None")
     if isinstance(col,str):
         col = (col,)
     #(bool_mat,value,columns,bool_mat)
-    if isinstance(old,type(mat)):
+    if isinstance(old,obj):
         if cond != None:
             rowinds = [i[0] for i in (cond & old).find(1,0)]
         else:
