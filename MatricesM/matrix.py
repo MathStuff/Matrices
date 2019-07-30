@@ -1658,7 +1658,7 @@ class Matrix:
     
     def apply(self,expressions:Union[str,List[str],Tuple[str]],
               columns:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=(None,),
-              conditions:Union[str,None]=None,
+              conditions:Union[str,object,None]=None,
               returnmat:bool=False):
         """
         Apply arithmetic, logical, indexing etc. operations to values in desired columns individually inplace
@@ -1670,7 +1670,7 @@ class Matrix:
         
         columns: str(1 column only)|tuple|list|None; Column names to apply the given expression
         
-        conditions: str|None; Conditions of rows to apply changes to
+        conditions: str|boolean column Matrix|None; Conditions of rows to apply changes to
 
         returnmat: bool; True to return self after evaluation, False to return None
 
@@ -1694,32 +1694,58 @@ class Matrix:
 
             #Turn strings in "Name" column into their lengths
                 >>> Matrix.apply(".__len__()","Name")
+        
+        NOTE:
+            Some tweaks to 'coldtypes' may be needed after operations
 
         """
         from MatricesM.filter.apply import applyop
         if returnmat:
-            return applyop(self,expressions,columns,conditions,self.features[:])
-        applyop(self,expressions,columns,conditions,self.features[:],True)
+            return applyop(self,expressions,columns,conditions,self.features[:],True,Matrix)
+        applyop(self,expressions,columns,conditions,self.features[:],True,Matrix)
 
     def transform(self,function:object,
                   columns:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=(None,),
-                  conditions:Union[str,None]=None,
+                  conditions:Union[str,object,None]=None,
                   returnmat:bool=False):
         """
-        Pass values in the matrix to fuctions and replace them with the outputs
+        Pass values in the matrix to functions and replace them with the outputs
 
         function: function; A function to pass values to
 
-        columns: str(1 column only)|tuple|list|None; Column names to apply the given expression
+        columns: str(1 column only)|tuple|list|None; Column names to use
 
-        conditions: str|None; Conditions of rows to apply changes to
+        conditions: str|boolean column Matrix|None; Conditions of rows to apply changes to
 
         returnmat: bool; True to return self after evaluation, False to return None
+
+        Examples:
+        
+            #Apply 'sum' function to 'Scores_list' column
+                >>> Matrix.transform(function=sum,
+                                     columns='Scores_list')
+
+                Visually:
+
+                  Rank  Scores_list            Rank  Scores_list
+                 +------------------           +----------------
+                0|   9       [3, 4]   --->   0|   9            7
+                1|   3    [2, 4, 6]          1|   3           12
+
+
+            #Apply a custom function called 'calculate' to 'Bonus' column where 'extra_time_spent' >= 3
+                >>> Matrix.transform(function=calculate,
+                                     columns="Bonus",
+                                     conditions=Matrix.extra_time_spent >= 3)
+        
+        NOTE:
+            Some tweaks to 'coldtypes' may be needed after transformations
+            
         """
         from MatricesM.filter.apply import applyop
         if returnmat:
-            return applyop(self,function,columns,conditions,self.features[:])
-        applyop(self,function,columns,conditions,self.features[:],False)
+            return applyop(self,function,columns,conditions,self.features[:],False,Matrix)
+        applyop(self,function,columns,conditions,self.features[:],False,Matrix)
 
     def replace(self,old:Any,
                 new:Any,
