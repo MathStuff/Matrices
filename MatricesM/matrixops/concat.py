@@ -1,9 +1,20 @@
-def concat(mat,matrix,axis,fill):
-    #Assertions
-    if matrix.dtype==complex and mat.dtype!=complex:
-        raise TypeError("Can't concatenate complex valued matrix to real valued matrix")
+def concat(mat,matrix,axis,fill,obj):
 
     d0,d1 = mat.dim
+    #Type check of given matrix
+    if not isinstance(matrix,obj):
+        raise TypeError(f"Can't concatenate type '{type(matrix).__name__}' to self")
+
+    #Empty matrix
+    if [d0,d1] == [0,0]:
+        mat.__init__(matrix.dim,matrix.matrix,dtype=matrix.dtype,coldtypes=matrix.coldtypes,features=matrix.features,
+                     index=matrix.index,indexname=matrix.indexname,seed=matrix.seed,implicit=True)
+        return mat
+
+    #Assertions
+    if matrix.dtype==complex and not (mat.dtype.__name__ in ['complex','dataframe']):
+        raise TypeError("Can't concatenate complex valued matrix to real valued matrix")
+
     md0,md1 = matrix.dim
     newmat = matrix.copy
 
@@ -11,14 +22,25 @@ def concat(mat,matrix,axis,fill):
     if fill:
         from MatricesM.customs.objects import null   
         if axis==0:
+            #Given matrix is smaller
             for i in range(0,d1-md1):
                 newmat.add([null for _ in range(md0)],col=d1+i+1)
                 md1 += 1
+            #Given matrix is bigger
+            for i in range(0,md1-d1):
+                mat.add([null for _ in range(d0)],col=md1+i+1)
+                d1 += 1
+
         elif axis==1:
+            #Given matrix is smaller
             for i in range(0,d0-md0):
                 newmat.add([null for _ in range(md1)],row=d0+i+1)
                 md0 += 1
-                
+            #Given matrix is bigger
+            for i in range(0,md0-d0):
+                mat.add([null for _ in range(d1)],row=md0+i+1)
+                d0 += 1
+           
     if axis==0:
         assert d1==md1 , "Dimensions don't match for concatenation"
     elif axis==1:

@@ -9,11 +9,23 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
     if (row==None) ^ (col==None):
         #Insert a row
         if col==None:
+            #Empty matrix
+            if [d0,d1] == [0,0]:
+                inds = index if isinstance(index,list) else [index]
+                mat.__init__([1,length],lis,dtype=mat.dtype,index=inds)
+                return mat
+
             r+=1
             if fill:
-                for rest in range(d1-length):
+                #Given list is shorter
+                for rest in range(0,d1-length):
                     lis.append(null)
                 length = len(lis)
+
+                #Given list is longer
+                for rest in range(0,length-d1):
+                    mat.add([null for _ in range(d0)],col=d1+rest+1)
+                    d1 += 1
 
             if length!=d1:
                 raise ValueError(f"Given list's length doesn't match the dimensions; expected {d1} elements, got {length} instead")
@@ -27,11 +39,23 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
 
         #Insert a column
         elif row==None:
-            c+=1
+            #Empty matrix
+            if [d0,d1] == [0,0]:
+                feat = [feature] if isinstance(feature,str) else []
+                mat.__init__([length,1],lis,dtype=mat.dtype,coldtypes=[dtype],features=feat)
+                return mat
+            
+            c+=1   
             if fill:
-                for rest in range(d0-length):
+                #Given list is shorter
+                for rest in range(0,d0-length):
                     lis.append(null)
                 length = len(lis)
+
+                #Given list is longer
+                for rest in range(0,length-d0):
+                    mat.add([null for _ in range(d1)],row=d0+rest+1)
+                    d0 += 1
                 
             if length!=d0:
                 raise ValueError(f"Given list's length doesn't match the dimensions; expected {d0} elements, got {length} instead")
