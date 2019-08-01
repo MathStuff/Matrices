@@ -477,7 +477,7 @@ class Matrix:
         fillnull:bool; wheter or not to use null object to fill values in missing indices
         """
         from MatricesM.matrixops.concat import concat
-        concat(self,matrix,axis,fillnull)
+        concat(self,matrix,axis,fillnull,Matrix)
         if returnmat:
             return self
             
@@ -1579,19 +1579,34 @@ class Matrix:
         from MatricesM.filter.find import find
         return find([a[:] for a in self.matrix],self.dim,value,start,onlyrow)
 
-    def join(self,matrix:object,
-             conditions:str,
-             method:["inner","left","left-ex","right","right-ex","full","full-ex"]="full",
-             return_cols:Union[tuple,list,None]=None,
-             null:Any=None):
+    def join(self,
+             SELECT:Union[Tuple[object],List[object]],
+             METHOD:['INNER','LEFT','LEFT-EX','RIGHT','RIGHT-EX','FULL','FULL-EX','CROSS'],
+             JOIN:object,
+             ON:Union[str,None]=None):
         """
         Joins two matrices with given methods and conditions
-        
-        matrix: matrix object; matrix to use as the 2nd table
-        conditions: matrix object; column boolean matrix for getting row indices
-        method: inner|left|left-ex|right|right-ex|full|full-ex; joining method
-        return_cols: list|tuple of strings; names of the columns to be used after joining
-        null: Any; Value to replace possible the None-type values 
+
+        SELECT: list or tuple of column matrices|None; columns to return, '*' to use all columns
+        METHOD: 'INNER'|'LEFT'|'LEFT-EX'|'RIGHT'|'RIGHT-EX'|'FULL'|'FULL-EX'|'CROSS'; joining method
+        JOIN: Matrix object|None; matrix to use as the 2nd table
+        ON: str|None; conditions to verify
+
+        SQL:
+
+            SELECT Table1.T_ID, Table2.Name, Table1.T_Date
+            FROM Table1 
+            INNER JOIN Table2 ON Table1.STD_ID=Table2.ID;
+
+        Corresponding call:
+
+            >>> Table1.join(SELECT=(Table1.T_ID, Table2.Name, Table1.T_Date),
+                            METHOD='INNER',
+                            JOIN=Table2,
+                            ON='Table1.STD_ID == Table2.ID')
+
+            # Notice that 'FROM' is always the dataframe that the join method is called from
+
 
         Example representation of methods:
             -> 1's represent the values which will be kept, 0's won't be used.
@@ -1602,51 +1617,58 @@ class Matrix:
             --- Method ----------- Visually ---
 
                                     0  1  0
-                inner               0  1  0
+                INNER               0  1  0
                                     0  1  0
                 
                                     1  1  0
-                left                1  1  0
+                LEFT                1  1  0
                                     1  1  0
 
                                     1  0  0
-               left-ex              1  0  0
+               LEFT-EX              1  0  0
                                     1  0  0
 
                                     0  1  1
-                right               0  1  1
+                RIGHT               0  1  1
                                     0  1  1
         
                                     0  0  1
-               right-ex             0  0  1
+               RIGHT-EX             0  0  1
                                     0  0  1
 
                                     1  1  1
-                full                1  1  1
+                FULL                1  1  1
                                     1  1  1
 
                                     1  0  1
-               full-ex              1  0  1
+               FULL-EX              1  0  1
                                     1  0  1                   
 
         Example usage:
             ->Join Matrix and otherMatrix where Matrix.usr_id==otherMatrix.id,
             using left join, return usr_id and department columns
 
-                >>> Matrix.join(matrix=otherMatrix,
-                                conditions=Matrix.usr_id==otherMatrix.id,
-                                method='left',
-                                return_cols=('usr_id','department'))
+                >>> Matrix.join(SELECT=(Matrix.usr_id,otherMatrix.depertment),
+                                FROM=otherMatrix,
+                                JOIN='left',
+                                ON='Matrix.usr_id == otherMatrix.id'
+                                )
+        
+        NOTE:
+            -> '-EX' methods guarantees a matrix with null values or an empty matrix
+            -> If method is 'CROSS' , 'ON' doesn't get used
         """
         from MatricesM.matrixops.joins import joins
-        return joins(mat,matrix,conditions,method,return_cols,null,Matrix)
+        return joins(self,SELECT,METHOD,JOIN,ON,null,Matrix)
 
-    def where(self,conditions:Union[List[str],Tuple[str]]):
+    def where(self,conditions:Union[List[str],Tuple[str]],inplace:bool=True):
         """
         Returns a matrix where the conditions are True for the desired columns.
         
         conditions:tuple/list of strings; Desired conditions to apply as a filter
-        
+        inplace:bool; True to compare values in place, False to search the values of self in 
+                      given matrix with 'find' method and return matching rows as a Group object
+
         Syntax:
             Matrix.where((" ('Column_Name' (<|>|==|...) obj (and|or|...) 'Column_Name' ...") and ("'Other_column' (<|...) ..."), ...)
         
@@ -1655,15 +1677,19 @@ class Matrix:
             
                 >>> data.where( f" ( ( (Score>=0) and (Score<10) ) or ( Hours>={data.mean('Hours',0)} ) ) 
                                   and ( DateOfBirth>1985 ) ")
-            #Same as
-                >>> data[(((data["Score"]>=0) & (data["Score"]<10)) | (data["Hours"]>=data.mean("Hours",0))) 
-                         & (data["DateOfBirth"]>1985) ]
+                #Same as
+                    >>> data[(((data["Score"]>=0) & (data["Score"]<10)) | (data["Hours"]>=data.mean("Hours",0))) 
+                            & (data["DateOfBirth"]>1985) ]
+
+            #Return groups where ID of self matches EMP_ID in the given matrix
+
+                >>> data.where("data.ID == table.EMP_ID",inplace=False)
 
         NOTE:
             # Every statement HAVE TO BE enclosed in parentheses as shown in the examples above
         """
         from MatricesM.filter.where import wheres
-        results,indices = wheres(self,conditions,self.features[:]),self.index[:]
+        results,indices = wheres(self,conditions,self.features[:],inplace),self.index[:]
         temp,found_inds = results
         lastinds = [indices[i] for i in found_inds] if self._dfMat else []
 
@@ -1764,6 +1790,30 @@ class Matrix:
         if returnmat:
             return applyop(self,function,columns,conditions,self.features[:],False,Matrix)
         applyop(self,function,columns,conditions,self.features[:],False,Matrix)
+
+    def combine(self,columns,function,feature,dtype,inplace=True):
+        """
+        Combine values in given columns with by passing them into the given function and use the output
+        to create a single column matrix
+
+        columns: tuple or list of strings; column names to use
+        function: function; function to pass values in the desired columns
+        feature: str; column's new name
+        dtype: type; column's new dtype
+        inplace: bool; True to swap the first column given with the column matrix, False to return the column matrix
+
+        Example:
+            #Use Year, Month and Day to create a new column named 'DATE' with dtype str, concatenate the result
+                >>> Matrix.combine(columns=('Year','Month','Day'),
+                                   function=lambda y,m,d:str(y)+"/"+str(m)+"/"+str(d),
+                                   feature="DATE",
+                                   dtype=str,
+                                   inplace=True)
+        
+        NOTE:
+            Values which returned an error when passed to the given function will returned as a tuple
+        """
+        pass
 
     def replace(self,old:Any,
                 new:Any,
