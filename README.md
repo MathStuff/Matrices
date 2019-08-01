@@ -393,9 +393,9 @@ Matrix.col(n,as_matrix) #Returns the nth column if n is an integer or returns th
 
 Matrix.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
-Matrix.concat(matrix,axis) #Concatenate a matrix to self. Set 'axis' to 0 to concatenate as rows, 1(default) to concatenate as columns
+Matrix.concat(matrix,axis,fillnull) #Concatenate a matrix to self. Set 'axis' to 0 to concatenate as rows, 1(default) to concatenate as columns. 'fillnull' to enable filling missing values with null objects
 
-Matrix.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
+Matrix.add(values,row,col,feature,dtype,index,fillnull) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name. If a row is added, 'index' can be used to determine its row label. 'fillnull' to enable any missing values as null objects
 
 Matrix.remove(row,col) #Removes the desired row and/or column
 
