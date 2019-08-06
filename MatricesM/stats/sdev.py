@@ -1,67 +1,79 @@
 def sdev(mat,col,population,get,obj,dFrame):
+    from MatricesM.customs.objects import null
+
+    d0,d1 = mat.dim
+    feats = mat.features[:]
 
     if isinstance(col,str):
-        col=mat.features.index(col)+1
-        
-    if mat.dim[0]<=1:
+        col=feats.index(col)+1
+    if d0<=1:
         raise ValueError("Not enough rows")
     if not population in [0,1]:
         raise ValueError("'population' should be either 0 or 1")
+
+    #All valid columns
     if col==None:
         sd={}
         avgs=mat.mean()
-        feats = list(avgs.keys())
-        d = [i for i in range(mat.dim[1]) if mat.features[i] in feats]
+        valid_names = list(avgs.keys())
+        valid_col_inds = [i for i in range(d1) if feats[i] in valid_names]
         fi = 0
-        for i in d:
+        for i in valid_col_inds:
             t=0 #Total
-            ind=0 #Index
-            vals=0 #How many valid elements were in the column
+            ind=0 #Row index
+            valids=0 #How many valid elements were in the column
+            mm = mat._matrix
+            if avgs[valid_names[fi]]==null: #Invalid column mean
+                sd[feats[i]]=null
+                continue
+                
             while True:#Loop through the column
                 try:
-                    while ind<mat.dim[0]:
-                        t+=(mat._matrix[ind][i]-avgs[feats[fi]])**2
+                    while ind<d0:
+                        value = mm[ind][i]
+                        t+=(value-avgs[valid_names[fi]])**2
+                        valids+=1
                         ind+=1
-                        vals+=1
                 except:#Value was invalid
                     ind+=1
                     continue
                 else:
-                    if vals!=0 and not (vals==1 and population==0):
-                        sd[mat.features[i]]=(t/(vals-1+population))**(1/2)
+                    if valids!=0 and not (valids==1 and population==0):
+                        sd[feats[i]]=(t/(valids-1+population))**(1/2)
                     else:#No valid values found
-                        sd[mat.features[i]]=None
+                        sd[feats[i]]=null
                     break
             fi+=1
-            
+    #Single column 
     else:
         try:
-            assert col>0 and col<=mat.dim[1]
+            assert col>0 and col<=d1
         except AssertionError:
             print("Col parameter is not valid")
         else:
             sd={}
-            mn = mat.mean(col)
-            if mn == None:
+            a = mat.mean(col,get=0)
+            if a in [null,None]:
                 raise ValueError(f"Can't get the mean of column{col}")
-            a=list(mn.values())[0]
             t=0 #Total
             ind=0 #Index
-            vals=0 #How many valid elements were in the column
+            valids=0 #How many valid elements were in the column
+            mm = mat._matrix
             while True:#Loop through the column
                 try:
-                    while ind<mat.dim[0]:
-                        t+=(mat._matrix[ind][col-1]-a)**2
+                    while ind<d0:
+                        value = mm[ind][col-1]
+                        t+=(value-a)**2
+                        valids+=1
                         ind+=1
-                        vals+=1
                 except:#Value was invalid
                     ind+=1
                     continue
                 else:
-                    if vals!=0 and not (vals==1 and population==0):
-                        sd[mat.features[col-1]]=(t/(vals-1+population))**(1/2)
+                    if valids!=0 and not (valids==1 and population==0):
+                        sd[feats[col-1]]=(t/(valids-1+population))**(1/2)
                     else:#No valid values found
-                        sd[mat.features[col-1]]=None
+                        sd[feats[col-1]]=null
                     break
 
     #Return a matrix

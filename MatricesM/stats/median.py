@@ -1,5 +1,6 @@
 def median(mat,col,get,obj,dFrame):
-
+    from MatricesM.customs.objects import null
+    
     if isinstance(col,str):
         col=mat.features.index(col)+1
     if col != None:
@@ -38,8 +39,13 @@ def median(mat,col,get,obj,dFrame):
     tm = temp.matrix
     for rows in range(temp.dim[0]):
         r = [j for j in tm[rows] if isinstance(j,(int,float))]
-        n=sorted(r)[len(r)//2]
-        
+        length = len(r)
+        #Not enough values
+        if length <=1:
+            n = null
+        else:
+            n=sorted(r)[length//2]
+
         if len(feats)!=0 and isinstance(feats,list):
             meds[feats[rows]]=n
         else:

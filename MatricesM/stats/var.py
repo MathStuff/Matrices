@@ -1,4 +1,6 @@
 def var(mat,col,population,get,obj,dFrame):
+    from MatricesM.customs.objects import null
+    
     if isinstance(col,str):
         col=mat.features.index(col)+1
     if col != None:
@@ -10,8 +12,10 @@ def var(mat,col,population,get,obj,dFrame):
         raise ValueError("Can't get standard deviations")
     vs={}
     for k,v in s.items():
-        vs[k]=v**2
-    
+        try:
+            vs[k]=v**2
+        except:
+            vs[k]=null
     #Return a matrix
     if get==2:
         cols = list(vs.keys())
