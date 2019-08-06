@@ -7,21 +7,18 @@ class null:
     def __init__(self):
         self.real = 0
         self.imag = 0
-        self.conjugate = 0j
         self.denominator = 1
         self.numerator = 0
 
-    def __call__(self):
+    def __call__(self,*args):
         return null
+    def __hash__(self):
+        return hash(type(self))
     def __len__(self):
         return 4
-        
-    def __complex__(self):
-        return 0j
-    def __float__(self):
-        return 0.0
-    def __int__(self):
-        return 0
+    def __round__(self,*args):
+        return null
+
     def __str__(self):
         return 'null'
     
@@ -31,9 +28,9 @@ class null:
         return 'null'
     
     def __le__(self,other):
-        return False
+        return True
     def __lt__(self,other):
-        return False
+        return True
     def __ge__(self,other):
         return False
     def __gt__(self,other):
