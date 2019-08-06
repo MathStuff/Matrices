@@ -1,6 +1,7 @@
 def _stringfy(mat,dtyps,retbounds,grid):
     import re
-    
+    from MatricesM.customs.objects import null
+
     pre = "0:.{}f".format(mat.decimal)
     st = "{"+pre+"}"    
     string = ""
@@ -156,12 +157,16 @@ def _stringfy(mat,dtyps,retbounds,grid):
                         s = len(item)
                 #integer column
                 elif dtyps[cols] == int:
-                    try:
-                        item = str(int(num))
-                    except:
-                        item = str(num)
-                    finally:
-                        s = len(item)
+                    if type(num).__name__ == 'null':
+                        item = "null"
+                        s = 4
+                    else:    
+                        try:
+                            item = str(int(num))
+                        except:
+                            item = str(num)
+                        finally:
+                            s = len(item)
                 #complex column
                 elif dtyps[cols] == complex:
                     try:
@@ -204,8 +209,12 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
                 #integer
                 else:
-                    item = str(int(num))
-                    s = len(item)
+                    if type(num).__name__ == 'null':
+                        item = 'null'
+                        s = 4
+                    else:
+                        item = str(int(num))
+                        s = len(item)
                 
                 string += " "*(bounds[cols]-s)+item+" "
 
