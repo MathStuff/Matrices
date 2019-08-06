@@ -4,16 +4,24 @@ class dataframe:
     pass
 
 class null:
-    def __init__(self,default=0.0):
-        self.default = default
+    def __init__(self):
+        self.real = 0
+        self.imag = 0
+        self.conjugate = 0j
+        self.denominator = 1
+        self.numerator = 0
 
     def __call__(self):
         return null
-
+    def __len__(self):
+        return 4
+        
+    def __complex__(self):
+        return 0j
     def __float__(self):
-        return float(self.default)
+        return 0.0
     def __int__(self):
-        return int(self.default)
+        return 0
     def __str__(self):
         return 'null'
     

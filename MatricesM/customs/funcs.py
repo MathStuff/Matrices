@@ -11,6 +11,8 @@ def roundto(val,decimal:int=8,force:bool=False):
         return round(val,decimal)
     elif isinstance(val,list):
         return [roundto(value,decimal) for value in val]
+    elif type(val).__name__ == 'null':
+        return val
     else:
         return TypeError(f"Can't round type {type(val)}.")
 
