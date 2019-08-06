@@ -45,7 +45,8 @@ def joins(mat,cols,method,other,conds,null,obj):
 
         #Repeat rows in self and add new columns to each row
         self_matrix,other_matrix = mat._matrix,other._matrix
-
+        if other_matrix == []:
+            return mat
         #Cross-join
         if method == "CROSS":
             inds = [index for _ in range(md0) for index in mat.index[:]]

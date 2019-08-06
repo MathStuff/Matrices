@@ -23,7 +23,8 @@ def betterslice(oldslice,dim):
 
 def getitem(mat,pos,obj,useindex,returninds=False):
     from MatricesM.validations.validate import consistentlist,sublist,rangedlist
-
+    from MatricesM.errors.errors import MatrixError
+    
     d0,d1 = mat.dim
 
     #Get 1 row
@@ -78,7 +79,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         if useindex:
             index = mat.index
             if not pos in index:
-                raise ValueError(f"{pos} is not a row index")
+                raise MatrixError(f"{pos} is not a row index")
             else:
                 mm = mat.matrix
                 rowinds = [i for i in range(d0) if index[i]==pos]
@@ -91,7 +92,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         if not (pos in mat.features):
             if returninds:
                 return (None,range(d0))
-            raise ValueError(f"{pos} is not in column names")
+            raise MatrixError(f"{pos} is not in column names")
         else:
             pos = mat.features.index(pos)
 
