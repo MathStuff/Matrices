@@ -4,13 +4,37 @@ class dataframe:
     pass
 
 class null:
-    def __repr__(self):
-        return 'null'
-    def __str__(self):
-        return 'null'
+    def __init__(self,default=0.0):
+        self.default = default
+
     def __call__(self):
         return null
-        
+
+    def __float__(self):
+        return float(self.default)
+    def __int__(self):
+        return int(self.default)
+    def __str__(self):
+        return 'null'
+    
+    def __repr__(self):
+        return 'null'
+    def __format__(self,*args):
+        return 'null'
+    
+    def __le__(self,other):
+        return False
+    def __lt__(self,other):
+        return False
+    def __ge__(self,other):
+        return False
+    def __gt__(self,other):
+        return False
+    def __eq__(self,other):
+        return True if type(other).__name__ == 'null' else False
+    def __ne__(self,other):
+        return True if type(other).__name__ != 'null' else False
+
 null = null()
 
 class date:

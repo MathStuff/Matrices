@@ -28,7 +28,7 @@ def override_attributes(mat,kw):
                 if k=="data":
                     mat._matrix = v
                 elif k=="ranged":
-                    mat.__initRange = v
+                    mat._Matrix__initRange = v
                 elif k in attributes:
                     exec(f"mat._Matrix__{k}=v")
                 elif k in options:
