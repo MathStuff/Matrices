@@ -1520,11 +1520,14 @@ class Matrix:
         return Matrix(self.dim,t,features=self.features,decimal=self.decimal,seed=self.seed,implicit=True)
 
     
-    def roundForm(self,decimal:int=1):
+    def roundForm(self,decimal:int=1,printing_decimal:Union[int,None]=None):
         """
         Elements rounded to the desired decimal after dot
+
+        decimal: int; digits to round to
+        printing_decimal: int; returned matrix's 'decimal' parameter
         """
-        return round(self,decimal)
+        return self.__round__(decimal,printing_decimal)
         
 # =============================================================================
     """Filtering methods"""
@@ -2557,9 +2560,9 @@ class Matrix:
 # =============================================================================
     """ Rounding etc. """                    
 # =============================================================================   
-    def __round__(self,n:int=-1):
+    def __round__(self,n:int=-1,dec:Union[int,None]=None):
         from MatricesM.matrixops.rounding import rnd
-        return rnd(self,n,Matrix,self.matrix,dataframe)
+        return rnd(self,n,dec,Matrix,self.matrix,dataframe)
     
     def __floor__(self):
         from MatricesM.matrixops.rounding import flr
