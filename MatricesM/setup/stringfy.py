@@ -182,7 +182,9 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 else:
                     item = str(num)
                     s = len(item)
-                string += " "*(bounds[cols]-s)+item+"  "
+
+                endtab = 0 if cols+1 == d1 else 2
+                string += " "*(bounds[cols]-s)+item+" "*endtab
     #int/float/complex
     else:
         for rows in range(d0):
@@ -215,7 +217,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                     else:
                         item = str(int(num))
                         s = len(item)
-                
-                string += " "*(bounds[cols]-s)+item+" "
+                        
+                endtab = 0 if cols+1 == d1 else 1
+                string += " "*(bounds[cols]-s)+item+" "*endtab
 
     return string

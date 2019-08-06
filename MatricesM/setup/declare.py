@@ -64,6 +64,7 @@ def declareRange(mat,lis):
 
 def declareColdtypes(lis):
     from random import sample
+    import re
     def is_float(data):
         try:
             if type(data).__name__ == "null":
@@ -84,29 +85,38 @@ def declareColdtypes(lis):
         except:
             return False
 
+    def is_complex(data):
+        pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
+        if re.findall(pattern,str(data)):
+            return True
+        return False
+
     #Choose dtypes for columns           
     samples = sample(lis,30) if len(lis)>30 else lis
     dtyps = []
     
     ints = [[is_int(d) for d in row] for row in samples]
     floats = [[is_float(d) for d in row] for row in samples]
+    complexs = [[is_complex(d) for d in row] for row in samples]
 
-    objs = [int,float,str]
-    
     for i in range(len(samples[0])):
-        i_c,f_c = 0,0
+        i_c,f_c,c_c = 0,0,0
         for j in range(len(samples)):
-            if (ints[j][i] and floats[j][i]): #int
+            if (ints[j][i] and floats[j][i]): #Can be used as int
                 i_c += 1
-            if (ints[j][i] or floats[j][i]): #float
+            if (ints[j][i] or floats[j][i]): #Can be used as float
                 f_c += 1
+            if complexs[j][i]: #Can be used as complex
+                c_c += 1
 
         #Decide the dtype for the column
-        if (i_c >= f_c) and (i_c>=1):
+        if (i_c >= f_c) and (i_c>=1): #int over float
             dtyps.append(int)
-        elif (i_c < f_c) and (f_c>=1):
+        elif (i_c < f_c) and (f_c>=1): #float over int
             dtyps.append(float)
-        else:
+        elif (c_c > 0): #complex over str
+            dtyps.append(complex)
+        else: #Nothing worked, use str
             dtyps.append(str)
 
     return dtyps
