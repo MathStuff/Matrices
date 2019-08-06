@@ -167,8 +167,10 @@ class Matrix:
                 j=0
                 while j<d1:
                     try:
-                        if cdts[j] != type: 
-                            mm[i][j] = cdts[j](mm[i][j])
+                        if cdts[j] != type:
+                            val = mm[i][j]
+                            if type(val).__name__ != "null":
+                                mm[i][j] = cdts[j](val)
                         j+=1
                     except:
                         j+=1
@@ -1371,7 +1373,8 @@ class Matrix:
         Conjugated matrix
         """
         temp=self.copy
-        temp._matrix=[[self.matrix[i][j].conjugate() for j in range(self.d1)] for i in range(self.d0)]
+        mm = temp.matrix
+        temp._matrix=[[mm[i][j].conjugate() if isinstance(mm[i][j],complex) else mm[i][j] for j in range(self.d1)] for i in range(self.d0)]
         return temp
     
     @property
