@@ -18,6 +18,8 @@ def declareDim(mat):
         return [rows,col_length]
     
 def declareRange(mat,lis):
+    from MatricesM.customs.objects import null
+
     c={}
     d0,d1 = mat.dim
     feats = mat.features
@@ -32,8 +34,7 @@ def declareRange(mat,lis):
                 mn,mx = min(temp),max(temp)
             except:
                 #All values are invalid
-                temp=[len(str(val)) for val in current ]
-                c[feats[cols]]=[min(temp),max(temp)]
+                c[feats[cols]]=[null,null]
             else:
                 c[feats[cols]]=[mn,mx]
 
