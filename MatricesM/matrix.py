@@ -108,7 +108,7 @@ class Matrix:
 
         #For the favor of better results, increase iterations for odd numbered dimensions
         if self.EIGEN_ITERS < 250:
-            self.EIGEN_ITERS+= 400*(self.__dim[0]%2)  
+            self.EIGEN_ITERS += 400*(self.__dim[0]%2)  
         
         #Setup the matrix and column names,types
         self.setup(True,self.__implicit)
@@ -116,40 +116,16 @@ class Matrix:
 # =============================================================================
     """Attribute formatting and setting methods"""
 # =============================================================================    
-    def __getattr__(self,attr:str,fromset:[0,1]=0):
+    def __getattr__(self,attr:str):
         try:
-            property_names = ['_Matrix__features','_Matrix__dim','_Matrix__fill',
-            '_Matrix__initRange','_Matrix__dtype','_Matrix__coldtypes','_Matrix__seed',
-            '_Matrix__decimal','_Matrix_initRange','_Matrix__implicit','_Matrix__index',
-            '_Matrix__indexname','_matrix','p','grid','copy','string','features', 
-            'dim','fill','initRange','rank','perma', 'trace', 'matrix','d0','d1',
-            'det','diags','eigenvalues', 'eigenvectors','obj', 'seed', 'decimal',
-            'dtype', 'coldtypes','isSquare', 'isIdentity', 'isSingular', 'isSymmetric', 
-            'isAntiSymmetric','isPerSymmetric','isHermitian','isTriangular','isUpperTri',
-            'isLowerTri', 'isDiagonal', 'isBidiagonal', 'isUpperBidiagonal',
-            'isLowerBidiagonal', 'isUpperHessenberg', 'isLowerHessenberg','isHessenberg',
-            'isTridiagonal', 'isToeplitz','isIdempotent','isOrthogonal', 'isUnitary',
-            'isNormal', 'isCircular', 'isPositive','isNonNegative', 'isProjection',
-            'isInvolutory','isIncidence','isZero', 'realsigns', 'imagsigns', 'signs',
-            'echelon', 'rrechelon','conj', 't', 'ht', 'adj', 'inv', 'pseudoinv','LU', 
-            'U','L', 'symdec', 'sym', 'anti', 'QR', 'Q', 'R', 'floorForm', 'ceilForm',
-            'intForm', 'floatForm', 'describe', 'info', 'kwargs','index','indexname',
-            '_dfMat','_cMat','_fMat',
-            "PRECISION","ROW_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
-            if attr in property_names:
-                return object.__getattr__(self,attr)
-                
-            return (self[attr],True)[fromset]
-
+            return object.__getattribute__(self,attr)
         except:
-            return None
-
-    def __setattr__(self,attr:str,val:Any):
-        if isinstance(self.__getattr__(attr,1),bool):
-            self.__setitem__(attr,val)
-        else:
-            object.__setattr__(self,attr,val)
-            
+            try:#Try as column name
+                if attr == "_Matrix__use_value_based_comparison":
+                    return False
+                return self[attr]
+            except MatrixError:#Nothing worked ¯\_(ツ)_/¯
+                raise AttributeError(f"'{attr}' is not a column name nor an attribute or a method of Matrix")
 
     def setup(self,first:bool,implicit:bool=False):
         #Matrix fix
@@ -174,7 +150,8 @@ class Matrix:
 
         if len(cdts) != d1:
             if df:
-                self.__coldtypes = [type(i) for i in self.matrix[0]]
+                from MatricesM.setup.declare import declareColdtypes
+                self.__coldtypes = declareColdtypes(self.matrix)
             else:
                 self.__coldtypes = [dt]*d1
         
@@ -618,7 +595,7 @@ class Matrix:
    
     @property
     def grid(self):
-        print(self._stringfy(coldtypes=self.coldtypes,grid=True))
+        print(self.string)
     
     @property
     def copy(self):
@@ -626,7 +603,7 @@ class Matrix:
 
     @property
     def string(self):
-        return self._stringfy(coldtypes=self.coldtypes[:])
+        return self._stringfy(coldtypes=self.coldtypes[:],grid=True)
 
     @property
     def features(self):
@@ -649,7 +626,7 @@ class Matrix:
                 
     @property
     def dim(self):
-        return list(self.__dim)
+        return self.__dim
     @dim.setter
     def dim(self,val:Union[int,List[int],Tuple[int]]):
         amount = self.__dim[0]*self.__dim[1]
@@ -1656,7 +1633,7 @@ class Matrix:
         
         NOTE:
             -> '-EX' methods guarantees a matrix with null values or an empty matrix
-            -> If method is 'CROSS' , 'ON' doesn't get used
+            -> If method is 'CROSS', 'ON' doesn't get used; If 'ON' is None, method is forced to 'CROSS'
         """
         from MatricesM.matrixops.joins import joins
         return joins(self,SELECT,METHOD,JOIN,ON,null,Matrix)
@@ -1686,20 +1663,24 @@ class Matrix:
                 >>> data.where("data.ID == table.EMP_ID",inplace=False)
 
         NOTE:
-            # Every statement HAVE TO BE enclosed in parentheses as shown in the examples above
+            -> Every statement HAVE TO BE enclosed in parentheses as shown in the examples above
+
         """
         from MatricesM.filter.where import wheres
-        results,indices = wheres(self,conditions,self.features[:],inplace),self.index[:]
-        temp,found_inds = results
-        lastinds = [indices[i] for i in found_inds] if self._dfMat else []
+        if inplace:
+            results,indices = wheres(self,conditions,self.features[:],True),self.index[:]
+            temp,found_inds = results
+            lastinds = [indices[i] for i in found_inds] if self._dfMat else []
 
-        return Matrix(data=temp,
-                      features=self.features[:],
-                      dtype=self.dtype,
-                      coldtypes=self.coldtypes[:],
-                      index=lastinds,
-                      indexname=self.indexname)
-    
+            return Matrix(data=temp,
+                          features=self.features[:],
+                          dtype=self.dtype,
+                          coldtypes=self.coldtypes[:],
+                          index=lastinds,
+                          indexname=self.indexname)
+        else:
+            return wheres(self,contiditions,self.features[:],False)
+        
     def apply(self,expressions:Union[str,List[str],Tuple[str]],
               columns:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=(None,),
               conditions:Union[str,object,None]=None,
@@ -1811,7 +1792,7 @@ class Matrix:
                                    inplace=True)
         
         NOTE:
-            Values which returned an error when passed to the given function will returned as a tuple
+            Values which returned an error when passed to the given function will be returned as a tuple
         """
         pass
 
@@ -2499,6 +2480,7 @@ class Matrix:
 
     def __len__(self):
         return self.__dim[0]*self.__dim[1]
+
     def __call__(self,*args,**kwargs):
         if len(args)==0 and len(kwargs.keys())==0:
             return Matrix
@@ -2542,29 +2524,35 @@ class Matrix:
 # =============================================================================
     """ Comparison operators """                    
 # =============================================================================
-    def __le__(self,other:Union[object,list,int,float,complex]):
+    def __le__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import le
-        return le(self,other,Matrix,self.matrix)
+        from_wheres = self.__use_value_based_comparison or False
+        return le(self,other,Matrix,self.matrix,from_wheres)
         
-    def __lt__(self,other:Union[object,list,int,float,complex]):
+    def __lt__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import lt
-        return lt(self,other,Matrix,self.matrix)
+        from_wheres = self.__use_value_based_comparison or False
+        return lt(self,other,Matrix,self.matrix,from_wheres)
         
     def __eq__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.comparison import eq
-        return eq(self,other,Matrix,self.matrix)
+        from_wheres = self.__use_value_based_comparison or False
+        return eq(self,other,Matrix,self.matrix,from_wheres)
         
     def __ne__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.comparison import ne
-        return ne(self,other,Matrix,self.matrix)
+        from_wheres = self.__use_value_based_comparison or False
+        return ne(self,other,Matrix,self.matrix,from_wheres)
                 
-    def __ge__(self,other:Union[object,list,int,float,complex]):
+    def __ge__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import ge
-        return ge(self,other,Matrix,self.matrix)
+        from_wheres = self.__use_value_based_comparison or False
+        return ge(self,other,Matrix,self.matrix,from_wheres)
         
-    def __gt__(self,other:Union[object,list,int,float,complex]):
+    def __gt__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import gt
-        return gt(self,other,Matrix,self.matrix)
+        from_wheres = self.__use_value_based_comparison or False
+        return gt(self,other,Matrix,self.matrix,from_wheres)
         
 # =============================================================================
     """ Rounding etc. """                    
