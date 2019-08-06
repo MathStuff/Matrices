@@ -1,6 +1,7 @@
 def _repr(mat,notes,dFrame):
     from shutil import get_terminal_size as gts
-
+    
+    old = None
     d0,d1 = mat.dim
     feats = mat.features
     available = gts().columns - 3
@@ -26,7 +27,8 @@ def _repr(mat,notes,dFrame):
     old_dfMat,old_fMat,old_cMat = mat._dfMat,mat._fMat,mat._cMat
     #Turn non-dataframe into dataframe
     if mat.dtype != dFrame:
-        mat = mat.copy 
+        old = mat.copy
+        mat = old.copy
         mat.dtype = dFrame
     #All rows can be printed
     if rowlimit==d0:
@@ -78,6 +80,8 @@ def _repr(mat,notes,dFrame):
 
     #Not too many rows or columns
     if d0<=rowlimit and d1<=collimit:
+        if old != None:
+            return old._stringfy(coldtypes=mat.coldtypes[:]) + "\n\n" + notes
         return mat._stringfy(coldtypes=mat.coldtypes[:]) + "\n\n" + notes
 
     halfcol = collimit//2
