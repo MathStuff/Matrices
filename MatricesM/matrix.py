@@ -2219,24 +2219,29 @@ class Matrix:
         from MatricesM.filter.grouping import grouping
         return grouping(self,column,dataframe)
 
-    def oneHotEncode(self,column:str,concat:bool=True):
+    def oneHotEncode(self,column:str,concat:bool=True,removecol:bool=False,returnmat:bool=True):
         """
         One-hot encode a given column 
 
         column: str; column name to encode
         concat: bool; wheter or not to concatanate the encoded matrix
+        removecol: bool; wheter or not to remove the used column after encoding, doesn't apply if 'concat' is False
+        returnmat: bool; wheter or not to return self after encoding, doesn't apply if 'concat' is False
         """
         if not column in self.features:
             raise NameError(f"{column} is not a column name")
 
-        temp = [[0 for j in range(len(self.uniques(column)))] for i in range(self.d0)]
-
+        uniq = self.uniques(column)
+        temp = Matrix([self.d0,len(uniq)],fill=0,dtype=dataframe).matrix
+        
         for i,value in enumerate(self.col(column,0)):
             temp[i][uniq.index(value)] = 1
         encoded_matrix = Matrix(data=temp,features=uniq,dtype=int)
 
         if concat:
-            self.concat(encoded_matrix)
+            if removecol:
+                del self[column]
+            return self.concat(encoded_matrix,returnmat=returnmat)
         else:
             return encoded_matrix
 
