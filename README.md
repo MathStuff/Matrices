@@ -1,7 +1,8 @@
 # <a href="https://pypi.org/project/MatricesM/">MatricesM</a>
 #### A stand-alone library for Python 3.6 and higher to create and manipulate matrices used in linear algebra and dataframes in statistics
 #### [Join MathStuff's Slack workspace](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) for questions and discussions.
- 
+#### Check out [the wiki](https://github.com/MathStuff/MatricesM/wiki) for better documentation
+
 ### Install using pip:
    
    <code>pip install MatricesM</code>
