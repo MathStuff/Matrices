@@ -19,9 +19,11 @@ class null:
     def __round__(self,*args):
         return null
 
+    @property
+    def __name__(self):
+        return 'null'
     def __str__(self):
         return 'null'
-    
     def __repr__(self):
         return 'null'
     def __format__(self,*args):
