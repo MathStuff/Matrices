@@ -4,7 +4,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
     if isinstance(d,int):
         mat._setDim(d)
     #Argument assertions
-    isMethod = bool(type(fill).__name__ == "method")
+    isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method","null"])
 
     if lis in [None,"",{}]:
         lis = []
@@ -42,9 +42,6 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
         elif isinstance(fill,str):
             if mat.dtype.__name__ != "dataframe":
                 raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
-        elif isMethod:
-            if not (fill.__name__ in ["uniform","gauss","triangular","gammavariate","betavariate","expovariate","lognormvariate"]):
-                raise FillError(fill)
     
     #Set new range    
     if r==None:
@@ -99,7 +96,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
                 from MatricesM.C_funcs.randgen import getfill
                 mat._matrix=getfill(d[0],d[1],fill)
                 return None
-
+            
             elif isMethod:
                 if fill.__name__=="uniform":
                     m,n=max(r),min(r)
@@ -153,18 +150,22 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
                     
                     else:
                         mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]  
-
+                else:
+                    from MatricesM.C_funcs.randgen import getfill
+                    mat._matrix=getfill(d[0],d[1],fill)
+                    return None
+                
             #Ranged has no affect after this point
             elif type(fill) == list:
-                if len(fill)!=d[0]:
-                    raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                if len(fill)!=d[1]:
+                    raise ValueError(f"Given list {fill} should have {d[1]} values")
                 else:
                     mat._matrix = [fill for _ in range(d[0])]
 
             elif type(fill) == range:
                 l = list(fill)
-                if len(l)!=d[0]:
-                    raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                if len(l)!=d[1]:
+                    raise ValueError(f"Given range {fill} should have {d[1]} values")
                 else:
                     mat._matrix = [fill for _ in range(d[0])]
             
@@ -231,21 +232,24 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
                         
                         else:
                             temp=[[round(fill(lis[i][0]))//1 for _ in range(d[0])] for i in range(d[1])]
-
+                    else:
+                        from MatricesM.C_funcs.randgen import getfill
+                        mat._matrix=getfill(d[0],d[1],fill)
+                        return None
                 #Ranged has no affect after this point
                 elif type(fill) == list:
-                    if len(fill)!=d[0]:
-                        raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                    if len(fill)!=d[1]:
+                        raise ValueError(f"Given list {fill} should have {d[1]} values")
                     else:
                         mat._matrix = [fill for _ in range(d[0])]
                         return None
 
                 elif type(fill) == range:
                     l = list(fill)
-                    if len(l)!=d[0]:
-                        raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                    if len(l)!=d[1]:
+                        raise ValueError(f"Given range {fill} should have {d[1]} values")
                     else:
-                        mat._matrix = [fill for _ in range(d[0])]
+                        mat._matrix = [fill for _ in range(d[1])]
                         return None
                 else:
                     raise TypeError(f"Couldn't fill the matrix with fill value:{fill}")
