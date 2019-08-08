@@ -16,7 +16,7 @@ def roundto(val,decimal:int=8,force:bool=False):
     else:
         return TypeError(f"Can't round type {type(val)}.")
 
-def override_attributes(mat,kw):
+def overwrite_attributes(mat,kw):
     from MatricesM.errors.errors import ParameterError
 
     attributes = ["dim","data","fill","ranged","seed","features","decimal","dtype",
