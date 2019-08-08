@@ -97,9 +97,9 @@ class Matrix:
         self.__implicit = implicit                  #Implicity value
         self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
-        ######Override attributes#######
+        ######Overwrite attributes#######
         if kwargs != {}:
-            override_attributes(self,kwargs)
+            overwrite_attributes(self,kwargs)
         ################################
 
         #Set/fix attributes
@@ -660,7 +660,7 @@ class Matrix:
     @fill.setter
     def fill(self,value:[object]):
         try:
-            assert (value in [uniform,triangular,gauss,expovariate,gammavariate,betavariate,lognormvariate]) \
+            assert (type(value).__name__ in ["method","function","builtin_function_or_method","null"]) \
                 or (type(value) in [int,str,float,complex,range,list]) \
                 or  value==None
         except AssertionError:
