@@ -1,5 +1,7 @@
 def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
     import math
+    feats = mat.features[:]
+    d0,d1 = mat.dim
 
     def sums(lis,limit,length):
         i = 0
@@ -39,15 +41,14 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
 
 
     if isinstance(col,str):
-        col = feats.index(col)
+        col = feats.index(col)+1
     if col != None:
-        if col<=0 or col>mat.d1:
-            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+        if col<=0 or col>d1:
+            raise IndexError(f"Column index is out of range, expected range: [1,{d1}]")
 
     colds = mat.coldtypes[:]
-    feats = mat.features[:]
     valid_types = (int,float,complex)
-    d0,d1 = mat.dim
+    
 
     if isSum:
         func = sums
