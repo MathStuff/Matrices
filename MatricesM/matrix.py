@@ -58,8 +58,11 @@ class Matrix:
         --> Using **kwargs with a dictionary
 
             >>> Matrix(kwargs={'dim':4,'fill':triangular,'ranged':(0,10,6)})        
+        
+        --> Options: ROW_LIMIT, PRECISION, QR_ITERS, EIGENVEC_ITERS, NOTES
 
         --> Check https://github.com/MathStuff/MatricesM  for further explanation and examples
+        
     """
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int],None]=None,
@@ -79,7 +82,8 @@ class Matrix:
         #Constants to use for printing,rounding etc.
         self.ROW_LIMIT = 30                         #Upper limit for amount of rows to be printed with __repr__
         self.PRECISION = 6                          #Decimals to round
-        self.EIGEN_ITERS = 100                      #QR algorithm iterations for eigenvalues
+        self.QR_ITERS = 100                         #QR algorithm iterations for eigenvalues
+        self.EIGENVEC_ITERS = 10                    #Shifted inverse iteration method iterations for eigenvectors
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
 
         #Basic attributes
@@ -107,8 +111,8 @@ class Matrix:
         self.setInstance(self.__dtype)     #Store what type of values matrix can hold
 
         #For the favor of better results, increase iterations for odd numbered dimensions
-        if self.EIGEN_ITERS < 250:
-            self.EIGEN_ITERS += 400*(self.__dim[0]%2)  
+        if self.QR_ITERS < 250:
+            self.QR_ITERS += 400*(self.__dim[0]%2)  
         
         #Setup the matrix and column names,types
         self.setup(True,self.__implicit)
@@ -786,7 +790,7 @@ class Matrix:
             eigens = []
             q=self.Q
             a1=q.t@self@q
-            for i in range(self.EIGEN_ITERS):#Iterations start
+            for i in range(self.QR_ITERS):#Iterations start
                 qq=a1.Q
                 a1=qq.t@a1@qq
             #Determine which values are real and which are complex eigenvalues
@@ -851,9 +855,38 @@ class Matrix:
         """
         Returns the eigenvectors
         """
-        if not self.isSquare or self.isSingular:
+        eigens = self.eigenvalues
+        iters = self.EIGERVEC_ITERS
+        if eigens in [None,[]]:
             return None
-        pass
+
+        ones = Matrix((self.d0,1),fill=1)
+        vectors = []
+        for eig in eigens:
+            i = 0
+            x = ones.copy
+            eigen = eig*(1+1e-3)
+
+            identity = Matrix(data=Identity(self.d0))*(eigen)
+            while i<iters:
+                try:
+                    y = ((self - identity).inv)@x
+                except:
+                    break
+                else:
+                    c = (y.t@x).matrix[0][0]/(x.t@x).matrix[0][0]
+                    m = (y**2).sum("col_1",get=0)**(0.5)
+                    x = y/m
+                    i += 1
+
+            guess = (1/c)+eig
+            # ranges = x.ranged("col_1",get=0)
+            # rangesqr = [i**2 for i in ranges]
+            # high = ranges[0] if rangesqr[0]>rangesqr[1] else ranges[1]
+            # vectors.append((f"{i} iters for {eig}",guess,x/high))
+            vectors.append((f"{i} iters for {eig}",guess,x))
+        return vectors
+
                
     @property
     def obj(self):
