@@ -856,22 +856,26 @@ class Matrix:
         Returns the eigenvectors
         """
         eigens = self.eigenvalues
-        iters = self.EIGERVEC_ITERS
         if eigens in [None,[]]:
             return None
-
+        
+        iters = self.EIGENVEC_ITERS
+        alpha = 1+1e-3
+        d0 = self.d0
         ones = Matrix((self.d0,1),fill=1)
         vectors = []
+        
         for eig in eigens:
             i = 0
+            c = None
             x = ones.copy
-            eigen = eig*(1+1e-3)
-
-            identity = Matrix(data=Identity(self.d0))*(eigen)
+            eigen = eig*alpha
+            identity = Matrix(data=Identity(d0))*(eigen)
+            
             while i<iters:
                 try:
                     y = ((self - identity).inv)@x
-                except:
+                except:#Guess converged
                     break
                 else:
                     c = (y.t@x).matrix[0][0]/(x.t@x).matrix[0][0]
@@ -879,12 +883,13 @@ class Matrix:
                     x = y/m
                     i += 1
 
-            guess = (1/c)+eig
+            guess = (1/c)+eig if c != None else eig
             # ranges = x.ranged("col_1",get=0)
             # rangesqr = [i**2 for i in ranges]
             # high = ranges[0] if rangesqr[0]>rangesqr[1] else ranges[1]
             # vectors.append((f"{i} iters for {eig}",guess,x/high))
             vectors.append((f"{i} iters for {eig}",guess,x))
+            
         return vectors
 
                
