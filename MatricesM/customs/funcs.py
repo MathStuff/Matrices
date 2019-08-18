@@ -21,7 +21,7 @@ def overwrite_attributes(mat,kw):
 
     attributes = ["dim","data","fill","ranged","seed","features","decimal","dtype",
                   "coldtypes","index","indexname","implicit"]
-    options = ["PRECISION","ROW_LIMIT","COL_LIMIT","EIGEN_ITERS","NOTES","DIRECTORY"]
+    options = ["PRECISION","ROW_LIMIT","EIGENVEC_ITERS","QR_ITERS","NOTES","DIRECTORY"]
     
     #Override the attributes given in kwargs with new values
     for key,val in kw.items():
