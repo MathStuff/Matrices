@@ -428,7 +428,9 @@ Matrix.ROW_LIMIT #Attribute to determine the amount of rows to print while repre
 
 Matrix.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
 
-Matrix.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
+Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
+
+Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method
 
 Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
 
@@ -485,7 +487,9 @@ Matrix.trace #Returns the trace of the matrix
 
 Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
 
-Matrix.eigenvalues #Returns the eigenvalues #Doesn't work 100%, check issue #64
+Matrix.eigenvalues #Returns the eigenvalues #Doesn't work 100%
+
+Matrix.eigenvectors #Returns a list of tuples with a description, used estimate eigenvalue and the eigenvector 
 
 Matrix.isSquare #Returns True if the matrix is a square matrix
 
