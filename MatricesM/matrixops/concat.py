@@ -7,8 +7,6 @@ def concat(mat,matrix,axis,fill,obj):
 
     #Empty matrix
     if [d0,d1] == [0,0]:
-        mat.__init__(matrix.dim,matrix.matrix,dtype=matrix.dtype,coldtypes=matrix.coldtypes,features=matrix.features,
-                     index=matrix.index,indexname=matrix.indexname,seed=matrix.seed,implicit=True)
         return mat
 
     #Assertions
