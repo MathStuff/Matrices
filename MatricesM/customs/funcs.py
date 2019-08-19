@@ -14,7 +14,13 @@ def roundto(val,decimal:int=8,force:bool=False):
     elif type(val).__name__ == 'null':
         return val
     else:
-        return TypeError(f"Can't round type {type(val)}.")
+        try:
+            if val.__name__ == "Matrix":
+                return round(val,decimal)
+            else:
+                raise Exception
+        except:
+            raise TypeError(f"Can't round {val}.")
 
 def overwrite_attributes(mat,kw):
     from MatricesM.errors.errors import ParameterError
