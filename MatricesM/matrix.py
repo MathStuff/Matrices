@@ -499,7 +499,35 @@ class Matrix:
 
         if returnmat:
             return self
-            
+
+    def setdiag(self,val:Union[Tuple[Any],List[Any],object]):
+        """
+        Set new diagonal elements
+
+        val:Any; object to set as new diagonals. 
+            -> If a Matrix is given, new diagonals are picked as given matrix's diagonals
+            -> If a list/tuple is passed, it should have the length of the smaller dimension of the matrix
+            -> Any different value types are treated as single values, all diagonal values get replaced with given object
+        """
+        expected_length = min(self.dim)
+        if isinstance(val,Matrix):
+            if min(val.dim)!=expected_length:
+                raise DimensionError(f"Expected {expected_length} diagonal elements, got {min(val.dim)}.")
+
+            for i in range(expected_length):
+                self._matrix[i][i] = val.matrix[i][i]
+
+        elif isinstance(val,(list,tuple)):
+            if len(val) != expected_length:
+                raise DimensionError(f"Expected {expected_length} elements, got {len(val)}.")
+
+            for i in range(expected_length):
+                self._matrix[i][i] = val[i]
+
+        else:
+            for i in range(expected_length):
+                self._matrix[i][i] = val
+        
 # =============================================================================
     """Methods for special matrices and properties"""
 # =============================================================================     
@@ -668,10 +696,11 @@ class Matrix:
             vectors.append((f"{i} iters for {eig}",guess,x))
             
         eigenmat = vectors[0][2].copy
+        eigenmat.dtype = complex
         for i in range(1,d0):
             eigenmat.concat(vectors[i][2],axis=1)
 
-        diagmat = Matrix(d0,fill=0)
+        diagmat = Matrix(d0,fill=0,dtype=complex)
         for i in range(d0):
             diagmat._matrix[i][i] = vectors[i][1]
 
