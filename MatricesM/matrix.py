@@ -82,7 +82,7 @@ class Matrix:
         #Constants to use for printing,rounding etc.
         self.ROW_LIMIT = 30                         #Upper limit for amount of rows to be printed with __repr__
         self.PRECISION = 6                          #Decimals to round
-        self.QR_ITERS = 100                         #QR algorithm iterations for eigenvalues
+        self.QR_ITERS = 50                          #QR algorithm iterations for eigenvalues
         self.EIGENVEC_ITERS = 10                    #Shifted inverse iteration method iterations for eigenvectors
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
 
@@ -111,8 +111,8 @@ class Matrix:
         self.setInstance(self.__dtype)     #Store what type of values matrix can hold
 
         #For the favor of better results, increase iterations for odd numbered dimensions
-        if self.QR_ITERS < 250:
-            self.QR_ITERS += 400*(self.__dim[0]%2)  
+        # if self.QR_ITERS < 250:
+        #     self.QR_ITERS += 400*(self.__dim[0]%2)  
         
         #Setup the matrix and column names,types
         self.setup(True,self.__implicit)
@@ -558,6 +558,125 @@ class Matrix:
         from MatricesM.linalg.nilpotency import nilpotency
         return nilpotency(self,limit)
     
+    def _eigenvals(self):
+        """
+        Returns the eigenvalues using QR algorithm
+        """
+        try:
+            assert self.isSquare and not self.isSingular and self.d0>=2
+            if self.d0==2:
+                d=self.det
+                tr=self.matrix[0][0]+self.matrix[1][1]
+                return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
+        except:
+            return None
+        else:
+            eigens = []
+            q=self.Q
+            a1=q.t@self@q
+            for i in range(self.QR_ITERS):#Iterations start
+                qq=a1.Q
+                a1=qq.t@a1@qq
+            #Determine which values are real and which are complex eigenvalues
+            if self.isSymmetric:#Symmetrical matrices always have real eigenvalues
+                return a1.diags
+
+            #Wheter or not dimensions are odd
+            isOdd=(a1.d0%2)
+
+            #Decide wheter or not to skip the bottom right 2x2 matrix
+            if a1._cMat: 
+                neighbor = a1[-1,-2]
+                if round(neighbor.real,8)==0 and round(neighbor.imag,8):
+                    eigens.append(a1[-1,-1])
+            else:
+                if round(a1[-1,-2],8)==0:
+                    eigens.append(a1[-1,-1])
+
+            #Create rest of the eigenvalues from 2x2 matrices
+            ind=0
+            while ind<a1.d0-1:
+                mat = a1[ind:ind+2,ind:ind+2]
+                ind+=1+isOdd
+
+                #Decide wheter or not to skip the top right corner 2x2 matrix
+                done=0
+                if a1._cMat:
+                    if round(mat[1,0].real,6)==0 and round(mat[1,0].imag,6):
+                        eigens.append(mat[0,0])
+                        ind-=isOdd
+                        done=1
+
+                elif round(mat[1,0],8)==0:
+                    eigens.append(mat[0,0])
+                    ind-=isOdd
+                    done=1
+
+                #2x2 matrices in the middle
+                if not done:
+                    ind+=1-isOdd
+                    r = mat.trace/2
+                    v = (mat.det - r**2)**(1/2)
+                    
+                    r = complex(complex(roundto(r.real,6,True)),complex(roundto(r.imag,6,True)))
+                    v = complex(complex(roundto(v.real,6,True)),complex(roundto(v.imag,6,True)))               
+                    
+                    c1 = complex(r,v)
+                    c2 = complex(r,v*(-1))
+                    
+                    if c1.imag==0:
+                        c1 = c1.real
+                    if c2.imag==0:
+                        c2 = c2.real
+                    
+                    eigens.append(c1)
+                    eigens.append(c2)
+
+            return eigens
+
+    def _eigenvecs(self,iters,alpha=1+1e-5):
+        """
+        Returns the eigenvectors, eigenvector matrix and diagonal matrix
+        """
+        eigens = self.eigenvalues
+        if eigens in [None,[]]:
+            return None
+        
+        d0,d1 = self.dim[:]
+        ones = Matrix((self.d0,1),fill=1)
+        vectors = []
+        
+        for eig in eigens:
+            i = 0
+            c = None
+            x = ones.copy
+            eigen = eig*alpha
+            identity = Matrix(data=Identity(d0))*(eigen)
+            
+            while i<iters:
+                try:
+                    y = ((self - identity).inv)@x
+                except:#Guess converged
+                    break
+                else:
+                    c = (y.t@x).matrix[0][0]/(x.t@x).matrix[0][0]
+                    m = (y**2).sum("col_1",get=0)**(0.5)
+                    x = y/m
+                    i += 1
+
+            guess = (1/c)+eig if c != None else eig
+            vectors.append((f"{i} iters for {eig}",guess,x))
+            
+        eigenmat = vectors[0][2].copy
+        for i in range(1,d0):
+            eigenmat.concat(vectors[i][2],axis=1)
+
+        diagmat = Matrix(d0,fill=0)
+        for i in range(d0):
+            diagmat._matrix[i][i] = vectors[i][1]
+
+        return (vectors,eigenmat,diagmat)
+
 # =============================================================================
     """Decomposition methods"""
 # ============================================================================= 
@@ -589,6 +708,33 @@ class Matrix:
         from MatricesM.linalg.QR import QR
         return QR(self,Matrix)
     
+    def _EIGENDEC(self):
+        """
+        Returns eigenvecmat, diagmat and the inverse eigenvecmat from eigenvalue decomposition
+        """
+        results = self._eigenvecs(self.EIGENVEC_ITERS)
+        if results == None:
+            return None
+        return (results[1],results[2],results[1].inv)
+
+    def _SVD(self):
+        """
+        Singular value decomposition, Matrix = U@E@V.ht
+        """
+        transposed = self.t
+        
+        #self.t@self@V = V@E**2 --> solve eigenvalue problem
+        left_hand_side = transposed@self
+        E_and_V = left_hand_side.EIGENDEC
+        E = E_and_V[1]**(0.5) #square root of diagonal matrix
+        V = E_and_V[0].ht #hermitian transpose of the eigenvector matrix
+        
+        #self@self.t@U = U@E**2 --> solve eigenvalue problem
+        left_hand_side = self@transposed
+        U = left_hand_side.eigenvecmat
+
+        return (U,E,V)
+
     def _hessenberg(self):
         pass
     
@@ -775,124 +921,20 @@ class Matrix:
     
     @property
     def eigenvalues(self):
-        """
-        Returns the eigenvalues using QR algorithm
-        """
-        try:
-            assert self.isSquare and not self.isSingular and self.d0>=2
-            if self.d0==2:
-                d=self.det
-                tr=self.matrix[0][0]+self.matrix[1][1]
-                return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
-        except:
-            return None
-        else:
-            eigens = []
-            q=self.Q
-            a1=q.t@self@q
-            for i in range(self.QR_ITERS):#Iterations start
-                qq=a1.Q
-                a1=qq.t@a1@qq
-            #Determine which values are real and which are complex eigenvalues
-            if self.isSymmetric:#Symmetrical matrices always have real eigenvalues
-                return a1.diags
-
-            #Wheter or not dimensions are odd
-            isOdd=(a1.d0%2)
-
-            #Decide wheter or not to skip the bottom right 2x2 matrix
-            if a1._cMat: 
-                neighbor = a1[-1,-2]
-                if round(neighbor.real,8)==0 and round(neighbor.imag,8):
-                    eigens.append(a1[-1,-1])
-            else:
-                if round(a1[-1,-2],8)==0:
-                    eigens.append(a1[-1,-1])
-
-            #Create rest of the eigenvalues from 2x2 matrices
-            ind=0
-            while ind<a1.d0-1:
-                mat = a1[ind:ind+2,ind:ind+2]
-                ind+=1+isOdd
-
-                #Decide wheter or not to skip the top right corner 2x2 matrix
-                done=0
-                if a1._cMat:
-                    if round(mat[1,0].real,6)==0 and round(mat[1,0].imag,6):
-                        eigens.append(mat[0,0])
-                        ind-=isOdd
-                        done=1
-
-                elif round(mat[1,0],8)==0:
-                    eigens.append(mat[0,0])
-                    ind-=isOdd
-                    done=1
-
-                #2x2 matrices in the middle
-                if not done:
-                    ind+=1-isOdd
-                    r = mat.trace/2
-                    v = (mat.det - r**2)**(1/2)
-                    
-                    r = complex(complex(roundto(r.real,6,True)),complex(roundto(r.imag,6,True)))
-                    v = complex(complex(roundto(v.real,6,True)),complex(roundto(v.imag,6,True)))               
-                    
-                    c1 = complex(r,v)
-                    c2 = complex(r,v*(-1))
-                    
-                    if c1.imag==0:
-                        c1 = c1.real
-                    if c2.imag==0:
-                        c2 = c2.real
-                    
-                    eigens.append(c1)
-                    eigens.append(c2)
-
-            return eigens
+        return self._eigenvals()
 
     @property
     def eigenvectors(self):
-        """
-        Returns the eigenvectors
-        """
-        eigens = self.eigenvalues
-        if eigens in [None,[]]:
-            return None
-        
-        iters = self.EIGENVEC_ITERS
-        alpha = 1+1e-3
-        d0 = self.d0
-        ones = Matrix((self.d0,1),fill=1)
-        vectors = []
-        
-        for eig in eigens:
-            i = 0
-            c = None
-            x = ones.copy
-            eigen = eig*alpha
-            identity = Matrix(data=Identity(d0))*(eigen)
-            
-            while i<iters:
-                try:
-                    y = ((self - identity).inv)@x
-                except:#Guess converged
-                    break
-                else:
-                    c = (y.t@x).matrix[0][0]/(x.t@x).matrix[0][0]
-                    m = (y**2).sum("col_1",get=0)**(0.5)
-                    x = y/m
-                    i += 1
+        return [vec[2] for vec in self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)[0]]
 
-            guess = (1/c)+eig if c != None else eig
-            # ranges = x.ranged("col_1",get=0)
-            # rangesqr = [i**2 for i in ranges]
-            # high = ranges[0] if rangesqr[0]>rangesqr[1] else ranges[1]
-            # vectors.append((f"{i} iters for {eig}",guess,x/high))
-            vectors.append((f"{i} iters for {eig}",guess,x))
-            
-        return vectors
+    @property
+    def eigenvecmat(self):
+        return self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)[1]
+    
+    @property
+    def diagmat(self):
+        return self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)[2]
 
-               
     @property
     def obj(self):
         """
@@ -1359,6 +1401,14 @@ class Matrix:
                     return False
         return True
 
+    @property
+    def isDefective(self):
+        """
+        len(set(roundto(Matrix.eigenvalues,3))) != len(Matrix.eigenvalues)
+        """
+        eigs = self.eigenvalues
+        return len(set(roundto(eigs,3))) != len(eigs)
+
 # =============================================================================
     """Get special formats"""
 # =============================================================================    
@@ -1368,7 +1418,8 @@ class Matrix:
         Determine the signs of the elements' real parts
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
-        signs=[[1 if self._matrix[i][j].real>=0 else -1 for j in range(self.d1)] for i in range(self.d0)]
+        mm = self._matrix
+        signs=[[1 if mm[i][j].real>=0 else -1 for j in range(self.d1)] for i in range(self.d0)]
         return Matrix(self.dim,signs,dtype=int,implicit=True)
     
     @property
@@ -1377,7 +1428,8 @@ class Matrix:
         Determine the signs of the elements' imaginary parts
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
-        signs=[[1 if self._matrix[i][j].imag>=0 else -1 for j in range(self.d1)] for i in range(self.d0)]
+        mm = self._matrix
+        signs=[[1 if mm[i][j].imag>=0 else -1 for j in range(self.d1)] for i in range(self.d0)]
         return Matrix(self.dim,signs,dtype=int,implicit=True)
     
     @property
@@ -1386,9 +1438,10 @@ class Matrix:
         Determine the signs of the elements
         Returns a matrix filled with -1s and 1s dependent on the signs of the elements in the original matrix
         """
+        mm = self._matrix
         if self._cMat:
             return {"Real":self.realsigns,"Imag":self.imagsigns}
-        signs=[[1 if self._matrix[i][j]>=0 else -1 for j in range(self.d1)] for i in range(self.d0)]
+        signs=[[1 if mm[i][j]>=0 else -1 for j in range(self.d1)] for i in range(self.d0)]
         return Matrix(self.dim,signs,dtype=int,implicit=True)
     
     @property
@@ -1454,6 +1507,20 @@ class Matrix:
             return ((self.t@self).inv)@(self.t)
         return None
     
+    @property
+    def EIGENDEC(self):
+        """
+        X, lambda and X.inv matrices from eigenvalue decomposition
+        """
+        return self._EIGENDEC()
+
+    @property
+    def SVD(self):
+        """
+        U,sigma and V.ht matrices from singular value decomposition
+        """
+        return self._SVD()
+
     @property
     def LU(self):
         """
@@ -2535,6 +2602,10 @@ class Matrix:
             return Matrix
         return Matrix(*args,**kwargs)
 
+    @property
+    def __name__(self):
+        return "Matrix"
+        
 # =============================================================================
     """Arithmetic methods"""        
 # =============================================================================
