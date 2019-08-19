@@ -426,11 +426,9 @@ Matrix.kwargs #Returns a dictionary of the matrix's basic attributes
 
 Matrix.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
 
-Matrix.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
+Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 50. Play around with this value if the values you get don't seem right.
 
-Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
-
-Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method
+Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method, default is 10.
 
 Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
 
@@ -461,6 +459,18 @@ Matrix.echelon #Returns the echelon form of the matrix
 
 Matrix.rrechelon #Returns the reduced row echelon form of the matrix
 
+Matrix.eigenvalues #Returns the eigenvalues #Currently doesn't work with singular matrices
+
+Matrix.eigenvectors #Returns a list of eigenvectors as matrices
+
+Matrix.EIGENDEC #Returns the matrices from eigenvalue decomposition in a tuple
+
+Matrix.eigenvecmat #Returns a matrix with eigenvectors as columns
+
+Matrix.diagmat #Returns the diagonal matrix from eigenvalue decomposition
+
+Matrix.SVD #Returns the U,sigma and the V.ht matrices in a tuple from the singular value decomposition
+
 Matrix.LU #Returns both L and U matrices from LU decomposition in a tuple
 
 Matrix.lowtri #Returns the lower triangular form (L matrix from LU decomposition) of the matrix
@@ -486,10 +496,6 @@ Matrix.R #Returns the upper-triangular matrix from the QR decomposition
 Matrix.trace #Returns the trace of the matrix
 
 Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
-
-Matrix.eigenvalues #Returns the eigenvalues #Doesn't work 100%
-
-Matrix.eigenvectors #Returns a list of tuples with a description, used estimate eigenvalue and the eigenvector 
 
 Matrix.isSquare #Returns True if the matrix is a square matrix
 
@@ -540,6 +546,8 @@ Matrix.isNonNegative #Returns True if the matrix is a non-negative matrix
 Matrix.isProjection #Returns True if the matrix is a projection matrix
 
 Matrix.isZero #Returns True if the all the elements in the matrix is 0
+
+Matrix.isDefective #Returns True if the nxn matrix has m linearly independent eigenvalues where m<n
 
 ```
 ##### Statistical properties 
