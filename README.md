@@ -451,8 +451,6 @@ Matrix.inv #Returns the inversed matrix
 
 Matrix.pseudoinv #Returns the pseudo inverse of the matrix
 
-Matrix.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
-
 Matrix.rank #Returns the rank of the matrix
 
 Matrix.echelon #Returns the echelon form of the matrix
@@ -494,8 +492,6 @@ Matrix.Q #Returns the orthonormal matrix from the QR decomposition
 Matrix.R #Returns the upper-triangular matrix from the QR decomposition
 
 Matrix.trace #Returns the trace of the matrix
-
-Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
 
 Matrix.isSquare #Returns True if the matrix is a square matrix
 
@@ -548,6 +544,12 @@ Matrix.isProjection #Returns True if the matrix is a projection matrix
 Matrix.isZero #Returns True if the all the elements in the matrix is 0
 
 Matrix.isDefective #Returns True if the nxn matrix has m linearly independent eigenvalues where m<n
+
+Matrix.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
+
+Matrix.setdiag(val) #Change diagonal elements to given 'val' or the values in 'val'. If 'val' is a Matrix, diagonals are picked from given matrix's diagonals
+
+Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
 
 ```
 ##### Statistical properties 
