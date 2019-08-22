@@ -2016,24 +2016,25 @@ class Matrix:
         if returnmat:
             return self
 
-    def shuffle(self,iterations:int=1,returnmat:bool=False):
+    def shuffle(self,returnmat:bool=False):
         """
         Shuffle the rows of the matrix
 
-        iterations : int; Times to shuffle
         returnmat:bool; wheter or not to return self        
         """
         from random import shuffle
 
         inds = list(range(self.d0))
+        unshuffled = inds[:]
+
         mm = self.matrix
-        inds = self.index
+        oldind = self.index
         
-        for i in range(iterations):
+        while inds == unshuffled:
             shuffle(inds)
-    
+
         if self._dfMat:
-            self.__index = [inds[i] for i in inds]
+            self.__index = [oldind[i] for i in inds]
         self._matrix = [mm[i][:] for i in inds]
 
         if returnmat:
