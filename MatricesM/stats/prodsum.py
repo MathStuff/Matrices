@@ -60,7 +60,9 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
     #Return a matrix
     if get == 2:
         cols = list(vals.keys())
-        return obj((len(cols),1),[i for i in vals.values()],features=[["Product","Sum"][isSum]],dtype=dFrame,coldtypes=[complex],index=cols,indexname="Column")
+        results = [i for i in vals.values()]
+        cdtypes = [complex] if any([1 if isinstance(val,complex) else 0 for val in results]) else [float]
+        return obj((len(cols),1),results,features=[["Product","Sum"][isSum]],dtype=dFrame,coldtypes=cdtypes,index=cols,indexname="Column")
     #Return a dictionary
     elif get == 1:
         return vals
