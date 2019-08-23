@@ -296,6 +296,8 @@ def tdiv(mat,other,obj,m,dFrame):
         
     elif isinstance(other,int) or isinstance(other,float) or isinstance(other,complex):
         try:
+            if complex(other) == 0+0j:
+                raise ZeroDivisionError
             temp=[[m[rows][cols]/other for cols in range(mat.dim[1])] for rows in range(mat.dim[0])]
         except ZeroDivisionError:
             print("Division by 0")

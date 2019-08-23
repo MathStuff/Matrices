@@ -228,11 +228,11 @@ class Matrix:
             if d>=1:
                 self.__dim=[d,d]
                 valid = 1
-        elif isinstance(d,list) or isinstance(d,tuple):
+        elif isinstance(d,(list,tuple)):
             if len(d)==2:
                 if isinstance(d[0],int) and isinstance(d[1],int):
                     if d[0]>0 and d[1]>0:
-                        self.__dim=d[:]
+                        self.__dim=list(d)
                         valid = 1
         if not valid:
             self.__dim = [0,0]
@@ -591,7 +591,7 @@ class Matrix:
         Returns the eigenvalues using QR algorithm
         """
         try:
-            assert self.isSquare and not self.isSingular and self.d0>=2
+            assert self.isSquare and self.d0>=2
             if self.d0==2:
                 d=self.det
                 tr=self.matrix[0][0]+self.matrix[1][1]
@@ -666,7 +666,7 @@ class Matrix:
         """
         Returns the eigenvectors, eigenvector matrix and diagonal matrix
         """
-        eigens = self.eigenvalues
+        eigens = self.eigenvalues or self.diags
         if eigens in [None,[]]:
             return None
         
@@ -688,21 +688,45 @@ class Matrix:
                     break
                 else:
                     c = (y.t@x).matrix[0][0]/(x.t@x).matrix[0][0]
+                    if c == 0:
+                        c = None
+
                     m = (y**2).sum("col_1",get=0)**(0.5)
+                    if m == 0:
+                        break
+
                     x = y/m
                     i += 1
 
             guess = (1/c)+eig if c != None else eig
             vectors.append((f"{i} iters for {eig}",guess,x))
-            
+        
+        ########################################################
         eigenmat = vectors[0][2].copy
-        eigenmat.dtype = complex
         for i in range(1,d0):
             eigenmat.concat(vectors[i][2],axis=1)
 
-        diagmat = Matrix(d0,fill=0,dtype=complex)
+        eigenmat.namereset()
+
+        #Check if there are complex numbers 
+        for row in eigenmat.matrix:
+            found = 0
+            for val in row:
+                if isinstance(val,complex):
+                    eigenmat.dtype = complex
+                    found = 1
+                    break
+            if found:
+                break
+        ########################################################
+        diagmat = Matrix(d0,fill=0,dtype=float)
         for i in range(d0):
             diagmat._matrix[i][i] = vectors[i][1]
+
+        #Check if there are complex eigenvalues 
+        if any([1 if isinstance(val,complex) else 0 for val in diagmat.diags]):
+            diagmat.dtype = complex
+        ########################################################
 
         return (vectors,eigenmat,diagmat)
 
