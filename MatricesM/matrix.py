@@ -317,7 +317,7 @@ class Matrix:
             if not self.df:
                 raise TypeError("Can't use 'ind' with non-dataframe matrices")
             from MatricesM.matrixops.getsetdel import setitem
-            setitem(self.mat,pos,item,Matrix,1)
+            setitem(self.mat,pos,val,Matrix,1)
 
         def __delitem__(self,val:object):
             """

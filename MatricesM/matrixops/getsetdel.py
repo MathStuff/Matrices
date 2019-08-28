@@ -49,22 +49,33 @@ def getitem(mat,pos,obj,useindex,returninds=False):
     elif isinstance(pos,slice):
         if useindex:
             indices = mat.index
-            start = pos.start if pos.start != None else 0
-            end = pos.stop if pos.stop != None else d1
+
+            start = indices.index(pos.start) if pos.start != None else None
+            end = indices.index(pos.stop) if pos.stop != None else None
+
+            first_item = indices[start] if start != None else None
+            last_item = indices[end] if end != None else None
+
+            no_end = True if end == None else False
+
+            start = start if start != None else 0
+            end = end if end != None else d0
+
             rowrange,mm = [],mat.matrix
-            for i in range(d0):
+            for i in range(start,end):
                 try:
-                    if indices[i]>=start:
-                        if indices[i]>=end:
-                            break
-                        rowrange.append(i)
+                    if indices[i]==last_item and no_end:
+                        break
+                    rowrange.append(i)
+                        
                 except:
                     continue
+
             if returninds:
                 return (rowrange,None)        
             lastinds = [indices[i] for i in rowrange]
             lastmatrix = [mm[i] for i in rowrange]
-            
+
             return obj(data=lastmatrix,features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
         
         if returninds:
@@ -176,17 +187,31 @@ def getitem(mat,pos,obj,useindex,returninds=False):
             if isinstance(pos[0],slice):
                 if useindex:
                     indices = mat.index
-                    start = pos[0].start if pos[0].start != None else 0
-                    end = pos[0].stop if pos[0].stop != None else mat.d1
+
+                    start = indices.index(pos[0].start) if pos[0].start != None else None
+                    end = indices.index(pos[0].stop) if pos[0].stop != None else None
+
+                    first_item = indices[start] if start != None else None
+                    last_item = indices[end] if end != None else None
+
+                    no_end = True if end == None else False
+
+                    start = start if start != None else 0
+                    end = end if end != None else d0
+
                     rowrange = []
-                    for i in range(mat.d0):
+                    for i in range(start,end):
                         try:
-                            if indices[i]>=start:
-                                if indices[i]>=end:
-                                    break
-                                rowrange.append(i)
+                            if indices[i]==last_item and no_end:
+                                break
+                            rowrange.append(i)
+                                
                         except:
                             continue
+
+                    if returninds:
+                        return (rowrange,None)
+
                 else:
                     newslice = betterslice(pos[0],d0)
                     rowrange = list(range(newslice.start,newslice.stop,newslice.step))
