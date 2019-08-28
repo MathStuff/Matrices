@@ -208,10 +208,6 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                                 
                         except:
                             continue
-
-                    if returninds:
-                        return (rowrange,None)
-
                 else:
                     newslice = betterslice(pos[0],d0)
                     rowrange = list(range(newslice.start,newslice.stop,newslice.step))
