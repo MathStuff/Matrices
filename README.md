@@ -1,7 +1,8 @@
 # <a href="https://pypi.org/project/MatricesM/">MatricesM</a>
 #### A stand-alone library for Python 3.6 and higher to create and manipulate matrices used in linear algebra and dataframes in statistics
 #### [Join MathStuff's Slack workspace](https://join.slack.com/t/mathstuffm/shared_invite/enQtNjE1NzE4NjM2ODM0LTk3ODEyNDVhY2Y5OGU1ZjZmZDc0YjQwMmE2YTJkZTczMGI1ODdmZGY2ZTQ2ZGRiMTM3MmQ0NjczODdmMzBiYjI) for questions and discussions.
- 
+#### Check out [the wiki](https://github.com/MathStuff/MatricesM/wiki) for better documentation
+
 ### Install using pip:
    
    <code>pip install MatricesM</code>
@@ -22,37 +23,48 @@
 ### Basic syntax:
 ```python 
 
-matrix_name = Matrix(dim=dimensions,#Required(UNLESS 'listed' is given), int | list/tuple as [rows,cols]
+Matrix(dim=dimensions,#Required(UNLESS 'data' is given), int | list/tuple as [rows,cols]
 
-                     listed=elements, #Optional, list of numbers | list of lists containing numbers | string. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
+       data=data, #Optional, list of numbers | list of lists containing numbers | string | dictionary. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
 
-                     fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "listed" is given
+       fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "data" is given
 
-                     ranged=[*args] | dict;"""
-                              ->To apply all the elements give a list | tuple
-                              ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
-                              ->Arguments should follow one of the following rules:
-                                   1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
-                                   2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                                   3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
-                                   4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
-                                   5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
+       ranged=[*args] | dict;"""
+                        ->To apply all the elements give a list | tuple
+                        ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
+                        ->Arguments should follow one of the following rules:
+                              1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
+                              2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
+                              3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
+                              4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
+                              5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
 
-                     features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
-                     
-                     seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
-                       
-                     dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
-                     
-                     coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
-                     
-                     index=index_column #Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+       features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
+      
+       seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+         
+       dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
+      
+       coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+      
+       decimal=decimals_to_round #Optional, int (default is 4). Decimal digits to round to while printing
 
-                     indexname=index_name #str; name of the index column
+       index=index_column #Optional, Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
 
-                     implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
-                     )
+       indexname=index_col_name #Optional, str; name of the index column
 
+       implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
+      )
+
+#Alternative way for creating dataframes, inherits from Matrix class, dtype is passed as dataframe to Matrix
+dataframe(data=data,
+          features=column_names,
+          coldtypes=column_dtypes,
+          decimal=decimals_to_round, #Decimal defaults to 3
+          index=index_column,
+          indexname=index_col_name, 
+          **kwargs #Rest of the arguments passed to Matrix's __init__
+         )
 
 ```         
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
@@ -124,10 +136,10 @@ randomData4 = Matrix([20000,4],
 ##### Create special matrices
 ```python 
 #3x3 identity matrix
-id3 = Matrix(listed=Identity(3))
+id3 = Matrix(data=Identity(3))
 
 #A 8x8 symmetrical matrix filled with numbers in range from 0 to 1 with uniform distribution 
-sym1 = Matrix(listed=Symmetrical(8))
+sym1 = Matrix(data=Symmetrical(8))
 
 ``` 
 ----------------------------------------
@@ -136,14 +148,19 @@ sym1 = Matrix(listed=Symmetrical(8))
 #Creates a matrix with the given list of numbers
 filled_rows = [[1,2,3],[4,5,6],[7,8,9]]
 
-C = Matrix(listed=filled_rows) 
+C = Matrix(data=filled_rows) 
 
 #Create a dataframe from a list
 data = [["James",180.4,85],
         ["Tom",172,73],
         ["Sophia",168.25,65]]
-        
-df = Matrix(listed=data,
+
+df = dataframe(data=data,
+               features=["Name","Height","Weight"],
+               decimal=1)
+               
+#Same as:        
+df = Matrix(data=data,
             dtype=dataframe,
             features=["Name","Height","Weight"],
             decimal=1)
@@ -173,13 +190,13 @@ data="""1,K,60,69900,6325
 
 #As an integer matrix
 intMat = Matrix(dim=[10,4],
-                listed=data,
+                data=data,
                 features=["id","age","num1","num2"],
                 dtype=int) 
 
 #Or as a dataframe
 df = Matrix(dim=[10,4],
-            listed=data,
+            data=data,
             features=["id","age","num1","num2"],
             dtype=dataframe,
             coldtypes=[int]*4)
@@ -188,8 +205,6 @@ df = Matrix(dim=[10,4],
 ----------------------------------------
 ##### Read data from files 
 ```python 
-from MatricesM import *
-
 #Create a dataframe matrix from a csv file. read_file accepts 2 optional parameters: encoding, delimiter
 data_matrix = read_file(data_directory) 
 
@@ -367,7 +382,7 @@ Matrix.p #Prints the dimensions, wheter or not the matrix is square and the grid
 
 Matrix.decimal #Returns the chosen amount of decimal digits to round while printing. Can be used to set it's value
 
-Matrix.matrix #Returns the matrix's rows as lists in a list
+Matrix.matrix #Returns the matrix's rows as lists in a list. >>> dataframe.data Returns the same thing if dataframe was used instead of Matrix
 
 Matrix.dim #Returns the dimension of the matrix; can be used to change the dimensions, ex: [4,8] can be set to [1,32] where rows carry over as columns in order from left to right
 
@@ -379,11 +394,13 @@ Matrix.col(n,as_matrix) #Returns the nth column if n is an integer or returns th
 
 Matrix.row(n,as_matrix) #Returns nth row of the matrix as a list or matrix, set as_matrix to True to get the list as a matrix
 
-Matrix.concat(matrix,axis) #Concatenate a matrix to self. Set 'axis' to 0 to concatenate as rows, 1(default) to concatenate as columns
+Matrix.concat(matrix,axis,fillnull) #Concatenate a matrix to self. Set 'axis' to 0 to concatenate as rows, 1(default) to concatenate as columns. 'fillnull' to enable filling missing values with null objects
 
-Matrix.add(values,row,col,feature,dtype) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name.
+Matrix.add(values,row,col,feature,dtype,index,fillnull) #Adds list to given index in row or col, indeces start from 1. If a column is added, dtype and feature are used determine type and name. If a row is added, 'index' can be used to determine its row label. 'fillnull' to enable any missing values as null objects
 
 Matrix.remove(row,col) #Removes the desired row and/or column
+
+Matrix.swap(index1,index2,axis) #Swap the row or column in index1 with index2. Set 'axis' 0 to use indices for rows, 1 to use as column indices. Column names can be used with axis=1.
 
 Matrix.copy #Returns a copy of the matrix
 
@@ -394,10 +411,6 @@ Matrix.seed #Returns the seed used to generate the random numbers in the matrix,
 Matrix.fill #Returns the value or distribution of which the matrix was filled with. Can be used to refill the matrix inplace if set to a new value
 
 Matrix.initRange #Returns the value of 'ranged' used while creating the matrix. Can be used to refill the matrix inplace if set to a new value
-
-Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
-
-Matrix.indexname #Returns the index column's name
 
 Matrix.intForm #Returns integer form of the matrix
 
@@ -413,9 +426,9 @@ Matrix.kwargs #Returns a dictionary of the matrix's basic attributes
 
 Matrix.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
 
-Matrix.COL_LIMIT #Attribute to determine the amount of columns to print while representing the matrix, default is 12.
+Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 50. Play around with this value if the values you get don't seem right.
 
-Matrix.EIGEN_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 100 for even numbered dimensions, 500 for odd ones. Play around with this value if the values you get don't seem right.
+Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method, default is 10.
 
 Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
 
@@ -438,13 +451,23 @@ Matrix.inv #Returns the inversed matrix
 
 Matrix.pseudoinv #Returns the pseudo inverse of the matrix
 
-Matrix.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
-
 Matrix.rank #Returns the rank of the matrix
 
 Matrix.echelon #Returns the echelon form of the matrix
 
 Matrix.rrechelon #Returns the reduced row echelon form of the matrix
+
+Matrix.eigenvalues #Returns the eigenvalues #Currently doesn't work with singular matrices
+
+Matrix.eigenvectors #Returns a list of eigenvectors as matrices
+
+Matrix.EIGENDEC #Returns the matrices from eigenvalue decomposition in a tuple
+
+Matrix.eigenvecmat #Returns a matrix with eigenvectors as columns
+
+Matrix.diagmat #Returns the diagonal matrix from eigenvalue decomposition
+
+Matrix.SVD #Returns the U,sigma and the V.ht matrices in a tuple from the singular value decomposition
 
 Matrix.LU #Returns both L and U matrices from LU decomposition in a tuple
 
@@ -469,10 +492,6 @@ Matrix.Q #Returns the orthonormal matrix from the QR decomposition
 Matrix.R #Returns the upper-triangular matrix from the QR decomposition
 
 Matrix.trace #Returns the trace of the matrix
-
-Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
-
-Matrix.eigenvalues #Returns the eigenvalues #Doesn't work 100%, check issue #64
 
 Matrix.isSquare #Returns True if the matrix is a square matrix
 
@@ -524,15 +543,46 @@ Matrix.isProjection #Returns True if the matrix is a projection matrix
 
 Matrix.isZero #Returns True if the all the elements in the matrix is 0
 
+Matrix.isDefective #Returns True if the nxn matrix has m linearly independent eigenvalues where m<n
+
+Matrix.minor(m,n,returndet) #Returns the mth row's nth element's minor matrix's determinant, set returndet to False to get the matrix of which the determinant was calculated
+
+Matrix.setdiag(val) #Change diagonal elements to given 'val' or the values in 'val'. If 'val' is a Matrix, diagonals are picked from given matrix's diagonals
+
+Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns None if some elements diverge. Limit parameter is for iteration amount
+
 ```
 ##### Statistical properties 
 ```python 
+Matrix.features #Returns the column names if given, can also be used to set column names
+
+Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
+
+Matrix.name_update(prefix,suffix,changechar) #Add prefix and/or suffix to column names, change characters in column names with 'changechar'.
+
+Matrix.namereset(start=1) #Reset column names to 'col_1','col_2', ... . Start is 1 by default
+
+Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
+
+Matrix.indexname #Returns the index column's name
+
+Matrix.index_update(prefix,suffix,changechar) #Add prefix and/or suffix to string type row labels, change string characters with 'changechar'.
+
+Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
+
+Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
 Matrix.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
 
 Matrix.tail(n) #Returns the last n rows (if there are less than n rows it returns all the rows)
 
 Matrix.describe #Returns a description matrix with columns describing the matrix holding column, count, dtype, mean, sdev, min, 25%, 50%, 75%, max.
+
+Matrix.info #Returns information about columns: Dtype, Valid data amount, Invalid data amount, Unique data amount
+
+Matrix.uniques(column) #Returns the unique set of the 'column'; If 'column' is None, all columns' unique values are returned in a list of lists 
+
+Matrix.groupBy(columns) #Return a 'Group' object containing the Matrix grouped by given 'columns'.
 
 Matrix.sum(n,get) #Returns the sum of the elements in the column with name/index 'n'. If 'n' is None, all column sums are returned. Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
@@ -546,21 +596,17 @@ Matrix.where(condition) #Returns a matrix where the given condition(s) are True.
 
 Matrix.match(regex,columns,as_row) #Return the rows or the values in the matrix depending on 'as_row', in the given column names/numbers in 'columns' as a list/tuple or str/int, matching given 'regex' regular expressions
 
-Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. 
+Matrix.apply(expressions,columns,conditions,returnmat) #Apply given 'expression' to given 'columns' where the 'conditions' are True, set returnmat wheter or not to return self. If 'columns' is None, 'expressions' is applied to all columns. Executed as: value=eval('value'+operation)
+
+Matrix.transform(function,columns,conditions,returnmat #Pass values into the given 'function' and change them to what it outputs. Rest of the parameters works same as 'apply' method. Executed as: value = function(value)
 
 Matrix.replace(old,new,columns,conditions,returnmat) #Change 'old' values to 'new' in the 'columns' where the 'conditions' are True. Set returnmat wheter or not to return self.
-
-Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
-
-Matrix.namereset() #Reset column names to 'col_1','col_2', ...
 
 Matrix.sortBy(column,reverse,returnmat) #Sort the matrix by the desired 'column', do it in decreasing order if 'reverse'==True, and return self if 'returnmat'==True
 
 Matrix.shuffle(iterations,returnmat) #Shuffle the rows 'iterations' times and return self if 'returnmat'==True
 
 Matrix.sample(size,condition) #Get a sample sized 'size' where the 'condition' is True
-
-Matrix.joint(matrix) #Returns a matrix of shared rows with given 'matrix'
 
 Matrix.count(column,get) #Returns how many of the values are valid (same type as given in coldtypes) for each or desired column(s).  Use 'get' to choose what to return, 0 for a list, 1 for a dictionary(default), 2 for a Matrix.
 
@@ -592,11 +638,7 @@ Matrix.normalize(column,inplace) #Normalize the data in the desired column, None
 
 Matrix.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
 
-Matrix.features #Returns the column names if given, can also be used to set column names
-
-Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
-
-Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
+Matrix.oneHotEncode(column,concat) #One-hot encode a 'column', 'concat' to decide wheter or not to concatenate the encoded matrix or return it
 
 ```
 
@@ -649,9 +691,9 @@ newMatrix = eval(oldMatrix.obj)
 
    #round call is currently required for the next examples due to <~%1e-5 error rate on some calculations
    
-   round(A @ Matrix(listed=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
+   round(A @ Matrix(data=Identity(A.dim[0])),4) == round(A, 4) #A assumed to be a square matrix
    
-   round(A @ A.inv)== Matrix(listed=Identity(A.dim[0]))
+   round(A @ A.inv)== Matrix(data=Identity(A.dim[0]))
    
    round(A,4) == round(A.sym + A.anti,4)
    

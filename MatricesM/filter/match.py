@@ -54,7 +54,7 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
 
         oldinds = mat.index
         foundinds = [oldinds[i] for i in inds] if mat._dfMat else []
-        return obj(listed=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,
+        return obj(data=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,
                    decimal=mat.decimal,index=foundinds,indexname=mat.indexname)
 
     #Search given column
@@ -68,7 +68,7 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                 if len(match)>0:
                     results.append([(i,match)])
 
-            return obj(listed=results,features=[cols],dtype=mat.dtype,coldtypes=[tuple])
+            return obj(data=results,features=[cols],dtype=mat.dtype,coldtypes=[tuple])
         
         #Return rows in a matrix
         temp = []
@@ -86,7 +86,7 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
         oldinds = mat.index
         foundinds = [oldinds[i] for i in inds] if mat._dfMat else []
 
-        return obj(listed=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,
+        return obj(data=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,
                    decimal=mat.decimal,index=foundinds,indexname=mat.indexname)
         
 

@@ -1,4 +1,5 @@
 def mean(mat,col,get,obj,dFrame):   
+    from MatricesM.customs.objects import null
 
     if isinstance(col,str):
         col=mat.features.index(col)+1
@@ -6,10 +7,12 @@ def mean(mat,col,get,obj,dFrame):
         if col<=0 or col>mat.d1:
             raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
         col -= 1
+
     avg={}
     feats=mat.features[:]
     inds = []
-    
+    mm = mat.matrix
+
     if mat._dfMat:
         dts = mat.coldtypes
         if col==None:
@@ -36,7 +39,7 @@ def mean(mat,col,get,obj,dFrame):
         while True:#Loop through the column
             try:
                 while i<mat.dim[0]:
-                    t+=mat.matrix[i][c]
+                    t+=mm[i][c]
                     i+=1
                     vals+=1
             except:#Value was invalid
@@ -46,12 +49,14 @@ def mean(mat,col,get,obj,dFrame):
                 if vals!=0:
                     avg[feats[c]]=t/vals
                 else:#No valid values found
-                    avg[feats[c]]=None
+                    avg[feats[c]]=null
                 break
     #Return a matrix
     if get == 2:
-        cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in avg.items()],features=["Column","Mean"],dtype=dFrame,coldtypes=[str,complex],index=None)
+        cols = list(avg.keys())
+        means = [i for i in avg.values()]
+        cdtypes = [complex] if any([1 if isinstance(val,complex) else 0 for val in means]) else [float]
+        return obj((len(cols),1),means,features=["Mean"],dtype=dFrame,coldtypes=cdtypes,index=cols,indexname="Column")
     #Return a dictionary
     elif get == 1:
         return avg

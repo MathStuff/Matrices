@@ -1,25 +1,49 @@
-def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
-    """
-    Set the matrix based on the arguments given
-    """
-    from random import uniform,seed
+def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
     # =============================================================================
-    # Argument check
-    if lis==None:
-        lis = []
-    isMethod = bool(type(fill).__name__ == "method")
+    #Handle arguments
+
+    if isinstance(d,int):
+        mat._setDim(d)
+
+    #Empty list given
     if len(lis)==0:
         if fill == None:
-            fill = uniform
+            fill = null if mat._dfMat else uniform 
         elif isinstance(fill,str):
             if mat.dtype.__name__ != "dataframe":
                 raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
-        elif isMethod:
-            if not (fill.__name__ in ["uniform","gauss","triangular","gammavariate","betavariate","expovariate","lognormvariate"]):
-                raise FillError(fill)
-    #Check dimension given
-    if isinstance(d,int):
-        mat._setDim(d)
+
+    isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method","null"])
+
+    if lis in [None,"",{}]:
+        lis = []
+    if not isinstance(lis,(list,str,dict)):
+        raise TypeError("'data' parameter only accepts lists,strings and dictionaries")
+    
+    #Dictionary given
+    if isinstance(lis,dict):
+        from MatricesM.C_funcs.linalg import Ctranspose
+
+        names,values = list(lis.keys()),list(lis.values())
+        if len(values) == 0:
+            raise ValueError("No data found")
+        
+        if not all([1 if isinstance(val,list) else 0 for val in values]):
+            raise IndexError("Dictionary's values should be lists")
+
+        col_length = len(values[0])
+        if col_length == 0:
+            raise IndexError("Can't use empty lists as columns")
+        if not all([1 if len(val)==col_length else 0 for val in values[1:]]):
+            raise IndexError("Dictionary's values should be same length lists")
+            
+        transposed = Ctranspose(len(names),col_length,values)
+
+        mat._matrix = transposed
+        mat._Matrix__dim=mat._declareDim()
+        mat.features = names
+        return None
+    
     #Set new range    
     if r==None:
         r=mat.initRange
@@ -73,7 +97,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
                 from MatricesM.C_funcs.randgen import getfill
                 mat._matrix=getfill(d[0],d[1],fill)
                 return None
-
+            
             elif isMethod:
                 if fill.__name__=="uniform":
                     m,n=max(r),min(r)
@@ -127,18 +151,22 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
                     
                     else:
                         mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]  
-
+                else:
+                    from MatricesM.C_funcs.randgen import getfill
+                    mat._matrix=getfill(d[0],d[1],fill)
+                    return None
+                
             #Ranged has no affect after this point
             elif type(fill) == list:
-                if len(fill)!=d[0]:
-                    raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                if len(fill)!=d[1]:
+                    raise ValueError(f"Given list {fill} should have {d[1]} values")
                 else:
                     mat._matrix = [fill for _ in range(d[0])]
 
             elif type(fill) == range:
                 l = list(fill)
-                if len(l)!=d[0]:
-                    raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                if len(l)!=d[1]:
+                    raise ValueError(f"Given range {fill} should have {d[1]} values")
                 else:
                     mat._matrix = [fill for _ in range(d[0])]
             
@@ -205,21 +233,24 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat):
                         
                         else:
                             temp=[[round(fill(lis[i][0]))//1 for _ in range(d[0])] for i in range(d[1])]
-
+                    else:
+                        from MatricesM.C_funcs.randgen import getfill
+                        mat._matrix=getfill(d[0],d[1],fill)
+                        return None
                 #Ranged has no affect after this point
                 elif type(fill) == list:
-                    if len(fill)!=d[0]:
-                        raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                    if len(fill)!=d[1]:
+                        raise ValueError(f"Given list {fill} should have {d[1]} values")
                     else:
                         mat._matrix = [fill for _ in range(d[0])]
                         return None
 
                 elif type(fill) == range:
                     l = list(fill)
-                    if len(l)!=d[0]:
-                        raise ValueError(f"Given list {fill} can't be used to fill a matrix")
+                    if len(l)!=d[1]:
+                        raise ValueError(f"Given range {fill} should have {d[1]} values")
                     else:
-                        mat._matrix = [fill for _ in range(d[0])]
+                        mat._matrix = [fill for _ in range(d[1])]
                         return None
                 else:
                     raise TypeError(f"Couldn't fill the matrix with fill value:{fill}")

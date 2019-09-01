@@ -1,8 +1,9 @@
 def cov(mat,col1,col2,population,obj,dFrame):
     #Change column names to indices
-    for i in [col1,col2]:
-        if isinstance(i,str):
-            i=mat.features.index(i)+1
+    if isinstance(col1,str):
+        col1=mat.features.index(col1)+1
+    if isinstance(col2,str):
+        col2=mat.features.index(col2)+1
     #Assert types for columns
     if not (isinstance(col1,int) and isinstance(col2,int)) and (col1!=None and col2!=None):
         raise TypeError("col1 and col2 should be integers or column names or both None")
@@ -23,9 +24,11 @@ def cov(mat,col1,col2,population,obj,dFrame):
         return s/(len(c1)-1+population)
     #Covariance matrix
     else:
+        d0,d1 = mat.dim
+        colds,feats = mat.coldtypes,mat.features
         #Dataframe's float or int value column indices and names
-        validinds = [i for i in range(mat.dim[1]) if mat.coldtypes[i] in [float,int]]
-        validfeats = [mat.features[i] for i in validinds]
+        validinds = [i for i in range(d1) if colds[i] in [float,int]]
+        validfeats = [feats[i] for i in validinds]
         #Create the base
         covmat = obj(len(validfeats),fill=0)
         #Diagonals are variance values
@@ -34,14 +37,15 @@ def cov(mat,col1,col2,population,obj,dFrame):
             covmat[i,i] = vrs[validfeats[i]]
         #Calculation
         m = 0
+        means = mat.mean()
         for i in validinds[:]:
             validinds.remove(i)
             n = m+1
+            c1,m1 = mat.col(i+1,0),means[validfeats[i]]
             for j in validinds:
-                c1,c2 = mat.col(j+1,0),mat.col(n+1,0)
-                m1,m2 = mat.mean(validfeats[m],get=0),mat.mean(validfeats[n],get=0)
-                val = sum([(c1[a]-m1)*(c2[a]-m2) for a in range(len(c1))])/(len(c1)-1+population)
-
+                c2 = mat.col(j+1,0)
+                m2 = means[validfeats[j]]
+                val = sum([(c1[a]-m1)*(c2[a]-m2) for a in range(d0)])/(d0-1+population)
                 covmat._matrix[m][n] = val
                 covmat._matrix[n][m] = val
                 n+=1

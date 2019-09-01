@@ -13,8 +13,8 @@ def ranged(mat,col,get,obj,dFrame):
     
     #Return a matrix
     if get==2:
-        cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in rang.items()],features=["Column","Range"],dtype=dFrame,coldtypes=[str,list],index=None)
+        cols = list(rang.keys())
+        return obj((len(cols),1),[[[i,j]] for i,j in rang.values()],features=["Range"],dtype=dFrame,coldtypes=[list],index=cols,indexname="Column")
     #Return a dictionary
     elif get==1:
         if col==None:

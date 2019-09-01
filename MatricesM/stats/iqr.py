@@ -1,4 +1,5 @@
 def iqr(mat,col,as_quartiles,get,obj,dFrame):
+    from MatricesM.customs.objects import null
 
     if isinstance(col,str):
         col = mat.features.index(col)+1
@@ -37,13 +38,20 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
     iqr={}
     qmeds={}
     for rows in range(temp.dim[0]):
-        r = [i for i in temp.matrix[rows] if isinstance(i,(int,float))]
-        low=sorted(r)[:temp.dim[1]//2]
+        r = sorted([i for i in temp.matrix[rows] if isinstance(i,(int,float))])
+        valid_length = len(r)
+        #Not enough values
+        if valid_length <= 1:
+            iqr[feats[rows]]=null
+            qmeds[feats[rows]]=[null,null,null]
+            continue
+
+        low=r[:valid_length//2]
         low=low[len(low)//2]
         
-        up=sorted(r)[temp.dim[1]//2:]
+        up=r[valid_length//2:]
         up=up[len(up)//2]
-        
+
         if len(feats)!=0 and isinstance(feats,list):
             iqr[feats[rows]]=up-low
             qmeds[feats[rows]]=[low,mat.median(col)[feats[rows]],up]
@@ -54,10 +62,10 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
 
     #Return a matrix
     if get==2:
-        cols = mat.d1 if col==None else 1
         name = 1 if as_quartiles else 0
         dic = qmeds if as_quartiles else iqr
-        return obj((cols,2),[[i,j] for i,j in dic.items()],features=["Column",["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[str,[float,list][name]],index=None)
+        cols = list(dic.keys())
+        return obj((len(cols),1),[[i] for i in dic.values()],features=[["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[[float,list][name]],index=cols,indexname="Column")
     #Return a dictionary
     elif get==1:
         if as_quartiles:

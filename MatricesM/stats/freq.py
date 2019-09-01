@@ -33,7 +33,7 @@ def freq(mat,col,get,obj,dFrame):
 
     #Return matrices
     if get==2:
-        return [obj((len(list(c.keys())),2),[[i,j] for i,j in c.items()],features=[feat,"Frequencies"],dtype=dFrame,coldtypes=[str,int],index=None) for feat,c in res.items()]
+        return tuple(obj((len(list(c.keys())),1),[i for i in c.values()],features=["Frequencies"],dtype=dFrame,coldtypes=[int],index=list(c.keys()),indexname=feat) for feat,c in res.items())
     #Return a dictionary
     elif get==1:
         return res
@@ -48,20 +48,30 @@ def freq(mat,col,get,obj,dFrame):
         return items[col-1]
 
 def _count(mat,col,get,obj,dFrame):
-    if isinstance(col,str):
-        col = feats.index(col)
-    if col != None:
-        if col<=0 or col>mat.d1:
-            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
-
     colds = mat.coldtypes[:]
     feats = mat.features[:]
-    counts = {feats[i]:len([1 for k in mat.col(i+1,0) if type(k) == colds[i]]) for i in range(mat.dim[1])}
+
+    #Column name given
+    if isinstance(col,str):
+        if not col in feats:
+            raise NameError(f"{col} is not a column name")
+        col = feats.index(col)
+        colrange = [col]
+    #Column number given
+    elif isinstance(col,int):
+        if col<=0 or col>mat.d1:
+            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+        colrange = [col-1]
+    #None given
+    else:
+        colrange = range(mat.d1)
+
+    counts = {feats[i]:len([1 for k in mat.col(i+1,0) if type(k) == colds[i]]) for i in colrange}
     
     #Return a matrix
     if get == 2:
-        cols = mat.d1 if col==None else 1
-        return obj((cols,2),[[i,j] for i,j in counts.items()],features=["Column","Valid_values"],dtype=dFrame,coldtypes=[str,int],index=None)
+        cols = list(counts.keys())
+        return obj((len(cols),1),[i for i in counts.values()],features=["Valid_values"],dtype=dFrame,coldtypes=[int],index=cols,indexname="Column")
     #Return a dictionary
     elif get == 1:
         return counts

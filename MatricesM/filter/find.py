@@ -3,7 +3,7 @@ def find(mat,dims,element,start,rowind):
     
     class empty:
         pass
-
+    
     indices=[]
     for row in range(dims[0]):
         while element in mat[row]:

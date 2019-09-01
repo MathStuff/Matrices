@@ -4,6 +4,9 @@
 ## [constructors](https://github.com/MathStuff/MatricesM/tree/master/MatricesM/constructors)
    -> Functions to create special matrices
 
+## [customs](https://github.com/MathStuff/MatricesM/tree/master/MatricesM/customs)
+   -> Custom functions and data types
+
 ## [errors](https://github.com/MathStuff/MatricesM/tree/master/MatricesM/errors)
    -> Custom errors
    
