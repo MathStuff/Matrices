@@ -596,9 +596,7 @@ class Matrix:
                 d=self.det
                 tr=self.matrix[0][0]+self.matrix[1][1]
                 return list(set([(tr+(tr**2 - 4*d)**(1/2))/2,(tr-(tr**2 - 4*d)**(1/2))/2]))
-        except:
-            return None
-        else:
+        
             eigens = []
             q=self.Q
             a1=q.t@self@q
@@ -659,7 +657,9 @@ class Matrix:
                     
                     eigens.append(c1)
                     eigens.append(c2)
-
+        except:
+            return None
+        else:
             return eigens
 
     def _eigenvecs(self,iters,alpha=1+1e-5):
@@ -705,7 +705,7 @@ class Matrix:
         eigenmat = vectors[0][2].copy
         dtype_changed = False
 
-        for i in range(1,d0):
+        for i in range(1,len(vectors)):
             colvec = vectors[i][2]
 
             if colvec.dtype == complex and not dtype_changed:
@@ -717,10 +717,10 @@ class Matrix:
         eigenmat.namereset()
 
         ########################################################
-        diagmat = Matrix(d0,fill=0,dtype=float)
+        diagmat = Matrix(len(vectors),fill=0,dtype=float)
         dtype_changed = False
 
-        for i in range(d0):
+        for i in range(len(vectors)):
             eigvalue = vectors[i][1]
             if isinstance(eigvalue,complex) and not dtype_changed:
                 diagmat.dtype = complex
@@ -768,27 +768,36 @@ class Matrix:
         Returns eigenvecmat, diagmat and the inverse eigenvecmat from eigenvalue decomposition
         """
         results = self._eigenvecs(self.EIGENVEC_ITERS)
-        if results == None:
-            return None
+        if results in [None,[]]:
+            return (None,None,None)
         return (results[1],results[2],results[1].inv)
 
     def _SVD(self):
         """
         Singular value decomposition, Matrix = U@E@V.ht
         """
-        transposed = self.t
-        
-        #self.t@self@V = V@E**2 --> solve eigenvalue problem
-        left_hand_side = transposed@self
-        E_and_V = left_hand_side.EIGENDEC
-        E = E_and_V[1]**(0.5) #square root of diagonal matrix
-        V = E_and_V[0].ht #hermitian transpose of the eigenvector matrix
-        
-        #self@self.t@U = U@E**2 --> solve eigenvalue problem
-        left_hand_side = self@transposed
-        U = left_hand_side.eigenvecmat
+        try:
+            transposed = self.t
+            
+            #self.t@self@V = V@E**2 --> solve eigenvalue problem
+            left_hand_side = transposed@self
+            E_and_V = left_hand_side.EIGENDEC
+            E = E_and_V[1]**(0.5) #square root of diagonal matrix
+            V = E_and_V[0].ht #hermitian transpose of the eigenvector matrix
+            
+            #self@self.t@U = U@E**2 --> solve eigenvalue problem
+            left_hand_side = self@transposed
+            U = left_hand_side.eigenvecmat
 
-        return (U,E,V)
+            for diagonal in E.diags:
+                if isinstance(diagonal,complex):
+                    E.dtype = complex
+                    break
+                    
+        except:
+            return (None,None,None)
+        else:
+            return (U,E,V)
 
     def _hessenberg(self):
         pass
@@ -980,15 +989,18 @@ class Matrix:
 
     @property
     def eigenvectors(self):
-        return [vec[2] for vec in self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)[0]]
+        res = self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)
+        return [vec[2] for vec in res[0]] if not res in [None,[]] else []
 
     @property
     def eigenvecmat(self):
-        return self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)[1]
+        res = self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)
+        return res[1] if not res in [None,[]] else None
     
     @property
     def diagmat(self):
-        return self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)[2]
+        res = self._eigenvecs(self.EIGENVEC_ITERS,1+1e-4)
+        return res[2] if not res in [None,[]] else None
 
     @property
     def obj(self):
@@ -1462,7 +1474,7 @@ class Matrix:
         len(set(roundto(Matrix.eigenvalues,3))) != len(Matrix.eigenvalues)
         """
         eigs = self.eigenvalues
-        return len(set(roundto(eigs,3))) != len(eigs)
+        return len(set(roundto(eigs,3))) != len(eigs) if not eigs in [None,[]] else False
 
 # =============================================================================
     """Get special formats"""
