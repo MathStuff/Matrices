@@ -67,7 +67,7 @@ class Matrix:
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int],None]=None,
                  data:Union[List[List[Any]],List[Any],str]=[],
-                 fill:Any=uniform,
+                 fill:Any=None,
                  ranged:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=[0,1],
                  seed:int=None,
                  decimal:int=4,
@@ -248,7 +248,7 @@ class Matrix:
         Set the matrix based on the arguments given
         """
         from MatricesM.setup.matfill import _setMatrix
-        _setMatrix(self,dim,ranged,lis,fill,cmat,fmat,uniform=uniform,seed=seed)
+        _setMatrix(self,dim,ranged,lis,fill,cmat,fmat,uniform=uniform,seed=seed,null=null)
         
 # =============================================================================
     """Attribute recalculation methods"""
@@ -700,32 +700,34 @@ class Matrix:
 
             guess = (1/c)+eig if c != None else eig
             vectors.append((f"{i} iters for {eig}",guess,x))
-        
+
         ########################################################
         eigenmat = vectors[0][2].copy
+        dtype_changed = False
+
         for i in range(1,d0):
-            eigenmat.concat(vectors[i][2],axis=1)
+            colvec = vectors[i][2]
+
+            if colvec.dtype == complex and not dtype_changed:
+                eigenmat.dtype = complex
+                dtype_changed == True
+
+            eigenmat.concat(colvec,axis=1)
 
         eigenmat.namereset()
 
-        #Check if there are complex numbers 
-        for row in eigenmat.matrix:
-            found = 0
-            for val in row:
-                if isinstance(val,complex):
-                    eigenmat.dtype = complex
-                    found = 1
-                    break
-            if found:
-                break
         ########################################################
         diagmat = Matrix(d0,fill=0,dtype=float)
-        for i in range(d0):
-            diagmat._matrix[i][i] = vectors[i][1]
+        dtype_changed = False
 
-        #Check if there are complex eigenvalues 
-        if any([1 if isinstance(val,complex) else 0 for val in diagmat.diags]):
-            diagmat.dtype = complex
+        for i in range(d0):
+            eigvalue = vectors[i][1]
+            if isinstance(eigvalue,complex) and not dtype_changed:
+                diagmat.dtype = complex
+                dtype_changed = True
+
+            diagmat._matrix[i][i] = eigvalue
+
         ########################################################
 
         return (vectors,eigenmat,diagmat)

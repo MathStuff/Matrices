@@ -11,7 +11,7 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj):
     if conds != None:
         if isinstance(conds,str):
             from MatricesM.filter.where import wheres
-            inds = wheres(mat,conds,feats)[1]
+            inds = wheres(mat,conds,feats,True)[1]
         elif isinstance(conds,obj):
             if conds.d1 != 1:
                 raise ValueError("Given matrix should be a column matrix")

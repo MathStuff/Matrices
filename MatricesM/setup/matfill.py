@@ -1,9 +1,18 @@
-def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
+def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
     # =============================================================================
-    #Check dimension given
+    #Handle arguments
+
     if isinstance(d,int):
         mat._setDim(d)
-    #Argument assertions
+
+    #Empty list given
+    if len(lis)==0:
+        if fill == None:
+            fill = null if mat._dfMat else uniform 
+        elif isinstance(fill,str):
+            if mat.dtype.__name__ != "dataframe":
+                raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
+
     isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method","null"])
 
     if lis in [None,"",{}]:
@@ -34,14 +43,6 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed):
         mat._Matrix__dim=mat._declareDim()
         mat.features = names
         return None
-
-    #Empty list given
-    if len(lis)==0:
-        if fill == None:
-            fill = uniform
-        elif isinstance(fill,str):
-            if mat.dtype.__name__ != "dataframe":
-                raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
     
     #Set new range    
     if r==None:
