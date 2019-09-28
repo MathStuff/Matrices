@@ -158,6 +158,7 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 rowinds = [i for i in range(d0) if indices[i] in pos]
                 if returninds:
                     return (rowinds,None)
+                mm = mat.matrix
                 return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
                            dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[indices[a] for a in rowinds],
                            indexname=mat.indexname)
