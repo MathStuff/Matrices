@@ -66,7 +66,7 @@ class Matrix:
     """
     def __init__(self,
                  dim:Union[int,List[int],Tuple[int],None]=None,
-                 data:Union[List[List[Any]],List[Any],str]=[],
+                 data:Union[List[List[Any]],List[Any],Any]=[],
                  fill:Any=None,
                  ranged:Union[List[Any],Tuple[Any],Dict[str,Union[List[Any],Tuple[Any]]],None]=[0,1],
                  seed:int=None,
@@ -101,10 +101,29 @@ class Matrix:
         self.__implicit = implicit                  #Implicity value
         self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
-        ######Overwrite attributes#######
+        ######Overwrite attributes######
         if kwargs != {}:
             overwrite_attributes(self,kwargs)
         ################################
+        #Save default arguments for __call__
+        self.defaults = {
+                         "dim":dim,
+                         "data":data,
+                         "fill":fill,
+                         "ranged":ranged,
+                         "seed":seed,
+                         "decimal":decimal,
+                         "dtype":dtype,
+                         "features":features,
+                         "coldtypes":coldtypes,
+                         "index":index,
+                         "indexname":indexname,
+                         "ROW_LIMIT":self.ROW_LIMIT,
+                         "PRECISION":self.PRECISION,
+                         "QR_ITERS":self.QR_ITERS,
+                         "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
+                         "NOTES":self.NOTES,
+                        }
 
         #Set/fix attributes
         self._setDim(self.__dim)           #Fix dimensions
@@ -2660,15 +2679,75 @@ class Matrix:
                 "coldtypes":self.coldtypes[:],
                 "index":self.index[:],
                 "indexname":self.indexname,
-                "implicit":True}
+                "implicit":True,
+                "ROW_LIMIT":self.ROW_LIMIT,
+                "PRECISION":self.PRECISION,
+                "QR_ITERS":self.QR_ITERS,
+                "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
+                "NOTES":self.NOTES}
 
     def __len__(self):
         return self.__dim[0]*self.__dim[1]
 
     def __call__(self,*args,**kwargs):
-        if len(args)==0 and len(kwargs.keys())==0:
-            return Matrix
-        return Matrix(*args,**kwargs)
+        r"""
+        Use custom constructors.
+
+        EXAMPLE USAGE:
+
+        >>> from MatricesM import *
+
+        >>> In[2]: df = dataframe(decimal=2,PRECISION=8,indexname="row_labels")
+
+        >>> In[3]: data = df([[0.525624, 0.902228, 0.655355, 0.852382],
+                            [0.077884, 0.896945, 0.622809, 0.401988],
+                            [0.175817, 0.051629, 0.742711, 0.492171],
+                            [0.939892, 0.500976, 0.630512, 0.728549]])
+
+        >>> In[4]: data
+        >>> Out[4]:
+
+                       col_1  col_2  col_3  col_4
+            row_labels+--------------------------
+            0         | 0.53   0.90   0.66   0.85
+            1         | 0.08   0.90   0.62   0.40
+            2         | 0.18   0.05   0.74   0.49
+            3         | 0.94   0.50   0.63   0.73
+        
+
+        >>> In[5]: mat = Matrix(decimal=5,PRECISION=9,
+                         NOTES="9 decimal places are used in calculations\nDisplaying 5 decimals")
+
+        >>> In[6]: matrix_1 = mat(6)
+
+        >>> In[7]: matrix_1
+        >>> Out[7]:
+            
+            0.29136 0.04569 0.62581 0.56670 0.56908 0.98096
+            0.30619 0.69436 0.79888 0.09577 0.62117 0.55394
+            0.45677 0.46080 0.36360 0.25382 0.25730 0.31367
+            0.17618 0.29789 0.89245 0.46773 0.45167 0.51045
+            0.38179 0.88610 0.73467 0.45546 0.94040 0.70342
+            0.78188 0.88076 0.77035 0.47594 0.93677 0.21937
+
+            9 decimal places are used in calculations
+            Displaying 5 decimals
+
+        NOTE:
+            -> Positional arguments OVERWRITE keyword arguments. In the given example:
+             -> mat(6,dim=100) will create a 6x6 matrix, because the first positional argument gets
+                used as 'dim' instead.
+
+            -> mat(6) is the same as mat(dim=6)    
+
+        """
+        kwargs = {**self.defaults, **kwargs} #Overwrite defaults with new values if any given
+        keys = list(kwargs.keys())
+
+        for i in range(len(args)): #Use positional arguments over keyword ones
+            kwargs[keys[i]] = args[i]
+                
+        return Matrix(**kwargs)
 
     @property
     def __name__(self):
@@ -2764,27 +2843,30 @@ class Matrix:
 ###############################################################################
 
 class dataframe(Matrix):
-    def __init__(self,data:Union[List[Any],List[List[Any]],str]=[],
+    def __init__(self,
+                 data:Union[List[Any],List[List[Any]],Any]=[],
                  features:List[str]=[],
                  coldtypes:List[type]=[],
-                 decimal:int=3,
-                 index:Union[List[Any],Tuple[Any]]=[],
-                 indexname:str="",
                  **kwargs):
+        
+        kwargs = {**{"data":data,"dtype":dataframe,
+                     "decimal":3,"features":features,
+                     "coldtypes":coldtypes},
+                  **kwargs}
 
-        super().__init__(self,data=data,
-                         dtype=dataframe,coldtypes=coldtypes,
-                         decimal=decimal,features=features,
-                         index=index,indexname=indexname,
-                         kwargs=kwargs)
+        super().__init__(**kwargs)
       
     @property
     def data(self):
         return self._matrix
 
     def __call__(self,*args,**kwargs):
-        if len(args)==0 and len(kwargs.keys())==0:
-            return dataframe
-        return dataframe(*args,**kwargs)
+        kwargs = {**self.defaults, **kwargs} #Overwrite defaults with new values if any given
+        keys = list(kwargs.keys())
+
+        for i in range(len(args)): #Use positional arguments over keyword ones
+            kwargs[keys[i+1]] = args[i] # i+1 to skip first
+        
+        return dataframe(**kwargs)
 
 ###############################################################################
