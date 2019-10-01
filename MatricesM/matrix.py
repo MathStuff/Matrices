@@ -628,14 +628,14 @@ class Matrix:
 
             #Wheter or not dimensions are odd
             isOdd=(a1.d0%2)
-
+            precision = self.PRECISION
             #Decide wheter or not to skip the bottom right 2x2 matrix
             if a1._cMat: 
                 neighbor = a1[-1,-2]
-                if round(neighbor.real,8)==0 and round(neighbor.imag,8):
+                if round(neighbor.real,precision)==0 and round(neighbor.imag,precision):
                     eigens.append(a1[-1,-1])
             else:
-                if round(a1[-1,-2],8)==0:
+                if round(a1[-1,-2],precision)==0:
                     eigens.append(a1[-1,-1])
 
             #Create rest of the eigenvalues from 2x2 matrices
@@ -647,12 +647,12 @@ class Matrix:
                 #Decide wheter or not to skip the top right corner 2x2 matrix
                 done=0
                 if a1._cMat:
-                    if round(mat[1,0].real,6)==0 and round(mat[1,0].imag,6):
+                    if round(mat[1,0].real,precision)==0 and round(mat[1,0].imag,precision):
                         eigens.append(mat[0,0])
                         ind-=isOdd
                         done=1
 
-                elif round(mat[1,0],8)==0:
+                elif round(mat[1,0],precision)==0:
                     eigens.append(mat[0,0])
                     ind-=isOdd
                     done=1
@@ -663,8 +663,8 @@ class Matrix:
                     r = mat.trace/2
                     v = (mat.det - r**2)**(1/2)
                     
-                    r = complex(complex(roundto(r.real,6,True)),complex(roundto(r.imag,6,True)))
-                    v = complex(complex(roundto(v.real,6,True)),complex(roundto(v.imag,6,True)))               
+                    r = complex(complex(roundto(r.real,precision,True)),complex(roundto(r.imag,precision,True)))
+                    v = complex(complex(roundto(v.real,precision,True)),complex(roundto(v.imag,precision,True)))               
                     
                     c1 = complex(r,v)
                     c2 = complex(r,v*(-1))
