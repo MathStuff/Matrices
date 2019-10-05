@@ -2,7 +2,7 @@
 Create special matrices
 """
 
-def Identity(dim=1):
+def eye(dim=1):
     """
     Identity matrix
     dim : integer or a list/tuple of integers (first element is used as dimensions)
@@ -16,10 +16,9 @@ def Identity(dim=1):
 
     return matrix
 
-def Symmetrical(dim):
+def sym(dim=1):
     """
     Symmetrical matrix
     """
     from MatricesM.C_funcs.constructors import symzerone
     return symzerone(dim)
-
