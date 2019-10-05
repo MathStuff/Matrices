@@ -21,52 +21,95 @@
    ```
 
 ### Basic syntax:
-```python 
 
-Matrix(dim=dimensions,#Required(UNLESS 'data' is given), int | list/tuple as [rows,cols]
+_MatricesM.matrix.**Matrix**_(
 
-       data=data, #Optional, list of numbers | list of lists containing numbers | string | dictionary. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
+**dim**: _int | [int,int] | (int,int)_ = _None_
+Dimensions of the matrix. **_Required_**(Unless **data** is given), mainly used for random matrix creation or to reshape the given **data**.
+       
+**data**: _[Any] | [[Any],...] | str | dict_ = _[]_
+Data to use in matrix, **_Optional_**, matrix's elements are picked from this parameter. Matrix filling related parameters are ignored if valid values given to this parameter. If no argument is passed matrix is filled depending on the **fill** and **ranged**
 
-       fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "data" is given
+**fill**: _Any_ = _None_
+Object,method or value to use for filling the matrix with. **_Optional_** . If a _list_ or _range_ is given, given object will be repeated as rows. _default_ is **null** for dataframe dtype, **uniform** for other dtypes.
 
-       ranged=[*args] | dict;"""
-                        ->To apply all the elements give a list | tuple
-                        ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
-                        ->Arguments should follow one of the following rules:
-                              1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
-                              2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                              3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
-                              4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
-                              5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
+Available distributions: 
+* _uniform_
 
-       features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
+* _triangular_
+
+* _gauss_
+
+* _gammavariate,betavariate_
+
+* _expovariate_
+
+* _lognormvariate_
+
+**ranged**: _[*args] | (*args) | dict_ = _(0,1)_
+Arguments to pass to **fill**. **_Optional_**. To apply all the elements give a list | tuple. To apply every column individually give a dictionary as _{**"Column_name"**:[*args], ...}_. 
+
+Arguments should follow one of the following rules:
+
+* If 'fill' is uniform, interval to pick numbers from as _[minimum,maximum]_
+                              
+* If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as _[mean,standard_deviation]_
+                              
+* If 'fill' is triangular, range of the numbers and the mode as _[minimum,maximum,mode]_
+                              
+* If 'fill' is gammavariate or betavariate, alpha and beta values are picked as _[alpha,beta]_
+                              
+* If 'fill' is expovariate, lambda value have to be given in a list as _[lambda]_"""                   
+
+**features**:_[str, ...]_ = _[]_
+Column names. **_Optional_**. If no argument is given, columns get named "col_1","col_2" and so on.
       
-       seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+**seed**: _int_ = _None_
+Seed to use while picking up random numbers. **_Optional_**.
          
-       dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
+**dtype**: _int | float | complex | dataframe_ = _float_
+Type of values the Matrix will carry. **_Optional_**. _dataframe_ to enable all types.
       
-       coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+**coldtypes**: _[type_,...]_ = _[]_
+List of type object for each column's data type. **_Optional_**. Requires _dataframe_ dtype to work.
       
-       decimal=decimals_to_round #Optional, int (default is 4). Decimal digits to round to while printing
+**decimal**: _int_ = 4
+Amount of decimal places to print. **_Optional_**.
 
-       index=index_column #Optional, Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+**index**: _[Any, ...] | (Any, ...) | Matrix_  = _[]_
+Row labels for each row. **_Optional_**. Only works with _dataframe_ dtype.
 
-       indexname=index_col_name #Optional, str; name of the index column
+**indexname**: _str_ = ""
+Row label column's name. **_Optional_**. Only works with _dataframe_ dtype.
 
-       implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
+**implicit**: _bool_ = _False_
+Skip setup proccess for faster initiation, if necessary arguments are passed. **_Optional_**. Don't change if you aren't sure what your matrix requires to work properly.
+
+****kwargs**: NOTES, PRECISION, DEFAULT_NULL, ROW_LIMIT, QR_ITERS, EIGENDEC_ITERS.
       )
 
-#Alternative way for creating dataframes, inherits from Matrix class, dtype is passed as dataframe to Matrix
-dataframe(data=data,
-          features=column_names,
-          coldtypes=column_dtypes,
-          decimal=decimals_to_round, #Decimal defaults to 3
-          index=index_column,
-          indexname=index_col_name, 
-          **kwargs #Rest of the arguments passed to Matrix's __init__
-         )
+_MatricesM.matrix.**dataframe**_(
+**data**=: _[Any] | [[Any],...] | str | dict_ = _[]_
+Data to use in the dataframe, **Optional**, matrix's elements are picked from this parameter. Matrix filling related parameters are ignored if valid values given to this parameter. If no argument is passed matrix is filled depending on the **fill** and **ranged**
 
-```         
+**features**:_[str, ...]_ = _[]_
+Column names. **_Optional_**. If no argument is given, columns get named "col_1","col_2" and so on.
+
+**coldtypes**: _[type_,...]_ = _[]_
+List of type object for each column's data type. **_Optional_**.
+      
+**decimal**: _int_ = 3
+Amount of decimal places to print. **_Optional_**.
+
+**index**: _[Any, ...] | (Any, ...) | Matrix_  = _[]_
+Row labels for each row. **_Optional_**.
+
+**indexname**: _str_ = ""
+Row label column's name. **_Optional_**.
+
+****kwargs** #Rest of the arguments passed to Matrix
+      )
+       
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
    
    ##### -[matrices.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/constructors/matrices.py) contains functions to create special matrices.
