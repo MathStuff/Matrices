@@ -81,10 +81,10 @@ fr,166,56,42,k
 # =============================================================================
 # Identity Matrices
 # =============================================================================
-id1=Matrix(data=Identity())
-id2=Matrix(data=Identity(5))
+id1=Matrix(data=eye(3))
+id2=Identity(5)
 id3=id2[:3,:3]
-id4=Matrix(data=Identity(6))
+id4=Identity(9)
 
 # =============================================================================
 """PRINT THE MATRICES """
@@ -250,8 +250,8 @@ print(f3)
 
 print("################")
       
-print("e+=Matrix(data=Identity(e.dim[0]))*99")
-e+=Matrix(data=Identity(e.dim[0]))*99
+print("e+=Identity(e.d0)*99")
+e+=Identity(e.d0)*99
 print(e)
 print("\ne-=33:")
 e-=33
