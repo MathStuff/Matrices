@@ -1,5 +1,5 @@
 def median(mat,col,get,obj,dFrame):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
     
     if isinstance(col,str):
         col=mat.features.index(col)+1
@@ -42,7 +42,7 @@ def median(mat,col,get,obj,dFrame):
         length = len(r)
         #Not enough values
         if length <=1:
-            n = null
+            n = nullobj
         else:
             n=sorted(r)[length//2]
 

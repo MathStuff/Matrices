@@ -1,5 +1,5 @@
 def var(mat,col,population,get,obj,dFrame):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
     
     if isinstance(col,str):
         col=mat.features.index(col)+1
@@ -15,7 +15,7 @@ def var(mat,col,population,get,obj,dFrame):
         try:
             vs[k]=v**2
         except:
-            vs[k]=null
+            vs[k]=nullobj
     #Return a matrix
     if get==2:
         cols = list(vs.keys())

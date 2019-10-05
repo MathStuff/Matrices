@@ -1,6 +1,6 @@
 def _stringfy(mat,dtyps,retbounds,grid):
     import re
-    from MatricesM.customs.objects import null
+    nullname = mat.DEFAULT_NULL.__name__
 
     indbound = 0
     d0,d1 = mat.dim
@@ -47,8 +47,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 for rows in range(d0):
                     try:
                         val = m[rows][cols]
-                        if type(val).__name__ == 'null':
-                            colbounds.append(4) #Length of null as string
+                        if type(val).__name__ == nullname:
+                            colbounds.append(len(nullname)) #Length of the null object
                         else:#Complex number
                             colbounds.append(len(st.format(val)))
                     except:#Invalid values
@@ -70,8 +70,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 comps = []
                 for rows in range(d0):
                     val = m[rows][cols]
-                    if type(val).__name__ == 'null':
-                        comps.append(4) #Length of 'null'
+                    if type(val).__name__ == nullname:
+                        comps.append(len(nullname)) 
                     else:
                         comps.append(len(st.format(typ(val))))
             
@@ -91,8 +91,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 colbounds=[]
                 for rows in range(d0):
                     val = m[rows][cols]
-                    if type(val).__name__ == 'null':
-                        colbounds.append(4) #Length of 'null'
+                    if type(val).__name__ == nullname:
+                        colbounds.append(len(nullname))
                     else:
                         colbounds.append(len(str(int(val))))
 
@@ -155,8 +155,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                         s = len(item)
                 #integer column
                 elif dtyps[cols] == int:
-                    if type(num).__name__ == 'null':
-                        item = "null"
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:    
                         try:
@@ -167,8 +167,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                             s = len(item)
                 #complex column
                 elif dtyps[cols] == complex:
-                    if type(num).__name__ == 'null':
-                        item = 'null'
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:
                         try:
@@ -199,8 +199,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
                 #complex
                 if mat._cMat:
-                    if type(num).__name__ == 'null':
-                        item = 'null'
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:
                         item = st.format(num)
@@ -217,8 +217,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
                 #integer
                 else:
-                    if type(num).__name__ == 'null':
-                        item = 'null'
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:
                         item = str(int(num))

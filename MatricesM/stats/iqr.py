@@ -1,5 +1,5 @@
 def iqr(mat,col,as_quartiles,get,obj,dFrame):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
 
     if isinstance(col,str):
         col = mat.features.index(col)+1
@@ -42,8 +42,8 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
         valid_length = len(r)
         #Not enough values
         if valid_length <= 1:
-            iqr[feats[rows]]=null
-            qmeds[feats[rows]]=[null,null,null]
+            iqr[feats[rows]]=nullobj
+            qmeds[feats[rows]]=[nullobj,nullobj,nullobj]
             continue
 
         low=r[:valid_length//2]

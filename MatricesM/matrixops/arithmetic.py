@@ -1,8 +1,8 @@
 def matmul(mat,other,obj,m,dFrame):
     from MatricesM.C_funcs.linalg import matmultip
     from MatricesM.errors.errors import MatrixError
-    if not type(other) == obj:
-        raise MatrixError(f"{obj} is not not a matrix")
+    if not isinstance(other,obj):
+        raise MatrixError(f"{other} is not not a matrix")
     if not mat.dim[1]==other.dim[0]:
         raise ValueError("Dimensions don't match for matrix multiplication")
     o = other.matrix   

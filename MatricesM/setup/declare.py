@@ -1,5 +1,6 @@
 def declareDim(mat):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
+
     m = mat._matrix
     if m == None:
         mat._matrix = []
@@ -13,12 +14,12 @@ def declareDim(mat):
         for i in range(rows):
             row_length = len(m[i])
             if col_length != row_length:
-                m[i] += [null for _ in range(col_length-row_length)]
+                m[i] += [nullobj for _ in range(col_length-row_length)]
 
         return [rows,col_length]
     
 def declareRange(mat,lis):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
 
     c={}
     d0,d1 = mat.dim
@@ -34,7 +35,7 @@ def declareRange(mat,lis):
                 mn,mx = min(temp),max(temp)
             except:
                 #All values are invalid
-                c[feats[cols]]=[null,null]
+                c[feats[cols]]=[nullobj,nullobj]
             else:
                 c[feats[cols]]=[mn,mx]
 
@@ -63,12 +64,13 @@ def declareRange(mat,lis):
 
     return c
 
-def declareColdtypes(lis):
+def declareColdtypes(lis,nullname="null"):
     from random import sample
     import re
+    
     def is_float(data):
         try:
-            if type(data).__name__ == "null":
+            if type(data).__name__ == nullname:
                 return False
             n = float(data)
             return True
@@ -77,7 +79,7 @@ def declareColdtypes(lis):
 
     def is_int(data):
         try:
-            if type(data).__name__ == "null":
+            if type(data).__name__ == nullname:
                 return False
             if "." in str(data):
                 return False

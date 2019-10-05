@@ -1,5 +1,5 @@
 def sdev(mat,col,population,get,obj,dFrame):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
 
     d0,d1 = mat.dim
     feats = mat.features[:]
@@ -23,8 +23,8 @@ def sdev(mat,col,population,get,obj,dFrame):
             ind=0 #Row index
             valids=0 #How many valid elements were in the column
             mm = mat._matrix
-            if avgs[valid_names[fi]]==null: #Invalid column mean
-                sd[feats[i]]=null
+            if avgs[valid_names[fi]]==nullobj: #Invalid column mean
+                sd[feats[i]]=nullobj
                 continue
                 
             while True:#Loop through the column
@@ -41,7 +41,7 @@ def sdev(mat,col,population,get,obj,dFrame):
                     if valids!=0 and not (valids==1 and population==0):
                         sd[feats[i]]=(t/(valids-1+population))**(1/2)
                     else:#No valid values found
-                        sd[feats[i]]=null
+                        sd[feats[i]]=nullobj
                     break
             fi+=1
     #Single column 
@@ -53,7 +53,7 @@ def sdev(mat,col,population,get,obj,dFrame):
         else:
             sd={}
             a = mat.mean(col,get=0)
-            if a in [null,None]:
+            if a in [nullobj,None]:
                 raise ValueError(f"Can't get the mean of column{col}")
             t=0 #Total
             ind=0 #Index
@@ -73,7 +73,7 @@ def sdev(mat,col,population,get,obj,dFrame):
                     if valids!=0 and not (valids==1 and population==0):
                         sd[feats[col-1]]=(t/(valids-1+population))**(1/2)
                     else:#No valid values found
-                        sd[feats[col-1]]=null
+                        sd[feats[col-1]]=nullobj
                     break
 
     #Return a matrix

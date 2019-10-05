@@ -18,25 +18,25 @@ def concat(mat,matrix,axis,fill,obj):
 
     #Fill null if needed
     if fill:
-        from MatricesM.customs.objects import null   
+        nullobj = mat.DEFAULT_NULL   
         if axis==0:
             #Given matrix is smaller
             for i in range(0,d1-md1):
-                newmat.add([null for _ in range(md0)],col=d1+i+1)
+                newmat.add([nullobj for _ in range(md0)],col=d1+i+1)
                 md1 += 1
             #Given matrix is bigger
             for i in range(0,md1-d1):
-                mat.add([null for _ in range(d0)],col=md1+i+1)
+                mat.add([nullobj for _ in range(d0)],col=md1+i+1)
                 d1 += 1
 
         elif axis==1:
             #Given matrix is smaller
             for i in range(0,d0-md0):
-                newmat.add([null for _ in range(md1)],row=d0+i+1)
+                newmat.add([nullobj for _ in range(md1)],row=d0+i+1)
                 md0 += 1
             #Given matrix is bigger
             for i in range(0,md0-d0):
-                mat.add([null for _ in range(d1)],row=md0+i+1)
+                mat.add([nullobj for _ in range(d1)],row=md0+i+1)
                 d0 += 1
            
     if axis==0:

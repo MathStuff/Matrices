@@ -13,7 +13,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
             if mat.dtype.__name__ != "dataframe":
                 raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
 
-    isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method","null"])
+    isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method",null.__name__])
 
     if lis in [None,"",{}]:
         lis = []

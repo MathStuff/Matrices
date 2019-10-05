@@ -1,5 +1,5 @@
 def add(mat,lis,row,col,feature,dtype,index,fill):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
 
     r,c = 0,0
     d0,d1 = mat.dim
@@ -19,12 +19,12 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             if fill:
                 #Given list is shorter
                 for rest in range(0,d1-length):
-                    lis.append(null)
+                    lis.append(nullobj)
                 length = len(lis)
 
                 #Given list is longer
                 for rest in range(0,length-d1):
-                    mat.add([null for _ in range(d0)],col=d1+rest+1)
+                    mat.add([nullobj for _ in range(d0)],col=d1+rest+1)
                     d1 += 1
 
             if length!=d1:
@@ -49,12 +49,12 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             if fill:
                 #Given list is shorter
                 for rest in range(0,d0-length):
-                    lis.append(null)
+                    lis.append(nullobj)
                 length = len(lis)
 
                 #Given list is longer
                 for rest in range(0,length-d0):
-                    mat.add([null for _ in range(d1)],row=d0+rest+1)
+                    mat.add([nullobj for _ in range(d1)],row=d0+rest+1)
                     d0 += 1
                 
             if length!=d0:
