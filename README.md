@@ -136,10 +136,10 @@ randomData4 = Matrix([20000,4],
 ##### Create special matrices
 ```python 
 #3x3 identity matrix
-id3 = Matrix(data=Identity(3))
+id3 = Identity(3)
 
 #A 8x8 symmetrical matrix filled with numbers in range from 0 to 1 with uniform distribution 
-sym1 = Matrix(data=Symmetrical(8))
+sym1 = Symmetrical(8)
 
 ``` 
 ----------------------------------------
