@@ -22,28 +22,22 @@ class Vector:
     """
     Column vector
 
-    dim: int; Row dimension
+    data: list|list of lists|str; column data
     """
-    def __init__(self,dim,data):
+    def __init__(self,data):
         self._cMat = 0
         self._dfMat = 0
         self._fMat = 1
-        #Dimension check
-        if isinstance(dim,int):
-            dim = dim if dim>=0 else 0
-            self.__dim = [dim,1]
-        else:
-            raise TypeError("'dim' parameter only accepts int type")
-        
+        self.__data = []
+
         #Data check
         if isinstance(data,(list,tuple)):
-            if len(data) == dim:
-                self.__data = [[data] for _ in range(dim)]
-            else:
-                raise DimensionError(f"Expected {dim} items, got {len(data)}")  
+            self.__data = [[d] if not isinstance(d,list) else d for d in data]
+
         elif isinstance(data,str):
             from MatricesM.setup.listify import _listify
-            self.__data = _listify(self,data)
+            self.__data = _listify(self,data,True)
+
         else:
             raise TypeError(f"Can't use type {type(data).__name__} for 'data' parameter")
 
@@ -53,13 +47,13 @@ class Vector:
 
     @property
     def dim(self):
-        return self.__dim
+        return [self.d0,1]
     @property
     def d0(self):
-        return self.__dim[0]
+        return len(self.__data)
     @property
     def d1(self):
-        return self.__dim[1]
+        return 1
     
     def __getitem__(self,ind):
         return self.__data[ind][0]
@@ -358,7 +352,7 @@ class Matrix(Vector):
         Finds all the numbers in the given string
         """
         from MatricesM.setup.listify import _listify
-        return _listify(self,stringold)
+        return _listify(self,stringold,False)
             
     def _stringfy(self,coldtypes:Union[List[Any],None]=None,returnbounds:bool=False,grid:bool=False):
         """
