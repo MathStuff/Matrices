@@ -17,7 +17,60 @@ from random import random,randint,uniform,triangular,\
                    gauss,gammavariate,betavariate,   \
                    expovariate,lognormvariate,seed
 
-class Matrix:
+
+class Vector:
+    """
+    Column vector
+
+    dim: int; Row dimension
+    """
+    def __init__(self,dim,data):
+        self._cMat = 0
+        self._dfMat = 0
+        self._fMat = 1
+        #Dimension check
+        if isinstance(dim,int):
+            dim = dim if dim>=0 else 0
+            self.__dim = [dim,1]
+        else:
+            raise TypeError("'dim' parameter only accepts int type")
+        
+        #Data check
+        if isinstance(data,(list,tuple)):
+            if len(data) == dim:
+                self.__data = [[data] for _ in range(dim)]
+            else:
+                raise DimensionError(f"Expected {dim} items, got {len(data)}")  
+        elif isinstance(data,str):
+            from MatricesM.setup.listify import _listify
+            self.__data = _listify(self,data)
+        else:
+            raise TypeError(f"Can't use type {type(data).__name__} for 'data' parameter")
+
+    @property
+    def norm(self):
+        return sum([i[0]**2 for i in self.__data])**(0.5) if self.d1==1 else None
+
+    @property
+    def dim(self):
+        return self.__dim
+    @property
+    def d0(self):
+        return self.__dim[0]
+    @property
+    def d1(self):
+        return self.__dim[1]
+    
+    def __getitem__(self,ind):
+        return self.__data[ind][0]
+
+    def __setitem__(self,ind,val):
+        self.__data[ind][0] = val
+
+    def __repr__(self):
+        return "\n"+"\n".join([str(val[0]) for val in self.__data])+f"\n\nsize: [{self.d0}x1]"
+
+class Matrix(Vector):
     """
     dim: int OR list|tuple of 2 integers; dimensions of the matrix. Giving an integer creates assumes square matrix
     
@@ -85,6 +138,7 @@ class Matrix:
         self.QR_ITERS = 50                          #QR algorithm iterations for eigenvalues
         self.EIGENVEC_ITERS = 10                    #Shifted inverse iteration method iterations for eigenvectors
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
+        self.DEFAULT_NULL = null                    #Object to use as invalid value indicator
 
         #Basic attributes
         self.__features = features                  #Column names
@@ -151,6 +205,9 @@ class Matrix:
                 raise AttributeError(f"'{attr}' is not a column name nor an attribute or a method of Matrix")
 
     def setup(self,first:bool,implicit:bool=False):
+        #Whetere or not there are random numbers involved
+        randomly_filled = True if self._matrix in [None,[],{},[[]]] else False
+
         #Matrix fix
         if first and not implicit:
             self.setMatrix(self.dim,self.initRange,self._matrix,self.fill,self._cMat,self._fMat)
@@ -174,10 +231,11 @@ class Matrix:
         if len(cdts) != d1:
             if df:
                 from MatricesM.setup.declare import declareColdtypes
-                self.__coldtypes = declareColdtypes(self.matrix)
+                self.__coldtypes = declareColdtypes(self.matrix,self.DEFAULT_NULL.__name__)
             else:
                 self.__coldtypes = [dt]*d1
-        
+            cdts = self.__coldtypes #Update
+
         #Index shouldn't be None
         if self.__index == None:
             self.__index = []
@@ -186,18 +244,24 @@ class Matrix:
         if df:
             r = range(d0)
             mm = self.matrix
-            for i in r:
-                j=0
-                while j<d1:
-                    try:
-                        if cdts[j] != type:
-                            val = mm[i][j]
-                            if type(val).__name__ != "null":
-                                mm[i][j] = cdts[j](val)
-                        j+=1
-                    except:
-                        j+=1
-                        continue
+
+            #Apply column dtypes to each column's values if they weren't randomly picked
+            if not randomly_filled:
+                for i in r:
+                    j=0
+                    rowcopy = mm[i][:]
+                    while j<d1:
+                        try:
+                            cdtype = cdts[j]
+                            if cdtype != type:
+                                val = rowcopy[j]
+                                if type(val).__name__ != self.DEFAULT_NULL.__name__:
+                                    rowcopy[j] = cdtype(val)
+                            j+=1
+                        except:
+                            j+=1
+                            continue
+                    mm[i] = rowcopy[:]
 
             ind = self.__index
             if isinstance(ind,Matrix):
@@ -267,7 +331,7 @@ class Matrix:
         Set the matrix based on the arguments given
         """
         from MatricesM.setup.matfill import _setMatrix
-        _setMatrix(self,dim,ranged,lis,fill,cmat,fmat,uniform=uniform,seed=seed,null=null)
+        _setMatrix(self,dim,ranged,lis,fill,cmat,fmat,uniform=uniform,seed=seed,null=self.DEFAULT_NULL)
         
 # =============================================================================
     """Attribute recalculation methods"""
@@ -350,6 +414,10 @@ class Matrix:
 # =============================================================================
     """Row/Column methods"""
 # =============================================================================
+    @property
+    class columns:
+        pass
+    
     def head(self,rows:int=5):
         """
         First 'rows' amount of rows of the matrix
@@ -589,7 +657,7 @@ class Matrix:
         Returns the inversed matrix
         """
         from MatricesM.linalg.inverse import inverse
-        return inverse(self,Matrix(data=Identity(self.d0)))
+        return inverse(self,Identity(self.d0))
 
     def _Rank(self):
         """
@@ -698,7 +766,7 @@ class Matrix:
             c = None
             x = ones.copy
             eigen = eig*alpha
-            identity = Matrix(data=Identity(d0))*(eigen)
+            identity = Identity(d0)*(eigen)
             
             while i<iters:
                 try:
@@ -773,7 +841,7 @@ class Matrix:
         Returns L and U matrices from LU decomposition
         """
         from MatricesM.linalg.LU import LU
-        return LU(self,Identity(self.d0),[a[:] for a in self.matrix],Matrix)
+        return LU(self,Identity(self.d0).matrix,[a[:] for a in self.matrix],Matrix)
 
     def _QR(self):
         """
@@ -893,7 +961,7 @@ class Matrix:
     @fill.setter
     def fill(self,value:[object]):
         try:
-            assert (type(value).__name__ in ["method","function","builtin_function_or_method","null"]) \
+            assert (type(value).__name__ in ["method","function","builtin_function_or_method",self.DEFAULT_NULL.__name__]) \
                 or (type(value) in [int,str,float,complex,range,list]) \
                 or  value==None
         except AssertionError:
@@ -1147,7 +1215,7 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return round(self,self.PRECISION).matrix == Identity(self.d0)
+        return round(self,self.PRECISION).matrix == Identity(self.d0).matrix
     
     @property
     def isSingular(self):
@@ -1462,7 +1530,7 @@ class Matrix:
         """
         if not self.isSquare:
             return False
-        return (self@self).roundForm(4).matrix == Matrix(data=Identity(self.d0)).matrix
+        return (self@self).roundForm(4).matrix == Identity(self.d0).matrix
     
     @property
     def isIncidence(self):
@@ -2357,7 +2425,7 @@ class Matrix:
         population:1|0 ; 1 to calculate for the population or a 0 to calculate for a sample
         """
         from MatricesM.stats.corr import _corr
-        temp = Matrix(self.d1,Identity(self.d1),features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.d1)])
+        temp = Identity(self.d1,features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.d1)])
         return _corr(self,col1,col2,population,temp,method)
     
     @property   
@@ -2868,5 +2936,17 @@ class dataframe(Matrix):
             kwargs[keys[i+1]] = args[i] # i+1 to skip first
         
         return dataframe(**kwargs)
+
+###############################################################################
+
+class Identity(Matrix):
+    def __init__(self,dim,**kwargs):
+        super().__init__(dim=dim,data=eye(dim),**kwargs)
+
+###############################################################################
+
+class Symmetrical(Matrix):
+    def __init__(self,dim,**kwargs):
+        super().__init__(dim=dim,data=sym(dim),**kwargs)
 
 ###############################################################################
