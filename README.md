@@ -25,12 +25,15 @@
 _MatricesM.matrix.**Matrix**_(
 
 **dim**: _int | [int,int] | (int,int)_ = _None_
+
 Dimensions of the matrix. **_Required_**(Unless **data** is given), mainly used for random matrix creation or to reshape the given **data**.
        
 **data**: _[Any] | [[Any],...] | str | dict_ = _[]_
+
 Data to use in matrix, **_Optional_**, matrix's elements are picked from this parameter. Matrix filling related parameters are ignored if valid values given to this parameter. If no argument is passed matrix is filled depending on the **fill** and **ranged**
 
 **fill**: _Any_ = _None_
+
 Object,method or value to use for filling the matrix with. **_Optional_** . If a _list_ or _range_ is given, given object will be repeated as rows. _default_ is **null** for dataframe dtype, **uniform** for other dtypes.
 
 Available distributions: 
@@ -47,6 +50,7 @@ Available distributions:
 * _lognormvariate_
 
 **ranged**: _[*args] | (*args) | dict_ = _(0,1)_
+
 Arguments to pass to **fill**. **_Optional_**. To apply all the elements give a list | tuple. To apply every column individually give a dictionary as _{**"Column_name"**:[*args], ...}_. 
 
 Arguments should follow one of the following rules:
@@ -62,49 +66,64 @@ Arguments should follow one of the following rules:
 * If 'fill' is expovariate, lambda value have to be given in a list as _[lambda]_"""                   
 
 **features**:_[str, ...]_ = _[]_
+
 Column names. **_Optional_**. If no argument is given, columns get named "col_1","col_2" and so on.
       
 **seed**: _int_ = _None_
+
 Seed to use while picking up random numbers. **_Optional_**.
          
 **dtype**: _int | float | complex | dataframe_ = _float_
+
 Type of values the Matrix will carry. **_Optional_**. _dataframe_ to enable all types.
       
 **coldtypes**: _[type_,...]_ = _[]_
+
 List of type object for each column's data type. **_Optional_**. Requires _dataframe_ dtype to work.
       
 **decimal**: _int_ = 4
+
 Amount of decimal places to print. **_Optional_**.
 
 **index**: _[Any, ...] | (Any, ...) | Matrix_  = _[]_
+
 Row labels for each row. **_Optional_**. Only works with _dataframe_ dtype.
 
 **indexname**: _str_ = ""
+
 Row label column's name. **_Optional_**. Only works with _dataframe_ dtype.
 
 **implicit**: _bool_ = _False_
+
 Skip setup proccess for faster initiation, if necessary arguments are passed. **_Optional_**. Don't change if you aren't sure what your matrix requires to work properly.
 
 ****kwargs**: NOTES, PRECISION, DEFAULT_NULL, ROW_LIMIT, QR_ITERS, EIGENDEC_ITERS.
       )
 
 _MatricesM.matrix.**dataframe**_(
+
 **data**=: _[Any] | [[Any],...] | str | dict_ = _[]_
+
 Data to use in the dataframe, **Optional**, matrix's elements are picked from this parameter. Matrix filling related parameters are ignored if valid values given to this parameter. If no argument is passed matrix is filled depending on the **fill** and **ranged**
 
 **features**:_[str, ...]_ = _[]_
+
 Column names. **_Optional_**. If no argument is given, columns get named "col_1","col_2" and so on.
 
 **coldtypes**: _[type_,...]_ = _[]_
+
 List of type object for each column's data type. **_Optional_**.
       
-**decimal**: _int_ = 3
+**decimal**: _int_ = _3_
+
 Amount of decimal places to print. **_Optional_**.
 
 **index**: _[Any, ...] | (Any, ...) | Matrix_  = _[]_
+
 Row labels for each row. **_Optional_**.
 
 **indexname**: _str_ = ""
+
 Row label column's name. **_Optional_**.
 
 ****kwargs** #Rest of the arguments passed to Matrix
