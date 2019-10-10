@@ -2,7 +2,7 @@ def _stringfy(mat,dtyps,retbounds,grid):
     import re
     nullname = mat.DEFAULT_NULL.__name__
 
-    indbound = 0
+    indbound = [0]
     d0,d1 = mat.dim
     decimals = mat.decimal
     m = mat.matrix
@@ -27,10 +27,10 @@ def _stringfy(mat,dtyps,retbounds,grid):
     ##########
     if mat._dfMat:
         bounds=[]
-        indices = [str(i) for i in mat.index]
+        indices = mat.index
 
-        #Bound from index column
-        indbound = max([len(str(i)) for i in indices+[mat.indexname]])
+        #Bounds for index columns
+        indbound = [max([len(str(label)) for label in indices.get_level(i+1)]+[len(indices.names[i])]) for i in range(indices.level)]
         #Bounds from values
         for cols in range(d1):
             colbounds=[]
@@ -102,7 +102,7 @@ def _stringfy(mat,dtyps,retbounds,grid):
             raise TypeError(msg)
     
     if retbounds:
-        ind_bound = [indbound] if isinstance(indbound,int) else [0]
+        ind_bound = [indbound] if isinstance(indbound,int) else indbound
         _bounds = [bounds for _ in range(mat.d1)] if isinstance(bounds,int) else bounds
         return ind_bound+_bounds
 
@@ -119,7 +119,7 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
         #Add features
         if not grid:
-            string += "\n" + " "*indbound + " "
+            string += "\n" + " "*(sum(indbound)+indices.level)
             for cols in range(d1-1):
                 name = feats[cols]
                 s = len(name)
@@ -128,17 +128,42 @@ def _stringfy(mat,dtyps,retbounds,grid):
             string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
 
             #Add index name row
-            string += "\n" + mat.indexname + " "*(indbound-len(mat.indexname)) + "+" + "-"*(sum(bounds) + 2*(d1-1) )
+            string += "\n" 
+            lvl = indices.level - 1
+            for i,name in enumerate(mat.index.names):
+                if name == "":
+                    string += " "*indbound[i]
+                else:
+                    string += " "*(indbound[i]-len(name)) + name
+                
+                if i != lvl:
+                    string += ","
+
+            string += "+" + "-"*(sum(bounds) + 2*(d1-1) )
 
         else:
             string += "\n"
                  
         #Add rows
         mm = mat.matrix
+        labels = mat.index.labels
         for rows in range(d0):
-            #Add index
+            current_labels = labels[rows]
+            #Add labels
             if not grid:
-                string += "\n" + indices[rows]  + " "*(indbound-len(indices[rows])) + "|"
+                string += "\n"
+
+                for i,lbl in enumerate(current_labels):
+                    lbl = str(lbl)
+                    if lbl == "":
+                        string += " "*indbound[i]
+                    else:
+                        string += " "*(indbound[i]-len(lbl)) + lbl
+                    
+                    if i != lvl:
+                        string += ","
+
+                string += "|"
             else:
                 string += "\n"
                     
