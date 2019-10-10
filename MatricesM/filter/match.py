@@ -1,5 +1,7 @@
 def _match(mat,reg,cols=None,retrow=None,obj=None):
     import re
+    from MatricesM.customs.objects import Label
+
     #Choose all columns if None given
     if cols == None:
         cols = [i for i in mat.features]
@@ -53,9 +55,10 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                         inds.append(i)
 
         oldinds = mat.index
-        foundinds = [oldinds[i] for i in inds] if mat._dfMat else []
+        foundinds = Label([oldinds[i] for i in inds],mat.index.names) if mat._dfMat else Label()
+
         return obj(data=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,
-                   decimal=mat.decimal,index=foundinds,indexname=mat.indexname)
+                   decimal=mat.decimal,index=foundinds)
 
     #Search given column
     elif isinstance(cols,str):
@@ -84,10 +87,10 @@ def _match(mat,reg,cols=None,retrow=None,obj=None):
                     temp.append(found_row)
 
         oldinds = mat.index
-        foundinds = [oldinds[i] for i in inds] if mat._dfMat else []
+        foundinds = Label([oldinds[i] for i in inds],mat.index.names) if mat._dfMat else Label()
 
         return obj(data=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,
-                   decimal=mat.decimal,index=foundinds,indexname=mat.indexname)
+                   decimal=mat.decimal,index=foundinds)
         
 
 

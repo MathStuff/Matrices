@@ -1,5 +1,5 @@
 def grouping(mat,col,dFrame):
-    from MatricesM.customs.objects import Group
+    from MatricesM.customs.objects import Group,Label
 
     feats = mat.features
     #Assert dataframe
@@ -24,7 +24,7 @@ def grouping(mat,col,dFrame):
     #Use row labels
     if col == None:
         grp = []
-        for ind in mat.index:
+        for ind in mat.index.labels:
             if not ind in grp:
                 grp.append(ind)
 
@@ -72,10 +72,10 @@ def grouping(mat,col,dFrame):
 
             table = []
             cdtyps = mat.coldtypes
-            indname = mat.indexname
+            indname = mat.index.names
             for i,group in enumerate(tables):
                 table.append((group[0],dFrame(group[1],features=feats[:],
                                               coldtypes=cdtyps[:],
-                                              index=groups_indices[i][1],
-                                              indexname=indname[:])))
+                                              index=Label(groups_indices[i][1],indname),
+                                              )))
             return Group(table,names=col)
