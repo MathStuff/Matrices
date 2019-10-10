@@ -95,9 +95,7 @@ class Matrix(Vector):
 
     coldtypes: tuple|list of objects; data types for each column individually.
 
-    index: Matrix|list|tuple of objects; indices to use for rows. Only works if dtype is set to dataframe
-
-    indexname: str; name of the index column
+    index: Label|Matrix|list|tuple of objects; indices to use for rows. Only works if dtype is set to dataframe
     
     implicit: bool; Skip matrix setting operations if dimensions and elements are given
 
@@ -121,8 +119,7 @@ class Matrix(Vector):
                  dtype:Union[int,float,complex,dataframe]=float,
                  features:List[str]=[],
                  coldtypes:List[type]=[],
-                 index:Union[List[Any],Tuple[Any]]=[],
-                 indexname:str="",
+                 index:Union[List[Any],Tuple[Any]]=Label(),
                  implicit:bool=False,
                  **kwargs):
 
@@ -145,7 +142,6 @@ class Matrix(Vector):
         self.__decimal = decimal                    #How many digits to display in decimal places
         self.__dtype = dtype                        #Type of the matrix
         self.__index = index                        #Column to use as index column
-        self.__indexname =  indexname               #Index column's name
         self.__implicit = implicit                  #Implicity value
         self._cMat,self._fMat,self._dfMat = 0,0,0   #Types
 
@@ -165,7 +161,6 @@ class Matrix(Vector):
                          "features":features,
                          "coldtypes":coldtypes,
                          "index":index,
-                         "indexname":indexname,
                          "ROW_LIMIT":self.ROW_LIMIT,
                          "PRECISION":self.PRECISION,
                          "QR_ITERS":self.QR_ITERS,
@@ -206,7 +201,6 @@ class Matrix(Vector):
         if first and not implicit:
             self.setMatrix(self.dim,self.initRange,self._matrix,self.fill,self._cMat,self._fMat)
         
-        #Variables
         d0,d1 = self.dim
         df = self._dfMat
         dt = self.dtype
@@ -231,8 +225,8 @@ class Matrix(Vector):
             cdts = self.__coldtypes #Update
 
         #Index shouldn't be None
-        if self.__index == None:
-            self.__index = []
+        if self.__index in [[],None]:
+            self.__index = Label()
 
         #Apply coldtypes to values in the matrix, set indices
         if df:
@@ -241,6 +235,7 @@ class Matrix(Vector):
 
             #Apply column dtypes to each column's values if they weren't randomly picked
             if not randomly_filled:
+                def_null_name = self.DEFAULT_NULL.__name__
                 for i in r:
                     j=0
                     rowcopy = mm[i][:]
@@ -249,7 +244,7 @@ class Matrix(Vector):
                             cdtype = cdts[j]
                             if cdtype != type:
                                 val = rowcopy[j]
-                                if type(val).__name__ != self.DEFAULT_NULL.__name__:
+                                if type(val).__name__ != def_null_name:
                                     rowcopy[j] = cdtype(val)
                             j+=1
                         except:
@@ -258,22 +253,34 @@ class Matrix(Vector):
                     mm[i] = rowcopy[:]
 
             ind = self.__index
-            if isinstance(ind,Matrix):
+            
+            if isinstance(ind,Label):
+                label_len = len(ind)
+                if label_len == 0:
+                    if first:
+                        self.__index = Label(list(range(d0)),"")
+                    else:
+                        raise IndexError(f"Expected {d0} labels, got {label_len} instead")
+                elif label_len == d0:
+                    self.__index = ind[:]
+                else:
+                    raise IndexError(f"Expected {d0} labels, got {label_len} instead")
+
+            elif isinstance(ind,Matrix):
                 if ind.d1 != 1:
                     raise TypeError("Index parameter only accepts column matrices")
                 if ind.d0 != d0:
                     raise ValueError(f"Invalid index matrix; expected {d0} rows, got {ind.d0}")
                 
-                self.__index = ind.col(1,0)
+                self.__index = Label([tuple(row) for row in ind.matrix],ind.features)
 
             elif isinstance(ind,(list,tuple)):
                 if len(ind) == 0:
-                    self.__index = list(r)
+                    self.__index = Label(list(r),"")
                 elif len(ind) != d0:
                     raise ValueError(f"Invalid index list; expected {d0} values, got {len(ind)}")
-
-            elif ind == []:
-                self.__index = ["" for _ in range(d0)]
+                else:
+                    self.__index = Label(list(ind)[:])
             else:
                 raise TypeError(f"Type {type(ind).__name__} can't be used as indices")
             
@@ -366,51 +373,82 @@ class Matrix(Vector):
     """Row labels used as indices"""
 # =============================================================================
     @property
-    class ind:
+    class level:
         def __init__(self,mat):
+            if not mat._dfMat:
+                raise TypeError("Can't use row label indexing with non-dataframe matrices") 
             self.mat = mat
-            self.df = mat._dfMat
 
         def __getitem__(self,pos):
-            """
-            Using row indices/labels:
-                --> Use it after sorting the dataframe for the best results for slices
+            if not isinstance(pos,int):
+                raise TypeError("Level can't be non-int")
+            if pos <=0:
+                raise ValueError("Level can't be lower than 1")
+            
+            self.level = pos
+            return self
 
-                >>> Matrix.ind["pending"]                      --> Returns all the rows where the row index is 'pending'
+        @property
+        class ind:
+            def __init__(self,level_class):
+                self.mat = level_class.mat
+                self.level = level_class.level
+                self.df = level_class.mat._dfMat
 
-                >>> Matrix.ind[1990,"Score"]                   --> Returns the 'Score' column of all the rows with index 1990
+            def __getitem__(self,pos):
+                """
+                Using row indices/labels:
+                    --> Use it after sorting the dataframe for the best results for slices
+                    
+                    >>> df = dataframe()    #Constructor
 
-                >>> Matrix.ind[50:150]                         --> Return the rows with index higher than 50 and less than 150, starts and stops with limits' first appearances
-                                                        
-                >>> Matrix.ind["Average":,"Final_Score"]       --> Return the rows' 'Final_Score' columns where indices start from 'Average'
-                
-            """
-            if not self.df:
-                raise TypeError("Can't use 'ind' with non-dataframe matrices")
-            from MatricesM.matrixops.getsetdel import getitem
-            return getitem(self.mat,pos,Matrix,1)
+                    >>> df.level[1].ind["pending"]   #Returns all the rows where the row label at level 1 is 'pending'
 
-        def __setitem__(self,pos,val):
-            if not self.df:
-                raise TypeError("Can't use 'ind' with non-dataframe matrices")
-            from MatricesM.matrixops.getsetdel import setitem
-            setitem(self.mat,pos,val,Matrix,1)
+                    >>> df.level[3].ind[1990,"Score"]   #Returns the 'Score' column of all the rows where level 3 row label is 1990
 
-        def __delitem__(self,val:object):
-            """
-            Works 'similar' to __getitem__ , but can only be used to delete entire columns and/or rows
-            Example:
-                >>> del Matrix['col_2']     #Delete 2nd column of the matrix
-            """
-            from MatricesM.matrixops.getsetdel import delitem
-            delitem(self.mat,val,Matrix,1)  
+                    >>> df.level[2].ind[50:150]    #Return the rows with index higher than 50 and less than 150 in level 2 row labels
+                                                   #starts and stops with limits' first appearances
+                                                            
+                    >>> df.level[1].ind["Average":,"Final_Score"]   #Return the rows' 'Final_Score' columns from where the level 1 
+                                                                    #labels start from 'Average'
+                    
+                """
+                from MatricesM.matrixops.getsetdel import getitem
+                return getitem(mat=self.mat,
+                               pos=pos,
+                               obj=Matrix,
+                               uselabel=1,
+                               rowlevel=self.level)
+
+            def __setitem__(self,pos,val):
+                from MatricesM.matrixops.getsetdel import setitem
+                setitem(mat=self.mat,
+                        pos=pos,
+                        item=val,
+                        obj=Matrix,
+                        uselabel=1,
+                        rowlevel=self.level)
+
+            def __delitem__(self,val:object):
+                """
+                Works 'similar' to __getitem__ , but can only be used to delete entire columns and/or rows
+                Example:
+                    >>> del Matrix['col_2']     #Delete 2nd column of the matrix
+                """
+                from MatricesM.matrixops.getsetdel import delitem
+                delitem(mat=self.mat,
+                        pos=val,
+                        obj=Matrix,
+                        uselabel=1,
+                        rowlevel=self.level)  
 
 # =============================================================================
     """Row/Column methods"""
 # =============================================================================
     @property
     class columns:
-        pass
+        def __init__(self,*args):
+            pass
     
     def head(self,rows:int=5):
         """
@@ -1093,9 +1131,9 @@ class Matrix(Vector):
             f=self.fill.__name__
             
         dm,m,r,fs,d = self.dim,self.matrix,self.initRange,self.features,self.decimal
-        s,dt,i,n = self.seed,self.dtype.__name__,self.index,self.indexname
+        s,dt,i = self.seed,self.dtype.__name__,self.index
 
-        return f"Matrix(dim={dm},data={m},ranged={r},fill={f},features={fs},decimal={d},seed={s},dtype={dt},coldtypes={cd},index={i},indexname='{n}')"
+        return f"Matrix(dim={dm},data={m},ranged={r},fill={f},features={fs},decimal={d},seed={s},dtype={dt},coldtypes={cd},index={i})"
  
     @property
     def seed(self):
@@ -1139,7 +1177,6 @@ class Matrix(Vector):
                           dtype=self.dtype,
                           coldtypes=self.__coldtypes,
                           index=self.index,
-                          indexname=self.indexname
                           )
 
     @property
@@ -1164,33 +1201,25 @@ class Matrix(Vector):
     @index.setter
     def index(self,val:Union[object,list,tuple]):
         if isinstance(val,Matrix):
-            if val.d1 > 1:
-                raise TypeError("Index parameter only accepts column matrices")
             if val.d0 != self.d0:
                 raise ValueError(f"Given matrix can't be used as indices; expected {self.d0} rows, got {val.d0}")
-            
-            self.__index = val.col(1,0)
-            self.__indexname = val.features[0]
+            new_label = Label(val)
+            self.__index = new_label
 
         elif isinstance(val,(list,tuple)):
             if len(val) != self.d0:
                 raise ValueError(f"Given list can't be used as indices; expected {self.d0} values, got {len(val)}")
-            self.__index = list(val)
+            self.__index = Label(list(val),self.index.names)
 
         elif val == None:
-            self.__index = ["" for _ in range(self.d0)]
+            self.__index = Label()
 
+        elif isinstance(val,Label):
+            if len(val) != self.d0:
+                raise ValueError(f"Given Label can't be used as indices; expected {self.d0} labels, got {len(val)}")
+            self.__index = val
         else:
             raise TypeError(f"Type {type(val).__name__} can't be used as indices")     
-
-    @property
-    def indexname(self):
-        return self.__indexname
-    @indexname.setter
-    def indexname(self,val:str):
-        if not isinstance(val,str):
-            raise TypeError("indexname only accepts strings")
-        self.__indexname = val
 
 # =============================================================================
     """Check special cases"""
@@ -1768,7 +1797,7 @@ class Matrix(Vector):
             return Matrix(self.dim,data=[a[:] for a in self.matrix],features=self.features,
                           coldtypes=[float if i in [int,float] else i for i in self.coldtypes],
                           decimal=self.decimal,seed=self.seed,dtype=dataframe,index=self.index,
-                          indexname=self.indexname,implicit=True)
+                          implicit=True)
 
         mm = self.matrix
         t=[[float(mm[a][b]) for b in range(self.d1)] for a in range(self.d0)]
@@ -1935,8 +1964,7 @@ class Matrix(Vector):
                           features=self.features[:],
                           dtype=self.dtype,
                           coldtypes=self.coldtypes[:],
-                          index=lastinds,
-                          indexname=self.indexname)
+                          index=lastinds)
         else:
             return wheres(self,contiditions,self.features[:],False)
         
@@ -2118,16 +2146,16 @@ class Matrix(Vector):
             if self._dfMat:
                 temp = Matrix(data=self.index,dtype=dataframe,index=None).t. \
                        concat(self.copy,returnmat=True).sortBy("col_1",key=key,reverse=reverse,returnmat=True)
-                self.__index = temp.col("col_1",0)
+                self.__index = Label([tuple(row) for row in temp.matrix],self.index.names)
                 self._matrix = temp[:,1:].matrix
             else:
                 raise TypeError("Indexing by index column is not allowed on non-dataframe matrices")
         else:       
             temp=sorted([(i,row) for i,row in enumerate(self.col(column,0))],key=key,reverse=reverse)
             if self._dfMat:
-                inds = self.index
+                inds = self.index.labels
                 newinds = [r[0] for r in temp]
-                self.__index = [inds[i] for i in newinds]
+                self.__index = Label([inds[i] for i in newinds],self.index.names)
 
             mm = self.matrix
             self._matrix = [mm[r[0]] for r in temp]
@@ -2147,13 +2175,13 @@ class Matrix(Vector):
         unshuffled = inds[:]
 
         mm = self.matrix
-        oldind = self.index
+        oldind = self.index.labels
         
         while inds == unshuffled:
             shuffle(inds)
 
         if self._dfMat:
-            self.__index = [oldind[i] for i in inds]
+            self.__index = Label([oldind[i] for i in inds],self.index.names)
         self._matrix = [mm[i][:] for i in inds]
 
         if returnmat:
@@ -2499,40 +2527,8 @@ class Matrix(Vector):
         else:
             return encoded_matrix
 
-    def indexreset(self,start=0):
-        self.__index = list(range(start,self.d0+start))
-        self.__indexname = ""
-    
     def namereset(self,start=1):
         self.__features = [f"col_{i}" for i in range(start,self.d1+start)]
-
-    def index_update(self,prefix:str="",suffix:str="",changechar:Union[Tuple[str],List[str],None]=None):
-        """
-        Update string type row labels
-        
-        prefix: str; string to add to the begining of the row label
-        suffix: str; string to add to the end of the row label
-        changechar: list or tuple of strings| None; character to change into other given character
-
-        Example:
-            #Add 'Label_' prefix to the row labels, then change ' ' characters into '_' character
-                >>> Matrix.index_update(prefix='Label_',
-                                        changechar=(' ','_')) 
-        """
-        if not self._dfMat:
-            raise TypeError("Can't update indices of a non-dataframe matrix")
-        if not isinstance(changechar,(tuple,list)) and changechar != None:
-            raise TypeError("'changechar' should be a tuple/list with 2 strings or None")
-        else:
-            if changechar != None:
-                assert len(changechar)==2 , "Given list/tuple should have 2 strings"
-                assert isinstance(changechar[0],str) and isinstance(changechar[1],str) , "tuple/list have to have strings"
-        assert isinstance(prefix,str) and isinstance(suffix,str) , "Prefix and suffix should be strings"
-
-        temp = [(prefix+name+suffix) for name in self.index[:] if isinstance(name,str)]
-        if changechar != None:
-            temp = [name.replace(changechar[0],changechar[1]) for name in temp if isinstance(name,str)] 
-        self.__index = temp
 
     def name_update(self,prefix:str="",suffix:str="",changechar:Union[Tuple[str],List[str],None]=None):
         """
@@ -2739,8 +2735,7 @@ class Matrix(Vector):
                 "decimal":self.decimal,
                 "dtype":self.dtype,
                 "coldtypes":self.coldtypes[:],
-                "index":self.index[:],
-                "indexname":self.indexname,
+                "index":self.index,
                 "implicit":True,
                 "ROW_LIMIT":self.ROW_LIMIT,
                 "PRECISION":self.PRECISION,
@@ -2759,7 +2754,7 @@ class Matrix(Vector):
 
         >>> from MatricesM import *
 
-        >>> In[2]: df = dataframe(decimal=2,PRECISION=8,indexname="row_labels")
+        >>> In[2]: df = dataframe(decimal=2,PRECISION=8)
 
         >>> In[3]: data = df([[0.525624, 0.902228, 0.655355, 0.852382],
                             [0.077884, 0.896945, 0.622809, 0.401988],
@@ -2769,12 +2764,12 @@ class Matrix(Vector):
         >>> In[4]: data
         >>> Out[4]:
 
-                       col_1  col_2  col_3  col_4
-            row_labels+--------------------------
-            0         | 0.53   0.90   0.66   0.85
-            1         | 0.08   0.90   0.62   0.40
-            2         | 0.18   0.05   0.74   0.49
-            3         | 0.94   0.50   0.63   0.73
+              col_1  col_2  col_3  col_4
+             +--------------------------
+            0| 0.53   0.90   0.66   0.85
+            1| 0.08   0.90   0.62   0.40
+            2| 0.18   0.05   0.74   0.49
+            3| 0.94   0.50   0.63   0.73
         
 
         >>> In[5]: mat = Matrix(decimal=5,PRECISION=9,
