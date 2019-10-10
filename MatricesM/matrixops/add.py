@@ -11,7 +11,7 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
         if col==None:
             #Empty matrix
             if [d0,d1] == [0,0]:
-                inds = index if isinstance(index,list) else [index]
+                inds = index if isinstance(index,(Label,list)) else [index]
                 mat.__init__([1,length],lis,dtype=mat.dtype,index=inds)
                 return mat
 
@@ -33,7 +33,7 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             if row>0 and isinstance(row,int):
                 mat._matrix.insert(row-1,list(lis))
                 if mat._dfMat:
-                    mat._Matrix__index.insert(row-1,index)
+                    mat.index.insert(row-1,index)
             else:
                 raise ValueError(f"'row' should be an integer higher than 0")
 

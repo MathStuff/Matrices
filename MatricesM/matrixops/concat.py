@@ -70,5 +70,5 @@ def concat(mat,matrix,axis,fill,obj):
         mat._Matrix__coldtypes = mat.coldtypes + [i for i in newmat.coldtypes]
     else:
         if mat._dfMat:
-            newinds = [ind for ind in newmat.index] if newmat._dfMat else ["" for _ in range(md0)]
+            newinds = newmat.index if newmat._dfMat else ["" for _ in range(md0)]
             mat._Matrix__index = mat.index + newinds

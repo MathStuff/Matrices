@@ -21,84 +21,103 @@ def betterslice(oldslice,dim):
             t = dim
     return slice(s,e,t)
 
-def getitem(mat,pos,obj,useindex,returninds=False):
+def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
     from MatricesM.validations.validate import consistentlist,sublist,rangedlist
     from MatricesM.errors.errors import MatrixError
-    
+    from MatricesM.customs.objects import Label
+
     d0,d1 = mat.dim
 
     #Get 1 row
     if isinstance(pos,int):
-        if useindex:
-            ind = mat.index
+        if uselabel:
+            indices = mat.index
+            indices_labels = indices.labels
+
+            filtered_labels = indices.get_level(rowlevel)
+
             mm = mat.matrix
-            rowinds = [i for i in range(d0) if ind[i]==pos]
-            lastinds = [pos for i in rowinds]
+            rowinds = [i for i in range(d0) if filtered_labels[i]==pos]
+            lastinds = Label([pos for i in rowinds],indices.names)
             if returninds:
                 return (rowinds,None)
-            return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+            return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
         
         if returninds:
             return (pos,None)
 
         inds = mat.index
-        lastinds = inds if inds in [[],None] else [inds[pos]]
-        return obj(data=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+        lastinds = inds if inds in [[],None,Label()] else inds[pos]
+        return obj(data=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
 
     #Get multiple rows
     elif isinstance(pos,slice):
-        if useindex:
+        if uselabel:
             indices = mat.index
+            indices_labels = indices.labels
 
-            start = indices.index(pos.start) if pos.start != None else None
-            end = indices.index(pos.stop) if pos.stop != None else None
+            filtered_labels = indices.get_level(rowlevel)
 
-            first_item = indices[start] if start != None else None
-            last_item = indices[end] if end != None else None
+            start = filtered_labels.index(pos.start) if pos.start != None else None
+            end = filtered_labels.index(pos.stop) if pos.stop != None else None
+
+            first_item = filtered_labels[start] if start != None else None
+            last_item = filtered_labels[end] if end != None else None
 
             no_end = True if end == None else False
 
             start = start if start != None else 0
             end = end if end != None else d0
 
+            first_found = False if first_item != None else True
+
             rowrange,mm = [],mat.matrix
             for i in range(start,end):
                 try:
-                    if indices[i]==last_item and no_end:
+                    val = filtered_labels[i]
+
+                    if val==last_item and no_end:
                         break
-                    rowrange.append(i)
+                    if not first_found:
+                        first_found = bool(val==first_item)
+
+                    if first_found:
+                        rowrange.append(i)
                         
                 except:
                     continue
 
             if returninds:
                 return (rowrange,None)        
-            lastinds = [indices[i] for i in rowrange]
+            lastinds = Label([indices_labels[i] for i in rowrange],indices.names)
             lastmatrix = [mm[i] for i in rowrange]
 
-            return obj(data=lastmatrix,features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+            return obj(data=lastmatrix,features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
         
         if returninds:
             return (range(d0)[pos],None)
 
         inds = mat.index
-        lastinds = inds if inds in [[],None] else inds[pos]
-        return obj(data=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds,indexname=mat.indexname)
+        lastinds = inds if inds in [[],None,Label()] else inds[pos]
+        return obj(data=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
     
     #Get 1 column or use a specific row index
     elif isinstance(pos,str):
-        if useindex:
-            index = mat.index
-            if not pos in index:
-                raise MatrixError(f"{pos} is not a row index")
-            else:
-                mm = mat.matrix
-                rowinds = [i for i in range(d0) if index[i]==pos]
-                if returninds:
-                    return (rowinds,None)
-                return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
-                           dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[pos for _ in range(len(rowinds))],
-                           indexname=mat.indexname)
+        if uselabel:
+            indices = mat.index
+            indices_labels = indices.labels
+
+            filtered_labels = indices.get_level(rowlevel)
+
+            mm = mat.matrix
+
+            rowinds = [i for i in range(d0) if filtered_labels[i]==pos]
+            lastinds = Label([indices_labels[i] for i in rowinds],indices.names)
+
+            if returninds:
+                return (rowinds,None)
+            return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
+                        dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)                        
 
         if not (pos in mat.features):
             if returninds:
@@ -111,29 +130,39 @@ def getitem(mat,pos,obj,useindex,returninds=False):
             return (None,pos)
 
         inds = mat.index
-        lastinds = inds if inds in [[],None] else inds[:]
+        lastinds = inds[:]
 
         mat =  obj(dim=[d0,1],data=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],
                    decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]],index=lastinds,
-                   indexname=mat.indexname,implicit=True)
+                   implicit=True)
 
         mat.NOTES = f"n:{d0},type:{mat.coldtypes[0].__name__},invalid:{d0-mat.count(get=0)}\n\n"
         return mat
 
     #Get rows from given indices
     elif isinstance(pos,list):
-        if useindex:
+        if uselabel:
             indices = mat.index
+            indices_labels = indices.labels
+
+            filtered_labels = indices.get_level(rowlevel)
+
             #######Assertion
-            sublist(pos,indices,"list of indices","indices",throw=True)
+            #sublist(pos,indices,"list of indices","indices",throw=True)
             #######
             mm = mat.matrix
-            rowinds = [i for i in range(d0) if indices[i] in pos]
+            
+            rowinds = [i for i in range(d0) if filtered_labels[i] in pos]
+            lastinds = Label([indices_labels[i] for i in rowinds],indices.names)
+
             if returninds:
                 return rowinds
-            return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
-                        dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[indices[a] for a in rowinds],
-                        indexname=mat.indexname)
+            return obj(data=[mm[i][:] for i in rowinds],
+                       features=mat.features[:],
+                       decimal=mat.decimal,
+                       dtype=mat.dtype,
+                       coldtypes=mat.coldtypes[:],
+                       index=lastinds)
 
         #######Assertion
         consistentlist(pos,int,"indices",throw=True)
@@ -142,26 +171,35 @@ def getitem(mat,pos,obj,useindex,returninds=False):
         if returninds:
             return (pos,None)
         mm = mat.matrix
-        i = mat.index
-        inds = [i[index] for index in pos] if mat._dfMat else []
-        
-        return obj(data=[mm[i][:] for i in pos],features=mat.features,coldtypes=mat.coldtypes,dtype=mat.dtype,decimal=mat.decimal,index=inds,indexname=mat.indexname)
+        i = mat.index.labels
+        inds = Label([i[index] for index in pos],mat.index.names) if mat._dfMat else Label()
+
+        return obj(data=[mm[i][:] for i in pos],features=mat.features,coldtypes=mat.coldtypes,dtype=mat.dtype,decimal=mat.decimal,index=inds)
 
     #Get certain parts of the matrix
     elif isinstance(pos,tuple):
         pos = list(pos)
         #Column names or row indices given
         if consistentlist(pos,str):
-            #Use as row indices
-            if useindex:
+            #Use as row labels
+            if uselabel:
                 indices = mat.index
-                rowinds = [i for i in range(d0) if indices[i] in pos]
+                indices_labels = indices.labels
+
+                filtered_labels = indices.get_level(rowlevel)
+                
+                rowinds = [i for i in range(d0) if filtered_labels[i] in pos]
+                lastinds = Label([indices_labels[i] for i in rowinds],indices.names) if mat._dfMat else Label()
+                
                 if returninds:
                     return (rowinds,None)
                 mm = mat.matrix
-                return obj(data=[mm[i][:] for i in rowinds],features=mat.features[:],decimal=mat.decimal,
-                           dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=[indices[a] for a in rowinds],
-                           indexname=mat.indexname)
+                return obj(data=[mm[i][:] for i in rowinds],
+                           features=mat.features[:],
+                           decimal=mat.decimal,
+                           dtype=mat.dtype,
+                           coldtypes=mat.coldtypes[:],
+                           index=lastinds)
 
             #Use as column names
             colinds = [mat.features.index(i) for i in pos]
@@ -169,9 +207,15 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 return (None,colinds)
 
             inds = mat.index
-            lastinds = inds if inds in [[],None] else inds[:]
+            lastinds = Label() if inds in [[],None,Label()] else inds[:]
             
-            temp = obj((d0,len(pos)),fill=0,features=list(pos),decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[i] for i in colinds],index=lastinds,indexname=mat.indexname)
+            temp = obj((d0,len(pos)),
+                        fill=0,
+                        features=list(pos),
+                        decimal=mat.decimal,
+                        dtype=mat.dtype,
+                        coldtypes=[mat.coldtypes[i] for i in colinds],
+                        index=lastinds)
             
             mm = mat.matrix
             for row in range(d0):
@@ -186,45 +230,59 @@ def getitem(mat,pos,obj,useindex,returninds=False):
             pos = list(pos)
             # Matrix[slice,column_index]
             if isinstance(pos[0],slice):
-                if useindex:
+                if uselabel:
                     indices = mat.index
+                    indices_labels = indices.labels
 
-                    start = indices.index(pos[0].start) if pos[0].start != None else None
-                    end = indices.index(pos[0].stop) if pos[0].stop != None else None
+                    filtered_labels = indices.get_level(rowlevel)
 
-                    first_item = indices[start] if start != None else None
-                    last_item = indices[end] if end != None else None
+                    start = filtered_labels.index(pos[0].start) if pos[0].start != None else None
+                    end = filtered_labels.index(pos[0].stop) if pos[0].stop != None else None
+
+                    first_item = filtered_labels[start] if start != None else None
+                    last_item = filtered_labels[end] if end != None else None
 
                     no_end = True if end == None else False
 
                     start = start if start != None else 0
                     end = end if end != None else d0
 
-                    rowrange = []
+                    first_found = False if first_item != None else True
+
+                    rowrange,mm = [],mat.matrix
                     for i in range(start,end):
                         try:
-                            if indices[i]==last_item and no_end:
+                            val = filtered_labels[i]
+
+                            if val==last_item and no_end:
                                 break
-                            rowrange.append(i)
+                            if not first_found:
+                                first_found = bool(val==first_item)
+
+                            if first_found:
+                                rowrange.append(i)
                                 
                         except:
-                            continue
+                            continue     
+
                 else:
                     newslice = betterslice(pos[0],d0)
                     rowrange = list(range(newslice.start,newslice.stop,newslice.step))
+
             # Matrix[int,column_index]
             elif isinstance(pos[0],int):
-                if useindex:
-                    indices = mat.index
+                if uselabel:
+                    indices = mat.index.get_level(rowlevel)
                     rowrange = [i for i in range(mat.d0) if indices[i]==pos[0]]
                 else:
                     rowrange = [pos[0]]
+
             # Matrix[list,column_index]
             elif isinstance(pos[0],list):
-                if useindex:
-                    indices = mat.index
+                if uselabel:
+                    indices = mat.index.get_level(rowlevel)
                     #######Assertion
-                    sublist(pos[0],indices,"list of indices","indices",throw=True)
+                    #sublist(pos[0],indices,"list of indices","indices",throw=True)
                     #######
                     rowrange = [i for i in range(d0) if indices[i] in pos[0]]
                 else:
@@ -233,14 +291,17 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                     rangedlist(pos[0],lambda a:(a<d0) and (a>=0),"indices",f"[0,{d0})",throw=True)
                     #######
                     rowrange = pos[0]
+
             # Matrix(Matrix,column_index]
             elif isinstance(pos[0],obj):
-                if useindex:
+                if uselabel:
                     return None
                 rowrange = [i[0] for i in pos[0].find(1,0)]
             else:
                 raise TypeError(f"{pos[0]} can't be used as row index")
+        
             #########################
+            
             # Matrix[row_index,str]
             if isinstance(pos[1],str):
                 pos[1] = mat.features.index(pos[1])
@@ -261,7 +322,9 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 rangedlist(colinds,lambda a:(a<d1) and (a>=0),"indices",f"[0,{d1})",throw=True)
                 #######
                 inds = mat.index
-                indices = [inds[row] for row in rowrange] if mat._dfMat else []
+                labels = inds.labels
+                indices = Label([labels[i] for i in rowrange],inds.names) if mat._dfMat else Label()
+
                 temp = []
                 mm = mat.matrix
                 r=0
@@ -280,12 +343,13 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                             decimal=mat.decimal,dtype=mat.dtype,
                             coldtypes=[mat.coldtypes[i] for i in colinds],
                             index=indices,
-                            indexname=mat.indexname)
+                            )
 
             t = mat.coldtypes[pos[1]]
             mm = mat.matrix
             inds = mat.index
-            lastinds = [inds[i] for i in rowrange] if mat._dfMat else []
+            labels = inds.labels
+            lastinds = Label([labels[i] for i in rowrange],inds.names) if mat._dfMat else Label()
 
             if type(t) != list:
                 t = [t]
@@ -299,10 +363,20 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 return mat._matrix[rowrange[0]][pos[1]]
                 
             elif isinstance(pos[1],int):
-                return obj(data=[[mm[i][pos[1]]] for i in rowrange],features=[mat.features[pos[1]]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t,index=lastinds,indexname=mat.indexname)
+                return obj(data=[[mm[i][pos[1]]] for i in rowrange],
+                           features=[mat.features[pos[1]]],
+                           decimal=mat.decimal,
+                           dtype=mat.dtype,
+                           coldtypes=t,
+                           index=lastinds)
             
             elif isinstance(pos[1],slice):
-                return obj(data=[mm[i][pos[1]] for i in rowrange],features=mat.features[pos[1]],decimal=mat.decimal,dtype=mat.dtype,coldtypes=t,index=lastinds,indexname=mat.indexname)
+                return obj(data=[mm[i][pos[1]] for i in rowrange],
+                           features=mat.features[pos[1]],
+                           decimal=mat.decimal,
+                           dtype=mat.dtype,
+                           coldtypes=t,
+                           index=lastinds)
             
             # Matrix[Matrix,column_index]
             elif isinstance(pos[0],obj):
@@ -317,13 +391,18 @@ def getitem(mat,pos,obj,useindex,returninds=False):
                 for i in rowrange:
                     temp.append(mm[i][pos[1]])
 
-                return obj(data=temp,features=mat.features[pos[1]],dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes[pos[1]],index=lastinds,indexname=mat.indexname)
+                return obj(data=temp,
+                           features=mat.features[pos[1]],
+                           dtype=mat.dtype,
+                           decimal=mat.decimal,
+                           coldtypes=mat.coldtypes[pos[1]],
+                           index=lastinds)
         else:
             raise IndexError(f"{pos} can't be used as indices")
 
     #0-1 filled matrix given as indeces
     elif isinstance(pos,obj):
-        if useindex:
+        if uselabel:
             return None
         rowrange = [i for i in range(mat.d0) if pos._matrix[i][0]==1]
 
@@ -332,11 +411,19 @@ def getitem(mat,pos,obj,useindex,returninds=False):
 
         mm = mat.matrix
         temp = [mm[i] for i in rowrange]
-        indices = mat.index 
-        lastinds = [indices[i] for i in rowrange] if mat._dfMat else []
-        return obj(data=temp,features=mat.features,dtype=mat.dtype,decimal=mat.decimal,coldtypes=mat.coldtypes,index=lastinds,indexname=mat.indexname)
 
-def setitem(mat,pos,item,obj,useindex):
+        inds = mat.index
+        labels = inds.labels
+        lastinds = Label([labels[i] for i in rowrange],inds.names) if mat._dfMat else Label()
+
+        return obj(data=temp,
+                   features=mat.features,
+                   dtype=mat.dtype,
+                   decimal=mat.decimal,
+                   coldtypes=mat.coldtypes,
+                   index=lastinds)
+
+def setitem(mat,pos,item,obj,uselabel,rowlevel=1):
     from MatricesM.errors.errors import DimensionError
     from MatricesM.validations.validate import consistentlist,exactdimension
 
@@ -371,11 +458,12 @@ def setitem(mat,pos,item,obj,useindex):
             item = [[item for j in colrange] for i in rowrange]
         return item
     
-    rowrange,colrange = getitem(mat,pos,obj,useindex,returninds=True)
+    rowrange,colrange = getitem(mat,pos,obj,uselabel,returninds=True)
     rowrange = rowrange if isinstance(rowrange,(list,range)) else [rowrange]
     colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
     rows = rowrange if rowrange!=[None] else range(d0)
     cols = colrange if colrange!=[None] else range(d1)
+    
     #Slice or list of row indices
     if isinstance(pos,(slice,list,int)):
         #####Fix item's dimensions#####
@@ -389,10 +477,10 @@ def setitem(mat,pos,item,obj,useindex):
     #Change a column, add a column or change a column's values of given row indices
     elif isinstance(pos,str):
         new_col = 0
-        if not (pos in mat.features) and not useindex:
+        if not (pos in mat.features) and not uselabel:
             new_col = 1
         if not new_col:
-            if useindex:#Change rows with given index
+            if uselabel:#Change rows with given index
                 #####Fix item's dimensions#####
                 item = fix_given_item(item,rows,cols)
                 ###############################
@@ -482,8 +570,9 @@ def setitem(mat,pos,item,obj,useindex):
 
     return mat
 
-def delitem(mat,pos,obj,useind):
+def delitem(mat,pos,obj,useind,rowlevel=1):
     from MatricesM.validations.validate import consistentlist
+    from MatricesM.customs.objects import Label
 
     d0,d1 = mat.dim
 
@@ -502,7 +591,7 @@ def delitem(mat,pos,obj,useind):
         mat._matrix = []
         mat._Matrix__coldtypes = []
         mat._Matrix__features = []
-        mat._Matrix__index = []
+        mat._Matrix__index = Label()
     
     #Rows deleted
     elif allcols:

@@ -4,7 +4,9 @@ def _repr(mat,notes,dFrame):
     old = None
     d0,d1 = mat.dim
     feats = mat.features
-    available = gts().columns - 3
+    ind_level = mat.index.level
+
+    available = gts().columns - 4
     
     shuffled_col_inds = []
     usedcols = []
@@ -37,14 +39,14 @@ def _repr(mat,notes,dFrame):
     else:
         top_bounds = mat[:halfrow]._stringfy(mat.coldtypes,True)
         bottom_bounds = mat[d0-(rowlimit//2):]._stringfy(mat.coldtypes,True)
-        string_bounds = [max(top_bounds[i],bottom_bounds[i]) for i in range(d1+1)]
+        string_bounds = [max(top_bounds[i],bottom_bounds[i]) for i in range(d1+ind_level)]
 
     if string_bounds == "Empty matrix":
         return string_bounds
-        
-    total_col_size = max(string_bounds[0],3)+1
-    string_bounds = list(map(lambda a:a+2,string_bounds[1:-1])) + [string_bounds[-1]]
-    
+
+    total_col_size = sum(string_bounds[:ind_level])+(ind_level-1)+1
+    string_bounds = list(map(lambda a:a+2,string_bounds[ind_level:-1])) + [string_bounds[-1]]
+
     if (not isinstance(string_bounds,list)) or (len(feats)==0):
         return "Empty Matrix"
 
