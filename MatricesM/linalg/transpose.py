@@ -11,5 +11,5 @@ def transpose(mat,hermitian=False,obj=None):
         transposed = Ctranspose(d0,d1,temp)
 
     old_f = mat.features[:] if mat._dfMat else None
-    old_i = mat.index[:] if mat._dfMat else []
+    old_i = mat.index.labels[:] if mat._dfMat else []
     return obj((d1,d0),transposed,dtype=mat.dtype,features=old_i,index=old_f,implicit=True)
