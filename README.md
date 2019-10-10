@@ -85,13 +85,10 @@ List of type object for each column's data type. **_Optional_**. Requires _dataf
 
 Amount of decimal places to print. **_Optional_**.
 
-**index**: _[Any, ...] | (Any, ...) | Matrix_  = _[]_
+**index**: _[Any, ...] | (Any, ...) | Matrix | Label_ = _Label()_
 
 Row labels for each row. **_Optional_**. Only works with _dataframe_ dtype.
 
-**indexname**: _str_ = ""
-
-Row label column's name. **_Optional_**. Only works with _dataframe_ dtype.
 
 **implicit**: _bool_ = _False_
 
@@ -118,13 +115,10 @@ List of type object for each column's data type. **_Optional_**.
 
 Amount of decimal places to print. **_Optional_**.
 
-**index**: _[Any, ...] | (Any, ...) | Matrix_  = _[]_
+**index**: _[Any, ...] | (Any, ...) | Matrix | Label_  = _Label()_
 
 Row labels for each row. **_Optional_**.
 
-**indexname**: _str_ = ""
-
-Row label column's name. **_Optional_**.
 
 ****kwargs** #Rest of the arguments passed to Matrix
       )
@@ -294,11 +288,11 @@ Matrix[4,7] == Matrix.matrix[4][7]
 Matrix["col_3","col_1","col_2"] == Matrix.select(("col_3","col_1","col_2"))
 
 #Use index column for row indices
-#Return the rows where the index matches the 'value'
-Matrix.ind[value]
+#Return the rows where the level 1 label matches the value
+Matrix.level[1].ind[value]
 
-#Return the rows from val1's first appearance until val2's first appearance with only 'col_4' column
-Matrix.ind[val1:val2,"col_4"]
+#Return the "col_4" column of rows using level 3 labels starting with val1's first appearance and ending with the row before val2's first appearance
+Matrix.level[3].ind[val1:val2,"col_4"]
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
@@ -314,8 +308,11 @@ filtered = winedata.select(("pH","quality"))
 #Alternative way (2x faster)
 filtered = winedata["pH","quality"] 
 
-#Use 'quality' column as indices
+#Use 'quality' column as row labels
 winedata.index = winedata.quality
+
+#Add 'alcohol' to as level 2 row labels
+winedata.index.add_level(winedata.alcohol)
 
 #Sort by given column and shuffle the data
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
@@ -626,12 +623,6 @@ Matrix.namereset(start=1) #Reset column names to 'col_1','col_2', ... . Start is
 
 Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
 
-Matrix.indexname #Returns the index column's name
-
-Matrix.index_update(prefix,suffix,changechar) #Add prefix and/or suffix to string type row labels, change string characters with 'changechar'.
-
-Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
-
 Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
 Matrix.head(n) #Returns the first n rows (if there are less than n rows it returns all the rows)
@@ -702,6 +693,9 @@ Matrix.stdize(column,inplace) #Standardize the data in the desired column, None 
 
 Matrix.oneHotEncode(column,concat) #One-hot encode a 'column', 'concat' to decide wheter or not to concatenate the encoded matrix or return it
 
+dataframe.level #Inner level class used for passing the level to 'ind' class for row labeling.
+
+dataframe.level.ind #Row label indexing class, have to be used with the following syntax : dataframe.level[integer_level].ind[labels]
 ```
 
 ----------------------------------------
