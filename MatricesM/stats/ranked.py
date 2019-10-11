@@ -19,9 +19,9 @@ def _rank(mat,col,rev,key,get,start):
         column = mat.col(name)
         copy = column.copy
         #Reset indices and sort
-        column.indexreset()
+        column.index.reset()
         column.sortBy(name,reverse=rev,key=key)
-        inds = column.index
+        inds = column.index.get_level(1)
         #Updated indices
         temp = ["" for _ in range(column.d0)]
         for i,ind in enumerate(inds):
