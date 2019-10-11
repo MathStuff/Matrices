@@ -183,7 +183,7 @@ class Label:
 
         if type(lbls).__name__ in type_names:
             nms = lbls.features[:]
-            lvl = lbls.d0
+            lvl = lbls.d1
             lbls = [tuple(row) for row in lbls.matrix]
             self.__names = nms
             self.__labels = lbls
