@@ -121,7 +121,7 @@ def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
 
         if not (pos in mat.features):
             if returninds:
-                return (None,range(d0))
+                return (None,None)
             raise MatrixError(f"{pos} is not in column names")
         else:
             pos = mat.features.index(pos)
@@ -577,6 +577,8 @@ def delitem(mat,pos,obj,useind,rowlevel=1):
     d0,d1 = mat.dim
 
     rowrange,colrange = getitem(mat,pos,obj,useind,returninds=True)
+    if (rowrange,colrange) == (None,None):
+        raise IndexError("Can't find items to delete")
     rowrange = rowrange if isinstance(rowrange,(list,range)) else [rowrange]
     colrange = colrange if isinstance(colrange,(list,range)) else [colrange]
     rows = rowrange if rowrange!=[None] else range(d0)
