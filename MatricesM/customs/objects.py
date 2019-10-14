@@ -135,8 +135,14 @@ class date:
 class Group:
     def __init__(self,matrix_list,names):
         self.groups = [val[0] for val in matrix_list]
-        self.table = [val[1] for val in matrix_list]
         self.grouped_by = names
+        self.tables = [val[1] for val in matrix_list]
+    
+    def __getitem__(self,pos):
+        """
+        Index through group tables
+        """
+        pass
 
 class Label:
     """
@@ -169,6 +175,12 @@ class Label:
                       index=rowlabels
                       )
         
+                        col_1  col_2  col_3
+         groups,classes+-------------------
+        group_1,class_1| null   null   null
+        group_2,class_3| null   null   null
+        group_3,class_2| null   null   null
+        group_1,class_3| null   null   null
 
     """
     def __init__(self,labels:[(...,),...]=[],names:(str,...)=("",)):

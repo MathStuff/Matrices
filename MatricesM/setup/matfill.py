@@ -1,19 +1,22 @@
 def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
     # =============================================================================
     #Handle arguments
-
     if isinstance(d,int):
         mat._setDim(d)
+    
+    if not isinstance(lis,(str,list)):
+        lis = []
 
     #Empty list given
     if len(lis)==0:
         if fill == None:
             fill = null if mat._dfMat else uniform 
+            mat._Matrix__fill = fill
         elif isinstance(fill,str):
             if mat.dtype.__name__ != "dataframe":
                 raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
 
-    isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method",null.__name__])
+    isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method"])
 
     if lis in [None,"",{}]:
         lis = []
@@ -151,10 +154,6 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                     
                     else:
                         mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]  
-                else:
-                    from MatricesM.C_funcs.randgen import getfill
-                    mat._matrix=getfill(d[0],d[1],fill)
-                    return None
                 
             #Ranged has no affect after this point
             elif type(fill) == list:
@@ -171,8 +170,9 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                     mat._matrix = [fill for _ in range(d[0])]
             
             else:
-                raise TypeError(f"Couldn't fill the matrix with fill value:{fill}")
-
+                from MatricesM.C_funcs.randgen import getfill
+                mat._matrix=getfill(d[0],d[1],fill)
+                
         # =============================================================================               
         #Different ranges over individual columns
         elif len(lis)==0 and isinstance(r,dict):
@@ -233,10 +233,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                         
                         else:
                             temp=[[round(fill(lis[i][0]))//1 for _ in range(d[0])] for i in range(d[1])]
-                    else:
-                        from MatricesM.C_funcs.randgen import getfill
-                        mat._matrix=getfill(d[0],d[1],fill)
-                        return None
+
                 #Ranged has no affect after this point
                 elif type(fill) == list:
                     if len(fill)!=d[1]:
@@ -253,7 +250,8 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                         mat._matrix = [fill for _ in range(d[1])]
                         return None
                 else:
-                    raise TypeError(f"Couldn't fill the matrix with fill value:{fill}")
+                    from MatricesM.C_funcs.randgen import getfill
+                    mat._matrix=getfill(d[0],d[1],fill)
                 
                 from MatricesM.C_funcs.linalg import Ctranspose #Change the process so this won't be necessary
                 mat._matrix=Ctranspose(d[1],d[0],temp)

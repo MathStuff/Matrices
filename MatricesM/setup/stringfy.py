@@ -40,6 +40,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                     try:
                         val = m[rows][cols]
                         colbounds.append(len(st.format(val)))
+                    except IndexError:
+                        return ""   
                     except:#Invalid value
                         colbounds.append(len(str(val)))
 
