@@ -216,8 +216,13 @@ class Matrix(Vector):
         if not validlist(self._matrix):
             return None
 
+        if not type(self.DEFAULT_NULL).__name__ in ["type","null"]:
+            raise TypeError("DEFAULT_NULL should be have 'type' or 'null' type")
+
         if len(cdts) != d1:
-            if df:
+            if self.fill == self.DEFAULT_NULL:
+                self.__coldtypes = [self.DEFAULT_NULL for _ in range(d1)]
+            elif df:
                 from MatricesM.setup.declare import declareColdtypes
                 self.__coldtypes = declareColdtypes(self.matrix,self.DEFAULT_NULL.__name__)
             else:
@@ -646,6 +651,48 @@ class Matrix(Vector):
         else:
             for i in range(expected_length):
                 self._matrix[i][i] = val
+    
+    def drop_null(self,axis=0,returnmat=False):
+        """
+        Remove rows or columns with default null values
+        """
+        if not self._dfMat:
+            raise TypeError("Can't drop null values from non-dataframe matrices")
+        
+        assert axis in [0,1] , "'axis' should be 0 for rows, 1 for columns"
+
+        def_null = self.DEFAULT_NULL
+        null_indices = self.find(def_null,0,False)
+
+        #Drop rows
+        if axis == 0:
+            row_inds = list(set([i for i,j in null_indices]))
+            for leap,i in enumerate(row_inds):
+                del self._matrix[i-leap]
+                del self.__index[i-leap]
+
+            self.__dim[0] -= len(row_inds)
+    
+        #Drop columns
+        else:
+            col_inds = list(set([j for i,j in null_indices]))
+            for row in range(self.d0):
+                for leap,j in enumerate(col_inds):
+                    del self._matrix[row][j-leap]
+            
+            for leap,j in enumerate(col_inds):
+                del self.__features[j-leap]
+            
+            self.__dim[1] -= len(col_inds)
+
+        if returnmat:
+            return self
+
+    def fill_null(self,item,returnmat=False):
+        """
+        Replace null values with the given object
+        """
+        return self.replace(self.DEFAULT_NULL,item,returnmat=returnmat)
         
 # =============================================================================
     """Methods for special matrices and properties"""
@@ -1089,6 +1136,10 @@ class Matrix(Vector):
        return self._matrix
    
     @property
+    def data(self):
+        return self._matrix
+
+    @property
     def det(self):
         """
         Determinant of the matrix
@@ -1131,8 +1182,8 @@ class Matrix(Vector):
             f=self.fill.__name__
             
         dm,m,r,fs,d = self.dim,self.matrix,self.initRange,self.features,self.decimal
-        s,dt,i = self.seed,self.dtype.__name__,self.index
-
+        s,dt = self.seed,self.dtype.__name__
+        i = "Label("+str(self.index.labels)+","+str(self.index.names)+")"
         return f"Matrix(dim={dm},data={m},ranged={r},fill={f},features={fs},decimal={d},seed={s},dtype={dt},coldtypes={cd},index={i})"
  
     @property
@@ -2912,10 +2963,6 @@ class dataframe(Matrix):
                   **kwargs}
 
         super().__init__(**kwargs)
-      
-    @property
-    def data(self):
-        return self._matrix
 
     def __call__(self,*args,**kwargs):
         kwargs = {**self.defaults, **kwargs} #Overwrite defaults with new values if any given
