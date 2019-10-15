@@ -210,7 +210,14 @@ class Matrix(Vector):
         if len(self.features)!=d1:
             self.__features = [f"col_{i}" for i in range(1,d1+1)]
         else:
-            self.__features = [str(name) for name in self.__features]
+            set_temp = []
+            #Remove duplicate names
+            for name in self.__features:
+                while name in set_temp:
+                    name = "_" + name
+                set_temp.append(name)
+
+            self.__features = set_temp[:]
 
         #Column types
         if not validlist(self._matrix):

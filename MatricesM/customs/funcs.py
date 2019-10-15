@@ -25,9 +25,13 @@ def roundto(val,decimal:int=8,force:bool=False):
 def overwrite_attributes(mat,kw):
     from MatricesM.errors.errors import ParameterError
 
-    attributes = ["dim","data","fill","ranged","seed","features","decimal","dtype",
+    attributes = ["dim","data","fill","ranged",
+                  "seed","features","decimal","dtype",
                   "coldtypes","index","indexname","implicit"]
-    options = ["PRECISION","ROW_LIMIT","EIGENVEC_ITERS","QR_ITERS","NOTES","DIRECTORY"]
+                  
+    options = ["PRECISION","ROW_LIMIT","EIGENVEC_ITERS",
+               "QR_ITERS","NOTES","DIRECTORY",
+               "DEFAULT_NULL"]
     
     #Override the attributes given in kwargs with new values
     for key,val in kw.items():
@@ -53,3 +57,14 @@ def read_file(directory:str,encoding:str="utf8",delimiter:str=","):
     directory = directory.replace("\\","/")
     (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
     return dataframe(data,feats,coldtypes=cdtypes,DIRECTORY=directory)
+
+def save_file(matrix:object,directory:str,newline="",encoding:str="utf8"):
+    if ".csv" in directory:
+        from MatricesM.setup.fileops import save_csv
+        save_csv(matrix,directory,newline,encoding)
+    
+    elif ".txt" in directory:
+        pass
+
+    else:
+        pass
