@@ -44,7 +44,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
 
         mat._matrix = transposed
         mat._Matrix__dim=mat._declareDim()
-        mat.features = names
+        mat._Matrix__features = names
         return None
     
     #Set new range    
@@ -181,7 +181,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                 vs=[len(i) for i in r.values()]
                 assert vs.count(vs[0])==len(vs)
                 feats=[i for i in r.keys()]
-                mat.features=feats
+                mat._Matrix__features=feats
 
             except Exception as err:
                 print(err)
