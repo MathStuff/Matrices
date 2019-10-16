@@ -196,24 +196,20 @@ class Matrix(Vector):
     def setup(self,first:bool,implicit:bool=False):
         #Whetere or not there are random numbers involved
         randomly_filled = True if self._matrix in [None,[],{},[[]]] else False
-
         #Matrix fix
         if first and not implicit:
             self.setMatrix(self.dim,self.initRange,self._matrix,self.fill,self._cMat,self._fMat)
         
-        d0,d1 = self.dim
+        d0,d1 = self.__dim
         df = self._dfMat
         dt = self.dtype
         cdts = self.coldtypes
-        given_name_len = len(self.features)
+        names = self.features
 
         #Column names
-        #Less than expected
-        if given_name_len<d1:
-            self.__features += [f"col_{i}" for i in range(given_name_len,d1+1)]
-        else:
-            self.__features = self.__features[:d1]
-
+        if len(names) != d1:
+            names = [f"col_{i}" for i in range(1,d1+1)]
+        
         #Column types
         if not validlist(self._matrix):
             return None
@@ -223,7 +219,7 @@ class Matrix(Vector):
 
         #Set column dtypes
         #Not enough types given, reset given types
-        if len(cdts) < d1:
+        if len(cdts) != d1:
             if self.fill == self.DEFAULT_NULL:
                 self.__coldtypes = [self.DEFAULT_NULL for _ in range(d1)]
             elif df:
@@ -231,10 +227,6 @@ class Matrix(Vector):
                 self.__coldtypes = declareColdtypes(self.matrix,self.DEFAULT_NULL.__name__)
             else:
                 self.__coldtypes = [dt]*d1
-
-        #More than expected given
-        else:
-            self.__coldtypes = self.__coldtypes[:d1]
 
         cdts = self.__coldtypes
 
@@ -246,20 +238,19 @@ class Matrix(Vector):
         if df:
             #Remove duplicate names
             set_temp = []
-            for name in self.__features[:d1]:
+            for name in names:
                 while name in set_temp:
                     name = "_" + name
                 set_temp.append(name)
 
-            self.__features = set_temp[:]
+            names = set_temp[:]
 
-            r = range(d0)
             mm = self.matrix
 
             #Apply column dtypes to each column's values if they weren't randomly picked
             if not randomly_filled:
                 def_null_name = self.DEFAULT_NULL.__name__
-                for i in r:
+                for i in range(d0):
                     j=0
                     rowcopy = mm[i][:]
                     while j<d1:
@@ -299,7 +290,7 @@ class Matrix(Vector):
 
             elif isinstance(ind,(list,tuple)):
                 if len(ind) == 0:
-                    self.__index = Label(list(r),"")
+                    self.__index = Label(list(range(d0)),"")
                 elif len(ind) != d0:
                     raise ValueError(f"Invalid index list; expected {d0} values, got {len(ind)}")
                 else:
@@ -309,19 +300,28 @@ class Matrix(Vector):
             
             self._matrix = mm
 
+        self.__features = names
+
     def setInstance(self,dt:Union[int,float,complex,dataframe]):
         """
         Set the type
         """
         if dt==complex:
-            self._fMat=1
-            self._cMat=1
+            self._fMat = 1
+            self._cMat = 1
+            self._dfMat = 0
         elif dt==float:
-            self._fMat=1
+            self._fMat = 1
+            self._cMat = 0
+            self._dfMat = 0
         elif dt==int:
-            pass
+            self._fMat = 0
+            self._cMat = 0
+            self._dfMat = 0
         elif dt==dataframe:
-            self._dfMat=1
+            self._fMat = 0
+            self._cMat = 0
+            self._dfMat = 1
         else:
             raise ValueError("dtype should be one of the following: int, float, complex, dataframe")       
             
@@ -2536,13 +2536,13 @@ class Matrix(Vector):
         counts = self.count(get=0) if self.d1>1 else [self.count(get=0)]
         uniques = self.freq(get=0) if self.d1>1 else [self.freq(get=0)]
         invalids = [self.d0-j for j in counts]
-        return Matrix((self.d1,4),[[cdtyps[i],counts[i],invalids[i],len(list(uniques[i].keys()))] for i in range(self.d1)],
-                       dtype=dataframe,
-                       coldtypes=[type,int,int,int],
-                       features=["dtype","Valid_data","Invalid_data","Unique_data"],
-                       implicit=True,
-                       index=feats,
-                       NOTES=f"Size: {self.dim}")
+        return dataframe(dim=(self.d1,4),
+                         data=[[cdtyps[i],counts[i],invalids[i],len(uniques[i].keys())] for i in range(self.d1)],
+                         coldtypes=[type,int,int,int],
+                         features=["dtype","Valid_data","Invalid_data","Unique_data"],
+                         implicit=True,
+                         index=feats,
+                         NOTES=f"Size: {self.dim}")
 
     def uniques(self,column:Union[str,None]=None):
         """
