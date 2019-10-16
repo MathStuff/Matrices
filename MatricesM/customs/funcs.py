@@ -58,10 +58,10 @@ def read_file(directory:str,encoding:str="utf8",delimiter:str=","):
     (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
     return dataframe(data,feats,coldtypes=cdtypes,DIRECTORY=directory)
 
-def save_file(matrix:object,directory:str,newline="",encoding:str="utf8"):
+def save_file(matrix:object,directory:str,newline:str="",encoding:str="utf8",options:["no_name","no_index"]=[]):
     if ".csv" in directory:
         from MatricesM.setup.fileops import save_csv
-        save_csv(matrix,directory,newline,encoding)
+        save_csv(matrix,directory,newline,encoding,options)
     
     elif ".txt" in directory:
         pass

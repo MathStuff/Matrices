@@ -43,19 +43,29 @@ def readAll(d,encoding,delimiter):
         f.close()
         return (feats,data,dtyps)
 
-def save_csv(mat,dr,newln,enc,*args):
+def save_csv(mat,dr,newln,enc,opts):
     import csv
     with open(dr,"w",newline=newln,encoding=enc) as f:
         writer_obj = csv.writer(f)
         mm = mat.matrix
+        use_labels = not "no_index" in opts
+        use_names = not "no_name" in opts
         ind = mat.index
         labels = ind.labels
 
-        custom_iter = [list(ind.names) + mat.features]
-                
-        for i in range(mat.d0):
-            custom_iter.append(list(labels[i]) + mm[i])
-        
+        custom_iter = [list(ind.names) + mat.features] if (use_labels and use_names) \
+                      else [list(ind.names) + [""]*mat.d1] if (use_labels) \
+                      else [mat.features] if (use_names) \
+                      else []
+
+        if use_labels:    
+            for i in range(mat.d0):
+                custom_iter.append(list(labels[i]) + mm[i])
+        else:
+            for i in range(mat.d0):
+                custom_iter.append(mm[i])
+
         writer_obj.writerows(custom_iter)
+
     print("File successfully created at path: "+dr,end="")
-    
+
