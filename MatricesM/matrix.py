@@ -205,19 +205,14 @@ class Matrix(Vector):
         df = self._dfMat
         dt = self.dtype
         cdts = self.coldtypes
+        given_name_len = len(self.features)
 
-        #Column names set
-        if len(self.features)!=d1:
-            self.__features = [f"col_{i}" for i in range(1,d1+1)]
+        #Column names
+        #Less than expected
+        if given_name_len<d1:
+            self.__features += [f"col_{i}" for i in range(given_name_len,d1+1)]
         else:
-            set_temp = []
-            #Remove duplicate names
-            for name in self.__features:
-                while name in set_temp:
-                    name = "_" + name
-                set_temp.append(name)
-
-            self.__features = set_temp[:]
+            self.__features = self.__features[:d1]
 
         #Column types
         if not validlist(self._matrix):
@@ -226,7 +221,9 @@ class Matrix(Vector):
         if not type(self.DEFAULT_NULL).__name__ in ["type","null"]:
             raise TypeError("DEFAULT_NULL should be have 'type' or 'null' type")
 
-        if len(cdts) != d1:
+        #Set column dtypes
+        #Not enough types given, reset given types
+        if len(cdts) < d1:
             if self.fill == self.DEFAULT_NULL:
                 self.__coldtypes = [self.DEFAULT_NULL for _ in range(d1)]
             elif df:
@@ -234,14 +231,28 @@ class Matrix(Vector):
                 self.__coldtypes = declareColdtypes(self.matrix,self.DEFAULT_NULL.__name__)
             else:
                 self.__coldtypes = [dt]*d1
-            cdts = self.__coldtypes #Update
+
+        #More than expected given
+        else:
+            self.__coldtypes = self.__coldtypes[:d1]
+
+        cdts = self.__coldtypes
 
         #Index shouldn't be None
         if self.__index in [[],None]:
             self.__index = Label()
 
-        #Apply coldtypes to values in the matrix, set indices
+        #Apply coldtypes to values in the matrix, set indices, update names
         if df:
+            #Remove duplicate names
+            set_temp = []
+            for name in self.__features[:d1]:
+                while name in set_temp:
+                    name = "_" + name
+                set_temp.append(name)
+
+            self.__features = set_temp[:]
+
             r = range(d0)
             mm = self.matrix
 
