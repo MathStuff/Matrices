@@ -47,7 +47,7 @@ def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
             return (pos,None)
 
         inds = mat.index
-        lastinds = inds if inds in [[],None,Label()] else inds[pos]
+        lastinds = inds if inds in [[],None,Label()] else inds[pos] if mat._dfMat else Label()
         return obj(data=[mat._matrix[pos]],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
 
     #Get multiple rows
@@ -89,7 +89,7 @@ def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
 
             if returninds:
                 return (rowrange,None)        
-            lastinds = Label([indices_labels[i] for i in rowrange],indices.names)
+            lastinds = Label([indices_labels[i] for i in rowrange],indices.names) 
             lastmatrix = [mm[i] for i in rowrange]
 
             return obj(data=lastmatrix,features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
@@ -98,7 +98,7 @@ def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
             return (range(d0)[pos],None)
 
         inds = mat.index
-        lastinds = inds if inds in [[],None,Label()] else inds[pos]
+        lastinds = inds if inds in [[],None,Label()] else inds[pos] if mat._dfMat else Label()
         return obj(data=mat._matrix[pos],features=mat.features[:],decimal=mat.decimal,dtype=mat.dtype,coldtypes=mat.coldtypes[:],index=lastinds)
     
     #Get 1 column or use a specific row index
@@ -130,7 +130,7 @@ def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
             return (None,pos)
 
         inds = mat.index
-        lastinds = inds[:]
+        lastinds = inds[:] if mat._dfMat else Label()
 
         mat =  obj(dim=[d0,1],data=[[i[pos]] for i in mat._matrix],features=[mat.features[pos]],
                    decimal=mat.decimal,dtype=mat.dtype,coldtypes=[mat.coldtypes[pos]],index=lastinds,
@@ -207,7 +207,7 @@ def getitem(mat,pos,obj,uselabel,returninds=False,rowlevel=1):
                 return (None,colinds)
 
             inds = mat.index
-            lastinds = Label() if inds in [[],None,Label()] else inds[:]
+            lastinds = inds[:] if mat._dfMat else Label()
             
             temp = obj((d0,len(pos)),
                         fill=0,
