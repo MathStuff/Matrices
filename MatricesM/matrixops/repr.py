@@ -5,7 +5,8 @@ def _repr(mat,notes,dFrame):
     d0,d1 = mat.dim
     feats = mat.features
     ind_level = mat.index.level
-
+    col_place_holder = mat.DISPLAY_OPTIONS["col_place_holder"]
+    row_place_holder = mat.DISPLAY_OPTIONS["row_place_holder"]
     available = gts().columns - 4
     
     shuffled_col_inds = []
@@ -110,8 +111,8 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Add  ...  to represent missing column's existence
-            topLeft.add(["..."]*topLeft.d0,col=halfcol + 1,dtype=str,feature="...")
-            bottomLeft.add(["..."]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature="...")
+            topLeft.add([col_place_holder]*topLeft.d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
+            bottomLeft.add([col_place_holder]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
             
             #Concat left parts with rights, dots in the middle
             topLeft.concat(topRight,axis=1)
@@ -128,7 +129,7 @@ def _repr(mat,notes,dFrame):
             topLeft.concat(bottomLeft,axis=0)
             
             #Add dots as middle row
-            topLeft.add(["..."]*topLeft.d1,row=halfrow+1,index="...")
+            topLeft.add([row_place_holder]*topLeft.d1,row=halfrow+1,index=row_place_holder)
 
             return topLeft._stringfy(coldtypes=topLeft.coldtypes) + "\n\n" + notes
 
@@ -139,8 +140,8 @@ def _repr(mat,notes,dFrame):
             top = mat[:halfrow,:end].roundForm(mat.decimal,dec)
             bottom = mat[d0-(rowlimit//2):,:end].roundForm(mat.decimal,dec)
             if d1>1 and end == 1:
-                top.add(["..."]*top.d0,col=2,dtype=str,feature="...")
-                bottom.add(["..."]*bottom.d0,col=2,dtype=str,feature="...")
+                top.add([col_place_holder]*top.d0,col=2,dtype=str,feature=col_place_holder)
+                bottom.add([col_place_holder]*bottom.d0,col=2,dtype=str,feature=col_place_holder)
             #Set new dtypes
             for i in [top,bottom]:
                 if i.dtype != dFrame:
@@ -157,7 +158,7 @@ def _repr(mat,notes,dFrame):
             top.concat(bottom,axis=0)
 
             #Add middle part
-            top.add(["..."]*top.d1,row=halfrow+1,index="...")
+            top.add([row_place_holder]*top.d1,row=halfrow+1,index=row_place_holder)
 
             return top._stringfy(coldtypes=top.coldtypes) + "\n\n" + notes
             
@@ -167,7 +168,7 @@ def _repr(mat,notes,dFrame):
         if first == second:
             left = mat[:,0].roundForm(mat.decimal,dec)
             if d1>1:
-                left.add(["..."]*d0,col=2,dtype=str,feature="...")
+                left.add([col_place_holder]*d0,col=2,dtype=str,feature=col_place_holder)
             if not mat._dfMat:
                 left.dtype = dFrame
 
@@ -181,7 +182,7 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Add and concat rest of the stuff
-            left.add(["..."]*d0,col=halfcol + 1,dtype=str,feature="...")
+            left.add([col_place_holder]*d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
             left.concat(right,axis=1)
 
         return left._stringfy(coldtypes=left.coldtypes) + "\n\n" + notes

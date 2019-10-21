@@ -2,12 +2,21 @@ def _stringfy(mat,dtyps,retbounds,grid):
     import re
     nullname = mat.DEFAULT_NULL.__name__
 
+    display_options = mat.DISPLAY_OPTIONS
+    allow_label_dupes = display_options["allow_label_dupes"]
+    dupe_place_holder = display_options["dupe_place_holder"]
+    label_seperator = display_options["label_seperator"]
+    left_seperator = display_options["left_seperator"]
+    left_top_corner = display_options["left_top_corner"]
+    top_seperator = display_options["top_seperator"]
+    
     indbound = [0]
     d0,d1 = mat.dim
     decimals = mat.decimal
     m = mat.matrix
     feats = mat.features[:]
 
+    #Formatter for rounding floats
     pre = "0:.{}f".format(decimals)
     st = "{"+pre+"}"    
     string = ""
@@ -139,9 +148,9 @@ def _stringfy(mat,dtyps,retbounds,grid):
                     string += " "*(indbound[i]-len(name)) + name
                 
                 if i != lvl:
-                    string += ","
+                    string += label_seperator
 
-            string += "+" + "-"*(sum(bounds) + 2*(d1-1) )
+            string += left_top_corner + top_seperator*(sum(bounds) + 2*(d1-1) )
 
         else:
             string += "\n"
@@ -149,23 +158,40 @@ def _stringfy(mat,dtyps,retbounds,grid):
         #Add rows
         mm = mat.matrix
         labels = mat.index.labels
+        prev_labels = []
+        
         for rows in range(d0):
-            current_labels = labels[rows]
             #Add labels
             if not grid:
-                string += "\n"
-
-                for i,lbl in enumerate(current_labels):
-                    lbl = str(lbl)
-                    if lbl == "":
-                        string += " "*indbound[i]
-                    else:
-                        string += " "*(indbound[i]-len(lbl)) + lbl
                     
-                    if i != lvl:
-                        string += ","
+                current_labels = labels[rows]
+                string += "\n"
+                
+                #Starter row
+                if rows==0:
+                    for i,lbl in enumerate(current_labels):
+                        lbl = str(lbl)
 
-                string += "|"
+                        string += " "*(indbound[i]-len(lbl)) + lbl
+                        if i != lvl:
+                            string += label_seperator
+
+                #Rest of the rows checking previous labels
+                else:
+                    for i,lbl in enumerate(current_labels):
+                        lbl = str(lbl)
+                        #Skip if label in the previous row is the same
+                        if (prev_labels[:i+1] == current_labels[:i+1]) and not allow_label_dupes:
+                            string += " "*(indbound[i]-len(dupe_place_holder)) + dupe_place_holder
+                            if i != lvl:
+                                string += " "
+                        else:    
+                            string += " "*(indbound[i]-len(lbl)) + lbl
+                            if i != lvl:
+                                string += label_seperator
+
+                string += left_seperator
+                prev_labels = current_labels[:]
             else:
                 string += "\n"
                     
