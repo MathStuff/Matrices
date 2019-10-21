@@ -99,12 +99,9 @@ class Matrix(Vector):
     
     implicit: bool; Skip matrix setting operations if dimensions and elements are given
 
-    NOTE:
-        --> Using **kwargs with a dictionary
-
-            >>> Matrix(kwargs={'dim':4,'fill':triangular,'ranged':(0,10,6)})        
-        
-        --> Options: ROW_LIMIT, PRECISION, QR_ITERS, EIGENVEC_ITERS, NOTES
+    NOTE:      
+        --> Options: ROW_LIMIT:int, PRECISION:int, QR_ITERS:int, EIGENVEC_ITERS:int,
+                     NOTES:str, DEFAULT_NULL:object, DISPLAY_OPTIONS:dict
 
         --> Check https://github.com/MathStuff/MatricesM  for further explanation and examples
         
@@ -130,7 +127,17 @@ class Matrix(Vector):
         self.EIGENVEC_ITERS = 10                    #Shifted inverse iteration method iterations for eigenvectors
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
         self.DEFAULT_NULL = null                    #Object to use as invalid value indicator
-
+        self.DIRECTORY = ""                         #Path of the Matrix in disk
+        self.DISPLAY_OPTIONS = {                    #Options and symbols used while displaying
+                                "allow_label_dupes":False,
+                                "dupe_place_holder":"//",
+                                "label_seperator":",",
+                                "left_top_corner":"+",
+                                "left_seperator":"|",
+                                "top_seperator":"-",
+                                "col_place_holder":"...",
+                                "row_place_holder":"...",
+                               }
         #Basic attributes
         self.__features = features                  #Column names
         self.__coldtypes = coldtypes                #Column dtypes 
@@ -149,8 +156,7 @@ class Matrix(Vector):
         if kwargs != {}:
             overwrite_attributes(self,kwargs)
         ################################
-        #Save default arguments for __call__
-        self.defaults = {
+        self.defaults = {                           #Save default arguments for __call__
                          "dim":dim,
                          "data":data,
                          "fill":fill,
@@ -166,6 +172,8 @@ class Matrix(Vector):
                          "QR_ITERS":self.QR_ITERS,
                          "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
                          "NOTES":self.NOTES,
+                         "DEFAULT_NULL":self.DEFAULT_NULL,
+                         "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
                         }
 
         #Set/fix attributes
@@ -999,7 +1007,7 @@ class Matrix(Vector):
     
     @property
     def copy(self):
-        return Matrix(kwargs=self.kwargs)
+        return Matrix(**self.kwargs)
 
     @property
     def string(self):
@@ -2202,21 +2210,30 @@ class Matrix(Vector):
         if returnmat:
             return self
         
-    def sortBy(self,column:Union[str,None]=None,key=lambda a:a[1],reverse:bool=False,returnmat:bool=False):
+    def sortBy(self,column:Union[str,None]=None,key=lambda a:a[1],reverse:bool=False,returnmat:bool=False,level:int=1):
         """
         Sort the rows by the desired column
 
-        column:str|None; column name as string, None to sort by index column
+        column:str|None; column name as string, None to sort by label column level 1
         key:function; function to use while sorting
         reverse:bool; wheter or not to sort the matrix in reversed order
         returnmat:bool; wheter or not to return self
+        level:int; level of labels to sort by if no column given
         """
         if column == None:
             if self._dfMat:
-                temp = Matrix(data=self.index,dtype=dataframe,index=None).t. \
-                       concat(self.copy,returnmat=True).sortBy("col_1",key=key,reverse=reverse,returnmat=True)
-                self.__index = Label([tuple(row) for row in temp.matrix],self.index.names)
-                self._matrix = temp[:,1:].matrix
+                label_mat = self.index.as_df
+                temp_mat = self.copy
+                real_names = temp_mat.features[:]
+
+                label_mat.concat(temp_mat,returnmat=True). \
+                          sortBy(column=label_mat.features[level-1],key=key,reverse=reverse)
+
+                lbls = label_mat[:,:self.index.level]
+                self.__index = Label([tuple(row) for row in lbls.matrix],lbls.features)
+                self._matrix = label_mat[:,self.index.level:].matrix
+                self.__features = real_names
+
             else:
                 raise TypeError("Indexing by index column is not allowed on non-dataframe matrices")
         else:       
@@ -2810,7 +2827,24 @@ class Matrix(Vector):
                 "PRECISION":self.PRECISION,
                 "QR_ITERS":self.QR_ITERS,
                 "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
-                "NOTES":self.NOTES}
+                "NOTES":self.NOTES,
+                "DIRECTORY":self.DIRECTORY,
+                "DEFAULT_NULL":self.DEFAULT_NULL,
+                "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
+               }
+
+    @property
+    def options(self):
+        return {
+                "ROW_LIMIT":self.ROW_LIMIT,
+                "PRECISION":self.PRECISION,
+                "QR_ITERS":self.QR_ITERS,
+                "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
+                "NOTES":self.NOTES,
+                "DIRECTORY":self.DIRECTORY,
+                "DEFAULT_NULL":self.DEFAULT_NULL,
+                "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
+               }
 
     def __len__(self):
         return self.__dim[0]*self.__dim[1]
