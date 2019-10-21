@@ -27,42 +27,54 @@ def overwrite_attributes(mat,kw):
 
     attributes = ["dim","data","fill","ranged",
                   "seed","features","decimal","dtype",
-                  "coldtypes","index","indexname","implicit"]
+                  "coldtypes","index","implicit"]
                   
     options = ["PRECISION","ROW_LIMIT","EIGENVEC_ITERS",
                "QR_ITERS","NOTES","DIRECTORY",
                "DEFAULT_NULL"]
-    
-    #Override the attributes given in kwargs with new values
-    for key,val in kw.items():
-        if isinstance(val,dict) and key=="kwargs":
-            for k,v in val.items():
-                if k=="data":
-                    mat._matrix = v
-                elif k=="ranged":
-                    mat._Matrix__initRange = v
-                elif k in attributes:
-                    exec(f"mat._Matrix__{k}=v")
-                elif k in options:
-                    exec(f"mat.{k}=v")
-                else:
-                    raise ParameterError(k,attributes+options)
-        else:
-            exec(f"mat.{key}=val")
 
-def read_file(directory:str,encoding:str="utf8",delimiter:str=","):
+    display_keys = ['allow_label_dupes','dupe_place_holder','label_seperator',
+                    'left_top_corner','left_seperator','top_seperator',
+                    'col_place_holder','row_place_holder']
+                    
+    #Override the attributes given in kwargs with new values
+    for k,v in kw.items():
+        if k=="data":
+            mat._matrix = v
+        elif k=="ranged":
+            mat._Matrix__initRange = v
+        elif k in attributes:
+            exec(f"mat._Matrix__{k}=v")
+        elif k in options:
+            exec(f"mat.{k}=v")
+        elif k == "DISPLAY_OPTIONS":
+            if not isinstance(v,dict):
+                raise TypeError("'DISPLAY_OPTIONS' options requires a dict")
+            
+            if not all([key in display_keys for key in list(v.keys())]):
+                raise TypeError("'DISPLAY_OPTIONS' options requires a dict with following keys:\n"+str(display_keys))
+
+            for option,value in v.items():
+                mat.DISPLAY_OPTIONS[option] = value
+        else:
+            raise ParameterError(k,attributes+options+["DISPLAY_OPTIONS"])
+
+def read_file(directory:str,encoding:str="utf8",delimiter:str=",",**kwargs):
     from MatricesM.setup.fileops import readAll
     from MatricesM.matrix import dataframe
 
     directory = directory.replace("\\","/")
     (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
-    return dataframe(data,feats,coldtypes=cdtypes,DIRECTORY=directory)
+    return dataframe(data,feats,coldtypes=cdtypes,DIRECTORY=directory,**kwargs)
 
 def save_file(matrix:object,directory:str,newline:str="",encoding:str="utf8",options:["no_name","no_index"]=[]):
     if ".csv" in directory:
         from MatricesM.setup.fileops import save_csv
+        
         save_csv(matrix,directory,newline,encoding,options)
-    
+        
+        matrix.DIRECTORY = directory
+
     elif ".txt" in directory:
         pass
 
