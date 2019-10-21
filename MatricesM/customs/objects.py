@@ -386,8 +386,26 @@ class Label:
 
         self.setup([old+labels[i] for i,old in enumerate(self.labels)],self.names+names)
 
-    def sort_by(self):
+    def sort_by(self,level:int=1,key:object=lambda a:a[1],reverse:bool=False,ret:bool=False):
+        """
+        Sort the labels in the given level with the given function
+
+        level: int=1; label level to sort by
+        key: function; key function to use for sorting
+        reverse: bool=False; wheter or not to use reverse sorting
+        ret: bool=False; wheter or not to return the label after sorting
+        """
         pass
+    
+    @property
+    def as_df(self):
+        from MatricesM.matrix import dataframe
+        return dataframe(data=[list(row[:]) for row in self.labels],features=self.names[:])
+
+    @property
+    def copy(self):
+        return Label(labels=[tuple(lbl) for lbl in self.labels],
+                     names=tuple([str(name) for name in self.names]))
 
     def reset(self,start:int=0,name:str=""):
         """
@@ -490,6 +508,7 @@ class Label:
     def __getitem__(self,pos):
         """
         Integer indexing over labels list
+        
         """
         items = self.labels[pos] if not isinstance(pos,int) else [self.labels[pos]]
         return Label(items,self.names)
