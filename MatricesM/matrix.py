@@ -1105,8 +1105,7 @@ class Matrix(Vector):
                     raise IndexError("initRange|ranged should be in the form of [lambda]")
                 
             else:
-                raise TypeError("Invalid 'fill' attribute to use 'initRange' with, change 'fill' to use this setter")
-
+                pass
 
         if isinstance(value,dict):
             names,ranges = list(value.keys()),list(value.values())

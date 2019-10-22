@@ -153,8 +153,18 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                         mat._matrix=[[fill(lmb) for a in range(d[1])] for b in range(d[0])]
                     
                     else:
-                        mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]  
-                
+                        mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]
+
+                else:
+                    if cmat:
+                        mat._matrix=[[complex(fill(*r),fill(*r)) for a in range(d[1])] for b in range(d[0])]
+                    
+                    elif fmat:
+                        mat._matrix=[[fill(*r) for a in range(d[1])] for b in range(d[0])]
+                    
+                    else:
+                        mat._matrix=[[round(fill(*r)) for a in range(d[1])] for b in range(d[0])]  
+
             #Ranged has no affect after this point
             elif type(fill) == list:
                 if len(fill)!=d[1]:
