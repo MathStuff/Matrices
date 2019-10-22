@@ -3,7 +3,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
     #Handle arguments
     if isinstance(d,int):
         mat._setDim(d)
-    
+
     if not isinstance(lis,(str,list)):
         lis = []
 
@@ -17,7 +17,8 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                 raise TypeError("Can't fill matrix with strings if dtype isn't set to dataframe")
 
     isMethod = bool(type(fill).__name__ in ["method","function","builtin_function_or_method"])
-
+    d0,d1 = d
+    
     if lis in [None,"",{}]:
         lis = []
     if not isinstance(lis,(list,str,dict)):
@@ -98,90 +99,90 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
 
             if isinstance(fill,(str,int,float,complex)):
                 from MatricesM.C_funcs.randgen import getfill
-                mat._matrix=getfill(d[0],d[1],fill)
+                mat._matrix=getfill(d0,d1,fill)
                 return None
             
             elif isMethod:
                 if fill.__name__=="uniform":
                     m,n=max(r),min(r)
                     if cmat:
-                        mat._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(uniform(n,m),uniform(n,m)) for a in range(d1)] for b in range(d0)]
                     
                     elif fmat:
                         if r==[0,1]:
                             from MatricesM.C_funcs.zerone import pyfill
-                            mat._matrix=pyfill(d[0],d[1],mat.seed)
+                            mat._matrix=pyfill(d0,d1,mat.seed)
                         else:
                             from MatricesM.C_funcs.randgen import getuni
-                            mat._matrix=getuni(d[0],d[1],n,m,mat.seed)
+                            mat._matrix=getuni(d0,d1,n,m,mat.seed)
                     
                     else:
                         if r==[0,1]:
                             from MatricesM.C_funcs.randgen import igetrand
-                            mat._matrix=igetrand(d[0],d[1],mat.seed)
+                            mat._matrix=igetrand(d0,d1,mat.seed)
                         else:
                             from MatricesM.C_funcs.randgen import igetuni
-                            mat._matrix=igetuni(d[0],d[1],n-1,m+1,mat.seed)
+                            mat._matrix=igetuni(d0,d1,n-1,m+1,mat.seed)
                             
                 elif fill.__name__ in ["gauss","betavariate","gammavariate","lognormvariate"]:
                     m,s=r[0],r[1]
                     if cmat:
-                        mat._matrix=[[complex(fill(m,s),fill(m,s)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(fill(m,s),fill(m,s)) for a in range(d1)] for b in range(d0)]
                     
                     elif fmat:
-                        mat._matrix=[[fill(m,s) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[fill(m,s) for a in range(d1)] for b in range(d0)]
                     
                     else:
-                        mat._matrix=[[round(fill(m,s)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[round(fill(m,s)) for a in range(d1)] for b in range(d0)]
                         
                 elif fill.__name__=="triangular":
                     n,m,o = r[0],r[1],r[2]
                     if cmat:
-                        mat._matrix=[[complex(fill(n,m,o),fill(n,m,o)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(fill(n,m,o),fill(n,m,o)) for a in range(d1)] for b in range(d0)]
                     
                     elif fmat:
-                        mat._matrix=[[fill(n,m,o) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[fill(n,m,o) for a in range(d1)] for b in range(d0)]
                     else:
-                        mat._matrix=[[round(fill(n,m,o)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[round(fill(n,m,o)) for a in range(d1)] for b in range(d0)]
 
                 elif fill.__name__=="expovariate":
                     lmb = r[0]
                     if cmat:
-                        mat._matrix=[[complex(fill(lmb),fill(lmb)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(fill(lmb),fill(lmb)) for a in range(d1)] for b in range(d0)]
                     
                     elif fmat:
-                        mat._matrix=[[fill(lmb) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[fill(lmb) for a in range(d1)] for b in range(d0)]
                     
                     else:
-                        mat._matrix=[[round(fill(lmb)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[round(fill(lmb)) for a in range(d1)] for b in range(d0)]
 
                 else:
                     if cmat:
-                        mat._matrix=[[complex(fill(*r),fill(*r)) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[complex(fill(*r),fill(*r)) for a in range(d1)] for b in range(d0)]
                     
                     elif fmat:
-                        mat._matrix=[[fill(*r) for a in range(d[1])] for b in range(d[0])]
+                        mat._matrix=[[fill(*r) for a in range(d1)] for b in range(d0)]
                     
                     else:
-                        mat._matrix=[[round(fill(*r)) for a in range(d[1])] for b in range(d[0])]  
+                        mat._matrix=[[round(fill(*r)) for a in range(d1)] for b in range(d0)]  
 
             #Ranged has no affect after this point
             elif type(fill) == list:
-                if len(fill)!=d[1]:
-                    raise ValueError(f"Given list {fill} should have {d[1]} values")
+                if len(fill)!=d1:
+                    raise ValueError(f"Given list {fill} should have {d1} values")
                 else:
-                    mat._matrix = [fill for _ in range(d[0])]
+                    mat._matrix = [fill for _ in range(d0)]
 
             elif type(fill) == range:
                 l = list(fill)
-                if len(l)!=d[1]:
-                    raise ValueError(f"Given range {fill} should have {d[1]} values")
+                if len(l)!=d1:
+                    raise ValueError(f"Given range {fill} should have {d1} values")
                 else:
-                    mat._matrix = [fill for _ in range(d[0])]
+                    mat._matrix = [fill for _ in range(d0)]
             
             else:
                 from MatricesM.C_funcs.randgen import getfill
-                mat._matrix=getfill(d[0],d[1],fill)
+                mat._matrix=getfill(d0,d1,fill)
                 
         # =============================================================================               
         #Different ranges over individual columns
@@ -200,70 +201,79 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
 
                 if isinstance(fill,(str,int,float,complex)):
                     from MatricesM.C_funcs.randgen import getfill
-                    mat._matrix=getfill(d[0],d[1],fill)
+                    mat._matrix=getfill(d0,d1,fill)
                     return None
 
                 elif isMethod:
                     if fill.__name__=="uniform":                    
                         if cmat:
-                            temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[complex(uniform(min(lis[i]),max(lis[i])),uniform(min(lis[i]),max(lis[i]))) for _ in range(d0)] for i in range(d1)]
                         
                         elif fmat:
-                            temp=[[uniform(min(lis[i]),max(lis[i])) for _ in range(d[0])] for i in range(d[1])]                        
+                            temp=[[uniform(min(lis[i]),max(lis[i])) for _ in range(d0)] for i in range(d1)]                        
                         
                         else:
-                            temp=[[round(uniform(min(lis[i]),max(lis[i])+1))//1 for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[round(uniform(min(lis[i]),max(lis[i])+1))//1 for _ in range(d0)] for i in range(d1)]
                     
                     elif fill.__name__ in ["gauss","betavariate","gammavariate","lognormvariate"]:                    
                         if cmat:
-                            temp=[[complex(fill(lis[i][0],lis[i][1]),fill(lis[i][0],lis[i][1])) for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[complex(fill(lis[i][0],lis[i][1]),fill(lis[i][0],lis[i][1])) for _ in range(d0)] for i in range(d1)]
                         
                         elif fmat:
-                            temp=[[fill(lis[i][0],lis[i][1]) for _ in range(d[0])] for i in range(d[1])]                        
+                            temp=[[fill(lis[i][0],lis[i][1]) for _ in range(d0)] for i in range(d1)]                        
                         
                         else:
-                            temp=[[round(fill(lis[i][0],lis[i][1]+1))//1 for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[round(fill(lis[i][0],lis[i][1]+1))//1 for _ in range(d0)] for i in range(d1)]
                             
                     elif fill.__name__=="triangular":                    
                         if cmat:
-                            temp=[[complex(fill(lis[i][0],lis[i][1],lis[i][2]),fill(lis[i][0],lis[i][1],lis[i][2])) for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[complex(fill(lis[i][0],lis[i][1],lis[i][2]),fill(lis[i][0],lis[i][1],lis[i][2])) for _ in range(d0)] for i in range(d1)]
                             
                         elif fmat:
                             
-                            temp=[[fill(lis[i][0],lis[i][1],lis[i][2]) for _ in range(d[0])] for i in range(d[1])]                                                
+                            temp=[[fill(lis[i][0],lis[i][1],lis[i][2]) for _ in range(d0)] for i in range(d1)]                                                
                         else:
-                            temp=[[round(fill(lis[i][0],lis[i][1]+1,lis[i][2]))//1 for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[round(fill(lis[i][0],lis[i][1]+1,lis[i][2]))//1 for _ in range(d0)] for i in range(d1)]
 
                     elif fill.__name__=="expovariate":                    
                         if cmat:
-                            temp=[[complex(fill(lis[i][0]),fill(lis[i][0])) for _ in range(d[0])] for i in range(d[1])]
+                            temp=[[complex(fill(lis[i][0]),fill(lis[i][0])) for _ in range(d0)] for i in range(d1)]
                         
                         elif fmat:
-                            temp=[[fill(lis[i][0]) for _ in range(d[0])] for i in range(d[1])]                        
+                            temp=[[fill(lis[i][0]) for _ in range(d0)] for i in range(d1)]                        
                         
                         else:
-                            temp=[[round(fill(lis[i][0]))//1 for _ in range(d[0])] for i in range(d[1])]
-
+                            temp=[[round(fill(lis[i][0]))//1 for _ in range(d0)] for i in range(d1)]
+                    
+                    else:
+                        if cmat:
+                            temp = [[complex(fill(*r[b]),fill(*r[b])) for a in range(d0)] for b in range(d1)]
+                        
+                        elif fmat:
+                            temp = [[fill(*r[b]) for a in range(d0)] for b in range(d1)]
+                        
+                        else:
+                            temp = [[round(fill(*r[b])) for a in range(d0)] for b in range(d1)]  
                 #Ranged has no affect after this point
                 elif type(fill) == list:
-                    if len(fill)!=d[1]:
-                        raise ValueError(f"Given list {fill} should have {d[1]} values")
+                    if len(fill)!=d1:
+                        raise ValueError(f"Given list {fill} should have {d1} values")
                     else:
-                        mat._matrix = [fill for _ in range(d[0])]
+                        mat._matrix = [fill for _ in range(d0)]
                         return None
 
                 elif type(fill) == range:
                     l = list(fill)
-                    if len(l)!=d[1]:
-                        raise ValueError(f"Given range {fill} should have {d[1]} values")
+                    if len(l)!=d1:
+                        raise ValueError(f"Given range {fill} should have {d1} values")
                     else:
-                        mat._matrix = [fill for _ in range(d[1])]
+                        mat._matrix = [fill for _ in range(d1)]
                         return None
                 else:
                     from MatricesM.C_funcs.randgen import getfill
-                    mat._matrix=getfill(d[0],d[1],fill)
+                    temp = getfill(d1,d0,fill)
                 
-                from MatricesM.C_funcs.linalg import Ctranspose #Change the process so this won't be necessary
-                mat._matrix=Ctranspose(d[1],d[0],temp)
+                from MatricesM.C_funcs.linalg import Ctranspose
+                mat._matrix = Ctranspose(d1,d0,temp)
         else:
             return None
