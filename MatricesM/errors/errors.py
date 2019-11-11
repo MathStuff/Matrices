@@ -12,15 +12,15 @@ class NotListOrTuple(MatrixError):
     """
     A list or a tuple is required
     """
-    def __init__(self,err):
-        self.message = f"Given value should be a list or a tuple, not '{type(err).__name__}'"
+    def __init__(self,err,*args):
+        self.message = f"Given value should be a list or a tuple, not '{type(err).__name__}'"+". ".join(args)
 
 class EmptyMatrix(MatrixError):
     """
     Matrix is empty
     """
     def __init__(self,err,*args):
-        self.message  = err
+        self.message  = str(err).join(args)
 
 class InvalidColumn(MatrixError):
     """
