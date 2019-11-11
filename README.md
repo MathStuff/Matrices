@@ -396,7 +396,7 @@ s[1:4,1:4] = 0 #Same as using Matrix(3,fill=0)
 """
 
 #Change the values in the 2nd to 4th rows' 1st and 3rd columns to 0 and 99 
-Matrix[1:4,("col_1","col_3")] = [0,9]
+Matrix[1:4,("col_1","col_3")] = [0,99]
 #Visually:
 """
 3 9 6 10               3 9  6  10
@@ -405,25 +405,6 @@ Matrix[1:4,("col_1","col_3")] = [0,9]
 6 1 7  0               0 1 99   0
 """
 
-#Change all values in the 2nd column to 7's
-Matrix.col_2 = 7
-#Visually:
-"""
-3 9 6 10               3 7 6 10
-5 0 4  2   Changes to  5 7 4  2
-5 8 2  2      ---->    5 7 2  2
-6 1 7  0               6 7 7  0
-"""
-
-#Change odd numbered rows' even numbered columns to the values in the given matrix
-Matrix[0::2,1::2] = Matrix(2,fill=999)
-#Visually:
-"""
-3 9 6 10               3 999 6 999
-5 0 4  2   Changes to  5   7 4   2
-5 8 2  2      ---->    5 999 2 999
-6 1 7  0               6   7 7   0
-"""
 ```
 ----------------------------------------
 ##### Concatenate a matrix to your matrix.
@@ -489,7 +470,7 @@ Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eige
 
 Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method, default is 10.
 
-Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
+Matrix.col_1, Matrix.col_2, ... #Tries to return a 'Matrix.level.name' object pointing at 'Matrix's 'col_1','col_2', ... column name row, if it fails, tries to return all columns with 'col_1','col_2', ... column names in level-1 
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -615,12 +596,6 @@ Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns N
 ```python 
 Matrix.features #Returns the column names if given, can also be used to set column names
 
-Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
-
-Matrix.name_update(prefix,suffix,changechar) #Add prefix and/or suffix to column names, change characters in column names with 'changechar'.
-
-Matrix.namereset(start=1) #Reset column names to 'col_1','col_2', ... . Start is 1 by default
-
 Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
 
 Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
@@ -695,7 +670,13 @@ Matrix.oneHotEncode(column,concat) #One-hot encode a 'column', 'concat' to decid
 
 dataframe.level #Inner level class used for passing the level to 'ind' class for row labeling.
 
-dataframe.level.ind #Row label indexing class, have to be used with the following syntax : dataframe.level[integer_level].ind[labels]
+dataframe.level.ind #Row label indexing class, syntax : dataframe.level[integer_level].ind[row_label]
+
+dataframe.level.name #Column name indexing class, syntax : dataframe.level[integer_level].ind[column_name]
+
+dataframe.colname #Allows column names' level names over integers, syntax : dataframe.colname[label_name].name[column_name]
+
+dataframe.rowname #Allows row labels' level names over integers, syntax : dataframe.rowname[label_name].ind[column_name]
 ```
 
 ----------------------------------------
@@ -709,7 +690,7 @@ myMatrix.grid
 
 myMatrix.p #Same as print(myMatrix)
 
-#Similar to 'grid' but rows and columns are limited by myMatrix.ROW_LIMIT and myMatrix.COL_LIMIT
+#Similar to 'grid' but rows and columns are limited by myMatrix.ROW_LIMIT
 
 myMatrix
 
