@@ -221,7 +221,7 @@ class Label:
         type_names = ["Matrix","dataframe","Identity","Symmetrical"]
 
         if type(lbls).__name__ in type_names:
-            nms = lbls.features[:]
+            nms = lbls.features.get_level(1)
             lvl = lbls.d1
             lbls = [tuple(row) for row in lbls.matrix]
             self.__names = nms

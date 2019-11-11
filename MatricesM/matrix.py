@@ -255,14 +255,17 @@ class Matrix(Vector):
         try:
             return object.__getattribute__(self,attr)
         except:
-            try:#Try as column name
+            try:
                 if attr == "_Matrix__use_value_based_comparison":
                     return False
                 
+                #Try as column label name
                 if attr in self.features.names:
                     return self.level[self.features.names.index(attr)+1].name
 
-                return self[attr]
+                #Try as a level-1 column name
+                return self.level[1].name[attr]
+                
             except MatrixError:#Nothing worked ¯\_(ツ)_/¯
                 raise AttributeError(f"'{attr}' is not a column name nor an attribute or a method of Matrix")
 
@@ -2432,17 +2435,18 @@ class Matrix(Vector):
         if returnmat:
             return self
         
-    def sortBy(self,column:Union[str,None]=None,key=lambda a:a[1],reverse:bool=False,returnmat:bool=False,level:int=1):
+    def sortBy(self,column:Union[str,int,None]=None,key=lambda a:a[1],reverse:bool=False,returnmat:bool=False,level:int=1):
         """
         Sort the rows by the desired column
 
-        column:str|None; column name as string, None to sort by label column level 1
+        column:str|int|None; column name as string, column number, None to sort by label column level 1
         key:function; function to use while sorting
         reverse:bool; wheter or not to sort the matrix in reversed order
         returnmat:bool; wheter or not to return self
         level:int; level of labels to sort by if no column given
         """
         if column == None:
+
             if self._dfMat:
                 label_mat = self.index.as_df
                 temp_mat = self.copy
@@ -2458,7 +2462,10 @@ class Matrix(Vector):
 
             else:
                 raise TypeError("Indexing by index column is not allowed on non-dataframe matrices")
-        else:       
+        else:
+            if isinstance(column,int):
+                assert (column>0) and (column<=self.d1) , f"'column' can't be {column}"
+    
             temp=sorted([(i,row) for i,row in enumerate(self.col(column,0))],key=key,reverse=reverse)
             if self._dfMat:
                 inds = self.index.labels

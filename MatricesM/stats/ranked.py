@@ -12,15 +12,18 @@ def _rank(mat,col,rev,key,get,start):
         raise TypeError("'start' only accepts integers")
 
     ranks={}
-    feats = mat.features[:] if col == None else mat.features[col]
-            
-    for name in feats:
+    feats = mat.features[:].labels if col == None else mat.features[col].labels
+
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    for i,name in enumerate(feats):
         #Get the column and store copy to return
-        column = mat.col(name)
+        column = mat[:,i].copy
         copy = column.copy
         #Reset indices and sort
         column.index.reset()
-        column.sortBy(name,reverse=rev,key=key)
+        column.sortBy(1,reverse=rev,key=key)
         inds = column.index.get_level(1)
         #Updated indices
         temp = ["" for _ in range(column.d0)]
@@ -28,18 +31,17 @@ def _rank(mat,col,rev,key,get,start):
             temp[ind] = i+start
         #Add ranks then set values as indices
         copy.add(temp,col=2,feature="Rank",dtype=int)
-        copy.index = copy[name]
-        del copy[name]
+        copy.index = copy[:,0]
         #Add to dictionary
-        ranks[name] = copy
-        
+        ranks[name] = copy[:,1]
+
     #Return ranks in-place of the values
     if get == -1:
-        temp = mat[tuple(feats)]
-        col = 0 
-        for rankmat in ranks.values():
-            temp[feats[col]] = rankmat["Rank"].matrix
-            col+=1
+        temp = mat.copy
+
+        for col,rankmat in enumerate(ranks.values()):
+            temp[:,col] = rankmat["Rank"]
+
         temp._Matrix__coldtypes = [int for _ in range(temp.d1)]
         return temp
     #Return matrices in a tuple
