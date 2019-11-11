@@ -18,12 +18,14 @@ def declareDim(mat):
 
         return [rows,col_length]
     
-def declareRange(mat,lis):
+def declareRange(mat,lis,df):
     nullobj = mat.DEFAULT_NULL
-
     c={}
     d0,d1 = mat.dim
-    feats = mat.features
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+        
     #Dataframe
     if mat._dfMat:
         colds = mat.coldtypes

@@ -40,6 +40,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
         #Bounds for index columns
         indbound = [max([len(str(label)) for label in indices.get_level(i+1)]+[len(indices.names[i])]) for i in range(indices.level)]
+        indbound[0] = max(max([len(col_name) for col_name in feats.names]),indbound[0])
+
         #Bounds from values
         for cols in range(d1):
             colbounds=[]
@@ -68,7 +70,10 @@ def _stringfy(mat,dtyps,retbounds,grid):
             else:#Any non-complex and non-float column
                 colbounds.append(max([len(str(a)) for a in mat.col(cols+1,0)]))
 
-            colbounds.append(len(feats[cols]))
+            #Longest column name length
+            colbounds.append(max([len(lbl) for lbl in feats.labels[cols]]))
+            
+            #Tab size for the column
             bounds.append(max(colbounds))
     ##############        
     #Complex/Float
@@ -130,13 +135,27 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
         #Add features
         if not grid:
-            string += "\n" + " "*(sum(indbound)+indices.level)
-            for cols in range(d1-1):
-                name = feats[cols]
-                s = len(name)
-                string += " "*(bounds[cols]-s)+name+"  "
+            string += "\n"
+            labels = feats.labels
+            names = feats.names
+            namelvl = feats.level
+            index_tab_size = sum(indbound)+len(label_seperator)*indices.level 
 
-            string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
+            #Loop through labels and then higher levels
+            for lvl in range(namelvl):
+                name = names[lvl]
+                string += " "*(index_tab_size- len(name) - 1) + name + left_seperator
+
+                for cols in range(d1-1):
+                    name = labels[cols][lvl]
+                    s = len(name)
+                    string += " "*(bounds[cols]-s)+name+"  "
+                
+                last = labels[-1][lvl]
+                string += " "*(bounds[-1]-len(last)) + last
+                
+                if lvl != namelvl-1:
+                    string += "\n"
 
             #Add index name row
             string += "\n" 
