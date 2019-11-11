@@ -1,5 +1,6 @@
 def _minmax(mat,col,get,ismax,obj,dFrame):
-
+    from MatricesM.customs.objects import Label
+    
     if col==None:
         feats = mat.features[:]
         ranges = mat.ranged(get=0)
@@ -18,7 +19,7 @@ def _minmax(mat,col,get,ismax,obj,dFrame):
     #Return a matrix
     if get==2:
         cols = list(m.keys())
-        return obj((len(cols),1),[i for i in m.values()],features=[["Minimum","Maximum"][ismax]],dtype=dFrame,coldtypes=[float],index=cols,indexname="Column")
+        return obj((len(cols),1),[i for i in m.values()],features=[["Minimum","Maximum"][ismax]],dtype=dFrame,coldtypes=[float],index=Label(cols,mat.features.names[:]))
     #Return a dictionary
     elif get==1:
         return m

@@ -12,7 +12,7 @@ def _rank(mat,col,rev,key,get,start):
         raise TypeError("'start' only accepts integers")
 
     ranks={}
-    feats = mat.features[:] if col == None else [mat.features[col]]
+    feats = mat.features[:] if col == None else mat.features[col]
             
     for name in feats:
         #Get the column and store copy to return

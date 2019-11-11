@@ -17,6 +17,7 @@ def getcolmean(d0,lis,col,nullobj):
             return (col,nullobj)
 
 def mean(mat,col,get,obj,dFrame):
+    from MatricesM.customs.objects import Label
 
     if isinstance(col,str):
         col=mat.features.index(col)+1
@@ -27,7 +28,9 @@ def mean(mat,col,get,obj,dFrame):
         
     nullobj = mat.DEFAULT_NULL
     avg={}
-    feats=mat.features[:]
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
     inds = []
     mm = mat.matrix
     d0 = mat.d0
@@ -62,7 +65,7 @@ def mean(mat,col,get,obj,dFrame):
         cols = list(avg.keys())
         means = [i for i in avg.values()]
         cdtypes = [complex] if any([1 if isinstance(val,complex) else 0 for val in means]) else [float]
-        return obj((len(cols),1),means,features=["Mean"],dtype=dFrame,coldtypes=cdtypes,index=cols,indexname="Column")
+        return obj((len(cols),1),means,features=["Mean"],dtype=dFrame,coldtypes=cdtypes,index=Label(cols,mat.features.names[:]))
 
     #Return a dictionary
     elif get == 1:

@@ -1,5 +1,7 @@
 def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
     import math
+    from MatricesM.customs.objects import Label
+    
     feats = mat.features[:]
     d0,d1 = mat.dim
 
@@ -62,7 +64,7 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
         cols = list(vals.keys())
         results = [i for i in vals.values()]
         cdtypes = [complex] if any([1 if isinstance(val,complex) else 0 for val in results]) else [float]
-        return obj((len(cols),1),results,features=[["Product","Sum"][isSum]],dtype=dFrame,coldtypes=cdtypes,index=cols,indexname="Column")
+        return obj((len(cols),1),results,features=[["Product","Sum"][isSum]],dtype=dFrame,coldtypes=cdtypes,index=Label(cols,mat.features.names[:]))
     #Return a dictionary
     elif get == 1:
         return vals
