@@ -138,9 +138,35 @@ class Group:
         self.grouped_by = names
         self.tables = [val[1] for val in matrix_list]
     
+    @property
+    class sub:
+        """
+        Access sub groups
+
+        Examples:
+
+            >>> df = dataframe(fill=uniform)
+
+            >>> data = df(dim=(15,3),ranged={"c1":(0,5),"c2":(0,2),"c3":(-5,-1)}) 
+            >>> data
+
+            
+            >>> group_1 = data.groupBy("c1")
+
+            >>>
+        """
+        def __init__(self,group_obj):
+            self.obj = group_obj
+
+        def __getitem__(self,pos):
+            """
+            Index through sub-groups
+            """
+            pass
+
     def __getitem__(self,pos):
         """
-        Index through group tables
+        Integer indexing through group tables
         """
         pass
 
@@ -183,11 +209,12 @@ class Label:
         group_1,class_3| null   null   null
 
     """
-    def __init__(self,labels:[(...,),...]=[],names:(str,...)=("",)):
+    def __init__(self,labels:[(...,),...]=[],names:(str,...)=("",),implicit:bool=False):
         self.__labels = labels
         self.__names = names
         self.__level = 1
-        self.setup(labels,names)
+        if not implicit:
+            self.setup(labels,names)
         
     def setup(self,lbls:[(...,),...],nms=[str,...]):
         ####### Label check #######
@@ -210,16 +237,26 @@ class Label:
         lvl = 1
         lbls_len = len(lbls)
         
-        #Multi-leveled
+        #Multi-leveled, all tuples
         if all([1 if isinstance(val,tuple) else 0 for val in lbls]) and lbls_len>0:
             #Check tuple lengths
-            label_lengths = [len(label) for label in lbls]
-            lvl = label_lengths[0]
-            for i in range(lbls_len):
-                if label_lengths[i] != lvl:
-                    raise IndexError(f"{label_lengths[i]} can't be used as level-{lvl} index")
+            lengths = [len(label) for label in lbls]
+            maxlvl = max(lengths)
+            for i in range(len(lbls)):
+                lbls[i] += tuple(["" for _ in range(maxlvl-lengths[i])]) 
         else:
             lbls = [(label,) for label in lbls]
+
+        #Recalculate dimensions
+        maxlvl = max([len(label) for label in lbls]) if len(lbls)>=1 else 1
+        diff = maxlvl - lvl
+
+        #Refill labels if lvl is changed
+        if diff:
+            for i in range(len(lbls)):
+                lbls[i] += tuple(["" for _ in range(maxlvl-len(lbls[i]))])
+
+        lvl = maxlvl
 
         ####### Name check #######
         if isinstance(nms,str):
@@ -229,7 +266,7 @@ class Label:
         elif isinstance(nms,(tuple,list)):
             nms = list(nms)
             if len(nms) != lvl:
-                raise IndexError(f"Expected {lvl} names, got {len(nms)} instead")
+                nms = ["level_"+str(i+1) for i in range(lvl)]
         else:
             raise TypeError(f"Can't use type {type(nms)} to set index column names")
         
@@ -238,8 +275,15 @@ class Label:
         
         from collections import Counter
         if len(Counter(nms).keys()) != len(nms):
-            raise ValueError("Given column names should be unique")
-
+            #Non-unique names appear
+            temp = []
+            for i in range(len(nms)):
+                name = nms[i]
+                while name in temp:
+                    name = "_"+name
+                temp.append(name)
+            nms = temp[:]
+            
         self.__names = nms[:]
         self.__labels = [row[:] for row in lbls]
         self.__level = lvl
@@ -269,6 +313,10 @@ class Label:
     @names.setter
     def names(self,names:[str,...]):
         self.setup(self.labels,names)
+
+    @property
+    def size(self):
+        return (len(self.labels),self.level)
 
     def get_name(self,name:[str,...]):
         """
@@ -447,7 +495,9 @@ class Label:
                 val = prefix+val+suffix
                 if ch_char:
                    val = val.replace(changechar[0],changechar[1])  
-            labels[i][level-1] = val
+            temp = list(row)
+            temp[level-1] = val
+            labels[i] = tuple(temp)
 
     def insert(self,pos,item):
         item = item if isinstance(item,tuple) else (item,)
@@ -494,7 +544,7 @@ class Label:
             str_labels = "\n              ".join([str(row) for row in lbls[:ROW_LIMIT//2]+["..."]+lbls[-ROW_LIMIT//2:]])
         else:
             str_labels = "\n              ".join([str(row) for row in self.labels])
-        return "Label(\n      names:  "+ str(self.names) +"\n      labels: "+ str_labels + f"\n\n      size:   ({len(self)},{self.level})" + "\n     )"
+        return "\nLabel(\n      names:  "+ str(self.names) +"\n      labels: "+ str_labels + f"\n\n      size:   ({len(self)},{self.level})" + "\n     )"
 
     def __getattr__(self,attr:str):
         try:
@@ -548,6 +598,21 @@ class Label:
         
         else:
             self.labels[pos] = val
+
+        #Recalculate dimensions
+        labels = self.labels
+        current = self.level
+        lvl = max([len(label) for label in labels])
+        diff = lvl - current
+
+        self.__names += tuple(["level_"+str(current+i+1) for i in range(lvl-len(self.names))])
+
+        #Refill labels if lvl is changed
+        if diff:
+            for i in range(len(self)):
+                self.__labels[i] += tuple(["" for _ in range(lvl-len(labels[i]))])
+
+        self.__level = lvl
 
     def __delitem__(self,pos):
         del self.labels[pos]
