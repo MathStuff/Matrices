@@ -60,13 +60,7 @@ def concat(mat,matrix,axis,fill,obj):
     #Update attributes
     mat._Matrix__dim=mat._declareDim()
     if axis==1:
-        newfeats = []
-        for name in newmat.features:
-            while name in mat.features:
-                name = "_"+name
-            newfeats.append(name)
-
-        mat._Matrix__features = mat.features + newfeats
+        mat._Matrix__features = mat.features + newmat.features
         mat._Matrix__coldtypes = mat.coldtypes + [i for i in newmat.coldtypes]
     else:
         if mat._dfMat:

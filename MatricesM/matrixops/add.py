@@ -69,12 +69,13 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
 
             #Pick first elements type as column dtype as default
             if dtype==None:
-                dtype=type(lis[0])
+                from MatricesM.setup.declare import declareColdtypes
+                dtype=declareColdtypes([[row] for row in lis],mat.DEFAULT_NULL.__name__)
 
             if feature == None:
                 feature = f"col_{col + 1}"
             #Prevent repetation of the column names
-            if feature in mat.features:
+            while feature in mat.features.get_level(1):
                 feature = "_"+feature
 
             #Store column name and dtype
