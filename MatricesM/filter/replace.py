@@ -29,9 +29,9 @@ def _replace(mat,old,new,col,cond,obj,lvl):
     #(bool_mat,value,columns,bool_mat)
     if isinstance(old,obj):
         if cond != None:
-            rowinds = [i[0] for i in (cond & old).find(1,0)]
+            rowinds = [ind for ind,i in enumerate((cond & old).matrix) if all(i)]
         else:
-            rowinds = [i[0] for i in old.find(1,0)]
+            rowinds = [ind for ind,i in enumerate(old.matrix) if all(i)]
         colinds = [names.index(c) for c in col]
         for r in rowinds:
             for c in colinds:
