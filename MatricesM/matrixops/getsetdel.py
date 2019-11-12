@@ -489,6 +489,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
                     start = filtered_labels.index(pos[0].start) if pos[0].start != None else None
                     end = filtered_labels.index(pos[0].stop) if pos[0].stop != None else None
+                    step = pos[0].step 
 
                     first_item = filtered_labels[start] if start != None else None
                     last_item = filtered_labels[end] if end != None else None
@@ -497,6 +498,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
                     start = start if start != None else 0
                     end = end if end != None else d0
+                    step = step if step != None else 1
 
                     first_found = False if first_item != None else True
 
@@ -516,6 +518,9 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                         except:
                             continue     
 
+                    #Use the given step value
+                    rowrange = rowrange[::step]
+                
                 else:
                     newslice = betterslice(pos[0],d0)
                     rowrange = list(range(newslice.start,newslice.stop,newslice.step))
@@ -545,7 +550,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
                 if uselabel:
                     return None
-                rowrange = [i[0] for i in pos[0].find(1,0)]
+                rowrange = [ind for ind,i in enumerate(pos[0].matrix) if all(i)]
             else:
                 raise TypeError(f"{pos[0]} can't be used as row index")
         
@@ -629,7 +634,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                     default_en = pos[1].stop if pos[1].stop!=None else d1
                     start = mat.features.index(pos[1].start,namelevel) if isinstance(pos[1].start,str) else default_st
                     end = mat.features.index(pos[1].stop,namelevel) if isinstance(pos[1].stop,str) else default_en
-                    pos[1] = betterslice(slice(start,end),d1)
+                    pos[1] = betterslice(slice(start,end,pos[1].step),d1)
 
             # Matrix[row_index,Tuple(str)]
             elif isinstance(pos[1],(tuple,list)):
@@ -723,7 +728,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
     elif isinstance(pos,obj):
         if uselabel:
             return None
-        rowrange = [i for i in range(mat.d0) if pos._matrix[i][0]==1]
+        rowrange = [ind for ind,i in enumerate(pos.matrix) if all(i)]
 
         if returninds:
             return (rowrange,None)
