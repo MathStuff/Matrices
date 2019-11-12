@@ -729,11 +729,16 @@ class Matrix(Vector):
             return self[self.d0-rows:]
         return self[:,:]
 
-    def col(self,column:Union[int,str],as_matrix:bool=True):
+    def col(self,column:Union[List[Union[int,str]],int,str],
+            as_matrix:bool=True,
+            namelevel:int=1):
         """
         Get a specific column of the matrix
-        column:integer>=1 and <=column_amount | column name
+        Returns a Matrix or a list
+
+        column:integer>=1 and <=column_amount | column name | list of column names/numbers
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
+        namelevel:int>=1, Level of the labels to search the given column names 
         """
         #Column number given
         if isinstance(column,int):
@@ -746,14 +751,19 @@ class Matrix(Vector):
 
         #Column name given
         elif isinstance(column,str):
-            if not column in self.features.get_level(1):
-                raise InvalidColumn(column,f"'{column}' is not in column names")
+            if not column in self.features.get_level(namelevel):
+                raise InvalidColumn(column,f"'{column}' is not in level-{namelevel} column names")
 
             #Return matrix
             if as_matrix:
                 return self.__getattr__(attr=column)
 
             column = self.features.index(column)+1
+
+        #List of column names and column numbers given
+        elif isinstance(column,(list,tuple)):
+            if not all([1 if isinstance(num,(int,str)) else 0 for num in row]):
+                raise TypeError("Given list should only contain integers>0 and strings")
 
         #Invalid type
         else:
@@ -763,21 +773,29 @@ class Matrix(Vector):
         mm = self._matrix
         return [mm[r][column-1] for r in range(self.d0)]
     
-    def row(self,row:int=None,as_matrix:bool=True):
+    def row(self,row:Union[List[int],int]=None,as_matrix:bool=True):
         """
         Get a specific row of the matrix
-        row:integer>=1 and <=row_amount
+        Returns a Matrix or a list
+
+        row:int>=1 and <=row_amount | list of integers; row number(s) 
         as_matrix:False to get the row as a list, True to get a row matrix (default) 
         """
         if isinstance(row,int):
             if not (row<=self.d0 and row>0):
                 raise InvalidIndex(row,"Row index out of range")
+            row -= 1
+
+        elif isinstance(row,(tuple,list)):
+            if not all([1 if isinstance(num,int) else 0 for num in row]):
+                raise  TypeError("Given list should only contain integers")
+            
         else:
             raise InvalidIndex(row)
 
         if as_matrix:
-            return self[row-1:row]
-        return self._matrix[row-1][:]
+            return self[row]
+        return self._matrix[row][:]
                     
     def add(self,lis:List[Any],
             row:Union[int,None]=None,
@@ -786,7 +804,7 @@ class Matrix(Vector):
             dtype:Any=None,
             index:Any="",
             returnmat:bool=False,
-            fillnull=False):
+            fillnull=True):
         """
         Add a row or a column of numbers
 
@@ -819,7 +837,7 @@ class Matrix(Vector):
         if returnmat:
             return self  
 
-    def concat(self,matrix:object,axis:[0,1]=1,returnmat:bool=False,fillnull=False):
+    def concat(self,matrix:object,axis:[0,1]=1,returnmat:bool=False,fillnull=True):
         """
         Concatenate matrices row or columns vice
 
@@ -2215,7 +2233,7 @@ class Matrix(Vector):
             ->Join Matrix and otherMatrix where Matrix.usr_id==otherMatrix.id,
             using left join, return usr_id and department columns
 
-                >>> Matrix.join(SELECT=(Matrix.usr_id,otherMatrix.depertment),
+                >>> Matrix.join(SELECT=(Matrix.usr_id,otherMatrix.department),
                                 FROM=otherMatrix,
                                 JOIN='left',
                                 ON='Matrix.usr_id == otherMatrix.id'
@@ -2228,7 +2246,9 @@ class Matrix(Vector):
         from MatricesM.matrixops.joins import joins
         return joins(self,SELECT,METHOD,JOIN,ON,null,Matrix)
 
-    def where(self,conditions:Union[List[str],Tuple[str]],inplace:bool=True):
+    def where(self,conditions:Union[List[str],Tuple[str]],
+              inplace:bool=True,
+              namelevel:Union[Dict[str,int],int]=1):
         """
         Returns a matrix where the conditions are True for the desired columns.
         
@@ -2254,13 +2274,14 @@ class Matrix(Vector):
 
         NOTE:
             -> Every statement HAVE TO BE enclosed in parentheses as shown in the examples above
-
+            -> If a dictionary passed to 'namelevel', given conditions should only have the names
+               from the keys of the 'namelevel' 
         """
         from MatricesM.filter.where import wheres
         if inplace:
-            results,indices = wheres(self,conditions,self.features[:],True),self.index[:]
+            results,indices = wheres(self,conditions,self.features[:],True,namelevel),self.index[:]
             temp,found_inds = results
-            lastinds = [indices[i] for i in found_inds] if self._dfMat else []
+            lastinds = indices[found_inds] if self._dfMat else []
 
             return Matrix(data=temp,
                           features=self.features[:],
@@ -2389,18 +2410,21 @@ class Matrix(Vector):
                 new:Any,
                 column:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=None,
                 condition:Optional[object]=None,
+                namelevel:int=1,
                 returnmat:bool=False):
         """
         Replace single values,rows and/or columns
 
         old: all available types|boolean *column* matrix; value(s) to be replaced
 
-        new:all available types; value(s) to replace old ones with
+        new: all available types; value(s) to replace old ones with
 
         column: str|tuple or list of strings|None;  which column(s) to apply replacements, None for all columns
 
         condition: boolean *column* matrix|None; row(s) to apply replacements, None for all rows
         
+        namelevel: int; Level of the column name labels to use 
+
         returnmat: bool; True to return self after evaluation, False to return None
         
         Example:
@@ -2412,10 +2436,11 @@ class Matrix(Vector):
                                  new="Done",
                                  column=("Order1","Order2"))
 
-                #Replace all '' values in the column "Length" with the mean of the "Length" column
+                #Replace all '' values in the level-2 column "Length" with the mean of the "Length" column
                 >>> data.replace=(old='',
                                   new=data.mean("Length",get=0),
-                                  column="Length")
+                                  column="Length"
+                                  namelevel=2)
 
                 #Replace all "FF" values in "Grade" column with "AA" in the column "Grade" where "Year"<=2019
                 >>> data.replace(old="FF",
@@ -2431,7 +2456,7 @@ class Matrix(Vector):
 
         """
         from MatricesM.filter.replace import _replace
-        _replace(self,old,new,column,condition,Matrix)
+        _replace(self,old,new,column,condition,Matrix,namelevel)
         if returnmat:
             return self
         
