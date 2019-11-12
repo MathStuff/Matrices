@@ -560,7 +560,12 @@ class Label:
         Integer indexing over labels list
         
         """
-        items = self.labels[pos] if not isinstance(pos,int) else [self.labels[pos]]
+        labels = self.labels
+        items = labels[pos] if isinstance(pos,slice) \
+                            else [labels[pos]] if isinstance(pos,int) \
+                            else [labels[i] for i in pos] if isinstance(pos,list) \
+                            else None
+
         return Label(items,self.names)
     
     def __setitem__(self,pos,val):
