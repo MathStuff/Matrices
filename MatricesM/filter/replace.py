@@ -1,5 +1,5 @@
-def _replace(mat,old,new,col,cond,obj):
-    names = mat.features[:]
+def _replace(mat,old,new,col,cond,obj,lvl):
+    names = mat.features.get_level(lvl)
     #Handle arguments
     if not isinstance(cond,obj) and cond!=None:
         raise TypeError("conditions should be a boolean matrix or None")
@@ -41,7 +41,7 @@ def _replace(mat,old,new,col,cond,obj):
             indices = []
             for feat in col:
                 try:
-                    for i in mat.col(feat).find(old,0):
+                    for i in mat.col(feat,namelevel=lvl).find(old,0):
                         indices.append([i[0],names.index(feat)])
                 except:
                     continue #No data was found on given column
