@@ -259,13 +259,16 @@ class Matrix(Vector):
                 if attr == "_Matrix__use_value_based_comparison":
                     return False
                 
-                #Try as column label name
-                if attr in self.features.names:
-                    return self.level[self.features.names.index(attr)+1].name
+                if self._dfMat:
+                    #Try as column label name
+                    if attr in self.features.names:
+                        return self.level[self.features.names.index(attr)+1].name
 
-                #Try as a level-1 column name
-                return self.level[1].name[attr]
-                
+                    #Try as a level-1 column name
+                    return self.level[1].name[attr]
+                else:
+                    raise Exception
+
             except MatrixError:#Nothing worked ¯\_(ツ)_/¯
                 raise AttributeError(f"'{attr}' is not a column name nor an attribute or a method of Matrix")
 
@@ -2162,7 +2165,7 @@ class Matrix(Vector):
         Returns the indices of the given value in a list
         """
         from MatricesM.filter.find import find
-        return find([a[:] for a in self.matrix],self.dim,value,start,onlyrow)
+        return find(self.matrix,self.dim,value,start,onlyrow)
 
     def join(self,
              SELECT:Union[Tuple[object],List[object]],
@@ -2294,6 +2297,7 @@ class Matrix(Vector):
     def apply(self,expressions:Union[str,List[str],Tuple[str]],
               columns:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=(None,),
               conditions:Union[str,object,None]=None,
+              namelevel:int=1,
               returnmat:bool=False):
         """
         Apply arithmetic, logical, indexing etc. operations to values in desired columns individually inplace
@@ -2329,19 +2333,17 @@ class Matrix(Vector):
 
             #Turn strings in "Name" column into their lengths
                 >>> Matrix.apply(".__len__()","Name")
-        
-        NOTE:
-            Some tweaks to 'coldtypes' may be needed after operations
 
         """
         from MatricesM.filter.apply import applyop
         if returnmat:
-            return applyop(self,expressions,columns,conditions,self.features[:],True,Matrix)
-        applyop(self,expressions,columns,conditions,self.features[:],True,Matrix)
+            return applyop(self,expressions,columns,conditions,self.features[:],True,Matrix,namelevel)
+        applyop(self,expressions,columns,conditions,self.features[:],True,Matrix,namelevel)
 
     def transform(self,function:object,
                   columns:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=(None,),
                   conditions:Union[str,object,None]=None,
+                  namelevel:int=1,
                   returnmat:bool=False):
         """
         Pass values in the matrix to functions and replace them with the outputs
@@ -2351,7 +2353,9 @@ class Matrix(Vector):
         columns: str(1 column only)|tuple|list|None; Column names to use
 
         conditions: str|boolean column Matrix|None; Conditions of rows to apply changes to
-
+        
+        namelevel: int>0; column name level to search for
+        
         returnmat: bool; True to return self after evaluation, False to return None
 
         Examples:
@@ -2379,22 +2383,30 @@ class Matrix(Vector):
         """
         from MatricesM.filter.apply import applyop
         if returnmat:
-            return applyop(self,function,columns,conditions,self.features[:],False,Matrix)
-        applyop(self,function,columns,conditions,self.features[:],False,Matrix)
+            return applyop(self,function,columns,conditions,self.features[:],False,Matrix,namelevel)
+        applyop(self,function,columns,conditions,self.features[:],False,Matrix,namelevel)
 
-    def combine(self,columns,function,feature,dtype,inplace=True):
+    def combine(self,columns:Union[Tuple[str],Tuple[Tuple[str]]],
+                function:object,
+                feature:str,
+                dtype:type,
+                inplace:bool=False,
+                namelevel:int=1,
+                returnmat:bool=False):
         """
         Combine values in given columns with by passing them into the given function and use the output
         to create a single column matrix
 
         columns: tuple or list of strings; column names to use
         function: function; function to pass values in the desired columns
-        feature: str; column's new name
+        feature: str;new column's name
         dtype: type; column's new dtype
-        inplace: bool; True to swap the first column given with the column matrix, False to return the column matrix
+        inplace: bool; True to concatenate the column matrix, False to return the column matrix
+        namelevel: int; label level to use for the names given in 'columns' parameter
+        returnmat: bool; wheter to return self
 
         Example:
-            #Use Year, Month and Day to create a new column named 'DATE' with dtype str, concatenate the result
+            #Use Year, Month and Day level-1 columns to create a new column named 'DATE' with dtype str, concatenate the result
                 >>> Matrix.combine(columns=('Year','Month','Day'),
                                    function=lambda y,m,d:str(y)+"/"+str(m)+"/"+str(d),
                                    feature="DATE",
@@ -2402,9 +2414,15 @@ class Matrix(Vector):
                                    inplace=True)
         
         NOTE:
-            Values which returned an error when passed to the given function will be returned as a tuple
+            ->Values which returned an error when passed to the given function will be returned as a tuple
+            ->If multiple columns have the same name in given 'namelevel', first one found is used.
+            ->If 'inplace' is False, column matrix will be returned regardless the 'returnmat' value
+
         """
-        pass
+        from MatricesM.filter.combine import _combine
+        if returnmat or not inplace:
+            return _combine(self,columns,function,feature,dtype,inplace,namelevel,dataframe)
+        _combine(self,columns,function,feature,dtype,inplace,namelevel,dataframe)
 
     def replace(self,old:Any,
                 new:Any,
