@@ -34,9 +34,9 @@ Data to use in matrix, **_Optional_**, matrix's elements are picked from this pa
 
 **fill**: _Any_ = _None_
 
-Object,method or value to use for filling the matrix with. **_Optional_** . If a _list_ or _range_ is given, given object will be repeated as rows. _default_ is **null** for dataframe dtype, **uniform** for other dtypes.
+Object,method or value to use for filling the matrix with. **_Optional_** . If a _list_ or _range_ is given, given object will be repeated as rows. Accepts custom functions. _default_ is **null** for dataframe dtype, **uniform** for other dtypes.
 
-Available distributions: 
+Available special distributions: 
 * _uniform_
 
 * _triangular_
@@ -705,7 +705,7 @@ newMatrix = oldMatrix.copy
 
 #Using 'kwargs' property, 'copy' uses this one so it's as fast as 'copy' is
 
-newMatrix = Matrix(kwargs=oldMatrix.kwargs)
+newMatrix = Matrix(**oldMatrix.kwargs)
 
 #Using 'obj' property (Slowest)
 
@@ -721,7 +721,7 @@ newMatrix = eval(oldMatrix.obj)
    
    A.t.t == A
    
-   A.adj.matrix[2][0] == A.minor(1,3)
+   A.adj[2,0] == A.minor(1,3)
    
    #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
    bool(Matrix(10,fill=1)) == True
