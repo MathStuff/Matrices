@@ -267,7 +267,7 @@ class Matrix(Vector):
                     #Try as a level-1 column name
                     return self.level[1].name[attr]
                 else:
-                    raise Exception
+                    raise MatrixError
 
             except MatrixError:#Nothing worked ¯\_(ツ)_/¯
                 raise AttributeError(f"'{attr}' is not a column name nor an attribute or a method of Matrix")
@@ -739,10 +739,14 @@ class Matrix(Vector):
         Get a specific column of the matrix
         Returns a Matrix or a list
 
-        column:integer>=1 and <=column_amount | column name | list of column names/numbers
+        column:integer>=1 and <=column_amount | column name | list of column names/indices(starting from 0)/names in tuples
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
         namelevel:int>=1, Level of the labels to search the given column names 
+
+        NOTE:
+            >>> Matrix.col(1) == Matrix.col([0]) == Matrix.col((0,))
         """
+
         #Column number given
         if isinstance(column,int):
             if not (column<=self.d1 and column>0):
@@ -764,10 +768,33 @@ class Matrix(Vector):
             column = self.features.index(column)+1
 
         #List of column names and column numbers given
-        elif isinstance(column,(list,tuple)):
-            if not all([1 if isinstance(num,(int,str)) else 0 for num in row]):
-                raise TypeError("Given list should only contain integers>0 and strings")
+        elif isinstance(column,(tuple,list)):
+            d0,d1 = self.dim
+            feats = self.features.labels
+            feats_specific_lvl = self.features.get_level(namelevel)
 
+            #Single tuple given
+            if isinstance(column,tuple):
+                colinds = [j for j,label in enumerate(feats) if label==column]
+            #Combination of column names, numbers and tuple names given
+            else:
+                if not all([1 if isinstance(num,(int,str)) else 0 for num in column]):
+                    raise TypeError("Given list should only contain integers>0 or strings or tuples")
+                colinds = [i if isinstance(i,int) \
+                           else feats.index(i) if isinstance(i,tuple)\
+                           else feats_specific_lvl.index(i) \
+                           for i in column]
+            if as_matrix:
+                return self[:,colinds]
+
+            mm = self._matrix
+            temp = []
+            for i in range(d0):
+                row = mm[i]
+                temp.append([row[j] for j in colinds])
+                
+            return temp
+        
         #Invalid type
         else:
             raise InvalidColumn(column)
@@ -2414,7 +2441,7 @@ class Matrix(Vector):
                                    inplace=True)
         
         NOTE:
-            ->Values which returned an error when passed to the given function will be returned as a tuple
+            ->Values which returned an error when passed to the given function will be replaced with the default null object
             ->If multiple columns have the same name in given 'namelevel', first one found is used.
             ->If 'inplace' is False, column matrix will be returned regardless the 'returnmat' value
 
