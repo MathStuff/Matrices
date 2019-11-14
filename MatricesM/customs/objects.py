@@ -530,9 +530,8 @@ class Label:
               else [tuple(row) for row in obj.matrix] if type(obj).__name__ in type_names \
               else [(obj,)]
 
-        temp = self[:]
-        temp.labels += obj
-        return temp
+        self.labels += obj
+        return self
 
     def __len__(self):
         return len(self.labels)

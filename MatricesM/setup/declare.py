@@ -2,7 +2,7 @@ def declareDim(mat):
     nullobj = mat.DEFAULT_NULL
 
     m = mat._matrix
-    if m == None:
+    if m in [None,[],{},[[]]]:
         mat._matrix = []
         return [0,0]
     try:
