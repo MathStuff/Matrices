@@ -70,7 +70,7 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             #Pick first elements type as column dtype as default
             if dtype==None:
                 from MatricesM.setup.declare import declareColdtypes
-                dtype=declareColdtypes([[row] for row in lis],mat.DEFAULT_NULL.__name__)
+                dtype=declareColdtypes([[row] for row in lis],mat.DEFAULT_NULL.__name__)[0]
 
             if feature == None:
                 feature = f"col_{col + 1}"

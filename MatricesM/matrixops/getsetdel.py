@@ -26,6 +26,84 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
     from MatricesM.errors.errors import MatrixError
     from MatricesM.customs.objects import Label
 
+
+    def get_indices(iterable:list,item:[list,object],r_stop:int=0):
+        """
+        Iterate over 'iterable' until 'r_stop'th item and compare each element to 'item' or search for 
+        each elements all appearances in the 'item'.
+
+        Returns a list of integers
+        """
+        if isinstance(item,int):
+            if item in range(r_stop):
+                return [item]
+                
+        return [i for i in range(r_stop) if iterable[i]==item] if not isinstance(item,list) \
+               else [j for name in item for j,label in enumerate(iterable) if name == label]
+
+    
+    def add_colds_feats(old_cold:list,new_cold:list,old_feat:object,new_feat:object,iterable:list):
+        """
+        Add new column names and dtypes to given old ones, using integers in 'iterable'
+        """
+        for j in iterable:
+            new_feat += old_feat[j]
+            new_cold.append(old_cold[j])
+
+        new_feat.names = old_feat.names[:]
+
+    def add_rows(old_mat:[list],new_mat:[list],row_iterable:[list],col_iterable:[list],old_labels:object=None,new_labels:object=None):
+        """
+        Add rows in 'old_mat' to 'new_mat' using 'row_iterable'th rows and 'col_iterable'th columns, 
+        do the same for 'old_labels' if any given
+        """
+        if old_labels == None:
+            for i in row_iterable:
+                row = old_mat[i]
+                new_mat.append([row[j] for j in col_iterable])
+        else:
+            for i in row_iterable:
+                row = old_mat[i]
+                new_labels += old_labels[i]
+                new_mat.append([row[j] for j in col_iterable])
+
+    def slicelyzer(iterable,sliced,inds):
+        """
+        Get indices of 'iterable' using 'sliced' slice, add them to 'inds'
+        """
+        start = iterable.index(sliced.start) if sliced.start != None else None
+        end = iterable.index(sliced.stop) if sliced.stop != None else None
+        step = sliced.step
+
+        first_item = iterable[start] if start != None else None
+        last_item = iterable[end] if end != None else None
+
+        no_end = True if end == None else False
+
+        start = start if start != None else 0
+        end = end if end != None else d0
+        step = step if step != None else 1
+
+        first_found = False if first_item != None else True
+
+        for i in range(start,end):
+            try:
+                val = iterable[i]
+
+                if val==last_item and no_end:
+                    break
+                if not first_found:
+                    first_found = bool(val==first_item)
+
+                if first_found:
+                    inds.append(i)
+                    
+            except:
+                continue
+
+        inds = inds[::step]
+        
+
     d0,d1 = mat.dim
 
     #Get 1 row OR column
@@ -33,7 +111,8 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         if usename:
 
             filtered_labels = mat.features.get_level(namelevel)
-            colinds = [i for i in range(d1) if filtered_labels[i]==pos]
+
+            colinds = get_indices(filtered_labels,pos,d1)
 
             if returninds:
                 return (None,colinds)  
@@ -46,15 +125,8 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             newcolds = []
             temp = []
 
-            for i in range(d0):
-                row = mm[i]
-                temp.append([row[j] for j in colinds])
-
-            for j in colinds:
-                newfeats += feats[j]
-                newcolds.append(colds[j])
-
-            newfeats.names = feats.names[:]
+            add_rows(mm,temp,range(d0),colinds)
+            add_colds_feats(colds,newcolds,feats,newfeats,colinds)
             
             return obj(data=temp,
                        features=newfeats,
@@ -69,7 +141,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             indices_labels = indices.labels
 
             filtered_labels = indices.get_level(rowlevel)
-            rowinds = [i for i in range(d0) if filtered_labels[i]==pos]
+            rowinds = get_indices(filtered_labels,pos,d0)
 
             if returninds:
                 return (rowinds,None)
@@ -103,41 +175,11 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         
         if usename:
             feats = mat.features
-
             filtered_labels = feats.get_level(namelevel)
-            feats_labels = feats.labels
+            colinds = []
 
-            filtered_labels = feats.get_level(namelevel)
+            slicelyzer(filtered_labels,pos,colinds)
 
-            start = filtered_labels.index(pos.start) if pos.start != None else None
-            end = filtered_labels.index(pos.stop) if pos.stop != None else None
-
-            first_item = filtered_labels[start] if start != None else None
-            last_item = filtered_labels[end] if end != None else None
-
-            no_end = True if end == None else False
-
-            start = start if start != None else 0
-            end = end if end != None else d0
-
-            first_found = False if first_item != None else True
-
-            colinds,mm = [],mat.matrix
-            for i in range(start,end):
-                try:
-                    val = filtered_labels[i]
-
-                    if val==last_item and no_end:
-                        break
-                    if not first_found:
-                        first_found = bool(val==first_item)
-
-                    if first_found:
-                        colinds.append(i)
-                        
-                except:
-                    continue
-            
             if returninds:
                 return (None,colinds)  
 
@@ -148,15 +190,8 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             newcolds = []
             temp = []
 
-            for i in range(d0):
-                row = mm[i]
-                temp.append([row[j] for j in colinds])
-
-            for j in colinds:
-                newfeats += feats[j]
-                newcolds.append(colds[j])
-
-            newfeats.names = feats.names[:]
+            add_rows(mm,temp,range(d0),colinds)
+            add_colds_feats(colds,newcolds,feats,newfeats,colinds)
 
             return obj(data=temp,
                        features=newfeats,
@@ -169,43 +204,17 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         if uselabel:
             indices = mat.index
             indices_labels = indices.labels
-
             filtered_labels = indices.get_level(rowlevel)
-
-            start = filtered_labels.index(pos.start) if pos.start != None else None
-            end = filtered_labels.index(pos.stop) if pos.stop != None else None
-
-            first_item = filtered_labels[start] if start != None else None
-            last_item = filtered_labels[end] if end != None else None
-
-            no_end = True if end == None else False
-
-            start = start if start != None else 0
-            end = end if end != None else d0
-
-            first_found = False if first_item != None else True
-
-            rowrange,mm = [],mat.matrix
-            for i in range(start,end):
-                try:
-                    val = filtered_labels[i]
-
-                    if val==last_item and no_end:
-                        break
-                    if not first_found:
-                        first_found = bool(val==first_item)
-
-                    if first_found:
-                        rowrange.append(i)
-                        
-                except:
-                    continue
+            rowrange = []
+            
+            slicelyzer(filtered_labels,pos,rowrange)
 
             if returninds:
                 return (rowrange,None)  
 
+            mm = mat.matrix
             lastinds = Label([indices_labels[i] for i in rowrange],indices.names) 
-            lastmatrix = [mm[i] for i in rowrange]
+            lastmatrix = [mm[i][:] for i in rowrange]
 
             return obj(data=lastmatrix,
                        features=mat.features[:],
@@ -233,7 +242,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         if usename:
 
             filtered_labels = mat.features.get_level(namelevel)
-            colinds = [i for i in range(d1) if filtered_labels[i]==pos]
+            colinds = get_indices(filtered_labels,pos,d1)
 
             if returninds:
                 return (None,colinds)  
@@ -245,16 +254,9 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             newfeats = Label()
             newcolds = []
             temp = []
-
-            for i in range(d0):
-                row = mm[i]
-                temp.append([row[j] for j in colinds])
-
-            for j in colinds:
-                newfeats += feats[j]
-                newcolds.append(colds[j])
-
-            newfeats.names = feats.names[:]
+            
+            add_rows(mm,temp,range(d0),colinds)
+            add_colds_feats(colds,newcolds,feats,newfeats,colinds)
 
             return obj(data=temp,
                        features=newfeats,
@@ -272,7 +274,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
             mm = mat.matrix
 
-            rowinds = [i for i in range(d0) if filtered_labels[i]==pos]
+            rowinds = get_indices(filtered_labels,pos,d0)
             lastinds = Label([indices_labels[i] for i in rowinds],indices.names)
 
             if returninds:
@@ -288,8 +290,9 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         if not (pos in mat.features.get_level(namelevel)):
             if returninds:
                 return (None,None)
-            raise MatrixError(f"{pos} is not in column names")
+            raise MatrixError(f"{pos} is not in level-{namelevel} column names")
         else:
+            # First appearance of the given name is used #
             pos = mat.features.index(pos,namelevel)
 
         if returninds:
@@ -298,7 +301,10 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         inds = mat.index
         lastinds = inds[:] if mat._dfMat else Label()
 
-        mat =  obj(dim=[d0,1],
+        opts = mat.options
+        opts["NOTES"] = f"n:{d0},type:{mat.coldtypes[0].__name__},invalid:{d0-mat.count(pos+1,get=0)}\n\n"
+
+        return obj(dim=[d0,1],
                    data=[[i[pos]] for i in mat._matrix],
                    features=mat.features[pos],
                    decimal=mat.decimal,
@@ -306,17 +312,14 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                    coldtypes=[mat.coldtypes[pos]],
                    index=lastinds,
                    implicit=True,
-                   **mat.options)
-
-        mat.NOTES = f"n:{d0},type:{mat.coldtypes[0].__name__},invalid:{d0-mat.count(get=0)}\n\n"
-        return mat
+                   **opts)
 
     #Get rows OR columns using given indices
     elif isinstance(pos,list):
         if usename:
 
             filtered_labels = mat.features.get_level(namelevel)
-            colinds = [i for i in range(d1) if filtered_labels[i] in pos]
+            colinds = get_indices(filtered_labels,pos)
 
             if returninds:
                 return (None,colinds)  
@@ -329,15 +332,8 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             newcolds = []
             temp = []
 
-            for i in range(d0):
-                row = mm[i]
-                temp.append([row[j] for j in colinds])
-
-            for j in colinds:
-                newfeats += feats[j]
-                newcolds.append(colds[j])
-            
-            newfeats.names = feats.names[:]
+            add_rows(mm,temp,range(d0),colinds)
+            add_colds_feats(colds,newcolds,feats,newfeats,colinds)
             
             return obj(data=temp,
                        features=newfeats,
@@ -355,10 +351,10 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
             mm = mat.matrix
             
-            rowinds = [i for i in range(d0) if filtered_labels[i] in pos]
+            rowinds = get_indices(filtered_labels,pos)
             
             if returninds:
-                return rowinds
+                return (rowinds,None)
 
             lastinds = Label([indices_labels[i] for i in rowinds],indices.names)
 
@@ -376,6 +372,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         #######
         if returninds:
             return (pos,None)
+
         mm = mat.matrix
         i = mat.index.labels
         inds = Label([i[index] for index in pos],mat.index.names) if mat._dfMat else Label()
@@ -394,41 +391,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
         #Multiple column names or row labels given
         if consistentlist(pos,str):
-            #Use as column names in a specific level
-            if usename:
-
-                filtered_labels = mat.features.get_level(namelevel)
-                colinds = [i for i in range(d1) if filtered_labels[i] in pos]
-
-                if returninds:
-                    return (None,colinds)  
-
-                mm = mat.matrix
-                feats = mat.features
-                colds = mat.coldtypes
-
-                newfeats = Label()
-                newcolds = []
-                temp = []
-
-                for i in range(d0):
-                    row = mm[i]
-                    temp.append([row[j] for j in colinds])
-
-                for j in colinds:
-                    newfeats += feats[j]
-                    newcolds.append(colds[j])
-                
-                newfeats.names = feats.names[:]
-            
-                return obj(data=temp,
-                           features=newfeats,
-                           decimal=mat.decimal,
-                           dtype=mat.dtype,
-                           coldtypes=newcolds,
-                           index=mat.index[:],
-                           **mat.options)
-
+            colinds = []
             #Use as row labels
             if uselabel:
                 indices = mat.index
@@ -436,7 +399,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
                 filtered_labels = indices.get_level(rowlevel)
                 
-                rowinds = [i for i in range(d0) if filtered_labels[i] in pos]
+                rowinds = get_indices(filtered_labels,pos)
                 lastinds = Label([indices_labels[i] for i in rowinds],indices.names) if mat._dfMat else Label()
                 
                 if returninds:
@@ -449,32 +412,36 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                            coldtypes=mat.coldtypes[:],
                            index=lastinds,
                            **mat.options)
-
-            #Use as column names in a specific level-1
-            feats = mat.features
-            colinds = [feats.index(i,namelevel) for i in pos]
-            if returninds:
-                return (None,colinds)
-
-            inds = mat.index
-            lastinds = inds[:] if mat._dfMat else Label()
             
-            temp = obj((d0,len(pos)),
-                        fill=0,
-                        features=list(pos),
+            try:
+                #Try searching as a tuple first
+                colinds = [mat.features.labels.index(tuple(pos))]
+            except:
+                #Tuple search failed, use each name as a column name in a specific level
+                filtered_labels = mat.features.get_level(namelevel)
+                colinds = get_indices(filtered_labels,pos) 
+
+            if returninds:
+                return (None,colinds)  
+
+            mm = mat.matrix
+            feats = mat.features
+            colds = mat.coldtypes
+
+            newfeats = Label()
+            newcolds = []
+            temp = []
+
+            add_rows(mm,temp,range(d0),colinds)
+            add_colds_feats(colds,newcolds,feats,newfeats,colinds)
+        
+            return obj(data=temp,
+                        features=newfeats,
                         decimal=mat.decimal,
                         dtype=mat.dtype,
-                        coldtypes=[mat.coldtypes[i] for i in colinds],
-                        index=lastinds,
+                        coldtypes=newcolds,
+                        index=mat.index[:],
                         **mat.options)
-            
-            mm = mat.matrix
-            for row in range(d0):
-                c = 0
-                for col in colinds:
-                    temp._matrix[row][c] = mm[row][col]
-                    c+=1
-            return temp
         
         #Row and column indices given together   
         if len(pos)==2:
@@ -484,42 +451,10 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                 if uselabel:
                     indices = mat.index
                     indices_labels = indices.labels
-
                     filtered_labels = indices.get_level(rowlevel)
+                    rowrange = []
 
-                    start = filtered_labels.index(pos[0].start) if pos[0].start != None else None
-                    end = filtered_labels.index(pos[0].stop) if pos[0].stop != None else None
-                    step = pos[0].step 
-
-                    first_item = filtered_labels[start] if start != None else None
-                    last_item = filtered_labels[end] if end != None else None
-
-                    no_end = True if end == None else False
-
-                    start = start if start != None else 0
-                    end = end if end != None else d0
-                    step = step if step != None else 1
-
-                    first_found = False if first_item != None else True
-
-                    rowrange,mm = [],mat.matrix
-                    for i in range(start,end):
-                        try:
-                            val = filtered_labels[i]
-
-                            if val==last_item and no_end:
-                                break
-                            if not first_found:
-                                first_found = bool(val==first_item)
-
-                            if first_found:
-                                rowrange.append(i)
-                                
-                        except:
-                            continue     
-
-                    #Use the given step value
-                    rowrange = rowrange[::step]
+                    slicelyzer(filtered_labels,pos[0],rowrange)
                 
                 else:
                     newslice = betterslice(pos[0],d0)
@@ -529,7 +464,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             elif isinstance(pos[0],int):
                 if uselabel:
                     indices = mat.index.get_level(rowlevel)
-                    rowrange = [i for i in range(mat.d0) if indices[i]==pos[0]]
+                    rowrange = get_indices(indices,pos[0],d0)
                 else:
                     rowrange = [pos[0]]
 
@@ -537,7 +472,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             elif isinstance(pos[0],list):
                 if uselabel:
                     indices = mat.index.get_level(rowlevel)
-                    rowrange = [i for i in range(d0) if indices[i] in pos[0]]
+                    rowrange = get_indices(indices,pos[0])
                 else:
                     #######Assertion
                     consistentlist(pos[0],int,"indices",throw=True)
@@ -564,45 +499,14 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             elif isinstance(pos[1],slice):
                 if usename:
                     feats = mat.features
-
                     filtered_labels = feats.get_level(namelevel)
-                    feats_labels = feats.labels
-
-                    filtered_labels = feats.get_level(namelevel)
-
-                    start = filtered_labels.index(pos.start) if pos.start != None else None
-                    end = filtered_labels.index(pos.stop) if pos.stop != None else None
-
-                    first_item = filtered_labels[start] if start != None else None
-                    last_item = filtered_labels[end] if end != None else None
-
-                    no_end = True if end == None else False
-
-                    start = start if start != None else 0
-                    end = end if end != None else d0
-
-                    first_found = False if first_item != None else True
-
-                    colinds,mm = [],mat.matrix
-                    for i in range(start,end):
-                        try:
-                            val = filtered_labels[i]
-
-                            if val==last_item and no_end:
-                                break
-                            if not first_found:
-                                first_found = bool(val==first_item)
-
-                            if first_found:
-                                colinds.append(i)
-                                
-                        except:
-                            continue  
+                    colinds = []
+                    
+                    slicelyzer(filtered_labels,pos[1],colinds)
 
                     if returninds:
                         return (rowrange,colinds)  
 
-                    feats = mat.features
                     colds = mat.coldtypes
                     inds = mat.index
 
@@ -610,17 +514,10 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                     newinds = Label()
                     newcolds = []
                     temp = []
+                    mm = mat.matrix
 
-                    for i in rowrange:
-                        row = mm[i]
-                        newinds += inds[i]
-                        temp.append([row[j] for j in colinds])
-
-                    for j in colinds:
-                        newfeats += feats[j]
-                        newcolds.append(colds[j])
-                    
-                    newfeats.names = feats.names[:]
+                    add_rows(mm,temp,rowrange,colinds,old_labels=inds,new_labels=newinds)
+                    add_colds_feats(colds,newcolds,feats,newfeats,colinds)
             
                     return obj(data=temp,
                                features=newfeats,
@@ -640,7 +537,17 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             elif isinstance(pos[1],(tuple,list)):
                 #######Assertion
                 consistentlist(pos[1],(int,str),"indices",throw=True)
-                colinds = [mat.features.index(i,namelevel) if isinstance(i,str) else i for i in pos[1]]
+
+                feats = mat.features
+
+                lbls = feats.labels
+                feats_specific_lvl = feats.get_level(namelevel)
+
+                colinds = [i if isinstance(i,int) \
+                           else lbls.index(i) if isinstance(i,tuple)\
+                           else feats_specific_lvl.index(i) \
+                           for i in pos[1]]
+
                 rangedlist(colinds,lambda a:(a<d1) and (a>=0),"indices",f"[0,{d1})",throw=True)
                 #######
                 inds = mat.index
@@ -653,9 +560,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                 if returninds:
                     return (rowrange,colinds)
 
-                for i in rowrange:
-                    row = mm[i]
-                    temp.append([row[col] for col in colinds])
+                add_rows(mm,temp,rowrange,colinds)
 
                 labels = mat.features.labels
                 return obj((len(rowrange),len(colinds)),temp,
@@ -901,9 +806,7 @@ def setitem(mat,pos,item,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1
         
     else:
         raise AssertionError(f"item: {item} can't be set to index: {pos}.\n\tUse ._matrix property to change individual elements")
-    
-    if new_col:
-        mat.features += (pos,) 
+
     return mat
 
 def delitem(mat,pos,obj,useind=False,rowlevel=1,usename=False,namelevel=1):

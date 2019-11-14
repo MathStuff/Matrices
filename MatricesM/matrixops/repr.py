@@ -7,6 +7,8 @@ def _repr(mat,notes,dFrame):
     ind_level = mat.index.level
     col_place_holder = mat.DISPLAY_OPTIONS["col_place_holder"]
     row_place_holder = mat.DISPLAY_OPTIONS["row_place_holder"]
+    left_seperator = mat.DISPLAY_OPTIONS["left_seperator"]
+    label_seperator = mat.DISPLAY_OPTIONS["label_seperator"]
     available = gts().columns - 4
     
     shuffled_col_inds = []
@@ -45,7 +47,7 @@ def _repr(mat,notes,dFrame):
     if string_bounds == "Empty matrix":
         return string_bounds
 
-    total_col_size = sum(string_bounds[:ind_level])+(ind_level-1)+1
+    total_col_size = sum(string_bounds[:ind_level])+(ind_level-1)*len(label_seperator)+len(left_seperator)
     string_bounds = list(map(lambda a:a+2,string_bounds[ind_level:-1])) + [string_bounds[-1]]
 
     if (not isinstance(string_bounds,list)) or (len(feats)==0):
