@@ -5,10 +5,12 @@ def _repr(mat,notes,dFrame):
     d0,d1 = mat.dim
     feats = mat.features
     ind_level = mat.index.level
+
     col_place_holder = mat.DISPLAY_OPTIONS["col_place_holder"]
     row_place_holder = mat.DISPLAY_OPTIONS["row_place_holder"]
     left_seperator = mat.DISPLAY_OPTIONS["left_seperator"]
     label_seperator = mat.DISPLAY_OPTIONS["label_seperator"]
+
     available = gts().columns - 4
     
     shuffled_col_inds = []
@@ -57,18 +59,18 @@ def _repr(mat,notes,dFrame):
     #Check how many columns will fit
         for num,i in enumerate(shuffled_col_inds):
             bound = string_bounds[i]
-            extra = 5 if num!=d1-1 else 0
-            new = total_col_size + bound + extra
-            if new <= available:
-                total_col_size += bound
+            extra = len(col_place_holder)+2 if num!=d1-1 else 0
+            total_col_size += bound 
+            if total_col_size + extra<= available:
                 used_col_amount += 1
                 usedcols.append(i)
             else:
+                total_col_size+= extra
                 break
     else:
         used_col_amount = d1
 
-    if used_col_amount == 0:
+    if used_col_amount == 0 or (total_col_size>available and usedcols==[0]) :#Update this :')
         return "\nWindow \ntoo \nsmall"
 
     #Check limits
@@ -112,7 +114,7 @@ def _repr(mat,notes,dFrame):
                 if i.dtype != dFrame:
                     i.dtype = dFrame
 
-            #Add  ...  to represent missing column's existence
+            #Add col_place_holder to represent missing column's existence
             topLeft.add([col_place_holder]*topLeft.d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
             bottomLeft.add([col_place_holder]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
             
