@@ -206,7 +206,8 @@ class Matrix(Vector):
                          "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
                          "NOTES":self.NOTES,
                          "DEFAULT_NULL":self.DEFAULT_NULL,
-                         "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
+                         "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS,
+                         "DEFAULT_BOOL":self.DEFAULT_BOOL
                         }
 
         #Set/fix attributes
@@ -3083,7 +3084,8 @@ class Matrix(Vector):
                 "NOTES":self.NOTES[:],
                 "DIRECTORY":self.DIRECTORY[:],
                 "DEFAULT_NULL":self.DEFAULT_NULL,
-                "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
+                "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS,
+                "DEFAULT_BOOL":self.DEFAULT_BOOL,
                }
 
     @property
@@ -3096,7 +3098,8 @@ class Matrix(Vector):
                 "NOTES":self.NOTES,
                 "DIRECTORY":self.DIRECTORY,
                 "DEFAULT_NULL":self.DEFAULT_NULL,
-                "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
+                "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS,
+                "DEFAULT_BOOL":self.DEFAULT_BOOL
                }
 
     def __len__(self):
