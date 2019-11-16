@@ -1,5 +1,5 @@
 class MatrixError(Exception):
-    def __init__(self,msg):
+    def __init__(self,msg=""):
         self.message = msg
     def __str__(self):
         return self.message
@@ -12,15 +12,15 @@ class NotListOrTuple(MatrixError):
     """
     A list or a tuple is required
     """
-    def __init__(self,err):
-        self.message = f"Given value should be a list or a tuple, not '{type(err).__name__}'"
+    def __init__(self,err,*args):
+        self.message = f"Given value should be a list or a tuple, not '{type(err).__name__}'"+". ".join(args)
 
 class EmptyMatrix(MatrixError):
     """
     Matrix is empty
     """
     def __init__(self,err,*args):
-        self.message  = err
+        self.message  = str(err).join(args)
 
 class InvalidColumn(MatrixError):
     """
@@ -62,7 +62,7 @@ class InconsistentValues(MatrixError):
     Different value types in a column
     """
     def __init__(self,lis,typ,*args):
-        self.message  = f"Given {lis} has inconsistent values. \nAll values inside should be '{type(typ).__name__}' type. "+". ".join(args)
+        self.message  = f"Given {lis} has inconsistent values. \nAll values inside should be '{typ.__name__}' type. "+". ".join(args)
 
 class NotSubList(MatrixError):
     """

@@ -1,4 +1,5 @@
 def mode(mat,col,get,obj,dFrame):
+    from MatricesM.customs.objects import Label
 
     if isinstance(col,str):
         col=mat.features.index(col)+1
@@ -7,10 +8,14 @@ def mode(mat,col,get,obj,dFrame):
             raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
     #Set feature name and the matrix to use dependent on the column desired
     if col==None:
-        feats=mat.features[:]
+        feats = mat.features.labels
+        if mat.features.level == 1:
+            feats = [row[0] for row in feats]
     else:
         assert col>=1 and col<=mat.dim[1] and isinstance(col,int)
-        feats=mat.features[col-1]
+        feats = mat.features.labels[col-1]
+        if mat.features.level == 1:
+            feats = feats[0]
     #Set keys in the dictionary which will be returned at the end
     mode={}
     if len(feats)!=0 and isinstance(feats,list):
@@ -41,7 +46,19 @@ def mode(mat,col,get,obj,dFrame):
 
     #Return a tuple of matrices
     if get==2:
-        return tuple([obj((len(list(c.keys())),1),[i for i in c.values()],features=["Frequency"],dtype=dFrame,coldtypes=[int],index=list(c.keys()),indexname=feat+" Mode(s)") for feat,c in mode.items()])
+        temp = []
+        for feat,c in mode.items():
+            repeats = list(c.keys())
+            name = str(feat)[1:-1]
+            inds = Label([list(repeats[0])],name) if isinstance(repeats[0],tuple) else Label([repeats],name)
+            temp.append(obj((len(list(c.keys())),1),
+                        [i for i in c.values()],
+                        features=["Frequency"],
+                        dtype=dFrame,
+                        coldtypes=[int],
+                        index=inds))
+        return temp
+
     #Return a dictionary
     elif get==1:
         return mode

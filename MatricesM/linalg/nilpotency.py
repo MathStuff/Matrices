@@ -16,7 +16,7 @@ def nilpotency(mat,limit=50):
     for i in range(2,lim+2):
         temp = temp@temp
         
-        if temp.roundForm(8).matrix == zeroM.matrix:
+        if temp.roundForm(temp.PRECISION).matrix == zeroM.matrix:
             return i
         
         lis = [temp.matrix[i][j] for i in range(temp.dim[0]) for j in range(temp.dim[1])]

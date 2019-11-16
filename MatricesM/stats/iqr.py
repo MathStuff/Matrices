@@ -1,5 +1,6 @@
 def iqr(mat,col,as_quartiles,get,obj,dFrame):
-    from MatricesM.customs.objects import null
+    from MatricesM.customs.objects import Label
+    nullobj = mat.DEFAULT_NULL
 
     if isinstance(col,str):
         col = mat.features.index(col)+1
@@ -10,7 +11,9 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
     if mat._dfMat:
         temp = mat.copy
         dts = mat.coldtypes[:]
-        feats = temp.features[:]
+        feats = mat.features.labels
+        if mat.features.level == 1:
+            feats = [row[0] for row in feats]
         j=0
         if col==None:
             for i in range(len(dts)):
@@ -29,11 +32,15 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
     else:
         if col==None:
             temp = mat.t
-            feats = mat.features[:]
+            feats = mat.features.labels
+            if mat.features.level == 1:
+                feats = [row[0] for row in feats]
         else:
             assert col>=1 and col<=mat.dim[1]
             temp = mat[:,col-1].t
-            feats = mat.features[col-1]
+            feats = mat.features.labels[col-1]
+            if mat.features.level == 1:
+                feats = feats[0]
             
     iqr={}
     qmeds={}
@@ -42,8 +49,8 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
         valid_length = len(r)
         #Not enough values
         if valid_length <= 1:
-            iqr[feats[rows]]=null
-            qmeds[feats[rows]]=[null,null,null]
+            iqr[feats[rows]]=nullobj
+            qmeds[feats[rows]]=[nullobj,nullobj,nullobj]
             continue
 
         low=r[:valid_length//2]
@@ -65,7 +72,7 @@ def iqr(mat,col,as_quartiles,get,obj,dFrame):
         name = 1 if as_quartiles else 0
         dic = qmeds if as_quartiles else iqr
         cols = list(dic.keys())
-        return obj((len(cols),1),[[i] for i in dic.values()],features=[["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[[float,list][name]],index=cols,indexname="Column")
+        return obj((len(cols),1),[[i] for i in dic.values()],features=[["IQR","Quartiles"][name]],dtype=dFrame,coldtypes=[[float,list][name]],index=Label(cols,mat.features.names[:]))
     #Return a dictionary
     elif get==1:
         if as_quartiles:

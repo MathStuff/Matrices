@@ -6,18 +6,23 @@ cpdef list matmultip(int md0,int od0,int od1,list mlis,list olis,int isCmat):
   cdef double ftotal
   cdef complex ctotal
   cdef list temp = []
-  
+  cdef list otrposed = Ctranspose(od0,od1,olis)
+  cdef list temp_orow = []
+  cdef list temp_mrow = []
+
   if isCmat:
     while row<md0:
       rowinner = 0
       temp.append([])
-      
+      temp_mrow = mlis[row]
+
       while rowinner<od1:
         colinner = 0
         ctotal = 0+0j
-
+        temp_orow = otrposed[rowinner]
+        
         while colinner<od0:
-          ctotal += mlis[row][colinner]*olis[colinner][rowinner]
+          ctotal += temp_mrow[colinner]*temp_orow[colinner]
           colinner += 1
 
         temp[row].append(ctotal)
@@ -29,13 +34,15 @@ cpdef list matmultip(int md0,int od0,int od1,list mlis,list olis,int isCmat):
     while row<md0:
       rowinner = 0
       temp.append([])
-      
+      temp_mrow = mlis[row]
+
       while rowinner<od1:
         colinner = 0
         ftotal = 0
+        temp_orow = otrposed[rowinner]
 
         while colinner<od0:
-          ftotal += mlis[row][colinner]*olis[colinner][rowinner]
+          ftotal += temp_mrow[colinner]*temp_orow[colinner]
           colinner += 1
 
         temp[row].append(ftotal)

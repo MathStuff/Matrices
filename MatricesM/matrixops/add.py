@@ -1,5 +1,5 @@
 def add(mat,lis,row,col,feature,dtype,index,fill):
-    from MatricesM.customs.objects import null
+    nullobj = mat.DEFAULT_NULL
 
     r,c = 0,0
     d0,d1 = mat.dim
@@ -11,7 +11,7 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
         if col==None:
             #Empty matrix
             if [d0,d1] == [0,0]:
-                inds = index if isinstance(index,list) else [index]
+                inds = index if isinstance(index,(Label,list)) else [index]
                 mat.__init__([1,length],lis,dtype=mat.dtype,index=inds)
                 return mat
 
@@ -19,12 +19,12 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             if fill:
                 #Given list is shorter
                 for rest in range(0,d1-length):
-                    lis.append(null)
+                    lis.append(nullobj)
                 length = len(lis)
 
                 #Given list is longer
                 for rest in range(0,length-d1):
-                    mat.add([null for _ in range(d0)],col=d1+rest+1)
+                    mat.add([nullobj for _ in range(d0)],col=d1+rest+1)
                     d1 += 1
 
             if length!=d1:
@@ -33,7 +33,7 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             if row>0 and isinstance(row,int):
                 mat._matrix.insert(row-1,list(lis))
                 if mat._dfMat:
-                    mat._Matrix__index.insert(row-1,index)
+                    mat.index.insert(row-1,index)
             else:
                 raise ValueError(f"'row' should be an integer higher than 0")
 
@@ -49,12 +49,12 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
             if fill:
                 #Given list is shorter
                 for rest in range(0,d0-length):
-                    lis.append(null)
+                    lis.append(nullobj)
                 length = len(lis)
 
                 #Given list is longer
                 for rest in range(0,length-d0):
-                    mat.add([null for _ in range(d1)],row=d0+rest+1)
+                    mat.add([nullobj for _ in range(d1)],row=d0+rest+1)
                     d0 += 1
                 
             if length!=d0:
@@ -69,12 +69,13 @@ def add(mat,lis,row,col,feature,dtype,index,fill):
 
             #Pick first elements type as column dtype as default
             if dtype==None:
-                dtype=type(lis[0])
+                from MatricesM.setup.declare import declareColdtypes
+                dtype=declareColdtypes([[row] for row in lis],mat.DEFAULT_NULL.__name__)[0]
 
             if feature == None:
                 feature = f"col_{col + 1}"
             #Prevent repetation of the column names
-            if feature in mat.features:
+            while feature in mat.features.get_level(1):
                 feature = "_"+feature
 
             #Store column name and dtype

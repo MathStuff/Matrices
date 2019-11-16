@@ -1,5 +1,6 @@
 def var(mat,col,population,get,obj,dFrame):
-    from MatricesM.customs.objects import null
+    from MatricesM.customs.objects import Label
+    nullobj = mat.DEFAULT_NULL
     
     if isinstance(col,str):
         col=mat.features.index(col)+1
@@ -15,13 +16,13 @@ def var(mat,col,population,get,obj,dFrame):
         try:
             vs[k]=v**2
         except:
-            vs[k]=null
+            vs[k]=nullobj
     #Return a matrix
     if get==2:
         cols = list(vs.keys())
         v = [i for i in vs.values()]
         cdtypes = [complex] if any([1 if isinstance(val,complex) else 0 for val in v]) else [float]
-        return obj((len(cols),1),v,features=["Variance"],dtype=dFrame,coldtypes=cdtypes,index=cols,indexname="Column")
+        return obj((len(cols),1),v,features=["Variance"],dtype=dFrame,coldtypes=cdtypes,index=Label(cols,mat.features.names[:]))
     #Return a dictionary
     elif get==1:
         return vs

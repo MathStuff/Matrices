@@ -1,7 +1,7 @@
-def grouping(mat,col,dFrame):
-    from MatricesM.customs.objects import Group
+def grouping(mat,col,dFrame,lvl):
+    from MatricesM.customs.objects import Group,Label
 
-    feats = mat.features
+    feats = mat.features.get_level(lvl)
     #Assert dataframe
     if not mat._dfMat:
         raise TypeError("Grouping is only available on dataframes")
@@ -24,7 +24,7 @@ def grouping(mat,col,dFrame):
     #Use row labels
     if col == None:
         grp = []
-        for ind in mat.index:
+        for ind in mat.index.labels:
             if not ind in grp:
                 grp.append(ind)
 
@@ -72,10 +72,10 @@ def grouping(mat,col,dFrame):
 
             table = []
             cdtyps = mat.coldtypes
-            indname = mat.indexname
+            indname = mat.index.names
             for i,group in enumerate(tables):
                 table.append((group[0],dFrame(group[1],features=feats[:],
                                               coldtypes=cdtyps[:],
-                                              index=groups_indices[i][1],
-                                              indexname=indname[:])))
+                                              index=Label(groups_indices[i][1],indname),
+                                              )))
             return Group(table,names=col)

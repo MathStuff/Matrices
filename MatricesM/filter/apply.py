@@ -1,5 +1,7 @@
-def applyop(mat,e,cols,conds,feats,apply_method,obj):
-
+def applyop(mat,e,cols,conds,feats,apply_method,obj,lvl):
+    
+    from MatricesM.setup.declare import declareColdtypes
+    
     if type(cols) not in [tuple,list]:
         cols = (cols,)
         
@@ -15,7 +17,7 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj):
         elif isinstance(conds,obj):
             if conds.d1 != 1:
                 raise ValueError("Given matrix should be a column matrix")
-            inds = conds.find(1,0,True)
+            inds = [i for i in enumerate(conds.matrix) if all(i)]
         else:
             raise TypeError(f"'{type(conds).__name__}' can't be used to get row indices")
     else:
@@ -24,8 +26,14 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj):
     #Matrix and dimension base
     filtered = mat._matrix
     #Get indeces of which columns to operate on
-    featinds = [feats.index(i) for i in cols]
+    all_names = feats.get_level(lvl)
+    featinds = []
+    for j,name in enumerate(all_names):
+        if name in cols:
+            featinds.append(j)
 
+    if featinds == []:
+        raise ValueError(f"No columns found for: {cols}")
     if apply_method:
         #If no expression is given, raise an exception
         if e == None:
@@ -38,10 +46,10 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj):
         #Split the given operators and duplicate if necessary
         ops = [op.split(" ") for op in e]
         
-        if len(ops)==1 and len(ops) != len(cols):
-            ops = ops*len(cols)
-        elif len(ops) != len(cols):
-            raise ValueError("Bad amount of expressions for the given columns")
+        if len(ops)==1 and len(ops) != len(featinds):
+            ops = ops*len(featinds)
+        elif len(ops) != len(featinds):
+            raise ValueError(f"Expected 1 or {len(featinds)} amounts of expressions, got {len(ops)} instead.")
 
         #Execute the operations
         for i in inds:
@@ -53,8 +61,6 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj):
                     except:
                         continue
         
-        return mat
-
     else:
         if not type(e).__name__ in ['function','builtin_function_or_method','type']:
             raise TypeError(f"'{type(e).__name__}' type can't be used as a function")
@@ -66,4 +72,8 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj):
                     filtered[i][j] = e(filtered[i][j])
                 except:
                     continue
-        return mat
+
+    for j in featinds:
+        mat.coldtypes[j] = declareColdtypes(mat.col(j+1).matrix)[0]
+    
+    return mat

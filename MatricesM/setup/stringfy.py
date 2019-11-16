@@ -1,13 +1,22 @@
 def _stringfy(mat,dtyps,retbounds,grid):
     import re
-    from MatricesM.customs.objects import null
+    nullname = mat.DEFAULT_NULL.__name__
 
-    indbound = 0
+    display_options = mat.DISPLAY_OPTIONS
+    allow_label_dupes = display_options["allow_label_dupes"]
+    dupe_place_holder = display_options["dupe_place_holder"]
+    label_seperator = display_options["label_seperator"]
+    left_seperator = display_options["left_seperator"]
+    left_top_corner = display_options["left_top_corner"]
+    top_seperator = display_options["top_seperator"]
+    
+    indbound = [0]
     d0,d1 = mat.dim
     decimals = mat.decimal
     m = mat.matrix
     feats = mat.features[:]
 
+    #Formatter for rounding floats
     pre = "0:.{}f".format(decimals)
     st = "{"+pre+"}"    
     string = ""
@@ -27,10 +36,12 @@ def _stringfy(mat,dtyps,retbounds,grid):
     ##########
     if mat._dfMat:
         bounds=[]
-        indices = [str(i) for i in mat.index]
+        indices = mat.index
 
-        #Bound from index column
-        indbound = max([len(str(i)) for i in indices+[mat.indexname]])
+        #Bounds for index columns
+        indbound = [max([len(str(label)) for label in indices.get_level(i+1)]+[len(indices.names[i])]) for i in range(indices.level)]
+        indbound[0] = max(max([len(col_name) for col_name in feats.names]),indbound[0])
+
         #Bounds from values
         for cols in range(d1):
             colbounds=[]
@@ -40,6 +51,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                     try:
                         val = m[rows][cols]
                         colbounds.append(len(st.format(val)))
+                    except IndexError:
+                        return ""   
                     except:#Invalid value
                         colbounds.append(len(str(val)))
 
@@ -47,8 +60,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 for rows in range(d0):
                     try:
                         val = m[rows][cols]
-                        if type(val).__name__ == 'null':
-                            colbounds.append(4) #Length of null as string
+                        if type(val).__name__ == nullname:
+                            colbounds.append(len(nullname)) #Length of the null object
                         else:#Complex number
                             colbounds.append(len(st.format(val)))
                     except:#Invalid values
@@ -57,7 +70,10 @@ def _stringfy(mat,dtyps,retbounds,grid):
             else:#Any non-complex and non-float column
                 colbounds.append(max([len(str(a)) for a in mat.col(cols+1,0)]))
 
-            colbounds.append(len(feats[cols]))
+            #Longest column name length
+            colbounds.append(max([len(lbl) for lbl in feats.labels[cols]]))
+            
+            #Tab size for the column
             bounds.append(max(colbounds))
     ##############        
     #Complex/Float
@@ -70,8 +86,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 comps = []
                 for rows in range(d0):
                     val = m[rows][cols]
-                    if type(val).__name__ == 'null':
-                        comps.append(4) #Length of 'null'
+                    if type(val).__name__ == nullname:
+                        comps.append(len(nullname)) 
                     else:
                         comps.append(len(st.format(typ(val))))
             
@@ -91,8 +107,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                 colbounds=[]
                 for rows in range(d0):
                     val = m[rows][cols]
-                    if type(val).__name__ == 'null':
-                        colbounds.append(4) #Length of 'null'
+                    if type(val).__name__ == nullname:
+                        colbounds.append(len(nullname))
                     else:
                         colbounds.append(len(str(int(val))))
 
@@ -102,7 +118,7 @@ def _stringfy(mat,dtyps,retbounds,grid):
             raise TypeError(msg)
     
     if retbounds:
-        ind_bound = [indbound] if isinstance(indbound,int) else [0]
+        ind_bound = [indbound] if isinstance(indbound,int) else indbound
         _bounds = [bounds for _ in range(mat.d1)] if isinstance(bounds,int) else bounds
         return ind_bound+_bounds
 
@@ -119,26 +135,82 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
         #Add features
         if not grid:
-            string += "\n" + " "*indbound + " "
-            for cols in range(d1-1):
-                name = feats[cols]
-                s = len(name)
-                string += " "*(bounds[cols]-s)+name+"  "
+            string += "\n"
+            labels = feats.labels
+            names = feats.names
+            namelvl = feats.level
+            index_tab_size = sum(indbound)+len(label_seperator)*indices.level 
 
-            string += " "*(bounds[-1]-len(feats[-1]))+feats[-1]
+            #Loop through labels and then higher levels
+            for lvl in range(namelvl):
+                name = names[lvl]
+                string += " "*(index_tab_size- len(name) - 1) + name + left_seperator
+
+                for cols in range(d1-1):
+                    name = labels[cols][lvl]
+                    s = len(name)
+                    string += " "*(bounds[cols]-s)+name+"  "
+                
+                last = labels[-1][lvl]
+                string += " "*(bounds[-1]-len(last)) + last
+                
+                if lvl != namelvl-1:
+                    string += "\n"
 
             #Add index name row
-            string += "\n" + mat.indexname + " "*(indbound-len(mat.indexname)) + "+" + "-"*(sum(bounds) + 2*(d1-1) )
+            string += "\n" 
+            lvl = indices.level - 1
+            for i,name in enumerate(mat.index.names):
+                if name == "":
+                    string += " "*indbound[i]
+                else:
+                    string += " "*(indbound[i]-len(name)) + name
+                
+                if i != lvl:
+                    string += label_seperator
+
+            string += left_top_corner + top_seperator*(sum(bounds) + 2*(d1-1) )
 
         else:
             string += "\n"
                  
         #Add rows
         mm = mat.matrix
+        labels = mat.index.labels
+        prev_labels = []
+        
         for rows in range(d0):
-            #Add index
+            #Add labels
             if not grid:
-                string += "\n" + indices[rows]  + " "*(indbound-len(indices[rows])) + "|"
+                    
+                current_labels = labels[rows]
+                string += "\n"
+                
+                #Starter row
+                if rows==0:
+                    for i,lbl in enumerate(current_labels):
+                        lbl = str(lbl)
+
+                        string += " "*(indbound[i]-len(lbl)) + lbl
+                        if i != lvl:
+                            string += label_seperator
+
+                #Rest of the rows checking previous labels
+                else:
+                    for i,lbl in enumerate(current_labels):
+                        lbl = str(lbl)
+                        #Skip if label in the previous row is the same
+                        if (prev_labels[:i+1] == current_labels[:i+1]) and not allow_label_dupes:
+                            string += " "*(indbound[i]-len(dupe_place_holder)) + dupe_place_holder
+                            if i != lvl:
+                                string += " "
+                        else:    
+                            string += " "*(indbound[i]-len(lbl)) + lbl
+                            if i != lvl:
+                                string += label_seperator
+
+                string += left_seperator
+                prev_labels = current_labels[:]
             else:
                 string += "\n"
                     
@@ -155,8 +227,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                         s = len(item)
                 #integer column
                 elif dtyps[cols] == int:
-                    if type(num).__name__ == 'null':
-                        item = "null"
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:    
                         try:
@@ -167,8 +239,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
                             s = len(item)
                 #complex column
                 elif dtyps[cols] == complex:
-                    if type(num).__name__ == 'null':
-                        item = 'null'
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:
                         try:
@@ -199,8 +271,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
                 #complex
                 if mat._cMat:
-                    if type(num).__name__ == 'null':
-                        item = 'null'
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:
                         item = st.format(num)
@@ -217,8 +289,8 @@ def _stringfy(mat,dtyps,retbounds,grid):
 
                 #integer
                 else:
-                    if type(num).__name__ == 'null':
-                        item = 'null'
+                    if type(num).__name__ == nullname:
+                        item = nullname
                         s = 4
                     else:
                         item = str(int(num))

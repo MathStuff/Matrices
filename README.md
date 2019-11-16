@@ -21,52 +21,108 @@
    ```
 
 ### Basic syntax:
-```python 
 
-Matrix(dim=dimensions,#Required(UNLESS 'data' is given), int | list/tuple as [rows,cols]
+_MatricesM.matrix.**Matrix**_(
 
-       data=data, #Optional, list of numbers | list of lists containing numbers | string | dictionary. If no argument is passed matrix is filled depending on the 'fill' and 'ranged' 
+**dim**: _int | [int,int] | (int,int)_ = _None_
 
-       fill=value, #Optional,Available distributions: uniform|triangular|gauss|gammavariate|betavariate|expovariate|lognormvariate; also accepts int|float|complex|str|list|range, fills the matrix with chosen distribution or number, None will force uniform distribution. Doesn't affect the matrix if "data" is given
+Dimensions of the matrix. **_Required_**(Unless **data** is given), mainly used for random matrix creation or to reshape the given **data**.
+       
+**data**: _[Any] | [[Any],...] | str | dict_ = _[]_
 
-       ranged=[*args] | dict;"""
-                        ->To apply all the elements give a list | tuple
-                        ->To apply every column individually give a dictionary as {"Column_name":[*args], ...}
-                        ->Arguments should follow one of the following rules:
-                              1)If 'fill' is uniform, interval to pick numbers from as [minimum,maximum]; 
-                              2)If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as [mean,standard_deviation];
-                              3)If 'fill' is triangular, range of the numbers and the mode as [minimum,maximum,mode];
-                              4)If 'fill' is gammavariate or betavariate, alpha and beta values are picked as [alpha,beta]
-                              5)If 'fill' is expovariate, lambda value have to be given in a list as [lambda]"""                   
+Data to use in matrix, **_Optional_**, matrix's elements are picked from this parameter. Matrix filling related parameters are ignored if valid values given to this parameter. If no argument is passed matrix is filled depending on the **fill** and **ranged**
 
-       features=column_names #Optional, list of strings. If no argument given, columns get named "col_1","col_2" and so on
+**fill**: _Any_ = _None_
+
+Object,method or value to use for filling the matrix with. **_Optional_** . If a _list_ or _range_ is given, given object will be repeated as rows. Accepts custom functions. _default_ is **null** for dataframe dtype, **uniform** for other dtypes.
+
+Available special distributions: 
+* _uniform_
+
+* _triangular_
+
+* _gauss_
+
+* _gammavariate,betavariate_
+
+* _expovariate_
+
+* _lognormvariate_
+
+**ranged**: _[*args] | (*args) | dict_ = _(0,1)_
+
+Arguments to pass to **fill**. **_Optional_**. To apply all the elements give a list | tuple. To apply every column individually give a dictionary as _{**"Column_name"**:[*args], ...}_. 
+
+Arguments should follow one of the following rules:
+
+* If 'fill' is uniform, interval to pick numbers from as _[minimum,maximum]_
+                              
+* If 'fill' is gauss or lognormvariate mean and standard deviation are picked from this attribute as _[mean,standard_deviation]_
+                              
+* If 'fill' is triangular, range of the numbers and the mode as _[minimum,maximum,mode]_
+                              
+* If 'fill' is gammavariate or betavariate, alpha and beta values are picked as _[alpha,beta]_
+                              
+* If 'fill' is expovariate, lambda value have to be given in a list as _[lambda]_"""                   
+
+**features**:_[str, ...]_ = _[]_
+
+Column names. **_Optional_**. If no argument is given, columns get named "col_1","col_2" and so on.
       
-       seed=integer_seed #Optional, int. Seed to generate the random numbers from, doesn't affect anything if numbers are provided.
+**seed**: _int_ = _None_
+
+Seed to use while picking up random numbers. **_Optional_**.
          
-       dtype=matrix_dtype #Optional, int|float|complex|dataframe. Data type the matrix will hold, default is float.
+**dtype**: _int | float | complex | dataframe_ = _float_
+
+Type of values the Matrix will carry. **_Optional_**. _dataframe_ to enable all types.
       
-       coldtypes=column_dtypes #Requires dtype==dataframe to work. Contains the data types each column will hold. If nothing is passed, types get declared by the first row.
+**coldtypes**: _[type_,...]_ = _[]_
+
+List of type object for each column's data type. **_Optional_**. Requires _dataframe_ dtype to work.
       
-       decimal=decimals_to_round #Optional, int (default is 4). Decimal digits to round to while printing
+**decimal**: _int_ = 4
 
-       index=index_column #Optional, Matrix|list|tuple; indices to use for rows. Only works if dtype is set to dataframe
+Amount of decimal places to print. **_Optional_**.
 
-       indexname=index_col_name #Optional, str; name of the index column
+**index**: _[Any, ...] | (Any, ...) | Matrix | Label_ = _Label()_
 
-       implicit=False #Optional, boolean. If necessary parameters are given, this can be set to True to speed up the setup process. Don't change if you aren't sure what your matrix requires to work properly.
+Row labels for each row. **_Optional_**. Only works with _dataframe_ dtype.
+
+
+**implicit**: _bool_ = _False_
+
+Skip setup proccess for faster initiation, if necessary arguments are passed. **_Optional_**. Don't change if you aren't sure what your matrix requires to work properly.
+
+****kwargs**: NOTES, PRECISION, DEFAULT_NULL, ROW_LIMIT, QR_ITERS, EIGENDEC_ITERS.
       )
 
-#Alternative way for creating dataframes, inherits from Matrix class, dtype is passed as dataframe to Matrix
-dataframe(data=data,
-          features=column_names,
-          coldtypes=column_dtypes,
-          decimal=decimals_to_round, #Decimal defaults to 3
-          index=index_column,
-          indexname=index_col_name, 
-          **kwargs #Rest of the arguments passed to Matrix's __init__
-         )
+_MatricesM.matrix.**dataframe**_(
 
-```         
+**data**=: _[Any] | [[Any],...] | str | dict_ = _[]_
+
+Data to use in the dataframe, **Optional**, matrix's elements are picked from this parameter. Matrix filling related parameters are ignored if valid values given to this parameter. If no argument is passed matrix is filled depending on the **fill** and **ranged**
+
+**features**:_[str, ...]_ = _[]_
+
+Column names. **_Optional_**. If no argument is given, columns get named "col_1","col_2" and so on.
+
+**coldtypes**: _[type_,...]_ = _[]_
+
+List of type object for each column's data type. **_Optional_**.
+      
+**decimal**: _int_ = _3_
+
+Amount of decimal places to print. **_Optional_**.
+
+**index**: _[Any, ...] | (Any, ...) | Matrix | Label_  = _Label()_
+
+Row labels for each row. **_Optional_**.
+
+
+****kwargs** #Rest of the arguments passed to Matrix
+      )
+       
    ##### -[matrix.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/matrix.py) contains the main Matrix class.
    
    ##### -[matrices.py](https://github.com/MathStuff/MatricesM/blob/master/MatricesM/constructors/matrices.py) contains functions to create special matrices.
@@ -136,10 +192,10 @@ randomData4 = Matrix([20000,4],
 ##### Create special matrices
 ```python 
 #3x3 identity matrix
-id3 = Matrix(data=Identity(3))
+id3 = Identity(3)
 
 #A 8x8 symmetrical matrix filled with numbers in range from 0 to 1 with uniform distribution 
-sym1 = Matrix(data=Symmetrical(8))
+sym1 = Symmetrical(8)
 
 ``` 
 ----------------------------------------
@@ -232,11 +288,11 @@ Matrix[4,7] == Matrix.matrix[4][7]
 Matrix["col_3","col_1","col_2"] == Matrix.select(("col_3","col_1","col_2"))
 
 #Use index column for row indices
-#Return the rows where the index matches the 'value'
-Matrix.ind[value]
+#Return the rows where the level 1 label matches the value
+Matrix.level[1].ind[value]
 
-#Return the rows from val1's first appearance until val2's first appearance with only 'col_4' column
-Matrix.ind[val1:val2,"col_4"]
+#Return the "col_4" column of rows using level 3 labels starting with val1's first appearance and ending with the row before val2's first appearance
+Matrix.level[3].ind[val1:val2,"col_4"]
 ```
 ----------------------------------------
 ##### Filter out depending on what you need
@@ -252,8 +308,11 @@ filtered = winedata.select(("pH","quality"))
 #Alternative way (2x faster)
 filtered = winedata["pH","quality"] 
 
-#Use 'quality' column as indices
+#Use 'quality' column as row labels
 winedata.index = winedata.quality
+
+#Add 'alcohol' to as level 2 row labels
+winedata.index.add_level(winedata.alcohol)
 
 #Sort by given column and shuffle the data
 winedata.sortBy("quality") #Data is sorted in increasing order, use reverse=True for decreasing order
@@ -337,7 +396,7 @@ s[1:4,1:4] = 0 #Same as using Matrix(3,fill=0)
 """
 
 #Change the values in the 2nd to 4th rows' 1st and 3rd columns to 0 and 99 
-Matrix[1:4,("col_1","col_3")] = [0,9]
+Matrix[1:4,("col_1","col_3")] = [0,99]
 #Visually:
 """
 3 9 6 10               3 9  6  10
@@ -346,25 +405,6 @@ Matrix[1:4,("col_1","col_3")] = [0,9]
 6 1 7  0               0 1 99   0
 """
 
-#Change all values in the 2nd column to 7's
-Matrix.col_2 = 7
-#Visually:
-"""
-3 9 6 10               3 7 6 10
-5 0 4  2   Changes to  5 7 4  2
-5 8 2  2      ---->    5 7 2  2
-6 1 7  0               6 7 7  0
-"""
-
-#Change odd numbered rows' even numbered columns to the values in the given matrix
-Matrix[0::2,1::2] = Matrix(2,fill=999)
-#Visually:
-"""
-3 9 6 10               3 999 6 999
-5 0 4  2   Changes to  5   7 4   2
-5 8 2  2      ---->    5 999 2 999
-6 1 7  0               6   7 7   0
-"""
 ```
 ----------------------------------------
 ##### Concatenate a matrix to your matrix.
@@ -430,7 +470,7 @@ Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eige
 
 Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method, default is 10.
 
-Matrix.col_1, Matrix.col_2, ... #Returns the column named col_1,col_2 ...
+Matrix.col_1, Matrix.col_2, ... #Tries to return a 'Matrix.level.name' object pointing at 'Matrix's 'col_1','col_2', ... column name row, if it fails, tries to return all columns with 'col_1','col_2', ... column names in level-1 
 
 #Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
@@ -556,19 +596,7 @@ Matrix.nilpotency(limit) #Returns the nilpotency degree of the matrix, returns N
 ```python 
 Matrix.features #Returns the column names if given, can also be used to set column names
 
-Matrix.rename(old_names,new_names) #Rename columns. Multiple names should be given in a list or a tuple
-
-Matrix.name_update(prefix,suffix,changechar) #Add prefix and/or suffix to column names, change characters in column names with 'changechar'.
-
-Matrix.namereset(start=1) #Reset column names to 'col_1','col_2', ... . Start is 1 by default
-
 Matrix.index #Returns the values in the index column in a list, can bu used to set new indices
-
-Matrix.indexname #Returns the index column's name
-
-Matrix.index_update(prefix,suffix,changechar) #Add prefix and/or suffix to string type row labels, change string characters with 'changechar'.
-
-Matrix.indexreset(start) #Reset index column to range(start,Matrix.d0+start)
 
 Matrix.coldtypes #Returns what type of data each column carries, can be used to set the values.
 
@@ -640,6 +668,15 @@ Matrix.stdize(column,inplace) #Standardize the data in the desired column, None 
 
 Matrix.oneHotEncode(column,concat) #One-hot encode a 'column', 'concat' to decide wheter or not to concatenate the encoded matrix or return it
 
+dataframe.level #Inner level class used for passing the level to 'ind' class for row labeling.
+
+dataframe.level.ind #Row label indexing class, syntax : dataframe.level[integer_level].ind[row_label]
+
+dataframe.level.name #Column name indexing class, syntax : dataframe.level[integer_level].ind[column_name]
+
+dataframe.colname #Allows column names' level names over integers, syntax : dataframe.colname[label_name].name[column_name]
+
+dataframe.rowname #Allows row labels' level names over integers, syntax : dataframe.rowname[label_name].ind[column_name]
 ```
 
 ----------------------------------------
@@ -653,7 +690,7 @@ myMatrix.grid
 
 myMatrix.p #Same as print(myMatrix)
 
-#Similar to 'grid' but rows and columns are limited by myMatrix.ROW_LIMIT and myMatrix.COL_LIMIT
+#Similar to 'grid' but rows and columns are limited by myMatrix.ROW_LIMIT
 
 myMatrix
 
@@ -668,7 +705,7 @@ newMatrix = oldMatrix.copy
 
 #Using 'kwargs' property, 'copy' uses this one so it's as fast as 'copy' is
 
-newMatrix = Matrix(kwargs=oldMatrix.kwargs)
+newMatrix = Matrix(**oldMatrix.kwargs)
 
 #Using 'obj' property (Slowest)
 
@@ -684,7 +721,7 @@ newMatrix = eval(oldMatrix.obj)
    
    A.t.t == A
    
-   A.adj.matrix[2][0] == A.minor(1,3)
+   A.adj[2,0] == A.minor(1,3)
    
    #bool object can be called to get a boolean value of the matrix, if all elements are 1's then it will return True and False in any other case.
    bool(Matrix(10,fill=1)) == True

@@ -25,7 +25,9 @@ def cov(mat,col1,col2,population,obj,dFrame):
     #Covariance matrix
     else:
         d0,d1 = mat.dim
-        colds,feats = mat.coldtypes,mat.features
+        colds,feats = mat.coldtypes,mat.features.labels
+        if mat.features.level == 1:
+            feats = [row[0] for row in feats]
         #Dataframe's float or int value column indices and names
         validinds = [i for i in range(d1) if colds[i] in [float,int]]
         validfeats = [feats[i] for i in validinds]

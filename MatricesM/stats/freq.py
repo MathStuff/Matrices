@@ -1,12 +1,15 @@
 def freq(mat,col,get,obj,dFrame):
     from collections import Counter
     from MatricesM.errors.errors import MatrixError
+    from MatricesM.customs.objects import Label
 
     #Get the parts needed
     #No argument given
     if col==None:
         temp=mat.t
-        feats=mat.features[:]
+        feats = mat.features.labels
+        if mat.features.level == 1:
+            feats = [row[0] for row in feats]
         r=mat.dim[1]
     #Column index or name given
     else:
@@ -16,7 +19,9 @@ def freq(mat,col,get,obj,dFrame):
             if col<=0 or col>mat.d1:
                 raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
         temp=mat[:,col-1].t
-        feats=mat.features[col-1]
+        feats = mat.features.labels[col-1]
+        if mat.features.level == 1:
+            feats = feats[0]
         r=1
 
     res={}
@@ -33,7 +38,16 @@ def freq(mat,col,get,obj,dFrame):
 
     #Return matrices
     if get==2:
-        return tuple(obj((len(list(c.keys())),1),[i for i in c.values()],features=["Frequencies"],dtype=dFrame,coldtypes=[int],index=list(c.keys()),indexname=feat) for feat,c in res.items())
+        temp = []
+        for feat,c in res.items():
+            repeats = list(c.keys())
+            temp.append(obj((len(repeats),1),
+                        [i for i in c.values()],
+                        features=["Frequency"],
+                        dtype=dFrame,
+                        coldtypes=[int],
+                        index=Label(repeats,str(feat)[1:-1])))
+        return tuple(temp)
     #Return a dictionary
     elif get==1:
         return res
@@ -48,14 +62,17 @@ def freq(mat,col,get,obj,dFrame):
         return items[col-1]
 
 def _count(mat,col,get,obj,dFrame):
-    colds = mat.coldtypes[:]
-    feats = mat.features[:]
+    from MatricesM.customs.objects import Label
 
+    colds = mat.coldtypes[:]
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
     #Column name given
     if isinstance(col,str):
         if not col in feats:
             raise NameError(f"{col} is not a column name")
-        col = feats.index(col)
+        col = mat.features.index(col)
         colrange = [col]
     #Column number given
     elif isinstance(col,int):
@@ -71,7 +88,7 @@ def _count(mat,col,get,obj,dFrame):
     #Return a matrix
     if get == 2:
         cols = list(counts.keys())
-        return obj((len(cols),1),[i for i in counts.values()],features=["Valid_values"],dtype=dFrame,coldtypes=[int],index=cols,indexname="Column")
+        return obj((len(cols),1),[i for i in counts.values()],features=["Valid_values"],dtype=dFrame,coldtypes=[int],index=Label(cols,["Column"]))
     #Return a dictionary
     elif get == 1:
         return counts

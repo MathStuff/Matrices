@@ -1,4 +1,4 @@
-def _listify(mat,stringold):
+def _listify(mat,stringold,isvec):
     """
     Finds all the numbers in the given string
     """
@@ -23,11 +23,15 @@ def _listify(mat,stringold):
             found=[int(a) for a in found if len(a)!=0]
     except ValueError as v:
         raise ValueError(v)
-    #Fix dimensions to create a row matrix   
+    #Check vector
+    if isvec:
+        return [[val] for val in found]
+    #Fix dimensions
     if mat.dim==[0,0]:
         mat._Matrix__dim=[1,len(found)]
         mat._Matrix__features=[f"col_{i+1}" for i in range(d1)]
-    #Create the row matrix
+    
+    #Create the matrix
     temp=[]
     e=0            
     for rows in range(mat.dim[0]):

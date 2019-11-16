@@ -1,5 +1,5 @@
-def _replace(mat,old,new,col,cond,obj):
-    names = mat.features[:]
+def _replace(mat,old,new,col,cond,obj,lvl):
+    names = mat.features.get_level(lvl)
     #Handle arguments
     if not isinstance(cond,obj) and cond!=None:
         raise TypeError("conditions should be a boolean matrix or None")
@@ -29,9 +29,9 @@ def _replace(mat,old,new,col,cond,obj):
     #(bool_mat,value,columns,bool_mat)
     if isinstance(old,obj):
         if cond != None:
-            rowinds = [i[0] for i in (cond & old).find(1,0)]
+            rowinds = [ind for ind,i in enumerate((cond & old).matrix) if all(i)]
         else:
-            rowinds = [i[0] for i in old.find(1,0)]
+            rowinds = [ind for ind,i in enumerate(old.matrix) if all(i)]
         colinds = [names.index(c) for c in col]
         for r in rowinds:
             for c in colinds:
@@ -41,7 +41,7 @@ def _replace(mat,old,new,col,cond,obj):
             indices = []
             for feat in col:
                 try:
-                    for i in mat.col(feat).find(old,0):
+                    for i in mat.col(feat,namelevel=lvl).find(old,0):
                         indices.append([i[0],names.index(feat)])
                 except:
                     continue #No data was found on given column
@@ -52,7 +52,7 @@ def _replace(mat,old,new,col,cond,obj):
             raise ValueError("No data found to be replaced in given columns")
         else:
             if cond!=None:
-                filtered = [i for i in cond.find(1,0,True)]
+                filtered = [i for i in cond.find(mat.DEFAULT_BOOL[True],0,True)]
                 indices = [i for i in r1 if i[0] in filtered]
 
             for r,c in indices:

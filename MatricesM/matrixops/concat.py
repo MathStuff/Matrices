@@ -18,25 +18,25 @@ def concat(mat,matrix,axis,fill,obj):
 
     #Fill null if needed
     if fill:
-        from MatricesM.customs.objects import null   
+        nullobj = mat.DEFAULT_NULL   
         if axis==0:
             #Given matrix is smaller
             for i in range(0,d1-md1):
-                newmat.add([null for _ in range(md0)],col=d1+i+1)
+                newmat.add([nullobj for _ in range(md0)],col=d1+i+1)
                 md1 += 1
             #Given matrix is bigger
             for i in range(0,md1-d1):
-                mat.add([null for _ in range(d0)],col=md1+i+1)
+                mat.add([nullobj for _ in range(d0)],col=md1+i+1)
                 d1 += 1
 
         elif axis==1:
             #Given matrix is smaller
             for i in range(0,d0-md0):
-                newmat.add([null for _ in range(md1)],row=d0+i+1)
+                newmat.add([nullobj for _ in range(md1)],row=d0+i+1)
                 md0 += 1
             #Given matrix is bigger
             for i in range(0,md0-d0):
-                mat.add([null for _ in range(d1)],row=md0+i+1)
+                mat.add([nullobj for _ in range(d1)],row=md0+i+1)
                 d0 += 1
            
     if axis==0:
@@ -60,15 +60,9 @@ def concat(mat,matrix,axis,fill,obj):
     #Update attributes
     mat._Matrix__dim=mat._declareDim()
     if axis==1:
-        newfeats = []
-        for name in newmat.features:
-            while name in mat.features:
-                name = "_"+name
-            newfeats.append(name)
-
-        mat._Matrix__features = mat.features + newfeats
+        mat._Matrix__features = mat.features + newmat.features
         mat._Matrix__coldtypes = mat.coldtypes + [i for i in newmat.coldtypes]
     else:
         if mat._dfMat:
-            newinds = [ind for ind in newmat.index] if newmat._dfMat else ["" for _ in range(md0)]
+            newinds = newmat.index if newmat._dfMat else ["" for _ in range(md0)]
             mat._Matrix__index = mat.index + newinds

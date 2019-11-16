@@ -25,9 +25,13 @@ def _corr(mat,col1,col2,population,temp,method):
                     temp.remove(row=i+1-j,col=i+1-j)
                     j+=1
 
-        feats,tfeats = mat.features,temp.features
+        feats,tfeats = mat.features.labels,temp.features.labels
+        if mat.features.level == 1:
+            feats,tfeats = [row[0] for row in feats],[row[0] for row in tfeats]
+
         availablecols = [i for i in range(mat.dim[1]) if feats[i] in tfeats]
         availablefeats = [feats[i] for i in availablecols]
+        
         d0 = mat.d0
         m = 0
         #Pearson correlation coefficients

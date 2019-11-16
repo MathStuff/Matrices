@@ -4,7 +4,14 @@ def _repr(mat,notes,dFrame):
     old = None
     d0,d1 = mat.dim
     feats = mat.features
-    available = gts().columns - 3
+    ind_level = mat.index.level
+
+    col_place_holder = mat.DISPLAY_OPTIONS["col_place_holder"]
+    row_place_holder = mat.DISPLAY_OPTIONS["row_place_holder"]
+    left_seperator = mat.DISPLAY_OPTIONS["left_seperator"]
+    label_seperator = mat.DISPLAY_OPTIONS["label_seperator"]
+
+    available = gts().columns - 4
     
     shuffled_col_inds = []
     usedcols = []
@@ -37,14 +44,14 @@ def _repr(mat,notes,dFrame):
     else:
         top_bounds = mat[:halfrow]._stringfy(mat.coldtypes,True)
         bottom_bounds = mat[d0-(rowlimit//2):]._stringfy(mat.coldtypes,True)
-        string_bounds = [max(top_bounds[i],bottom_bounds[i]) for i in range(d1+1)]
+        string_bounds = [max(top_bounds[i],bottom_bounds[i]) for i in range(d1+ind_level)]
 
     if string_bounds == "Empty matrix":
         return string_bounds
-        
-    total_col_size = max(string_bounds[0],3)+1
-    string_bounds = list(map(lambda a:a+2,string_bounds[1:-1])) + [string_bounds[-1]]
-    
+
+    total_col_size = sum(string_bounds[:ind_level])+(ind_level-1)*len(label_seperator)+len(left_seperator)
+    string_bounds = list(map(lambda a:a+2,string_bounds[ind_level:-1])) + [string_bounds[-1]]
+
     if (not isinstance(string_bounds,list)) or (len(feats)==0):
         return "Empty Matrix"
 
@@ -52,18 +59,18 @@ def _repr(mat,notes,dFrame):
     #Check how many columns will fit
         for num,i in enumerate(shuffled_col_inds):
             bound = string_bounds[i]
-            extra = 5 if num!=d1-1 else 0
-            new = total_col_size + bound + extra
-            if new <= available:
-                total_col_size += bound
+            extra = len(col_place_holder)+2 if num!=d1-1 else 0
+            total_col_size += bound 
+            if total_col_size + extra<= available:
                 used_col_amount += 1
                 usedcols.append(i)
             else:
+                total_col_size+= extra
                 break
     else:
         used_col_amount = d1
 
-    if used_col_amount == 0:
+    if used_col_amount == 0 or (total_col_size>available and usedcols==[0]) :#Update this :')
         return "\nWindow \ntoo \nsmall"
 
     #Check limits
@@ -107,9 +114,9 @@ def _repr(mat,notes,dFrame):
                 if i.dtype != dFrame:
                     i.dtype = dFrame
 
-            #Add  ...  to represent missing column's existence
-            topLeft.add(["..."]*topLeft.d0,col=halfcol + 1,dtype=str,feature="...")
-            bottomLeft.add(["..."]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature="...")
+            #Add col_place_holder to represent missing column's existence
+            topLeft.add([col_place_holder]*topLeft.d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
+            bottomLeft.add([col_place_holder]*bottomLeft.d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
             
             #Concat left parts with rights, dots in the middle
             topLeft.concat(topRight,axis=1)
@@ -126,7 +133,7 @@ def _repr(mat,notes,dFrame):
             topLeft.concat(bottomLeft,axis=0)
             
             #Add dots as middle row
-            topLeft.add(["..."]*topLeft.d1,row=halfrow+1,index="...")
+            topLeft.add([row_place_holder]*topLeft.d1,row=halfrow+1,index=row_place_holder)
 
             return topLeft._stringfy(coldtypes=topLeft.coldtypes) + "\n\n" + notes
 
@@ -137,8 +144,8 @@ def _repr(mat,notes,dFrame):
             top = mat[:halfrow,:end].roundForm(mat.decimal,dec)
             bottom = mat[d0-(rowlimit//2):,:end].roundForm(mat.decimal,dec)
             if d1>1 and end == 1:
-                top.add(["..."]*top.d0,col=2,dtype=str,feature="...")
-                bottom.add(["..."]*bottom.d0,col=2,dtype=str,feature="...")
+                top.add([col_place_holder]*top.d0,col=2,dtype=str,feature=col_place_holder)
+                bottom.add([col_place_holder]*bottom.d0,col=2,dtype=str,feature=col_place_holder)
             #Set new dtypes
             for i in [top,bottom]:
                 if i.dtype != dFrame:
@@ -155,7 +162,7 @@ def _repr(mat,notes,dFrame):
             top.concat(bottom,axis=0)
 
             #Add middle part
-            top.add(["..."]*top.d1,row=halfrow+1,index="...")
+            top.add([row_place_holder]*top.d1,row=halfrow+1,index=row_place_holder)
 
             return top._stringfy(coldtypes=top.coldtypes) + "\n\n" + notes
             
@@ -165,7 +172,7 @@ def _repr(mat,notes,dFrame):
         if first == second:
             left = mat[:,0].roundForm(mat.decimal,dec)
             if d1>1:
-                left.add(["..."]*d0,col=2,dtype=str,feature="...")
+                left.add([col_place_holder]*d0,col=2,dtype=str,feature=col_place_holder)
             if not mat._dfMat:
                 left.dtype = dFrame
 
@@ -179,7 +186,7 @@ def _repr(mat,notes,dFrame):
                     i.dtype = dFrame
 
             #Add and concat rest of the stuff
-            left.add(["..."]*d0,col=halfcol + 1,dtype=str,feature="...")
+            left.add([col_place_holder]*d0,col=halfcol + 1,dtype=str,feature=col_place_holder)
             left.concat(right,axis=1)
 
         return left._stringfy(coldtypes=left.coldtypes) + "\n\n" + notes
