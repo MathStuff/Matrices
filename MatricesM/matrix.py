@@ -100,8 +100,14 @@ class Matrix(Vector):
     implicit: bool; Skip matrix setting operations if dimensions and elements are given
 
     NOTE:      
-        --> Options: ROW_LIMIT:int, PRECISION:int, QR_ITERS:int, EIGENVEC_ITERS:int,
-                     NOTES:str, DEFAULT_NULL:object, DISPLAY_OPTIONS:dict
+        --> Options: ROW_LIMIT:int,
+                     PRECISION:int,
+                     QR_ITERS:int,
+                     EIGENVEC_ITERS:int,
+                     NOTES:str,
+                     DEFAULT_NULL:object,
+                     DISPLAY_OPTIONS:dict,
+                     DEFAULT_BOOL:dict
 
         --> Check https://github.com/MathStuff/MatricesM  for further explanation and examples
     
@@ -160,6 +166,11 @@ class Matrix(Vector):
                                 "col_place_holder":"...",
                                 "row_place_holder":"...",
                                }
+        self.DEFAULT_BOOL = {                       #Values to use as boolean values
+                             True:1,
+                             False:0,
+                            }
+
         #Basic attributes
         self.__features = features                  #Column names
         self.__coldtypes = coldtypes                #Column dtypes 
@@ -763,7 +774,7 @@ class Matrix(Vector):
 
             #Return matrix
             if as_matrix:
-                return self.__getattr__(attr=column)
+                return self[:,column]
 
             column = self.features.index(column)+1
 
@@ -2509,7 +2520,7 @@ class Matrix(Vector):
         """
         Sort the rows by the desired column
 
-        column:str|int|None; column name as string, column number, None to sort by label column level 1
+        column:str|int|None; column name as string, column number, None to sort by label column level 'level'
         key:function; function to use while sorting
         reverse:bool; wheter or not to sort the matrix in reversed order
         returnmat:bool; wheter or not to return self
@@ -2523,10 +2534,9 @@ class Matrix(Vector):
                 real_names = temp_mat.features[:]
 
                 label_mat.concat(temp_mat,returnmat=True). \
-                          sortBy(column=label_mat.features[level-1],key=key,reverse=reverse)
+                          sortBy(column=label_mat.features.get_level(level),key=key,reverse=reverse)
 
-                lbls = label_mat[:,:self.index.level]
-                self.__index = Label([tuple(row) for row in lbls.matrix],lbls.features)
+                self.__index = Label(label_mat[:,:self.index.level])
                 self._matrix = label_mat[:,self.index.level:].matrix
                 self.__features = real_names
 
@@ -2846,7 +2856,7 @@ class Matrix(Vector):
     @property
     def info(self):
         """
-        Prints out column info
+        Returns a dataframe with column information
         """
         feats,cdtyps = self.features[:],self.coldtypes[:]
         counts = self.count(get=0) if self.d1>1 else [self.count(get=0)]
@@ -2862,7 +2872,7 @@ class Matrix(Vector):
 
     def uniques(self,column:Union[str,None]=None):
         """
-        Return a list of unique values in a column
+        Returns a list of unique values in a column
 
         column: str|None; column name, None to return a list of lists
         """
@@ -2870,11 +2880,12 @@ class Matrix(Vector):
             return [list(col.keys()) for col in self.freq(get=0)]
         return list(self.freq(column)[column].keys())
 
-    def groupBy(self,column:Union[str,List[str],None]=None):
+    def groupBy(self,column:Union[str,List[str],None]=None,namelevel:int=1):
         """
         Group values in 'column' of a dataframe by row indices/labels
 
         column: str|list of strings|None; column name(s), None to use index column
+        namelevel: int>0; column name level to use
 
         Returns a dataframe or a Group object
 
@@ -2884,7 +2895,7 @@ class Matrix(Vector):
         
         """
         from MatricesM.filter.grouping import grouping
-        return grouping(self,column,dataframe)
+        return grouping(self,column,dataframe,namelevel)
 
     def oneHotEncode(self,column:str,level:int=1,concat:bool=True,removecol:bool=False,returnmat:bool=True):
         """
@@ -2921,8 +2932,9 @@ class Matrix(Vector):
         """
         m = self.matrix
         for i in range(self.d0):
+            row = m[i]
             for j in range(self.d1):
-                if m[i][j] != 1:
+                if row[j] != 1:
                     return False
         return True
 
@@ -2974,11 +2986,13 @@ class Matrix(Vector):
                 Matrix[int]     --> Return a row
                 Matrix[slice]   --> Return 0 or more rows
                 Matrix[Matrix]  --> Return filtered rows
+                Matrix[list]    --> Return rows using indices in the list
 
             Indices for full columns:
                 Matrix[str]                  --> Return all rows of a column
                 Matrix[:,slice]              --> Return 0 or more columns
-                Matrix[:,(str,str,...,str)]  --> Return all rows of the desired columns passed as a tuple of strings (Can include duplicates)
+                Matrix[:,(str,...)]          --> Return all rows of the desired columns passed as a tuple of strings (Can include duplicates)
+                Matrix[:,[int,str,...]]      --> Return all rows of the desired columns passed as a tuple of strings (Can include duplicates)
                 Matrix[str,str,...,str]      --> Return all rows of many columns (Can include duplicates) (Same as the previous one)
 
             Filtered rows and columns:
@@ -2986,8 +3000,9 @@ class Matrix(Vector):
                 Matrix[Matrix,(str,str,...,str)]  --> Return filtered rows of the desired columns 
 
             Indices for single values:
-                Matrix[int,int]  --> Return the value in the matrix using row and column indices
-                Matrix[int,str]  --> Return the value in the matrix using row index and column name
+                Matrix[int,int]     --> Return the value in the matrix using row and column indices
+                Matrix[int,str]     --> Return the value in the matrix using row index and column name
+                Matrix[int,(str,)]  --> Return a single value as a 1x1 matrix
 
         NOTE:
             -> Level 1 column names and row labels are used as default, use 'level' property for better indexing options
@@ -3053,20 +3068,20 @@ class Matrix(Vector):
         return {"dim":self.dim[:],
                 "data":[a[:] for a in self._matrix],
                 "fill":self.fill,
-                "ranged":self.initRange,
+                "ranged":self.initRange[:],
                 "seed":self.seed,
                 "features":self.features[:],
                 "decimal":self.decimal,
                 "dtype":self.dtype,
                 "coldtypes":self.coldtypes[:],
-                "index":self.index,
+                "index":self.index[:],
                 "implicit":True,
                 "ROW_LIMIT":self.ROW_LIMIT,
                 "PRECISION":self.PRECISION,
                 "QR_ITERS":self.QR_ITERS,
                 "EIGENVEC_ITERS":self.EIGENVEC_ITERS,
-                "NOTES":self.NOTES,
-                "DIRECTORY":self.DIRECTORY,
+                "NOTES":self.NOTES[:],
+                "DIRECTORY":self.DIRECTORY[:],
                 "DEFAULT_NULL":self.DEFAULT_NULL,
                 "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS
                }
@@ -3098,9 +3113,9 @@ class Matrix(Vector):
         >>> In[2]: df = dataframe(decimal=2,PRECISION=8)
 
         >>> In[3]: data = df([[0.525624, 0.902228, 0.655355, 0.852382],
-                            [0.077884, 0.896945, 0.622809, 0.401988],
-                            [0.175817, 0.051629, 0.742711, 0.492171],
-                            [0.939892, 0.500976, 0.630512, 0.728549]])
+                             [0.077884, 0.896945, 0.622809, 0.401988],
+                             [0.175817, 0.051629, 0.742711, 0.492171],
+                             [0.939892, 0.500976, 0.630512, 0.728549]])
 
         >>> In[4]: data
         >>> Out[4]:
@@ -3192,32 +3207,32 @@ class Matrix(Vector):
     def __le__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import le
         from_wheres = self.__use_value_based_comparison or False
-        return le(self,other,Matrix,self.matrix,from_wheres)
+        return le(self,other,dataframe,self.matrix,from_wheres,Matrix)
         
     def __lt__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import lt
         from_wheres = self.__use_value_based_comparison or False
-        return lt(self,other,Matrix,self.matrix,from_wheres)
+        return lt(self,other,dataframe,self.matrix,from_wheres,Matrix)
         
     def __eq__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.comparison import eq
         from_wheres = self.__use_value_based_comparison or False
-        return eq(self,other,Matrix,self.matrix,from_wheres)
+        return eq(self,other,dataframe,self.matrix,from_wheres,Matrix)
         
     def __ne__(self,other:Union[object,list,int,float,complex]):
         from MatricesM.matrixops.comparison import ne
         from_wheres = self.__use_value_based_comparison or False
-        return ne(self,other,Matrix,self.matrix,from_wheres)
+        return ne(self,other,dataframe,self.matrix,from_wheres,Matrix)
                 
     def __ge__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import ge
         from_wheres = self.__use_value_based_comparison or False
-        return ge(self,other,Matrix,self.matrix,from_wheres)
+        return ge(self,other,dataframe,self.matrix,from_wheres,Matrix)
         
     def __gt__(self,other:Union[object,list,int,float]):
         from MatricesM.matrixops.comparison import gt
         from_wheres = self.__use_value_based_comparison or False
-        return gt(self,other,Matrix,self.matrix,from_wheres)
+        return gt(self,other,dataframe,self.matrix,from_wheres,Matrix)
         
 # =============================================================================
     """ Rounding etc. """                    

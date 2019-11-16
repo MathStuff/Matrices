@@ -52,7 +52,7 @@ def _replace(mat,old,new,col,cond,obj,lvl):
             raise ValueError("No data found to be replaced in given columns")
         else:
             if cond!=None:
-                filtered = [i for i in cond.find(1,0,True)]
+                filtered = [i for i in cond.find(mat.DEFAULT_BOOL[True],0,True)]
                 indices = [i for i in r1 if i[0] in filtered]
 
             for r,c in indices:

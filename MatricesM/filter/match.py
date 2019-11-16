@@ -1,92 +1,50 @@
-def _match(mat,reg,cols=None,retrow=None,obj=None):
+def _match(mat,reg,cols=None,retrow=None,obj=None,lvl=1):
     import re
     from MatricesM.customs.objects import Label
-
+    
+    colind = None
     #Choose all columns if None given
     if cols == None:
-        cols = [i for i in mat.features]
+        cols = [i for i in mat.features.get_level(lvl)]
     #Column number given, change it to column name
+    if isinstance(cols,tuple):
+        colind = mat.features.labels.index(cols)
+
     if isinstance(cols,int):
         if cols>mat.dim[1] or cols<1:
             raise IndexError(f"{cols} can't be used as column number. Should be in the range from 1 to column amount")
-        cols = mat.features[cols-1]
-
-    #Search all columns
-    if isinstance(cols,(list,tuple)):
-        m = mat.matrix
-        feats = mat.features
-        #Assert list
-        cols = list(cols)
-        #Replace non string values with strings
-        for i in range(len(cols)):
-            j = cols[i]
-            #Column name not given
-            if not isinstance(j,str):
-                #Column number given
-                if isinstance(j,int):
-                    cols[i] = feats[j-1]
-                else:
-                    raise TypeError(f"{j} can't be used as column number/name")
-            #Column doesn't exist
-            elif not j in feats:
-                raise NameError(f"{j} isn't a column name")
-
-        #Return a dictionary
-        if not retrow:
-            results = {i:[] for i in cols}
-            for i in range(mat.dim[0]):
-                for j in range(mat.dim[1]):
-                    match = re.findall(reg,str(m[i][j]))
-                    if len(match)>0:
-                        results[feats[j]].append((i,match))
-                        
-            return results
-        
-        #Return rows in a matrix
-        temp = []
-        inds = []
-        for i in range(mat.dim[0]):
-            for j in range(mat.dim[1]):
-                match = re.findall(reg,str(m[i][j]))
-                if len(match)>0:
-                    found_row = m[i]
-                    if not (found_row in temp):
-                        temp.append(found_row)
-                        inds.append(i)
-
-        oldinds = mat.index
-        foundinds = Label([oldinds[i] for i in inds],mat.index.names) if mat._dfMat else Label()
-
-        return obj(data=temp,features=feats,dtype=mat.dtype,coldtypes=mat.coldtypes,
-                   decimal=mat.decimal,index=foundinds)
+        colind = cols-1
 
     #Search given column
-    elif isinstance(cols,str):
+    elif isinstance(cols,str) or colind!=None:
         #Return a column matrix
-        if not retrow:
-            results = []
-            col = mat.col(cols,0)
-            for i in range(mat.dim[0]):
-                match = re.findall(reg,str(col[i]))
-                if len(match)>0:
-                    results.append([(i,match)])
+        results = []
+        labels = mat.features.get_level(lvl)
+        rows = []
+        colind = mat.features.get_level(lvl).index(cols) if colind == None else colind
+        col = mat.col(colind+1,0)
+        mm = mat.matrix
 
-            return obj(data=results,features=[cols],dtype=mat.dtype,coldtypes=[tuple])
-        
-        #Return rows in a matrix
-        temp = []
-        col = mat.col(cols,0)
-        m = mat.matrix
-        inds = []
         for i in range(mat.dim[0]):
             match = re.findall(reg,str(col[i]))
             if len(match)>0:
-                found_row = m[i]
-                if not (found_row in temp):
-                    inds.append(i)
-                    temp.append(found_row)
+                rows.append(i)
+                if not retrow:
+                    results.append([(i,match)])
+                else:
+                    results.append(mm[i][:])
 
-        oldinds = mat.index
+        newfeats = mat.features[colind] if not retrow else mat.features[:]
+        newcolds = [tuple] if not retrow else mat.coldtypes[:]
+
+        return obj(data=results,
+                   features=newfeats,
+                   dtype=mat.dtype,
+                   coldtypes=newcolds,
+                   index=mat.index[rows])
+        
+
+        oldinds = mat.index.labels
         foundinds = Label([oldinds[i] for i in inds],mat.index.names) if mat._dfMat else Label()
 
         return obj(data=temp,features=mat.features,dtype=mat.dtype,coldtypes=mat.coldtypes,

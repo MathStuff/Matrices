@@ -31,7 +31,7 @@ def overwrite_attributes(mat,kw):
                   
     options = ["PRECISION","ROW_LIMIT","EIGENVEC_ITERS",
                "QR_ITERS","NOTES","DIRECTORY",
-               "DEFAULT_NULL"]
+               "DEFAULT_NULL","DEFAULT_BOOL"]
 
     display_keys = ['allow_label_dupes','dupe_place_holder','label_seperator',
                     'left_top_corner','left_seperator','top_seperator',
@@ -56,6 +56,21 @@ def overwrite_attributes(mat,kw):
 
             for option,value in v.items():
                 mat.DISPLAY_OPTIONS[option] = value
+
+        elif k == "DEFAULT_BOOL":
+            if not isinstance(v,dict):
+                raise TypeError("'DEFAULT_BOOL' requires a dict")
+            
+            t_f,vals = v.items()
+            try:
+                assert len(t_f) == 2
+                assert True in t_f
+                assert False in t_f
+            except:
+                raise TypeError("'DEFAULT_BOOL' options requires a dict with following keys True and False")
+            
+            else:
+                mat.DEFAULT_BOOL = v
         else:
             raise ParameterError(k,attributes+options+["DISPLAY_OPTIONS"])
 

@@ -160,7 +160,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                     if cmat:
                         mat._matrix=[[complex(fill(*r),fill(*r)) for a in range(d1)] for b in range(d0)]
                     
-                    elif fmat:
+                    elif fmat or mat._dfMat:
                         mat._matrix=[[fill(*r) for a in range(d1)] for b in range(d0)]
                     
                     else:
@@ -249,7 +249,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                         if cmat:
                             temp = [[complex(fill(*r[b]),fill(*r[b])) for a in range(d0)] for b in range(d1)]
                         
-                        elif fmat:
+                        elif fmat or mat._dfMat:
                             temp = [[fill(*r[b]) for a in range(d0)] for b in range(d1)]
                         
                         else:

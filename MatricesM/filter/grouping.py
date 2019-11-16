@@ -1,7 +1,7 @@
-def grouping(mat,col,dFrame):
+def grouping(mat,col,dFrame,lvl):
     from MatricesM.customs.objects import Group,Label
 
-    feats = mat.features
+    feats = mat.features.get_level(lvl)
     #Assert dataframe
     if not mat._dfMat:
         raise TypeError("Grouping is only available on dataframes")

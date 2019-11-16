@@ -231,8 +231,12 @@ class Label:
 
         elif isinstance(lbls,str):
             lbls = [lbls]
+        
+        elif isinstance(lbls,tuple):
+            lbls = list(lbls)
+
         elif not isinstance(lbls,list):
-            raise TypeError(f"Expected list type for 'labels' parameter, got {type(lbls)} instead")
+            raise TypeError(f"Expected list/Matrix/str/tuple type for 'labels' parameter, got {type(lbls)} instead")
         
         lvl = 1
         lbls_len = len(lbls)

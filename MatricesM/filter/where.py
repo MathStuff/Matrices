@@ -28,7 +28,7 @@ def wheres(mat,conds,feats,inplace,lvl):
         bool_matrix = eval(conds)
         mm = mat.matrix
 
-        allinds = bool_matrix.find(1,0)
+        allinds = bool_matrix.find(mat.DEFAULT_BOOL[True],0)
         if allinds == None:
             raise ValueError("No data found")
         
