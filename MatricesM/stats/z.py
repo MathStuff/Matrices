@@ -1,4 +1,6 @@
-def z(mat,col=None,population=1,empty=None):
+def z(mat,col=None,population=1,obj=None):
+    from ..customs.objects import Label
+
     if isinstance(col,str):
         col=mat.features.index(col)+1
         
@@ -16,7 +18,6 @@ def z(mat,col=None,population=1,empty=None):
             raise TypeError("column parameter should be either an integer or None type")
         raise ValueError("column value is out of range")
         
-    scores = empty
     m = mat.mean(col)
     s = mat.sdev(col,population=population)
 
@@ -24,24 +25,32 @@ def z(mat,col=None,population=1,empty=None):
         raise ValueError("Can't get mean and standard deviation")
         
     feats = mat.features
+    labels = feats.labels if feats.level != 1 else [label[0] for label in feats.labels]
     availablecols = list(m.keys())
-    all_inds = [i for i in range(mat.dim[1]) if feats[i] in availablecols]
+    all_inds = [i for i in range(mat.dim[1]) if labels[i] in availablecols]
+    
     mm = mat.matrix
     l = len(all_inds)
+    defnull = mat.DEFAULT_NULL
+    scores = []
+
     for i in range(mat.dim[0]):
         j=0 #Index
-        while True:#Loop through the column
+        row = mm[i]
+        vals = []
+        while True:
             try:
                 while j<l:
                     ind = all_inds[j]
-                    scores._matrix[i][ind] = (mm[i][ind]-m[feats[ind]])/s[feats[ind]]
+                    name = labels[ind]
+                    vals.append((row[ind]-m[name])/s[name])
                     j+=1
             except:#Value was invalid
+                vals.append(defnull)
                 j+=1
                 continue
             else:
+                scores.append(vals)
                 break  
 
-    scores._Matrix__dim = [dims[0],l]
-    scores._Matrix__features = availablecols
-    return scores
+    return obj(dim=[dims[0],l],data=scores,features=Label(availablecols,feats.names))
