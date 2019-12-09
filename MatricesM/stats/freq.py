@@ -1,7 +1,7 @@
 def freq(mat,col,get,obj,dFrame):
     from collections import Counter
-    from MatricesM.errors.errors import MatrixError
-    from MatricesM.customs.objects import Label
+    from ..errors.errors import MatrixError
+    from ..customs.objects import Label
 
     #Get the parts needed
     #No argument given
@@ -62,7 +62,7 @@ def freq(mat,col,get,obj,dFrame):
         return items[col-1]
 
 def _count(mat,col,get,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
 
     colds = mat.coldtypes[:]
     feats = mat.features.labels

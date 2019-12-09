@@ -20,5 +20,5 @@ def sym(dim=1):
     """
     Symmetrical matrix
     """
-    from MatricesM.C_funcs.constructors import symzerone
+    from ..C_funcs.constructors import symzerone
     return symzerone(dim)

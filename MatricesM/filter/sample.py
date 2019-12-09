@@ -1,6 +1,6 @@
 def samples(mat,size,conds,obj):
     from random import sample
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
 
     if size > mat.d0:
         raise ValueError("Sample size is too big")

@@ -1,6 +1,6 @@
 def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
     import math
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
     
     feats = mat.features[:]
     d0,d1 = mat.dim

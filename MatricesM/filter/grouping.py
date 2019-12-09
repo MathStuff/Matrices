@@ -1,5 +1,5 @@
 def grouping(mat,col,dFrame,lvl):
-    from MatricesM.customs.objects import Group,Label
+    from ..customs.objects import Group,Label
 
     feats = mat.features.get_level(lvl)
     #Assert dataframe

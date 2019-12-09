@@ -451,7 +451,7 @@ class Label:
     
     @property
     def as_df(self):
-        from MatricesM.matrix import dataframe
+        from ..matrix import dataframe
         return dataframe(data=[list(row[:]) for row in self.labels],features=self.names[:])
 
     @property
@@ -587,7 +587,7 @@ class Label:
             
             #Slices for multiple label update
             elif isinstance(pos,slice):
-                from MatricesM.matrixops.getsetdel import betterslice
+                from ..matrixops.getsetdel import betterslice
                 pos = betterslice(pos,len(self))
                 if abs(pos.stop-pos.start) != len(val):
                     raise IndexError(f"Expected {abs(pos.stop-pos.start)} items, got {len(val)} instead")

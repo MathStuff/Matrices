@@ -2,7 +2,7 @@ def LU(mat,z,copy,obj):
     if not mat.isSquare:
         return (None,None,None)
 
-    from MatricesM.C_funcs.linalg import CLU
+    from ..C_funcs.linalg import CLU
     calcs = [res if res!=None else [] for res in CLU(mat.dim,z,copy,mat._cMat)]
     if mat._cMat:
         dt = complex

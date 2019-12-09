@@ -1,5 +1,5 @@
 def transpose(mat,hermitian=False,obj=None,labelobj=None):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
     
     if mat.isIdentity:
         return mat
@@ -9,7 +9,7 @@ def transpose(mat,hermitian=False,obj=None,labelobj=None):
     if hermitian:
         transposed=[[temp[cols][rows].conjugate() for cols in range(d0)] for rows in range(d1)]
     else:
-        from MatricesM.C_funcs.linalg import Ctranspose
+        from ..C_funcs.linalg import Ctranspose
         transposed = Ctranspose(d0,d1,temp)
 
     inds = mat.features[:] if mat._dfMat else None

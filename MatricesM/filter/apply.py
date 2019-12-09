@@ -1,6 +1,6 @@
 def applyop(mat,e,cols,conds,feats,apply_method,obj,lvl):
     
-    from MatricesM.setup.declare import declareColdtypes
+    from ..setup.declare import declareColdtypes
     
     if type(cols) not in [tuple,list]:
         cols = (cols,)
@@ -12,7 +12,7 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj,lvl):
     #Get indeces which rows to operate on
     if conds != None:
         if isinstance(conds,str):
-            from MatricesM.filter.where import wheres
+            from .filter.where import wheres
             inds = wheres(mat,conds,feats,True)[1]
         elif isinstance(conds,obj):
             if conds.d1 != 1:

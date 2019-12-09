@@ -17,7 +17,7 @@ def getcolmean(d0,lis,col,nullobj):
             return (col,nullobj)
 
 def mean(mat,col,get,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
 
     if isinstance(col,str):
         col=mat.features.index(col)+1

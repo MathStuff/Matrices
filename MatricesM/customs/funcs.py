@@ -71,12 +71,12 @@ def overwrite_attributes(mat,kw):
             else:
                 mat.DEFAULT_BOOL = v
         else:
-            from MatricesM.errors.errors import ParameterError
+            from ..errors.errors import ParameterError
             raise ParameterError(k,attributes+options+["DISPLAY_OPTIONS"])
 
 def read_file(directory:str,encoding:str="utf8",delimiter:str=",",**kwargs):
-    from MatricesM.setup.fileops import readAll
-    from MatricesM.matrix import dataframe
+    from ..setup.fileops import readAll
+    from ..matrix import dataframe
 
     directory = directory.replace("\\","/")
     (feats,data,cdtypes) = readAll(directory,encoding,delimiter)
@@ -84,7 +84,7 @@ def read_file(directory:str,encoding:str="utf8",delimiter:str=",",**kwargs):
 
 def save_file(matrix:object,directory:str,newline:str="",encoding:str="utf8",options:["no_name","no_index"]=[]):
     if ".csv" in directory:
-        from MatricesM.setup.fileops import save_csv
+        from ..setup.fileops import save_csv
         
         save_csv(matrix,directory,newline,encoding,options)
         

@@ -1,5 +1,5 @@
 def _minmax(mat,col,get,ismax,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
     
     if col==None:
         feats = mat.features[:]

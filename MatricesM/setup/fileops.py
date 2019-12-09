@@ -1,5 +1,5 @@
 def readAll(d,encoding,delimiter):
-    from MatricesM.setup.declare import declareColdtypes
+    from .declare import declareColdtypes
     try:
         feats = []
         data = []

@@ -1,5 +1,5 @@
 def iqr(mat,col,as_quartiles,get,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
     nullobj = mat.DEFAULT_NULL
 
     if isinstance(col,str):

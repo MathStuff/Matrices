@@ -1,5 +1,5 @@
 def mode(mat,col,get,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
 
     if isinstance(col,str):
         col=mat.features.index(col)+1

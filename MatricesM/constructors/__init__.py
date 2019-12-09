@@ -1,3 +1,3 @@
 name = "MatricesM"
 
-from MatricesM.constructors.matrices import eye,sym
+from .matrices import eye,sym

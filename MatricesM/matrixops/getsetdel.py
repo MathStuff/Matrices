@@ -22,9 +22,9 @@ def betterslice(oldslice,dim):
     return slice(s,e,t)
 
 def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,returninds=False): #Refactor this and make it shorter
-    from MatricesM.validations.validate import consistentlist,sublist,rangedlist
-    from MatricesM.errors.errors import MatrixError
-    from MatricesM.customs.objects import Label
+    from ..validations.validate import consistentlist,sublist,rangedlist
+    from ..errors.errors import MatrixError
+    from ..customs.objects import Label
 
 
     def get_indices(iterable:list,item:[list,object],r_stop:int=0):
@@ -659,8 +659,8 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                    **mat.options)
 
 def setitem(mat,pos,item,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1):
-    from MatricesM.errors.errors import DimensionError
-    from MatricesM.validations.validate import consistentlist,exactdimension
+    from ..errors.errors import DimensionError
+    from ..validations.validate import consistentlist,exactdimension
 
     d0,d1 = mat.dim
 
@@ -815,8 +815,8 @@ def setitem(mat,pos,item,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1
     return mat
 
 def delitem(mat,pos,obj,useind=False,rowlevel=1,usename=False,namelevel=1):
-    from MatricesM.validations.validate import consistentlist
-    from MatricesM.customs.objects import Label
+    from ..validations.validate import consistentlist
+    from ..customs.objects import Label
 
     d0,d1 = mat.dim
 

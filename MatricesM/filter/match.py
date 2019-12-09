@@ -1,6 +1,6 @@
 def _match(mat,reg,cols=None,retrow=None,obj=None,lvl=1):
     import re
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
     
     colind = None
     #Choose all columns if None given

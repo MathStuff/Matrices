@@ -1,5 +1,5 @@
 def rrechelon(mat,copy,obj,rrechelon):
-    from MatricesM.C_funcs.linalg import Crrechelon
+    from ..C_funcs.linalg import Crrechelon
     
     res = Crrechelon(copy,mat._cMat,mat.dim,rrechelon)
         

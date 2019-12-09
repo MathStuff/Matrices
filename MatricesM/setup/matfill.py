@@ -26,7 +26,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
     
     #Dictionary given
     if isinstance(lis,dict):
-        from MatricesM.C_funcs.linalg import Ctranspose
+        from ..C_funcs.linalg import Ctranspose
 
         names,values = list(lis.keys()),list(lis.values())
         if len(values) == 0:
@@ -98,7 +98,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
         elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
 
             if isinstance(fill,(str,int,float,complex)):
-                from MatricesM.C_funcs.randgen import getfill
+                from ..C_funcs.randgen import getfill
                 mat._matrix=getfill(d0,d1,fill)
                 return None
             
@@ -110,18 +110,18 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                     
                     elif fmat:
                         if r==[0,1]:
-                            from MatricesM.C_funcs.zerone import pyfill
+                            from ..C_funcs.zerone import pyfill
                             mat._matrix=pyfill(d0,d1,mat.seed)
                         else:
-                            from MatricesM.C_funcs.randgen import getuni
+                            from ..C_funcs.randgen import getuni
                             mat._matrix=getuni(d0,d1,n,m,mat.seed)
                     
                     else:
                         if r==[0,1]:
-                            from MatricesM.C_funcs.randgen import igetrand
+                            from ..C_funcs.randgen import igetrand
                             mat._matrix=igetrand(d0,d1,mat.seed)
                         else:
-                            from MatricesM.C_funcs.randgen import igetuni
+                            from ..C_funcs.randgen import igetuni
                             mat._matrix=igetuni(d0,d1,n-1,m+1,mat.seed)
                             
                 elif fill.__name__ in ["gauss","betavariate","gammavariate","lognormvariate"]:
@@ -181,7 +181,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                     mat._matrix = [fill for _ in range(d0)]
             
             else:
-                from MatricesM.C_funcs.randgen import getfill
+                from ..C_funcs.randgen import getfill
                 mat._matrix=getfill(d0,d1,fill)
                 
         # =============================================================================               
@@ -200,7 +200,7 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                 lis=list(r.values())
 
                 if isinstance(fill,(str,int,float,complex)):
-                    from MatricesM.C_funcs.randgen import getfill
+                    from ..C_funcs.randgen import getfill
                     mat._matrix=getfill(d0,d1,fill)
                     return None
 
@@ -270,10 +270,10 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
                         mat._matrix = [fill for _ in range(d1)]
                         return None
                 else:
-                    from MatricesM.C_funcs.randgen import getfill
+                    from ..C_funcs.randgen import getfill
                     temp = getfill(d1,d0,fill)
                 
-                from MatricesM.C_funcs.linalg import Ctranspose
+                from ..C_funcs.linalg import Ctranspose
                 mat._matrix = Ctranspose(d1,d0,temp)
         else:
             return None

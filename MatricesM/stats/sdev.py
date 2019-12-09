@@ -1,5 +1,5 @@
 def sdev(mat,col,population,get,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
     nullobj = mat.DEFAULT_NULL
 
     d0,d1 = mat.dim

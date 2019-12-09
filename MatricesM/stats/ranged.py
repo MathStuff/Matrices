@@ -1,5 +1,5 @@
 def ranged(mat,col,get,obj,dFrame):
-    from MatricesM.customs.objects import Label
+    from ..customs.objects import Label
 
     feats = mat.features.labels
     if mat.features.level == 1:
