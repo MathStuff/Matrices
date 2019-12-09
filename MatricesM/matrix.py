@@ -156,6 +156,11 @@ class Matrix(Vector):
         self.NOTES = ""                             #Extra info to add to the end of the string used in __repr__
         self.DEFAULT_NULL = null                    #Object to use as invalid value indicator
         self.DIRECTORY = ""                         #Path of the Matrix in disk
+        self.DEFAULT_BOOL = {                       #Values to use as boolean values
+                            True:1,
+                            False:0,
+                            }
+        self.BOOL_MAT = False                       #Wheter or not to treat matrix values as default boolean values provided
         self.DISPLAY_OPTIONS = {                    #Options and symbols used while displaying
                                 "allow_label_dupes":False,
                                 "dupe_place_holder":"//",
@@ -166,11 +171,8 @@ class Matrix(Vector):
                                 "col_place_holder":"...",
                                 "row_place_holder":"...",
                                }
-        self.DEFAULT_BOOL = {                       #Values to use as boolean values
-                             True:1,
-                             False:0,
-                            }
 
+        
         #Basic attributes
         self.__features = features                  #Column names
         self.__coldtypes = coldtypes                #Column dtypes 
@@ -2931,11 +2933,15 @@ class Matrix(Vector):
         """
         Returns True if all the elements are equal to 1, otherwise returns False
         """
+        if not self.BOOL_MAT:
+            return False
+            
         m = self.matrix
+        true = self.DEFAULT_BOOL[True]
         for i in range(self.d0):
             row = m[i]
             for j in range(self.d1):
-                if row[j] != 1:
+                if row[j] != true:
                     return False
         return True
 
@@ -3086,6 +3092,7 @@ class Matrix(Vector):
                 "DEFAULT_NULL":self.DEFAULT_NULL,
                 "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS,
                 "DEFAULT_BOOL":self.DEFAULT_BOOL,
+                "BOOL_MAT":self.BOOL_MAT,
                }
 
     @property
@@ -3099,7 +3106,8 @@ class Matrix(Vector):
                 "DIRECTORY":self.DIRECTORY,
                 "DEFAULT_NULL":self.DEFAULT_NULL,
                 "DISPLAY_OPTIONS":self.DISPLAY_OPTIONS,
-                "DEFAULT_BOOL":self.DEFAULT_BOOL
+                "DEFAULT_BOOL":self.DEFAULT_BOOL,
+                "BOOL_MAT":self.BOOL_MAT,
                }
 
     def __len__(self):
