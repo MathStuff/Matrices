@@ -23,7 +23,6 @@ def roundto(val,decimal:int=8,force:bool=False):
             raise TypeError(f"Can't round {val}.")
 
 def overwrite_attributes(mat,kw):
-    from MatricesM.errors.errors import ParameterError
 
     attributes = ["dim","data","fill","ranged",
                   "seed","features","decimal","dtype",
@@ -31,7 +30,7 @@ def overwrite_attributes(mat,kw):
                   
     options = ["PRECISION","ROW_LIMIT","EIGENVEC_ITERS",
                "QR_ITERS","NOTES","DIRECTORY",
-               "DEFAULT_NULL","DEFAULT_BOOL"]
+               "DEFAULT_NULL","DEFAULT_BOOL","BOOL_MAT"]
 
     display_keys = ['allow_label_dupes','dupe_place_holder','label_seperator',
                     'left_top_corner','left_seperator','top_seperator',
@@ -72,6 +71,7 @@ def overwrite_attributes(mat,kw):
             else:
                 mat.DEFAULT_BOOL = v
         else:
+            from MatricesM.errors.errors import ParameterError
             raise ParameterError(k,attributes+options+["DISPLAY_OPTIONS"])
 
 def read_file(directory:str,encoding:str="utf8",delimiter:str=",",**kwargs):

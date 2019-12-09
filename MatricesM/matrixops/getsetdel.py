@@ -485,7 +485,10 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
 
                 if uselabel:
                     return None
-                rowrange = [ind for ind,i in enumerate(pos[0].matrix) if all(i)]
+
+                true = mat.DEFAULT_BOOL[True]
+                rowrange = [ind for ind,row in enumerate(pos[0].matrix) \
+                            if all([True if val==true else False for val in row])]
             else:
                 raise TypeError(f"{pos[0]} can't be used as row index")
         
@@ -633,7 +636,9 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
     elif isinstance(pos,obj):
         if uselabel:
             return None
-        rowrange = [ind for ind,i in enumerate(pos.matrix) if all(i)]
+
+        true = mat.DEFAULT_BOOL[True]
+        rowrange = [ind for ind,row in enumerate(pos.matrix) if all([True if val==true else False for val in row])]
 
         if returninds:
             return (rowrange,None)
