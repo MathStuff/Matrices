@@ -363,8 +363,6 @@ class Matrix(Vector):
                     raise IndexError(f"Expected {d0} labels, got {label_len} instead")
 
             elif isinstance(ind,Matrix):
-                if ind.d1 != 1:
-                    raise TypeError("Index parameter only accepts column matrices")
                 if ind.d0 != d0:
                     raise ValueError(f"Invalid index matrix; expected {d0} rows, got {ind.d0}")
                 
