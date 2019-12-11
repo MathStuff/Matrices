@@ -284,105 +284,15 @@ class Matrix(Vector):
                 raise AttributeError(f"'{attr}' is not a column name nor an attribute or a method of Matrix")
 
     def setup(self,first:bool,implicit:bool=False):
-        #Whetere or not there are random numbers involved
-        randomly_filled = True if self._matrix in [None,[],{},[[]]] else False
-        #Matrix fix
-        if first and not implicit:
-            self.setMatrix(self.dim,self.initRange,self._matrix,self.fill,self._cMat,self._fMat)
-        
-        d0,d1 = self.__dim
-        df = self._dfMat
-        dt = self.dtype
-        cdts = self.coldtypes
-        names = self.features if self.features != None else []
+        """
+        Process and validate object's initial attributes, shouldn't be manually called 
+        unless something went wrong while using the object
 
-        #Column names
-        if len(names) != d1:
-            names = Label([(f"col_{i}",) for i in range(1,d1+1)],[""],implicit=True)
-
-        #Column types
-        if not validlist(self._matrix):
-            return None
-
-        if not type(self.DEFAULT_NULL).__name__ in ["type","null"]:
-            raise TypeError("'DEFAULT_NULL' should be a 'type' or 'null' type")
-
-        #Set column dtypes
-        #Not enough types given, reset given types
-        if len(cdts) != d1:
-            if self.fill == self.DEFAULT_NULL:
-                self.__coldtypes = [self.DEFAULT_NULL for _ in range(d1)]
-            elif df:
-                from .setup.declare import declareColdtypes
-                self.__coldtypes = declareColdtypes(self.matrix,self.DEFAULT_NULL.__name__)
-            else:
-                self.__coldtypes = [dt]*d1
-
-        cdts = self.__coldtypes
-
-        #Index shouldn't be None
-        if self.__index in [[],None]:
-            self.__index = Label()
-
-        #Apply coldtypes to values in the matrix, set indices, update names
-        if df:
-
-            mm = self.matrix
-
-            #Apply column dtypes to each column's values if they weren't randomly picked
-            if not randomly_filled:
-                def_null_name = self.DEFAULT_NULL.__name__
-                for i in range(d0):
-                    j=0
-                    rowcopy = mm[i][:]
-                    while j<d1:
-                        try:
-                            cdtype = cdts[j]
-                            if cdtype != type:
-                                val = rowcopy[j]
-                                if type(val).__name__ != def_null_name:
-                                    rowcopy[j] = cdtype(val)
-                            j+=1
-                        except:
-                            j+=1
-                            continue
-                    mm[i] = rowcopy[:]
-
-            ind = self.__index
-            
-            if isinstance(ind,Label):
-                label_len = len(ind)
-                if label_len == 0:
-                    if first:
-                        self.__index = Label(list(range(d0)),"")
-                    else:
-                        raise IndexError(f"Expected {d0} labels, got {label_len} instead")
-                elif label_len == d0:
-                    self.__index = ind[:]
-                else:
-                    raise IndexError(f"Expected {d0} labels, got {label_len} instead")
-
-            elif isinstance(ind,Matrix):
-                if ind.d0 != d0:
-                    raise ValueError(f"Invalid index matrix; expected {d0} rows, got {ind.d0}")
-                
-                self.__index = Label([tuple(row) for row in ind.matrix],ind.features.get_level(1))
-
-            elif isinstance(ind,(list,tuple)):
-                if len(ind) == 0:
-                    self.__index = Label(list(range(d0)),"")
-                elif len(ind) != d0:
-                    raise ValueError(f"Invalid index list; expected {d0} values, got {len(ind)}")
-                else:
-                    self.__index = Label(list(ind)[:])
-            else:
-                raise TypeError(f"Type {type(ind).__name__} can't be used as indices")
-            
-            self._matrix = mm
-
-        if not isinstance(names,Label):
-            names = Label(names)
-        self.__features = names
+        first:bool, wheter or not it's the first time running the setup for the object
+        implicit:bool, implicity of the given attributes
+        """
+        from .setup.argpro import _setup
+        _setup(self,first,implicit,Label,Matrix,validlist)
 
     def setInstance(self,dt:Union[int,float,complex,dataframe]):
         """
