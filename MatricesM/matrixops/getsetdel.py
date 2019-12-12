@@ -493,7 +493,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                 raise TypeError(f"{pos[0]} can't be used as row index")
         
             #########################
-            
+
             # Matrix[row_index,str]
             if isinstance(pos[1],str):
                 pos[1] = mat.features.index(pos[1],namelevel)
@@ -536,20 +536,29 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
                     end = mat.features.index(pos[1].stop,namelevel) if isinstance(pos[1].stop,str) else default_en
                     pos[1] = betterslice(slice(start,end,pos[1].step),d1)
 
-            # Matrix[row_index,Tuple(str)]
+            # Matrix[row_index,Tuple(str)|List(Tuple(str),str,int,...)]
             elif isinstance(pos[1],(tuple,list)):
-                #######Assertion
-                consistentlist(pos[1],(int,str),"indices",throw=True)
 
                 feats = mat.features
-
                 lbls = feats.labels
-                feats_specific_lvl = feats.get_level(namelevel)
 
-                colinds = [i if isinstance(i,int) \
-                           else lbls.index(i) if isinstance(i,tuple)\
-                           else feats_specific_lvl.index(i) \
-                           for i in pos[1]]
+                #Single column
+                if isinstance(pos[1],tuple):
+                    #All values in a tuple should be strings
+                    consistentlist(pos[1],str,"indices",throw=True)
+
+                    colinds = [lbls.index(pos[1])]
+                    
+                #Multiple columns
+                else:
+                    consistentlist(pos[1],(int,str,tuple),"indices",throw=True)
+
+                    feats_specific_lvl = feats.get_level(namelevel)
+
+                    colinds = [i if isinstance(i,int) \
+                               else lbls.index(i) if isinstance(i,tuple)\
+                               else feats_specific_lvl.index(i) \
+                               for i in pos[1]]
 
                 rangedlist(colinds,lambda a:(a<d1) and (a>=0),"indices",f"[0,{d1})",throw=True)
                 #######
@@ -586,7 +595,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
             if returninds:
                 if isinstance(pos[1],slice):
                     return (rowrange,range(d1)[pos[1]])
-                return (rowrange,pos[1])
+                return (rowrange,[pos[1]]) if isinstance(pos[1],int) else (rowrange,pos[1])
 
             if isinstance(pos[0],int) and isinstance(pos[1],int):
                 return mat._matrix[rowrange[0]][pos[1]]
