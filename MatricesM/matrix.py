@@ -267,6 +267,10 @@ class Matrix(Vector):
             
         """
         try:
+            #Ignore some of the weird ipython methods 
+            if attr in ["_ipython_canary_method_should_not_exist_",
+                        "_repr_mimebundle_",]:
+                return None
             return object.__getattribute__(self,attr)
         except:
             try:
