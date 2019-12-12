@@ -1,4 +1,4 @@
-def _corr(mat,col1,col2,population,temp,method):
+def _corr(mat,col1,col2,population,temp,method,Labelobj):
     for i in [col1,col2]:
         if isinstance(i,str):
             i=mat.features.index(i)+1
@@ -81,7 +81,7 @@ def _corr(mat,col1,col2,population,temp,method):
                     n+=1
                 m+=1
 
-        temp.index = availablefeats
+        temp.index = Labelobj(availablefeats,mat.features.names[:])
         return temp
     
     else:

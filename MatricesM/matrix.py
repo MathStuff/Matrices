@@ -2224,6 +2224,9 @@ class Matrix(Vector):
             return _combine(self,columns,function,feature,dtype,inplace,namelevel,dataframe)
         _combine(self,columns,function,feature,dtype,inplace,namelevel,dataframe)
 
+    def split(self,column):
+        pass
+
     def replace(self,old:Any,
                 new:Any,
                 column:Union[str,List[Union[str,None]],Tuple[Union[str,None]],None]=None,
@@ -2605,7 +2608,7 @@ class Matrix(Vector):
         """
         from .stats.corr import _corr
         temp = Identity(self.d1,features=self.features[:],dtype=dataframe,coldtypes=[float for _ in range(self.d1)])
-        return _corr(self,col1,col2,population,temp,method)
+        return _corr(self,col1,col2,population,temp,method,Label)
     
     @property   
     def describe(self):
