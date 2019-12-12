@@ -49,7 +49,7 @@ def mode(mat,col,get,obj,dFrame):
         temp = []
         for feat,c in mode.items():
             repeats = list(c.keys())
-            name = str(feat)[1:-1]
+            name = str(feat)
             inds = Label([list(repeats[0])],name) if isinstance(repeats[0],tuple) else Label([repeats],name)
             temp.append(obj((len(list(c.keys())),1),
                         [i for i in c.values()],

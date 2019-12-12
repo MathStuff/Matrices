@@ -46,7 +46,7 @@ def freq(mat,col,get,obj,dFrame):
                         features=["Frequency"],
                         dtype=dFrame,
                         coldtypes=[int],
-                        index=Label(repeats,str(feat)[1:-1])))
+                        index=Label(repeats,str(feat))))
         return tuple(temp)
     #Return a dictionary
     elif get==1:
