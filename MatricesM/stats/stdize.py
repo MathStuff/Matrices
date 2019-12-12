@@ -1,4 +1,4 @@
-def stdize(mat,col=None,inplace=True,zerobound=12):
+def stdize(mat,col=None,inplace=True,zerobound=12,dec=True,ret=False):
     if isinstance(col,str):
         col=mat.features.index(col)+1
         
@@ -11,10 +11,10 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
             if 0 in sd:
                 raise ZeroDivisionError("Standard deviation of 0")
             
-            valid_col_indeces = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
+            valid_col_indices = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
 
             statind = 0
-            for i in valid_col_indeces:
+            for i in valid_col_indices:
                 m,s = mean[statind],sd[statind]
                 j=0 #Index
                 while True:#Loop through the column
@@ -28,7 +28,11 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
                     else:
                         break
                 statind += 1
-
+            
+            #Re-declare column dtypes
+            if dec:
+                temp.fix_coldtypes(valid_col_indices)
+            
             return temp
         
         else:
@@ -39,10 +43,10 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
             if not mat.coldtypes[col-1] in [float,int]:
                 raise TypeError("Can't normalize column of type {typename}".format(typename=mat.coldtypes[col-1]))
 
-            temp = mat.col(col)
+            temp = mat.copy
             mean = mat.mean(col,0)
             sd = mat.sdev(col,get=0)
-            
+            col -= 1
             if round(sd,zerobound)==0:
                 raise ZeroDivisionError("Standard deviation of 0")
 
@@ -50,14 +54,18 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
             while True:#Loop through the column
                 try:
                     while j<mat.dim[0]:
-                        temp._matrix[j][0] = (temp._matrix[j][0]-mean)/sd
+                        temp._matrix[j][col] = (temp._matrix[j][col]-mean)/sd
                         j+=1
                 except:#Value was invalid
                     j+=1
                     continue
                 else:
-                    break               
-                        
+                    break  
+
+            #Re-declare column dtypes
+            if dec:
+                temp.fix_coldtypes(col)
+                  
             return temp
 
     else:
@@ -68,10 +76,10 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
             if 0 in sd:
                 raise ZeroDivisionError("Standard deviation of 0")
             
-            valid_col_indeces = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
+            valid_col_indices = [t for t in range(len(mat.coldtypes)) if mat.coldtypes[t] in [float,int]]
             
             statind = 0
-            for i in valid_col_indeces:
+            for i in valid_col_indices:
                 m,s = mean[statind],sd[statind]
                 j=0 #Index
                 while True:#Loop through the column
@@ -96,11 +104,13 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
 
             mean = mat.mean(col,0)
             sd = mat.sdev(col,get=0)
-            
-            if round(sd,zerobound)==0:
-                raise ZeroDivisionError("Standard deviation of 0")
 
             col-=1
+            valid_col_indices = 0
+
+            if round(sd,zerobound)==0:
+                raise ZeroDivisionError("Standard deviation of 0")
+            
             j=0 #Index
             while True:#Loop through the column
                 try:
@@ -112,4 +122,10 @@ def stdize(mat,col=None,inplace=True,zerobound=12):
                     continue
                 else:
                     break
-                    
+   
+        if dec:
+            #Re-declare column dtypes
+            mat.fix_coldtypes(valid_col_indices)
+
+        if ret:
+            return mat
