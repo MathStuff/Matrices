@@ -336,7 +336,31 @@ class Matrix(Vector):
         """
         from .setup.matfill import _setMatrix
         _setMatrix(self,dim,ranged,lis,fill,cmat,fmat,uniform=uniform,seed=seed,null=self.DEFAULT_NULL)
+
+    def fix_coldtypes(self,column:Union[Tuple[str],List[Any],str,None]=None,return_dtype=False):
+        """
+        Returns a type object or a list of type objects
+        Guesses the dtype for the given column, or all columns
+
+        column:column indices,str,None; Name of the column to guess dtype of, None to guess all
+        return_dtype:bool; False to apply new dtypes, True to return dtype guesses without applying
+        """
+        from .setup.declare import declareColdtypes
+        from .matrixops.getsetdel import getitem
+
+        column = slice(None) if column == None \
+                 else list(column) if isinstance(column,range) \
+                 else column
+
+        colinds = list(getitem(self,(slice(None),column),Matrix,returninds=True)[1]) #Get integer indices
+        colds = declareColdtypes([[row[j] for j in colinds] for row in self.matrix]) #Get guesses
+        if return_dtype:
+            return colds if len(colds)>1 else colds[0]
         
+        #Apply new guesses
+        for i,j in enumerate(colinds):
+            self.__coldtypes[j] = colds[i]
+
 # =============================================================================
     """Attribute recalculation methods"""
 # =============================================================================    
@@ -2389,25 +2413,35 @@ class Matrix(Vector):
     """Statistical methods"""
 # =============================================================================      
     
-    def normalize(self,col:Union[int,str,None]=None,inplace:bool=True):
+    def normalize(self,col:Union[int,str,None]=None,inplace:bool=True,declare:bool=True,returnmat:bool=False):
         """
         Normalizes the data to be valued between 0 and 1
 
         col:integer>=1 | column name as string | None
         inplace: bool ; True to apply changes to matrix, False to return a new matrix
+        declare: bool ; True to guess new dtype and store it in coldtypes, False to keep old dtype
+        returnmat: bool ; True to return self after inplace changes applied, False to return None
+
+        NOTE:
+            -> 'returnmat' value only applies when 'inplace' is True, otherwise a new Matrix is returned
         """
         from .stats.normalize import normalize
-        return normalize(self,col,inplace,self.PRECISION)
+        return normalize(self,col,inplace,self.PRECISION,declare,returnmat)
 
-    def stdize(self,col:Union[int,str,None]=None,inplace:bool=True):
+    def stdize(self,col:Union[int,str,None]=None,inplace:bool=True,declare:bool=True,returnmat:bool=False):
         """
         Standardization to get mean of 0 and standard deviation of 1
 
         col:integer>=1 | column name as string
         inplace: bool ; True to apply changes to matrix, False to return a new matrix
+        declare: bool ; True to guess new dtype and store it in coldtypes, False to keep old dtype
+        returnmat: bool ; True to return self after inplace changes applied, False to return None
+
+        NOTE:
+            -> 'returnmat' value only applies when 'inplace' is True, otherwise a new Matrix is returned
         """ 
         from .stats.stdize import stdize
-        return stdize(self,col,inplace,self.PRECISION)
+        return stdize(self,col,inplace,self.PRECISION,declare,returnmat)
 
     def ranged(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
         """
