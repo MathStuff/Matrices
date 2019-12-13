@@ -42,7 +42,8 @@ def grouping(mat,col,dFrame,lvl):
             if len(grp) == 1:
                 return mat
 
-            return Group([(group,mat[mat[col[0]]==group]) for group in grp],names=col)
+            column = mat[col[0]]
+            return Group([(group,mat[column==group]) for group in grp],names=col)
 
         #Group by multiple columns
         else:
@@ -60,7 +61,7 @@ def grouping(mat,col,dFrame,lvl):
             columnindices = [feats.index(name) for name in col]
 
             #Row labels for groups
-            index_column = mat.index[:]
+            index_column = mat.index.labels
             groups_indices = [tuple([group,[]]) for group in grp]
 
             for i,row in enumerate(mat.matrix):
@@ -68,14 +69,17 @@ def grouping(mat,col,dFrame,lvl):
                 grp_ind = grp.index([row[i] for i in columnindices])
                 #Add row to its group,store row's index
                 tables[grp_ind][1].append(row)
-                groups_indices[grp_ind][1].append(index_column[i])
+                groups_indices[grp_ind][1].append(index_column[i][:])
 
             table = []
             cdtyps = mat.coldtypes
             indname = mat.index.names
+            options = mat.options
             for i,group in enumerate(tables):
-                table.append((group[0],dFrame(group[1],features=feats[:],
+                table.append((group[0],dFrame(dim=[len(group[1]),mat.d1],
+                                              data=group[1],features=feats[:],
                                               coldtypes=cdtyps[:],
                                               index=Label(groups_indices[i][1],indname),
+                                              implicit=True,**options,
                                               )))
             return Group(table,names=col)
