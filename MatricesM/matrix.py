@@ -835,36 +835,57 @@ class Matrix(Vector):
         from .matrixops.matdelDim import delDim
         delDim(self,num)
 
-    def swap(self,index1:Union[int,str],index2:Union[int,str],axis:[0,1]=1,returnmat:bool=False):
+    def swap(self,swap:Union[int,str,Tuple[str]],to:Union[int,str,Tuple[str]],axis:[0,1]=1,returnmat:bool=False):
         """
         Swap two rows or columns
 
-        index1:int>0|str; first row index OR column index|name
-        index2:int>0|str; second row index OR column index|name
-        axis:0|1; 0 for row swap, 1 for column swap
-        returnmat:bool; wheter or not to return self after evaluation
+        swap: int>0|str; row/column number or column name
+        to: int>0|str; row/column number or column name
+        axis: 0|1; 0 for row swap, 1 for column swap
+        returnmat: bool; wheter or not to return self after evaluation
+
+        Example:
+
+            #Swap col_1 and col_3 columns
+            >>> Matrix.swap(swap="col_1",to="col_3")
+
+            #Swap 4th row with 1552nd row
+            >>> Matrix.swap(swap=4,to=1552,axis=0)
+
+        NOTE:
+            -> Swapping columns also swap their names and dtypes
+            -> Swapping rows also swap their row labels
+
         """
+        def indexer(value,feats,limit):
+            if isinstance(value,int):
+                assert ((value>0) and (value<=limit)), f"0<index_value<={limit}"
+                return value-1
+            return feats.index(value) if isinstance(value,str) else\
+                   feats.labels.index(value) if isinstance(value,tuple) else\
+                   None
+
         feats = self.features[:]
-        for index in [index1,index2]:
-            if axis==1:
-                if isinstance(index,str):
-                    index = feats.index(index)
-            assert index>0 and index<=self.d0
+        rowlabels = self.index
+        swap = indexer(swap,feats,self.d1)
+        to = indexer(to,feats,self.d1)
+
+        assert None not in [swap,to], "Indices can only be one of (int,str,tuple) types"
         assert axis in [0,1], "axis should be 0 for row swap, 1 for column swap"
 
-        if axis==0:
-            self._matrix[index1],self._matrix[index2] = self._matrix[index2][:],self._matrix[index1][:]
+        if axis==0:#Row swap
+            self._matrix[swap],self._matrix[to] = self._matrix[to][:],self._matrix[swap][:]
             if self._dfMat:
-                self.__index[index1],self.__index[index2] = self.__index[index2],self.__index[index1]
+                self.__index[swap],self.__index[to] = self.__index[to],self.__index[swap]
         else:
-            self[feats[index1]],self[feats[index2]] = self[feats[index2]],self[feats[index1]]
-            self.__coldtypes[index1],self.__coldtypes[index2] = self.__coldtypes[index2],self.__coldtypes[index1]
-            self.__features[index1],self.__features[index2] = self.__features[index2],self.__features[index1]
+            self[:,swap],self[:,to] = self[:,to],self[:,swap]
+            self.__coldtypes[swap],self.__coldtypes[to] = self.__coldtypes[to],self.__coldtypes[swap]
+            self.__features[swap],self.__features[to] = self.__features[to],self.__features[swap]
 
         if returnmat:
             return self
 
-    def setdiag(self,val:Union[Tuple[Any],List[Any],object]):
+    def setdiag(self,val:Union[Tuple[Any],List[Any],object],returnmat:bool=False):
         """
         Set new diagonal elements
 
@@ -872,6 +893,8 @@ class Matrix(Vector):
             -> If a Matrix is given, new diagonals are picked as given matrix's diagonals
             -> If a list/tuple is passed, it should have the length of the smaller dimension of the matrix
             -> Any different value types are treated as single values, all diagonal values get replaced with given object
+        
+        returnmat:bool ; wheter to return self after evaluations
         """
         expected_length = min(self.dim)
         if isinstance(val,Matrix):
@@ -891,10 +914,16 @@ class Matrix(Vector):
         else:
             for i in range(expected_length):
                 self._matrix[i][i] = val
+        
+        if returnmat:
+            return self
     
     def drop_null(self,axis=0,returnmat=False):
         """
         Remove rows or columns with default null values
+
+        axis: 0|1; 0 to drop rows, 1 to drop columns with null values
+        returnmat: bool; wheter to return self after evaluations
         """
         if not self._dfMat:
             raise TypeError("Can't drop null values from non-dataframe matrices")
@@ -931,6 +960,8 @@ class Matrix(Vector):
     def fill_null(self,item,returnmat=False):
         """
         Replace null values with the given object
+
+        item: Any; Value to replace null values with
         """
         return self.replace(self.DEFAULT_NULL,item,returnmat=returnmat)
         
