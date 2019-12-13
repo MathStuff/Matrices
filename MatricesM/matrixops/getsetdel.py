@@ -641,7 +641,7 @@ def getitem(mat,pos,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1,retu
         else:
             raise IndexError(f"{pos} can't be used as indices")
 
-    #0-1 filled matrix given as indeces
+    #boolean matrix given as indeces
     elif isinstance(pos,obj):
         if uselabel:
             return None
@@ -730,7 +730,7 @@ def setitem(mat,pos,item,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1
     #Change a column, add a column or change a column's values of given row indices
     elif isinstance(pos,str):
         new_col = 0
-        if not (pos in mat.features) and not uselabel:
+        if not (pos in mat.features.get_level(namelevel)) and not uselabel:
             new_col = 1
         if not new_col:
             if uselabel:#Change rows with given index
@@ -745,39 +745,57 @@ def setitem(mat,pos,item,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1
                 #####Fix item's dimensions#####
                 item = fix_given_item(item,rows,cols,1)
                 ###############################
-                ind = mat.features.index(pos)
+                ind = mat.features.index(pos,namelevel)
                 for i in rows:
                     mat._matrix[i][ind] = item[i][0]
-        else:
+        else:#Concatenate new column
             #####Fix item's dimensions#####
             item = fix_given_item(item,rows,[None],1)
             ###############################
             for i in rows:
                 mat._matrix[i].append(item[i][0])
-            mat._Matrix__features.append(pos)
-            mat._Matrix__coldtypes.append(type(item[i][0]))
+            
+            from ..setup.declare import declareColdtypes
+            mat.features.append(pos)
+            mat.coldtypes.append(declareColdtypes(item)[0])
             mat._Matrix__dim = [d0,d1+1]
 
 
     #Change certain parts of the matrix
     elif isinstance(pos,tuple):
+        new_col = 0
+        if not (pos in mat.features.labels) and not uselabel:
+            new_col = 1
         #Change given columns
-        if consistentlist(pos,str):
-            #####Fix item's dimensions#####
-            item = fix_given_item(item,rows,cols,1)
-            ###############################
-            i = 0
-            for r in rows:
-                j = 0
-                for c in cols:
-                    mat._matrix[r][c] = item[i][j]
-                    j+=1
-                i+=1
+        if consistentlist(pos,str) or (pos in mat.features.labels):
+            if new_col:#Concatenate new column
+                #####Fix item's dimensions#####
+                item = fix_given_item(item,rows,[None],1)
+                ###############################
+                for i in rows:
+                    mat._matrix[i].append(item[i][0])
+                
+                from ..setup.declare import declareColdtypes
+                mat.features.append(pos)
+                mat.coldtypes.append(declareColdtypes(item)[0])
+                mat._Matrix__dim = [d0,d1+1]
+
+            else:
+                #####Fix item's dimensions#####
+                item = fix_given_item(item,rows,cols,1)
+                ###############################
+                i = 0
+                for r in rows:
+                    j = 0
+                    for c in cols:
+                        mat._matrix[r][c] = item[i][j]
+                        j+=1
+                    i+=1
 
         #Tuple with row indices first, column indices/names second
         elif len(pos)==2:
             #Assert second index contains column name
-            if consistentlist(pos[1],str):
+            if consistentlist(pos[1],str) or (pos[1] in mat.features.labels):
                 #####Fix item's dimensions#####
                 item = fix_given_item(item,rows,cols,1)
                 ###############################
