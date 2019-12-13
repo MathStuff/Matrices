@@ -1,5 +1,6 @@
 from typing import List
 
+#Forward declaration
 class dataframe:
     pass
 
@@ -134,41 +135,106 @@ class date:
 
 class Group:
     def __init__(self,matrix_list,names):
-        self.groups = [val[0] for val in matrix_list]
-        self.grouped_by = names
-        self.tables = [val[1] for val in matrix_list]
-    
-    @property
-    class sub:
-        """
-        Access sub groups
-
-        Examples:
-
-            >>> df = dataframe(fill=uniform)
-
-            >>> data = df(dim=(15,3),ranged={"c1":(0,5),"c2":(0,2),"c3":(-5,-1)}) 
-            >>> data
-
-            
-            >>> group_1 = data.groupBy("c1")
-
-            >>>
-        """
-        def __init__(self,group_obj):
-            self.obj = group_obj
-
-        def __getitem__(self,pos):
-            """
-            Index through sub-groups
-            """
-            pass
+        self.grouped_by = tuple(names)
+        self.level = len(names)
+        self.groups = []
+        self.tables = []
+        
+        for val in matrix_list:
+            if isinstance(val[0],list):
+                self.groups.append(tuple(val[0]))
+            else:
+                self.groups.append(val[0])
+            self.tables.append(val[1])
 
     def __getitem__(self,pos):
         """
         Integer indexing through group tables
+
+        Examples:
+
+            >>> df = dataframe(fill=uniform)
+            >>> data = df(dim=(15,3),ranged={"c1":(0,5),"c2":(0,2),"c3":(-5,-1)}) 
+            >>> data
+
+                  |c1  c2  c3
+                  +----------
+                 0| 2   1  -3
+                 1| 2   2  -3
+                 2| 3   2  -5
+                 3| 2   1  -1
+                 4| 1   2  -1
+                 5| 3   3  -2
+                 6| 5   1  -5
+                 7| 3   0  -3
+                 8| 4   1  -1
+                 9| 2   3  -4
+                10| 4   2  -1
+                11| 3   0  -1
+                12| 3   1  -2
+                13| 2   1  -3
+                14| 1   0  -1
+            
+            >>> group_1 = data.groupBy("c1")
+            >>> group_1.tables
+
+                [
+                  |c1  c2  c3
+                  +----------
+                 0| 2   1  -3
+                 1| 2   2  -3
+                 3| 2   1  -1
+                 9| 2   3  -4
+                13| 2   1  -3
+                ,
+                  |c1  c2  c3
+                  +----------
+                 2| 3   2  -5
+                 5| 3   3  -2
+                 7| 3   0  -3
+                11| 3   0  -1
+                12| 3   1  -2
+                ,
+                  |c1  c2  c3
+                  +----------
+                 4| 1   2  -1
+                14| 1   0  -1
+                ,
+                 |c1  c2  c3
+                 +----------
+                6| 5   1  -5
+                ,
+                  |c1  c2  c3
+                  +----------
+                 8| 4   1  -1
+                10| 4   2  -1
+                ]
+
+            >>> group_1.groups
+
+                [2, 3, 1, 5, 4]
+            
+            >>> group_1.grouped_by
+            
+                ('c1',)
+
+            >>> group_1[3]
+            
+                  |c1  c2  c3
+                  +----------
+                 2| 3   2  -5
+                 5| 3   3  -2
+                 7| 3   0  -3
+                11| 3   0  -1
+                12| 3   1  -2
+
         """
-        pass
+
+        if pos not in self.groups:
+            raise KeyError(f"{pos} is not a value in grouped values")
+
+        return self.tables[self.groups.index(pos)]
+
 
 class Label:
     """
@@ -190,11 +256,13 @@ class Label:
         >>> rowlabels
         
         Label(
-              names:  ('groups', 'classes')
+              names:  ['groups', 'classes']
               labels: ('group_1', 'class_1')
                       ('group_2', 'class_3')
                       ('group_3', 'class_2')
                       ('group_1', 'class_3')
+            
+              size:   (4,2)
              )
 
         >>> dataframe(dim=(4,3),
