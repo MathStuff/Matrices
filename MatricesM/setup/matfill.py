@@ -75,24 +75,34 @@ def _setMatrix(mat,d,r,lis,fill,cmat,fmat,uniform,seed,null):
     #Matrix from a list or other filling methods
     else:
         if len(lis)>0:
-            if isinstance(lis[0],list):                        
-                mat._matrix = [a[:] for a in lis[:]]
-                if mat.dim == [0,0]:
-                    mat._Matrix__dim=mat._declareDim()
-            else:
-                try:
-                    if mat.dim != [0,0]:
-                        assert mat.dim[0]*mat.dim[1] == len(lis)
-                        mat._matrix=[]
-                        for j in range(0,len(lis),mat.dim[1]):
-                            mat._matrix.append(lis[j:j+mat.dim[1]]) 
-                    else:
-                        mat._matrix = [lis]
+            from ..validations.validate import consistentlist
+            #List of lists
+            if consistentlist(lis,list,lisname="rows"):
 
-                except Exception as err:
-                    print(err)
-                else:
+                if mat.dim == [0,0]:
+                    mat._matrix = mat._matrix = [row[:] for row in lis]
                     mat._Matrix__dim=mat._declareDim()
+
+                else:
+                    d0,d1 = mat.dim
+                    
+                    from ..validations.validate import exactdimension
+                    exactdimension(lis,d0,d1,throw=True)
+
+                    mat._matrix = [row[:] for row in lis]
+                    
+            #List of mixed values
+            else:
+                if mat.dim != [0,0]:
+                    d0,d1 = mat.dim
+                    assert d0*d1 == len(lis) , "Given list can't be used as a {d0}x{d1} Matrix"
+                    mat._matrix=[]
+                    for j in range(0,len(lis),d1):
+                        mat._matrix.append(lis[j:j+d1]) 
+                else:
+                    mat._matrix = [lis]
+
+                mat._Matrix__dim=mat._declareDim()
         # =============================================================================
         #Same range for all columns
         elif len(lis)==0 and (isinstance(r,list) or isinstance(r,tuple)):
