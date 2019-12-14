@@ -69,9 +69,14 @@ def declareRange(mat,lis,df):
 def declareColdtypes(lis,nullname="null"):
     from random import sample
     import re
-    
+
+    class empty:
+            pass
+         
     def is_float(data):
         try:
+            if isinstance(data,empty):
+                return False
             if type(data).__name__ == nullname:
                 return False
             n = float(data)
@@ -81,6 +86,8 @@ def declareColdtypes(lis,nullname="null"):
 
     def is_int(data):
         try:
+            if isinstance(data,empty):
+                return False
             if type(data).__name__ == nullname:
                 return False
             if "." in str(data):
@@ -92,6 +99,8 @@ def declareColdtypes(lis,nullname="null"):
 
     def is_complex(data):
         pattern=r"\-?[0-9]+(?:\.?[0-9]*)[-+][0-9]+(?:\.?[0-9]*)j"
+        if isinstance(data,empty):
+            return False
         if re.findall(pattern,str(data)):
             return True
         return False
@@ -100,6 +109,13 @@ def declareColdtypes(lis,nullname="null"):
     samples = sample(lis,30) if len(lis)>30 else lis
     dtyps = []
     
+    ##Make sure samples are the same length
+    maxlen = max([len(row) for row in samples])
+    
+    for i,sample in enumerate(samples):
+        samples[i] = sample + [empty() for _ in range(maxlen-len(sample))]
+    #######################################
+
     ints = [[is_int(d) for d in row] for row in samples]
     floats = [[is_float(d) for d in row] for row in samples]
     complexs = [[is_complex(d) for d in row] for row in samples]
