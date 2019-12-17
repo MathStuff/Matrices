@@ -12,7 +12,7 @@ def applyop(mat,e,cols,conds,feats,apply_method,obj,lvl):
     #Get indeces which rows to operate on
     if conds != None:
         if isinstance(conds,str):
-            from .filter.where import wheres
+            from .where import wheres
             inds = wheres(mat,conds,feats,True)[1]
         elif isinstance(conds,obj):
             if conds.d1 != 1:

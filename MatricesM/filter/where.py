@@ -1,4 +1,4 @@
-def wheres(mat,conds,feats,inplace,lvl):
+def wheres(mat,conds,feats,inplace,lvl=1):
 
     #Replace comparison operators with proper symbols
     if " and " in conds:

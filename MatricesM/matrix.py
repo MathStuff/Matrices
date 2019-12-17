@@ -2899,10 +2899,12 @@ class Matrix(Vector):
     
     @property
     def kwargs(self):
+        rang = self.initRange
+        rang = rang[:] if isinstance(rang,(list,tuple)) else rang
         return {"dim":self.dim[:],
                 "data":[a[:] for a in self._matrix],
                 "fill":self.fill,
-                "ranged":self.initRange[:],
+                "ranged":rang,
                 "seed":self.seed,
                 "features":self.features[:],
                 "decimal":self.decimal,
