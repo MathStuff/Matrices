@@ -51,7 +51,7 @@ Available special distributions:
 
 **ranged**: _[*args] | (*args) | dict_ = _(0,1)_
 
-Arguments to pass to **fill**. **_Optional_**. To apply all the elements give a list | tuple. To apply every column individually give a dictionary as _{**"Column_name"**:[*args], ...}_. 
+Arguments to pass to the function in **fill**. **_Optional_**. To apply all the elements give a list | tuple. To apply every column individually give a dictionary as _{**"Column_name"**:[*args], ...}_. 
 
 Arguments should follow one of the following rules:
 
@@ -94,7 +94,7 @@ Row labels for each row. **_Optional_**. Only works with _dataframe_ dtype.
 
 Skip setup proccess for faster initiation, if necessary arguments are passed. **_Optional_**. Don't change if you aren't sure what your matrix requires to work properly.
 
-****kwargs**: NOTES, PRECISION, DEFAULT_NULL, ROW_LIMIT, QR_ITERS, EIGENDEC_ITERS.
+****kwargs**: NOTES, PRECISION, DEFAULT_NULL, ROW_LIMIT, QR_ITERS, EIGENDEC_ITERS, DISPLAY_OPTIONS, DEFAULT_BOOL.
       )
 
 _MatricesM.matrix.**dataframe**_(
@@ -440,7 +440,7 @@ Matrix.add(values,row,col,feature,dtype,index,fillnull) #Adds list to given inde
 
 Matrix.remove(row,col) #Removes the desired row and/or column
 
-Matrix.swap(index1,index2,axis) #Swap the row or column in index1 with index2. Set 'axis' 0 to use indices for rows, 1 to use as column indices. Column names can be used with axis=1.
+Matrix.swap(index1,index2,axis,returnmat) #Swap the row or column in index1 with index2. Set 'axis' 0 to use indices for rows, 1 to use as column indices. Column names can be used with axis=1. 'returnmat' to decide wheter or not to return self if 'inplace' is True
 
 Matrix.copy #Returns a copy of the matrix
 
@@ -464,17 +464,36 @@ Matrix.roundForm(n) #Returns a matrix of elements' rounded up to n decimal digit
 
 Matrix.kwargs #Returns a dictionary of the matrix's basic attributes
 
-Matrix.ROW_LIMIT #Attribute to determine the amount of rows to print while representing the matrix, default is 30.
+Matrix.ROW_LIMIT #Maximum amount of rows to display using 'repr' method, default is 30.
 
-Matrix.QR_ITERS #Attribute to determine how many iterations will be done in eigenvalue calculation with QR algorithm, default is 50. Play around with this value if the values you get don't seem right.
+Matrix.PRECISION #Decimal places to round to during calculations
 
-Matrix.EIGENVEC_ITERS #Attribute to determine how many iterations will be done in eigenvector calculation with shifted inverse iteration method, default is 10.
+Matrix.NOTES #String to attach to the string form of self. Notes get displayed after the labels and the grid is processed.
+
+Matrix.EIGENVEC_ITERS #How many iterations will be done in eigenvector calculation with shifted inverse iteration method, default is 10.
+
+Matrix.QR_ITERS #How many iterations will be done in eigenvalue calculation with QR algorithm, default is 50. Play around with this value if the values you get don't seem right.
+
+Matrix.DISPLAY_OPTIONS #Display options as dict; default:{
+                                                        "allow_label_dupes":False,
+                                                        "dupe_place_holder":"//",
+                                                        "label_seperator":",",
+                                                        "left_top_corner":"+",
+                                                        "left_seperator":"|",
+                                                        "top_seperator":"-",
+                                                        "col_place_holder":"...",
+                                                        "row_place_holder":"..."}
+
+
+Matrix.DEFAULT_NULL #Object to use as null values, default is null.
+
+Matrix.DEFAULT_BOOL #Boolean values to use as True and False in a dictionary. {True:1,False:0} is default.
 
 Matrix.col_1, Matrix.col_2, ... #Tries to return a 'Matrix.level.name' object pointing at 'Matrix's 'col_1','col_2', ... column name row, if it fails, tries to return all columns with 'col_1','col_2', ... column names in level-1 
 
-#Available arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
+#Element wise arithmetic operators : "@", "+", "-", "*", "/", "//", "**", "%"
 
-#Available comparison operators : "<" ,"<=", ">", ">=", "==", "!=", "&", "|", "~"
+#Element wise comparison operators : "<" ,"<=", ">", ">=", "==", "!=", "&", "|", "~"
 
 ```
 ##### Algebric properties
@@ -662,11 +681,13 @@ Matrix.z(col,population) #Returns the z-scores of the desired  column, call with
 
 Matrix.corr(column_1,column_2,population,method) #Returns linear correlation of 2 columns chosen from the matrix. If no argument given, returns the correlation matrix. Give population parameter 1 if calculation is not for samples, 0 otherwise; methods available: 'pearson'(default), 'kandell', 'spearman'
 
-Matrix.normalize(column,inplace) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data
+Matrix.normalize(column,inplace,declare,returnmat) #Normalize the data in the desired column, None to normalize all columns. Give inplace parameter "True" boolean value to make normalization in-place, "False" to return a new matrix with normalized data. 'declare' to guess the new value's data type and replace it in 'coldtypes'. 'returnmat' to decide wheter or not to return self if 'inplace' is True
 
-Matrix.stdize(column,inplace) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data
+Matrix.stdize(column,inplace,declare,returnmat) #Standardize the data in the desired column, None to standardize all columns. Give inplace parameter "True" boolean value to make standardization in-place, "False" to return a new matrix with standardized data. 'declare' to guess the new value's data type and replace it in 'coldtypes'. 'returnmat' to decide wheter or not to return self if 'inplace' is True
 
 Matrix.oneHotEncode(column,concat) #One-hot encode a 'column', 'concat' to decide wheter or not to concatenate the encoded matrix or return it
+
+Matrix.fix_coldtypes(column,retur_dtype) #Guess the data type for the given column(s), return dtypes with return_dtype or apply them directly to coldtypes
 
 dataframe.level #Inner level class used for passing the level to 'ind' class for row labeling.
 
