@@ -2444,7 +2444,10 @@ class Matrix(Vector):
     """Statistical methods"""
 # =============================================================================      
     
-    def normalize(self,col:Union[int,str,None]=None,inplace:bool=True,declare:bool=True,returnmat:bool=False):
+    def normalize(self,col:Union[int,str,tuple,None]=None,
+                       inplace:bool=True,
+                       declare:bool=True,
+                       returnmat:bool=False):
         """
         Normalizes the data to be valued between 0 and 1
 
@@ -2459,7 +2462,10 @@ class Matrix(Vector):
         from .stats.normalize import normalize
         return normalize(self,col,inplace,self.PRECISION,declare,returnmat)
 
-    def stdize(self,col:Union[int,str,None]=None,inplace:bool=True,declare:bool=True,returnmat:bool=False):
+    def stdize(self,col:Union[int,str,tuple,None]=None,
+                    inplace:bool=True,
+                    declare:bool=True,
+                    returnmat:bool=False):
         """
         Standardization to get mean of 0 and standard deviation of 1
 
@@ -2474,7 +2480,7 @@ class Matrix(Vector):
         from .stats.stdize import stdize
         return stdize(self,col,inplace,self.PRECISION,declare,returnmat)
 
-    def ranged(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def ranged(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Range of the columns
 
@@ -2484,7 +2490,7 @@ class Matrix(Vector):
         from .stats.ranged import ranged
         return ranged(self,col,get,Matrix,dataframe)
 
-    def max(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def max(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Highest value(s) in the desired column(s)
 
@@ -2494,7 +2500,7 @@ class Matrix(Vector):
         from .stats.minmax import _minmax
         return _minmax(self,col,get,1,Matrix,dataframe)
 
-    def min(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def min(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Lowest value(s) in the desired column(s)
 
@@ -2504,7 +2510,7 @@ class Matrix(Vector):
         from .stats.minmax import _minmax
         return _minmax(self,col,get,0,Matrix,dataframe)
 
-    def mean(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def mean(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Mean of the columns
 
@@ -2514,7 +2520,7 @@ class Matrix(Vector):
         from .stats.mean import mean
         return mean(self,col,get,Matrix,dataframe)
     
-    def mode(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def mode(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Returns the columns' most repeated elements in a dictionary
 
@@ -2524,7 +2530,7 @@ class Matrix(Vector):
         from .stats.mode import mode
         return mode(self,col,get,Matrix,dataframe)
     
-    def median(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def median(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Returns the median of the columns
 
@@ -2534,7 +2540,7 @@ class Matrix(Vector):
         from .stats.median import median
         return median(self,col,get,Matrix,dataframe)
     
-    def sdev(self,col:Union[int,str,None]=None,population:[0,1]=1,get:[0,1,2]=1):
+    def sdev(self,col:Union[int,str,tuple,None]=None,population:[0,1]=1,get:[0,1,2]=1):
         """
         Standard deviation of the columns
 
@@ -2545,7 +2551,7 @@ class Matrix(Vector):
         from .stats.sdev import sdev
         return sdev(self,col,population,get,Matrix,dataframe)    
     
-    def var(self,col:Union[int,str,None]=None,population:[0,1]=1,get:[0,1,2]=1):
+    def var(self,col:Union[int,str,tuple,None]=None,population:[0,1]=1,get:[0,1,2]=1):
         """
         Variance in the columns
 
@@ -2556,7 +2562,7 @@ class Matrix(Vector):
         from .stats.var import var
         return var(self,col,population,get,Matrix,dataframe)     
     
-    def ranked(self,col:Union[int,str,None]=None,reverse:bool=False,key=lambda a:a[1],get:[-1,0,1,2]=1,start:int=0):
+    def ranked(self,col:Union[int,str,tuple,None]=None,reverse:bool=False,key=lambda a:a[1],get:[-1,0,1,2]=1,start:int=0):
         """
         Ranks of the values in the columns when they are sorted
 
@@ -2568,7 +2574,7 @@ class Matrix(Vector):
         from .stats.ranked import _rank
         return _rank(self,col,reverse,key,get,start)
 
-    def z(self,col:Union[int,str,None]=None,population:[0,1]=1):
+    def z(self,col:Union[int,str,tuple,None]=None,population:[0,1]=1):
         """
         z-scores of the elements
 
@@ -2580,7 +2586,7 @@ class Matrix(Vector):
         from .stats.z import z
         return z(self,col,population,dataframe)        
     
-    def iqr(self,col:Union[int,str,None]=None,as_quartiles:bool=False,get:[0,1,2]=1):
+    def iqr(self,col:Union[int,str,tuple,None]=None,as_quartiles:bool=False,get:[0,1,2]=1):
         """
         Returns the interquartile range(IQR)
 
@@ -2613,7 +2619,7 @@ class Matrix(Vector):
         from .stats.iqr import iqr
         return iqr(self,col,as_quartiles,get,Matrix,dataframe)   
      
-    def freq(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def freq(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Returns the frequency of every element on desired column(s)
         col:column index>=1 or column name
@@ -2624,7 +2630,7 @@ class Matrix(Vector):
         from .stats.freq import freq
         return freq(self,col,get,Matrix,dataframe)   
 
-    def sum(self,col:Union[int,str,None]=None,get:[0,1,2]=1,inf_limit=2**512):
+    def sum(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1,inf_limit=2**512):
         """
         Return the sum of the desired column, give no arguments to get all columns'.
 
@@ -2634,7 +2640,7 @@ class Matrix(Vector):
         from .stats.prodsum import _prodsum
         return _prodsum(self,col,get,Matrix,dataframe,1,inf_limit)
 
-    def prod(self,col:Union[int,str,None]=None,get:[0,1,2]=1,inf_limit=2**512):
+    def prod(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1,inf_limit=2**512):
         """
         Return the product of the desired column, give no arguments to get all columns'.
 
@@ -2644,7 +2650,7 @@ class Matrix(Vector):
         from .stats.prodsum import _prodsum
         return _prodsum(self,col,get,Matrix,dataframe,0,inf_limit)
 
-    def count(self,col:Union[int,str,None]=None,get:[0,1,2]=1):
+    def count(self,col:Union[int,str,tuple,None]=None,get:[0,1,2]=1):
         """
         Return the count of the valid values in column(s), give no arguments to get all columns'.
 
@@ -2654,7 +2660,7 @@ class Matrix(Vector):
         from .stats.freq import _count
         return _count(self,col,get,Matrix,dataframe)
 
-    def cov(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
+    def cov(self,col1:Union[int,str,tuple,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1):
         """
         Covariance of two columns
 
@@ -2664,7 +2670,10 @@ class Matrix(Vector):
         from .stats.cov import cov
         return cov(self,col1,col2,population,Matrix,dataframe)
         
-    def corr(self,col1:Union[int,str,None]=None,col2:Union[int,str,None]=None,population:[0,1]=1,method:["pearson","kendall","spearman"]="pearson"):
+    def corr(self,col1:Union[int,str,tuple,None]=None,
+                  col2:Union[int,str,tuple,None]=None,
+                  population:[0,1]=1,
+                  method:["pearson","kendall","spearman"]="pearson"):
         """
         Correlation of 2 columns
 

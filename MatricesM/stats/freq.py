@@ -3,25 +3,24 @@ def freq(mat,col,get,obj,dFrame):
     from ..errors.errors import MatrixError
     from ..customs.objects import Label
 
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
     #Get the parts needed
     #No argument given
     if col==None:
         temp=mat.t
-        feats = mat.features.labels
-        if mat.features.level == 1:
-            feats = [row[0] for row in feats]
         r=mat.dim[1]
     #Column index or name given
     else:
-        if isinstance(col,str):
-            col=mat.features.index(col)+1
-        if col != None:
-            if col<=0 or col>mat.d1:
-                raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+        col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+
+        if col<=0 or col>mat.d1:
+            raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
+        
         temp=mat[:,col-1].t
-        feats = mat.features.labels[col-1]
-        if mat.features.level == 1:
-            feats = feats[0]
+        feats = feats[col-1]
         r=1
 
     res={}
@@ -68,11 +67,12 @@ def _count(mat,col,get,obj,dFrame):
     feats = mat.features.labels
     if mat.features.level == 1:
         feats = [row[0] for row in feats]
+        
     #Column name given
-    if isinstance(col,str):
+    if isinstance(col,(tuple,str)):
         if not col in feats:
             raise NameError(f"{col} is not a column name")
-        col = mat.features.index(col)
+        col = feats.index(col)
         colrange = [col]
     #Column number given
     elif isinstance(col,int):

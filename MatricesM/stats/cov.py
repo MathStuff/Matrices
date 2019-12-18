@@ -1,9 +1,14 @@
 def cov(mat,col1,col2,population,obj,dFrame):
+    from ..customs.objects import Label
+    
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
     #Change column names to indices
-    if isinstance(col1,str):
-        col1=mat.features.index(col1)+1
-    if isinstance(col2,str):
-        col2=mat.features.index(col2)+1
+    col1 = feats.index(col1)+1 if isinstance(col1,(tuple,str)) else col1
+    col2 = feats.index(col2)+1 if isinstance(col2,(tuple,str)) else col2
+    
     #Assert types for columns
     if not (isinstance(col1,int) and isinstance(col2,int)) and (col1!=None and col2!=None):
         raise TypeError("col1 and col2 should be integers or column names or both None")
@@ -52,7 +57,8 @@ def cov(mat,col1,col2,population,obj,dFrame):
                 covmat._matrix[n][m] = val
                 n+=1
             m+=1
-        covmat.index = validfeats
-        covmat.features = validfeats
+        
+        covmat.index = Label(validfeats,mat.features.names[:])
+        covmat.features = Label(validfeats,mat.features.names[:])
         covmat.dtype = dFrame
         return covmat

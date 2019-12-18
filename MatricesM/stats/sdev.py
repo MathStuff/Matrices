@@ -4,13 +4,15 @@ def sdev(mat,col,population,get,obj,dFrame):
 
     d0,d1 = mat.dim
     feats = mat.features.labels
+
     if mat.features.level == 1:
         feats = [row[0] for row in feats]
 
-    if isinstance(col,str):
-        col=mat.features.index(col)+1
+    col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+        
     if d0<=1:
         raise ValueError("Not enough rows")
+
     if not population in [0,1]:
         raise ValueError("'population' should be either 0 or 1")
 

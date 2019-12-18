@@ -1,9 +1,14 @@
 def median(mat,col,get,obj,dFrame):
     from ..customs.objects import Label
+
     nullobj = mat.DEFAULT_NULL
-    
-    if isinstance(col,str):
-        col=mat.features.index(col)+1
+
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+
     if col != None:
         if col<=0 or col>mat.d1:
             raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")

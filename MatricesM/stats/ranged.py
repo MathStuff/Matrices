@@ -1,13 +1,14 @@
 def ranged(mat,col,get,obj,dFrame):
     from ..customs.objects import Label
 
+    rang = mat._declareRange(mat._matrix)
     feats = mat.features.labels
+    
     if mat.features.level == 1:
         feats = [row[0] for row in feats]
-    rang = mat._declareRange(mat._matrix)
 
-    if isinstance(col,str):
-        col =  [ind for ind in range(mat.d1) if default_level[ind] == col] 
+    col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+
     if col != None:
         if col<=0 or col>mat.d1:
             raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")

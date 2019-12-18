@@ -2,7 +2,12 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
     import math
     from ..customs.objects import Label
     
-    feats = mat.features[:]
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+
     d0,d1 = mat.dim
 
     def sums(lis,limit,length):
@@ -41,9 +46,6 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
                 return math.inf
             return prd
 
-
-    if isinstance(col,str):
-        col = feats.index(col)+1
     if col != None:
         if col<=0 or col>d1:
             raise IndexError(f"Column index is out of range, expected range: [1,{d1}]")
@@ -56,9 +58,12 @@ def _prodsum(mat,col,get,obj,dFrame,isSum,inf_limit):
         func = sums
     else:
         func = prod
-        
-    vals = {feats[i]:func(mat.col(i+1,0),inf_limit,d0) for i in [j for j in range(mat.dim[1]) if colds[j] in valid_types]}
     
+    if col == None:
+        vals = {feats[i]:func(mat.col(i+1,0),inf_limit,d0) for i in [j for j in range(mat.dim[1]) if colds[j] in valid_types]}
+    else:
+        vals = {feats[col-1]:func(mat.col(col,0),inf_limit,d0)}
+        
     #Return a matrix
     if get == 2:
         cols = list(vals.keys())

@@ -2,12 +2,19 @@ def _rank(mat,col,rev,key,get,start):
     
     if not mat._dfMat:
         raise TypeError("'ranked' method only works with dataframes")
-    if isinstance(col,str):
-        col=mat.features.index(col)+1
+    
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    if isinstance(col,(tuple,str)):
+        col=feats.index(col)+1
+
     if col != None:
         if col<=0 or col>mat.d1:
             raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
         col -= 1
+        
     if not isinstance(start,int):
         raise TypeError("'start' only accepts integers")
 

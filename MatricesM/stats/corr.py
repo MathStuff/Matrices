@@ -1,8 +1,12 @@
 def _corr(mat,col1,col2,population,temp,method,Labelobj):
-    for i in [col1,col2]:
-        if isinstance(i,str):
-            i=mat.features.index(i)+1
     
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    col1 = feats.index(col1)+1 if isinstance(col1,(tuple,str)) else col1
+    col2 = feats.index(col2)+1 if isinstance(col2,(tuple,str)) else col2
+
     if not (( isinstance(col1,int) and isinstance(col2,int) ) or (col1==None and col2==None)):
         raise TypeError("'col1' and 'col2' should be integers | both None | column names")
         

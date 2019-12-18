@@ -1,7 +1,11 @@
 def stdize(mat,col=None,inplace=True,zerobound=12,dec=True,ret=False):
-    if isinstance(col,str):
-        col=mat.features.index(col)+1
-        
+
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+    
     if not inplace:
         if col==None:
             temp = mat.copy

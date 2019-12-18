@@ -1,21 +1,18 @@
 def mode(mat,col,get,obj,dFrame):
     from ..customs.objects import Label
 
-    if isinstance(col,str):
-        col=mat.features.index(col)+1
+    feats = mat.features.labels
+    if mat.features.level == 1:
+        feats = [row[0] for row in feats]
+
+    col = feats.index(col)+1 if isinstance(col,(tuple,str)) else col
+
     if col != None:
         if col<=0 or col>mat.d1:
             raise IndexError(f"Column index is out of range, expected range: [1,{mat.d1}]")
     #Set feature name and the matrix to use dependent on the column desired
-    if col==None:
-        feats = mat.features.labels
-        if mat.features.level == 1:
-            feats = [row[0] for row in feats]
-    else:
-        assert col>=1 and col<=mat.dim[1] and isinstance(col,int)
-        feats = mat.features.labels[col-1]
-        if mat.features.level == 1:
-            feats = feats[0]
+        feats = feats[col-1]
+
     #Set keys in the dictionary which will be returned at the end
     mode={}
     if len(feats)!=0 and isinstance(feats,list):
