@@ -680,75 +680,17 @@ class Matrix(Vector):
         return self[:,:]
 
     def col(self,column:Union[List[Union[int,str]],int,str],
-            as_matrix:bool=True,
-            namelevel:int=1):
+            as_matrix:bool=True):
         """
         Get a specific column of the matrix
         Returns a Matrix or a list
 
-        column:integer>=1 and <=column_amount | column name | list of column names/indices(starting from 0)/names in tuples
+        column:int>0 and <=column_amount | column name | list of column names/indices(starting from 0) in tuples
         as_matrix:False to get the column as a list, True to get a column matrix (default) 
-        namelevel:int>=1, Level of the labels to search the given column names 
-
-        NOTE:
-            >>> Matrix.col(1) == Matrix.col([0]) == Matrix.col((0,))
         """
-
-        #Column number given
-        if isinstance(column,int):
-            if not (column<=self.d1 and column>0):
-                raise InvalidColumn(column,"Column index out of range")
-            
-            #Return matrix
-            if as_matrix:
-                return self[:,column-1]
-
-        #Column name given
-        elif isinstance(column,str):
-            if not column in self.features.get_level(namelevel):
-                raise InvalidColumn(column,f"'{column}' is not in level-{namelevel} column names")
-
-            #Return matrix
-            if as_matrix:
-                return self[:,column]
-
-            column = self.features.index(column)+1
-
-        #List of column names and column numbers given
-        elif isinstance(column,(tuple,list)):
-            d0,d1 = self.dim
-            feats = self.features.labels
-            feats_specific_lvl = self.features.get_level(namelevel)
-
-            #Single tuple given
-            if isinstance(column,tuple):
-                colinds = [j for j,label in enumerate(feats) if label==column]
-            #Combination of column names, numbers and tuple names given
-            else:
-                if not all([1 if isinstance(num,(int,str)) else 0 for num in column]):
-                    raise TypeError("Given list should only contain integers>0 or strings or tuples")
-                colinds = [i if isinstance(i,int) \
-                           else feats.index(i) if isinstance(i,tuple)\
-                           else feats_specific_lvl.index(i) \
-                           for i in column]
-            if as_matrix:
-                return self[:,colinds]
-
-            mm = self._matrix
-            temp = []
-            for i in range(d0):
-                row = mm[i]
-                temp.append([row[j] for j in colinds])
-                
-            return temp
+        column = column-1 if isinstance(column,int) else column
+        return self[:,column] if as_matrix else [row[0] for row in self[:,column].matrix]
         
-        #Invalid type
-        else:
-            raise InvalidColumn(column)
-
-        #Return list
-        mm = self._matrix
-        return [mm[r][column-1] for r in range(self.d0)]
     
     def row(self,row:Union[List[int],int]=None,as_matrix:bool=True):
         """
@@ -797,7 +739,7 @@ class Matrix(Vector):
         To append a column, use col=self.d1
         """
         from .matrixops.add import add
-        add(self,lis,row,col,feature,dtype,index,fillnull)
+        add(self,lis,row,col,feature,dtype,index,fillnull,Label)
         if returnmat:
             return self
 
@@ -2736,7 +2678,7 @@ class Matrix(Vector):
         from .filter.grouping import grouping
         return grouping(self,column,dataframe,namelevel)
 
-    def oneHotEncode(self,column:str,level:int=1,concat:bool=True,removecol:bool=False,returnmat:bool=True):
+    def oneHotEncode(self,column:Union[str,Tuple],concat:bool=True,removecol:bool=False,returnmat:bool=True):
         """
         One-hot encode a given column 
 
@@ -2745,8 +2687,13 @@ class Matrix(Vector):
         removecol: bool; wheter or not to remove the used column after encoding, doesn't apply if 'concat' is False
         returnmat: bool; wheter or not to return self after encoding, doesn't apply if 'concat' is False
         """
-        if not column in self.features.get_level(level):
-            raise NameError(f"{column} is not a column name")
+        
+        feats = mat.features.labels
+        if mat.features.level == 1:
+            feats = [row[0] for row in feats]
+
+        if isinstance(column,(tuple,str)):
+            column=feats.index(col)
 
         uniq = self.uniques(column)
         temp = Matrix([self.d0,len(uniq)],fill=0,dtype=dataframe).matrix
@@ -2886,26 +2833,17 @@ class Matrix(Vector):
 
     def __repr__(self):
         """
-        Returns the matrix's string form using its row and column limits
+        Fits the matrix into the window
         """
         from .matrixops.repr import _repr
         return _repr(self,self.NOTES,dataframe)
     
     def __str__(self): 
         """ 
-        Prints the matrix's attributes and itself as a grid of numbers
+        Prints out the matrix, fitting everything into the window.
         """
-        self.__dim=self._declareDim()
-        s=self._stringfy(coldtypes=self.coldtypes[:])
-        notes = self.NOTES
-        if not isinstance(notes,str):
-            raise TypeError(f"NOTES option can only be used with strings, not {type(notes).__name__}")
-        if not self.isSquare:
-            print("\nDimension: {0}x{1}".format(self.d0,self.d1))
-        else:
-            print("\nSquare matrix\nDimension: {0}x{0}".format(self.d0))
-        return s+"\n\n" + notes 
-    
+        return repr(self)
+
     @property
     def kwargs(self):
         rang = self.initRange
