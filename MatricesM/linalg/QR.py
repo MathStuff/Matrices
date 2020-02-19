@@ -3,23 +3,47 @@ def QR(mat,obj):
         if mat.isSingular:
             return (None,None)
     
+    def dotprodsum(vec1,vec2):
+        """
+        Sum of the coordinates from a dot product of two vectors of same size
+        """
+        total = 0
+        for i,val in enumerate(vec1):
+            total += vec2[i]*val
+        return total
+
+    def normsq(vec):
+        """
+        Norm of a vector squared
+        """
+        total = 0
+        for val in vec:
+            total += val*val
+        return total
+
     def _projection(vec1,vec2):
         """
         Projection vector of vec2 over vec1
         """
-        return [(sum([vec1[a]*vec2[a] for a in range(len(vec1))])/sum([a*a for a in vec1]))*c for c in vec1]
+        
+        val = dotprodsum(vec1,vec2)/normsq(vec1)
+        return [i*val for i in vec1]
 
     #Gram-Schmitt to get orthogonal set of the matrix
     U=[]
-    
-    for b in range(1,min(mat.dim)+1):
-        u=mat.col(b,0)
-        
-        for i in range(1,b):
+    mm = mat.matrix
+    d0,d1 = mat.dim
+    min_dim = min(d0,d1)
+
+    for b in range(min_dim):
+        u=[row[b] for row in mm]
+        copy = u[:]
+
+        for i in range(b):
             #Projection vector
-            p=_projection(U[i-1],mat.col(b,0))
-            #Keep subtracting the other vectors' projections from itmat
-            u=[u[i]-p[i] for i in range(len(u))]
+            p=_projection(U[i],copy)
+            #Keep subtracting the other vectors' projections from it
+            u=[u[j]-p[j] for j in range(d0)]
             
         U.append(u.copy())
         
@@ -28,9 +52,12 @@ def QR(mat,obj):
     else:
         dt = float
 
-    matU = obj((len(U),len(U[0])),U,dtype=dt,implicit=True).t
+    matU = obj((min_dim,d0),U,dtype=dt,implicit=True).t
+    #Norms
+    norms = [normsq(U[i])**(0.5) for i in range(min_dim)]
+
     #Orthonormalize by diving the columns by their norms
-    Q = matU/[sum([a*a for a in U[i]])**(1/2) for i in range(len(U))]
+    Q = matU/norms
     #Get the upper-triangular part
     R = Q.t@mat
 
