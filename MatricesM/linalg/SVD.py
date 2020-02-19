@@ -23,6 +23,7 @@ def _SVD(mat):
     d0,d1 = mat.dim
     n,x = min(d0,d1),max(d0,d1)
     #Add zero rows if needed
-    E.concat(mat(dim=(x-n,d1),data=None,fill=0),axis=0)
+    zeros = mat(dim=(x-n,d1),data=None,fill=0,index=[],features=[])
+    E.concat(zeros,axis=0)
 
     return (U,E,V)
