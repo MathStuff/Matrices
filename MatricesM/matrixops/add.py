@@ -1,4 +1,4 @@
-def add(mat,lis,row,col,feature,dtype,index,fill):
+def add(mat,lis,row,col,feature,dtype,index,fill,Label):
     nullobj = mat.DEFAULT_NULL
 
     r,c = 0,0

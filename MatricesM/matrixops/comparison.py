@@ -2,8 +2,6 @@ def eq(mat,other,obj,m,from_wheres,matrixobj):
     if not from_wheres:
         true ,false = mat.DEFAULT_BOOL[True],mat.DEFAULT_BOOL[False]
         d0,d1 = mat.dim
-        if mat._cMat:
-            raise TypeError("Can't compare complex numbers")
 
         if isinstance(other,(obj,matrixobj)):
             if other._cMat:
@@ -47,8 +45,6 @@ def ne(mat,other,obj,m,from_wheres,matrixobj):
     if not from_wheres:
         true ,false = mat.DEFAULT_BOOL[True],mat.DEFAULT_BOOL[False]
         d0,d1 = mat.dim
-        if mat._cMat:
-            raise TypeError("Can't compare complex numbers")
 
         if isinstance(other,(obj,matrixobj)):
             if other._cMat:

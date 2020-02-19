@@ -808,7 +808,7 @@ def setitem(mat,pos,item,obj,uselabel=False,rowlevel=1,usename=False,namelevel=1
                     i+=1
 
             #Matrix[ slice|int, slice|int ] | Matrix[ Matrix,col_index ]
-            elif (isinstance(pos[0],(slice,int)) and isinstance(pos[1],(slice,int))) or isinstance(pos[0],obj):
+            elif (isinstance(pos[0],(slice,list,int)) and isinstance(pos[1],(slice,list,int))) or isinstance(pos[0],obj):
                 #####Fix item's dimensions#####
                 item = fix_given_item(item,rows,cols)
                 ###############################
